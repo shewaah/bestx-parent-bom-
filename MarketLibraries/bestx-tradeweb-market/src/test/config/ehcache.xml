@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache updateCheck="false">
+    <defaultCache eternal="false" timeToIdleSeconds="3600" timeToLiveSeconds="14400" />
+
+    <cache name="bestx-it.softsolutions.bestx.model.Customer" maxElementsInMemory="256" />
+    <cache name="bestx-it.softsolutions.bestx.model.Country" maxElementsInMemory="128" />
+    <cache name="bestx-it.softsolutions.bestx.model.ExchangeRate" maxElementsInMemory="128" />
+    <cache name="bestx-it.softsolutions.bestx.model.Market" maxElementsInMemory="32" />
+    <cache name="bestx-it.softsolutions.bestx.model.MarketMaker" maxElementsInMemory="256" />
+    <cache name="bestx-it.softsolutions.bestx.model.Trader" maxElementsInMemory="16" />
+    <cache name="bestx-it.softsolutions.bestx.model.Venue" maxElementsInMemory="128" />
+    <cache name="bestx-it.softsolutions.bestx.model.Instrument" maxElementsInMemory="1024" />
+    <cache name="bestx-it.softsolutions.bestx.model.Holiday" maxElementsInMemory="128" />
+    <cache name="bestx-operation" maxElementsInMemory="2048" />
+
+    <cache name="it.softsolutions.bestx.services.dirtyprice.DirtyPriceInstrument" maxElementsInMemory="200" timeToIdleSeconds="60" timeToLiveSeconds="360" />
+
+    <cache name="it.softsolutions.bestx.model.Holiday" maxElementsInMemory="32" />
+    <cache name="it.softsolutions.bestx.model.SettlementLimit" maxElementsInMemory="64" />
+    <cache name="it.softsolutions.bestx.model.Instrument" maxElementsInMemory="1024" />
+
+    <cache name="it.softsolutions.bestx.model.Customer" maxElementsInMemory="256" />
+    <cache name="it.softsolutions.bestx.model.Market" maxElementsInMemory="32" />
+    <cache name="it.softsolutions.bestx.model.MarketMaker" maxElementsInMemory="128" />
+    <cache name="it.softsolutions.bestx.model.MarketMarketMaker" maxElementsInMemory="256" />
+    <cache name="it.softsolutions.bestx.model.MarketMakerAccount" maxElementsInMemory="64" />
+    <cache name="it.softsolutions.bestx.model.Venue" maxElementsInMemory="128" />
+    <cache name="it.softsolutions.bestx.services.ordervalidation.CSCustomerFilterRow" maxElementsInMemory="512" />
+    <cache name="it.softsolutions.bestx.model.Policy" maxElementsInMemory="16" />
+    <cache name="it.softsolutions.bestx.CustomerAttributes" maxElementsInMemory="512" />
+    <cache name="it.softsolutions.bestx.model.ExchangeRate" maxElementsInMemory="32" />
+    <cache name="it.softsolutions.bestx.model.Country" maxElementsInMemory="128" />
+    <cache name="it.softsolutions.bestx.model.CustomerParam" maxElementsInMemory="2048" />
+    <cache name="it.softsolutions.bestx.model.CustomerTicker" maxElementsInMemory="2048" />
+
+    <cache name="it.softsolutions.bestx.model.Attempt" maxElementsInMemory="128" timeToIdleSeconds="120" timeToLiveSeconds="600" />
+    <cache name="it.softsolutions.bestx.model.InternalAttempt" maxElementsInMemory="128" timeToIdleSeconds="120" timeToLiveSeconds="600" />
+    <cache name="it.softsolutions.bestx.model.MarketExecutionReport" maxElementsInMemory="128" timeToIdleSeconds="120" timeToLiveSeconds="600" />
+
+</ehcache>

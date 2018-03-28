@@ -1,0 +1,10 @@
+it\softsolutions\bestx\connections\ib4j\NewOperationMessage.class
+it\softsolutions\bestx\connections\ib4j\IB4JOperatorConsoleMessage.class
+it\softsolutions\bestx\connections\ib4j\OperationStateChangePublishMessage.class
+it\softsolutions\bestx\connections\ib4j\IllegalArgumentReplyMessage.class
+it\softsolutions\bestx\connections\ib4j\InternalErrorReplyMessage.class
+it\softsolutions\bestx\connections\ib4j\SystemStatusReplyMessage.class
+it\softsolutions\bestx\connections\ib4j\ChannelStatusReplyMessage.class
+it\softsolutions\bestx\api\BestxProtocol.class
+it\softsolutions\bestx\connections\ib4j\OperationDumpMessage.class
+it\softsolutions\bestx\connections\ib4j\CommandOkReplyMessage.class

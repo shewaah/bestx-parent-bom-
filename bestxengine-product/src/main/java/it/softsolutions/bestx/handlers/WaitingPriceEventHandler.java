@@ -1,0 +1,679 @@
+/*
+ * Copyright 1997-2012 SoftSolutions! srl
+ * All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains the property of SoftSolutions! srl
+ * The intellectual and technical concepts contained herein are proprietary to SoftSolutions! srl and
+ * may be covered by EU, U.S. and other Foreign Patents, patents in process, and
+ * are protected by trade secret or copyright law.
+ * Dissemination of this information or reproduction of this material is strictly forbidden
+ * unless prior written permission is obtained from SoftSolutions! srl.
+ * Any additional licenses, terms and conditions, if any, are defined in file 'LICENSE.txt',
+ * which may be part of this software package.
+ */
+package it.softsolutions.bestx.handlers;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import it.softsolutions.bestx.BestXException;
+import it.softsolutions.bestx.CustomerAttributes;
+import it.softsolutions.bestx.Messages;
+import it.softsolutions.bestx.Operation;
+import it.softsolutions.bestx.OperationState;
+import it.softsolutions.bestx.RegulatedMktIsinsLoader;
+import it.softsolutions.bestx.dao.OperationStateAuditDao;
+import it.softsolutions.bestx.exceptions.CustomerRevokeReceivedException;
+import it.softsolutions.bestx.exceptions.MarketNotAvailableException;
+import it.softsolutions.bestx.finders.CustomerFinder;
+import it.softsolutions.bestx.model.Attempt;
+import it.softsolutions.bestx.model.ClassifiedProposal;
+import it.softsolutions.bestx.model.Customer;
+import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
+import it.softsolutions.bestx.model.InternalAttempt;
+import it.softsolutions.bestx.model.Market;
+import it.softsolutions.bestx.model.Market.MarketCode;
+import it.softsolutions.bestx.model.MarketMaker;
+import it.softsolutions.bestx.model.MarketOrder;
+import it.softsolutions.bestx.model.Order;
+import it.softsolutions.bestx.model.Venue;
+import it.softsolutions.bestx.model.Venue.VenueType;
+import it.softsolutions.bestx.services.BookDepthValidator;
+import it.softsolutions.bestx.services.DateService;
+import it.softsolutions.bestx.services.ExecutionDestinationService;
+import it.softsolutions.bestx.services.MarketSecurityStatusService;
+import it.softsolutions.bestx.services.TitoliIncrociabiliService;
+import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyService;
+import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyService.Result;
+import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyServiceCallback;
+import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyServiceFactory;
+import it.softsolutions.bestx.services.logutils.ApplicationMonitor;
+import it.softsolutions.bestx.services.logutils.ApplicationStatisticsHelper;
+import it.softsolutions.bestx.services.price.PriceResult;
+import it.softsolutions.bestx.services.price.PriceService;
+import it.softsolutions.bestx.services.serial.SerialNumberService;
+import it.softsolutions.bestx.states.CurandoState;
+import it.softsolutions.bestx.states.ErrorState;
+import it.softsolutions.bestx.states.LimitFileNoPriceState;
+import it.softsolutions.bestx.states.OrderNotExecutableState;
+import it.softsolutions.bestx.states.SendAutoNotExecutionReportState;
+import it.softsolutions.bestx.states.WarningState;
+import it.softsolutions.bestx.states.autocurando.AutoCurandoStatus;
+import it.softsolutions.jsscommon.Money;
+import it.softsolutions.manageability.sl.monitoring.NumericValueMonitor;
+/**
+ * 
+ * 
+ * Purpose: Waiting Price State handler
+ * 
+ * Project Name : bestxengine-product First created by: stefano.pontillo Creation date: 18/mag/2012
+ * 
+ **/
+public class WaitingPriceEventHandler extends BaseOperationEventHandler implements ExecutionStrategyServiceCallback {
+
+    private static final long serialVersionUID = -2138211162185307717L;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(WaitingPriceEventHandler.class);
+    // Monitorable
+    // private static NumericValueMonitor totalPriceRequestsMonitor = null;
+    private static Map<String, NumericValueMonitor> totalPriceRequestsMonitors = new HashMap<String, NumericValueMonitor>();
+    private static Map<String, Long> totalPriceRequests = new HashMap<String, Long>();
+    private static Map<String, Long> pendingPriceRequests = new HashMap<String, Long>();
+
+    protected final PriceService priceService;
+    protected final SerialNumberService serialNumberService;
+    protected final long waitingPriceDelay;
+    protected final long marketPriceTimeout;
+    private final TitoliIncrociabiliService titoliIncrociabiliService;
+    private final int maxAttemptNo;
+    //private final Venue INTERNAL_MM_VENUE;
+    private List<String> internalMMcodes;
+
+    protected final ExecutionDestinationService executionDestinationService;
+    private boolean rejectOrderWhenBloombergIsBest;
+    protected BookDepthValidator bookDepthValidator;
+    private OperationStateAuditDao operationStateAuditDao;
+    protected boolean doNotExecute;
+
+    /**
+     * Constructor.
+     *
+     * @param operation the operation
+     * @param priceService the price service
+     * @param titoliIncrociabiliService the titoli incrociabili service
+     * @param customerFinder the customer finder
+     * @param marketFinder the market finder
+     * @param venueFinder the venue finder
+     * @param serialNumberService the serial number service
+     * @param regulatedMktIsinsLoader the regulated mkt isins loader
+     * @param autoCurandoStatus the auto curando status
+     * @param regulatedMarketPolicies the regulated market policies
+     * @param internalMarketMaker the internal market maker
+     * @param waitingPriceDelay the waiting price delay
+     * @param maxAttemptNo the max attempt no
+     * @param marketPriceTimeout the market price timeout
+     * @param marketSecurityStatusService the market security status service
+     * @param executionDestinationService the execution destination service
+     * @param rejectOrderWhenBloombergIsBest the reject order when bloomberg is best
+     * @param doNotExecute parameter used to decide if execute a LimitFile type order
+     * @param bookDepthValidator the book depth validator customer specific
+     * @param internalMMcodes the internal m mcodes
+     * @throws BestXException the best x exception
+     */
+    
+    public WaitingPriceEventHandler(Operation operation, PriceService priceService, TitoliIncrociabiliService titoliIncrociabiliService, CustomerFinder customerFinder,
+                    SerialNumberService serialNumberService, RegulatedMktIsinsLoader regulatedMktIsinsLoader, AutoCurandoStatus autoCurandoStatus,
+                    List<String> regulatedMarketPolicies, long waitingPriceDelay, int maxAttemptNo, long marketPriceTimeout,
+                    MarketSecurityStatusService marketSecurityStatusService, ExecutionDestinationService executionDestinationService, boolean rejectOrderWhenBloombergIsBest, boolean doNotExecute, 
+                    BookDepthValidator bookDepthValidator, List<String> internalMMcodes, OperationStateAuditDao operationStateAuditDao) throws BestXException {
+        super(operation);
+        this.priceService = priceService;
+        String priceServiceName = priceService.getPriceServiceName();
+        this.titoliIncrociabiliService = titoliIncrociabiliService;
+        if (!totalPriceRequestsMonitors.containsKey(priceServiceName)) {
+            totalPriceRequestsMonitors.put(priceServiceName, new NumericValueMonitor("waitingPricesPriceRequests_" + priceServiceName, "Price Service", true, "info", "[PRICE_SERVICE_STATISTICS]"));
+        }
+        if (!pendingPriceRequests.containsKey(priceServiceName)) {
+            pendingPriceRequests.put(priceServiceName, 0L);
+        }
+        if (!totalPriceRequests.containsKey(priceServiceName)) {
+            totalPriceRequests.put(priceServiceName, 0L);
+        }
+        this.maxAttemptNo = maxAttemptNo;
+        this.serialNumberService = serialNumberService;
+        this.waitingPriceDelay = waitingPriceDelay;
+        this.marketPriceTimeout = marketPriceTimeout;
+        //this.INTERNAL_VENUE = venueFinder.getMarketVenue(marketFinder.getMarketByCode(MarketCode.INTERNALIZZAZIONE, null));
+        //this.MATCHING_VENUE = venueFinder.getMarketVenue(marketFinder.getMarketByCode(MarketCode.MATCHING, null));
+        this.executionDestinationService = executionDestinationService;
+        this.rejectOrderWhenBloombergIsBest = rejectOrderWhenBloombergIsBest;
+
+        this.internalMMcodes = internalMMcodes;
+        if (this.internalMMcodes == null) {
+            this.internalMMcodes = new ArrayList<String>();
+        }
+        this.bookDepthValidator = bookDepthValidator;
+        this.operationStateAuditDao = operationStateAuditDao;
+        this.doNotExecute = doNotExecute;
+    }
+
+    @Override
+    public void onNewState(OperationState currentState) {
+        LOGGER.debug("{} WaitingPriceState entry action", operation.getOrder().getFixOrderId());
+        if (customerSpecificHandler!=null) customerSpecificHandler.onNewState(currentState);
+        Order order = operation.getOrder();
+        InternalAttempt iatt = null;
+        if(operation.getLastAttempt() != null)
+        	iatt = operation.getLastAttempt().getInternalAttempt();
+        if(iatt != null) {
+        	iatt.setActive(false); // when price discovery starts the (possible) internalAttemp must not be active
+        }
+        operation.addAttempt();
+        operation.setNoProposalsOrderOnBook(false);
+        Set<Venue> venues = null;
+        Customer customer = operation.getOrder().getCustomer();
+        if (customer.getPolicy() != null) {
+            venues = new HashSet<Venue>();
+            for (Venue venue : customer.getPolicy().getVenues()) {
+                if (venue.getVenueType().equals(VenueType.MARKET) || venue.getMarketMaker() != null && venue.getMarketMaker().isEnabled()) {
+                    venues.add(venue);
+                } else {
+                    LOGGER.debug("Skipped Venue: {}", venue);
+                }
+            }
+        } else {
+            LOGGER.error("Order {}, Customer {} with no policy assigned.", operation.getOrder().getFixOrderId(), customer.getFixId());
+            operation.removeLastAttempt();
+            operation.setStateResilient(new WarningState(currentState, null, Messages.getString("CustomerWithoutPolicy.0", customer.getName(), customer.getFixId())), ErrorState.class);
+            return;
+        }
+        LOGGER.debug("Retrieved venues: {}", venues);
+        LOGGER.info("[COUNTER_PRICE_REQ] operationID={}, Order={}", operation.getId(), operation.getOrder().getFixOrderId());
+
+        String priceServiceName = priceService.getPriceServiceName();
+
+        long pendingPriceRequestsVal = pendingPriceRequests.get(priceServiceName);
+        pendingPriceRequestsVal++;
+        pendingPriceRequests.put(priceServiceName, pendingPriceRequestsVal);
+        ApplicationMonitor.setQueuePricesSize(priceServiceName, pendingPriceRequestsVal);
+
+        // reset della flag dei counter multipli di RTFI
+        LOGGER.debug("[RTFICNT] Setting flag to false");
+        operation.setProcessingCounter(false);
+
+        try {
+            priceService.requestPrices(operation, order, operation.getValidAttempts(), venues, marketPriceTimeout, -1, null);
+        } catch (MarketNotAvailableException mnae) {
+            /*
+             * This exception is thrown if : - there are no price connections enabled - there are some price connections not enabled and in
+             * the other markets the isin is not quoted
+             */
+            LOGGER.info("An error occurred while calling Price Service", mnae);
+
+            if (operation.getAttemptNo() > 1) {
+                operation.removeLastAttempt();
+            }
+            
+            //update Db only when needed
+            if (order.isNotExecute() == null || order.isNotExecute()) {
+                order.setNotExecute(false);
+                operationStateAuditDao.updateNotExecuteOrder(order, false);
+            }
+            customer = operation.getOrder().getCustomer();
+            long pendingPricesPriceRequests = pendingPriceRequests.get(priceService.getPriceServiceName());
+            pendingPricesPriceRequests--;
+            pendingPriceRequests.put(priceService.getPriceServiceName(), pendingPricesPriceRequests);
+            ApplicationMonitor.setQueuePricesSize(priceService.getPriceServiceName(), pendingPricesPriceRequests);
+            // Create the execution strategy with a null priceResult, we did not receive any price
+             try {
+                 ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), this, null, rejectOrderWhenBloombergIsBest);
+                 csExecutionStrategyService.manageAutomaticUnexecution(order, customer);
+            } catch (BestXException e) {
+                LOGGER.error("Order {}, error while managing no market available situation {}", order.getFixOrderId(), e.getMessage(), e);
+                operation.removeLastAttempt(); //FIXME AMC [20170411] possibly removes last attempt more than once when attemptNo > 1?
+                operation.setStateResilient(new WarningState(currentState, e, Messages.getString("PriceService.15")), ErrorState.class);
+            }
+            return;
+        } catch (CustomerRevokeReceivedException crre) {
+            long pendingPricesPriceRequests = pendingPriceRequests.get(priceService.getPriceServiceName());
+            pendingPricesPriceRequests--;
+            pendingPriceRequests.put(priceService.getPriceServiceName(), pendingPricesPriceRequests);
+            ApplicationMonitor.setQueuePricesSize(priceService.getPriceServiceName(), pendingPricesPriceRequests);
+
+            LOGGER.info("Order={}, We received a customer revoke while starting the price discovery, we will not do it and instead start the revoking routine.", operation.getOrder().getFixOrderId());
+            // if we correctly manage a revoke we can force a return to avoid the creation of the timer
+            if (checkCustomerRevoke(order)) {
+                return;
+            }
+        } catch (BestXException e) {
+            long pendingPricesPriceRequests = pendingPriceRequests.get(priceService.getPriceServiceName());
+            pendingPricesPriceRequests--;
+            pendingPriceRequests.put(priceService.getPriceServiceName(), pendingPricesPriceRequests);
+            ApplicationMonitor.setQueuePricesSize(priceService.getPriceServiceName(), pendingPricesPriceRequests);
+
+            LOGGER.error("Order {}, An error occurred while calling Price Service", operation.getOrder().getFixOrderId(), e);
+            operation.removeLastAttempt();
+            operation.setStateResilient(new WarningState(currentState, e, Messages.getString("PriceService.14")), ErrorState.class);
+        }
+
+        long totalPriceRequestsVal = totalPriceRequests.get(priceServiceName);
+        totalPriceRequestsVal++;
+        totalPriceRequests.put(priceServiceName, totalPriceRequestsVal);
+        NumericValueMonitor totalPriceRequestsMonitor = totalPriceRequestsMonitors.get(priceServiceName);
+        totalPriceRequestsMonitor.setValue(totalPriceRequestsVal);
+        LOGGER.info("[MONITOR] Order={}, Waiting Prices price requests: {}", operation.getOrder().getFixOrderId(), totalPriceRequestsVal);
+
+//        if (waitingPriceDelay == 0) {
+//            LOGGER.error("No delay set for price wait. Risk of stale state");
+//        } else {
+//            setupDefaultTimer(waitingPriceDelay, false);
+//        }
+    }
+    
+    @Override
+    public void startTimer() {
+		if (waitingPriceDelay == 0) {
+			LOGGER.error("No delay set for price wait. Risk of stale state");
+		} else {
+			setupDefaultTimer(waitingPriceDelay, false);
+		}
+    }
+
+    @Override
+    public void onTimerExpired(String jobName, String groupName) {
+    	String handlerJobName = super.getDefaultTimerJobName();
+    	
+        if (jobName.equals(handlerJobName)) {
+        	if (operation.isStopped()) return;
+            LOGGER.info("Order {}, timer {}-{} expired.", operation.getOrder().getFixOrderId(), jobName, groupName);
+            // resetTimer(timerService, timerHandle.getIdentifier());   // TODO PM 20130215 modified, verify if it works
+            operation.removeLastAttempt();
+            operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("WaitingPriceEventHandler.0", operation.getOrder().getFixOrderId()) ), ErrorState.class);
+        } else {
+            super.onTimerExpired(jobName, groupName);
+        }
+    }
+
+    @Override
+    public void onPricesResult(PriceService source, PriceResult priceResult) {
+    	Order order = operation.getOrder();
+        LOGGER.info("Order {},  price result received: {}", order.getFixOrderId(), priceResult.getState());
+        if (customerSpecificHandler!=null) customerSpecificHandler.onPricesResult(source, priceResult);
+        // Stefano - 20080616 - for statistic purpose
+        long time = System.currentTimeMillis() - operation.getState().getEnteredTime().getTime();
+        LOGGER.info("[STATISTICS],Order={},OrderArrival={},PriceDiscoverStart={},PriceDiscoverStop={},TimeDiffMillis={}", operation.getOrder().getFixOrderId(),
+                        DateService.format(DateService.timeFIX, operation.getOrder().getTransactTime()), 
+                        	DateService.format(DateService.timeFIX, operation.getState().getEnteredTime()), 
+                        	DateService.format(DateService.timeFIX, DateService.newLocalDate()), time);
+        priceService.addNewTimePriceDiscovery(time);
+
+        stopDefaultTimer();
+        if (operation.isStopped()) return;
+        long pendingPricesPriceRequests = pendingPriceRequests.get(priceService.getPriceServiceName());
+        pendingPricesPriceRequests--;
+        pendingPriceRequests.put(priceService.getPriceServiceName(), pendingPricesPriceRequests);
+        ApplicationMonitor.setQueuePricesSize(priceService.getPriceServiceName(), pendingPricesPriceRequests);
+
+        LOGGER.debug("Order {}, End of the price discovery, check if we received a customer revoke for this order and, if so, start the revoking routine.", operation.getOrder().getFixOrderId());
+        if (checkCustomerRevoke(operation.getOrder())) {
+            LOGGER.info("Order {}, end of the price discovery, customer revoke received for this order. Start the cancel routine.", operation.getOrder().getFixOrderId());
+            return;
+        }
+        LOGGER.debug("Order {}, No customer revoke received.", operation.getOrder().getFixOrderId());
+
+        Attempt currentAttempt = operation.getLastAttempt();
+        currentAttempt.setSortedBook(priceResult.getSortedBook());
+        /* BXMNT-327 */
+        if (!bookDepthValidator.isBookDepthValid(currentAttempt, operation.getOrder())){
+            try {
+                ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
+                operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("RejectInsufficientBookDepth.0", bookDepthValidator.getMinimumRequiredBookDepth())), ErrorState.class);
+            } catch (BestXException e) {
+                LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
+                String errorMessage = e.getMessage();
+                operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
+            }
+            return;
+        }
+
+        MarketCode mktCode = null;
+        // FIXME AMC 20160824 l'uso del servizio titoliIncrociabiliService dovrebbe essere legato a un flag o all'essere tale servizio non nullo
+        // CS non usa e non ha mai usato il match tra ordini
+        if(titoliIncrociabiliService != null)
+        try {
+            if (titoliIncrociabiliService.isAMatch(operation.getOrder()) && !operation.getOrder().isMatchingOrder()) {
+                // Here management of particular cases, such as Matching orders and internalized orders
+                titoliIncrociabiliService.setMatchingOperation(operation);
+                operation.getOrder().setMatchingOrder(true);
+                mktCode = MarketCode.MATCHING;
+            }
+        } catch (BestXException e) {
+            LOGGER.error(Messages.getString("WaitingPriceEventHandler.1", operation.getOrder().getFixOrderId()));
+            operation.setStateResilient(new WarningState(operation.getState(), e, Messages.getString("WaitingPriceEventHandler.1", operation.getOrder().getFixOrderId())), ErrorState.class);
+        }
+
+        ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), this, priceResult, rejectOrderWhenBloombergIsBest);
+
+        if (priceResult.getState() == PriceResult.PriceResultState.COMPLETE || mktCode == MarketCode.MATCHING) {
+
+            // Fill Attempt and Build MarketOrder
+            currentAttempt.setExecutionProposal(currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide()));
+            MarketOrder marketOrder = new MarketOrder();
+            currentAttempt.setMarketOrder(marketOrder);
+            marketOrder.setValues(operation.getOrder());
+            // ///////////////////////////////////////////////////////////////////
+            // BXCRESUI-45 //////////////////////////////////////////////////////
+            // Order order = operation.getOrder();
+            // marketOrder.setFutSettDate(currentAttempt.getSortedBook().getBestProposalBySide(order.getSide()).getFutSettDate());
+            // ///////////////////////////////////////////////////////////////////
+            marketOrder.setTransactTime(DateService.newUTCDate());
+            if (currentAttempt.getExecutionProposal() != null) {
+                marketOrder.setMarket(currentAttempt.getExecutionProposal().getMarket());
+            }
+            // Limit File orders: never go in CurandoState, keep trying to find a price, at worst go to Limit File No Price
+            if (operation.hasPassedMaxAttempt(maxAttemptNo) && !operation.getOrder().isLimitFile()) {
+                LOGGER.info("Order={}, Max number of attempts reached.", operation.getOrder().getFixOrderId());
+                currentAttempt.setByPassableForVenueAlreadyTried(true);
+                
+                try {
+                	ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
+                    operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("EventNoMoreRetry.0")), ErrorState.class);
+                    return;
+                } catch (BestXException e) {
+                    LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
+                    String errorMessage = e.getMessage();
+                    operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
+                    return;
+                }
+            }
+
+            if (currentAttempt.getExecutionProposal() != null) {
+                marketOrder.setMarketMarketMaker(currentAttempt.getExecutionProposal().getMarketMarketMaker());
+                Money limitPrice = null;
+                Money secondBest = null;
+                Money best = null;
+                try {
+                	best = currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide()).getPrice();
+                	secondBest = currentAttempt.getSortedBook().getSecondBest(operation.getOrder().getSide()).getPrice();
+                } catch(NullPointerException e) {
+                	LOGGER.debug("NullPointerException trying to manage widen best or get second best for order {}", order.getFixOrderId());
+                }
+				try {
+					double spread = BookHelper.getQuoteSpread(currentAttempt.getSortedBook().getValidSideProposals(operation.getOrder().getSide()));
+			        CustomerAttributes custAttr = (CustomerAttributes) order.getCustomer().getCustomerAttributes();
+			        BigDecimal customerMaxWideSpread = custAttr.getWideQuoteSpread();
+			        if(customerMaxWideSpread != null && customerMaxWideSpread.doubleValue() < spread) { // must use the spread, not the second best
+			        	limitPrice = BookHelper.widen(best, customerMaxWideSpread, operation.getOrder().getSide(), order.getLimit() == null ? null : order.getLimit().getAmount());
+			        	LOGGER.info("Order {}: widening market order limit price {}. Max wide spread is {} and spread between best {} and second best {} has been calculated as {}",
+			        			order.getFixOrderId(),
+			        			limitPrice == null?" N/A":limitPrice.getAmount().toString(),
+			        			customerMaxWideSpread == null?" N/A":customerMaxWideSpread.toString(),
+			        			best == null?" N/A":best.getAmount().toString(),
+			        			secondBest == null?" N/A":secondBest.getAmount().toString(),
+			        			spread
+			        			);
+			        } else {// use second best
+			        	limitPrice = secondBest;
+			        }
+					if(limitPrice == null) { // necessary to avoid null limit price. See the book depth minimum for execution 
+					    if (currentAttempt.getExecutionProposal().getWorstPriceUsed() != null) {
+					        limitPrice = currentAttempt.getExecutionProposal().getWorstPriceUsed();
+					        LOGGER.debug("Use worst price of consolidated proposal as market order limit price: {}", limitPrice == null? "null":limitPrice.getAmount().toString());
+					    } else {
+					        limitPrice = currentAttempt.getExecutionProposal() == null ? null : currentAttempt.getExecutionProposal().getPrice();
+					        LOGGER.debug("No second best - Use proposal as market order limit price: {}", limitPrice == null? "null":limitPrice.getAmount().toString());
+					    }                	
+					} else LOGGER.debug("Use less wide between second best proposal and best widened by {} as market order limit price: {}", customerMaxWideSpread, limitPrice == null? "null":limitPrice.getAmount().toString());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+                marketOrder.setLimit(limitPrice);
+                LOGGER.info("Order={}, Selecting for execution market market maker: {} and price {}", operation.getOrder().getFixOrderId(), marketOrder.getMarketMarketMaker(), limitPrice == null? "null":limitPrice.getAmount().toString());
+            }
+
+                        
+            ApplicationStatisticsHelper.logStringAndUpdateOrderIds(operation.getOrder(), "Order.Execution_" + source.getPriceServiceName() + "." + operation.getOrder().getInstrument().getIsin(), this
+                            .getClass().getName());
+
+            // Is this an order to be internalized?
+            //List<ClassifiedProposal> proposals = currentAttempt.getSortedBook().getValidSideProposals(operation.getOrder().getSide()); //NOOO! All proposals must contribbjute to this!
+            List<ClassifiedProposal> proposals = currentAttempt.getSortedBook().getSideProposals(operation.getOrder().getSide());
+/* internalization no more possible since RTFI is decommissioned
+            ClassifiedProposal internalProposal = getInternalProposal(proposals);
+            boolean mustInternalize = (internalProposal != null);
+
+            if (mustInternalize) {
+                // create a new attempt, and add it to the operation, for the internal execution
+                InternalAttempt internalAttempt = new InternalAttempt();
+                internalAttempt.setExecutionProposal(internalProposal);
+                internalAttempt.setMarketOrder(new MarketOrder());
+                internalAttempt.getMarketOrder().setValues(operation.getOrder());
+                internalAttempt.getMarketOrder().setMarket(internalAttempt.getExecutionProposal().getMarket());
+                internalAttempt.getMarketOrder().setMarketMarketMaker(internalAttempt.getExecutionProposal().getMarketMarketMaker());
+                internalAttempt.getMarketOrder().setLimit(internalAttempt.getExecutionProposal().getPrice());
+                internalAttempt.getMarketOrder().setInternal(true);
+                internalAttempt.setActive(true);
+
+                currentAttempt.setInternalAttempt(internalAttempt);
+
+                LOGGER.info("[INT-TRACE] Order {} , SETTING internal attempt to MM {}", operation.getOrder().getFixOrderId(), internalAttempt.getExecutionProposal().getMarketMarketMaker().getMarketMaker().getCode());
+            } 
+*/
+            //update Db only when needed
+            if (order.isNotExecute() == null || order.isNotExecute()) {
+                order.setNotExecute(false);
+                operationStateAuditDao.updateNotExecuteOrder(order, false);
+            }
+            if (order.isLimitFile() && doNotExecute) {
+                LOGGER.info("Order {} could be executed, but BestX is configured to not execute limit file orders.", order.getFixOrderId());
+                marketOrder.setVenue(currentAttempt.getExecutionProposal().getVenue());
+                //update Db only when needed
+                if (order.isNotExecute() == null || !order.isNotExecute()) {
+                    order.setNotExecute(true);
+                    operationStateAuditDao.updateNotExecuteOrder(order, true);
+                }                
+                operation.setStateResilient(new OrderNotExecutableState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
+            } else {
+                //update Db only when needed
+                if (order.isNotExecute() == null || order.isNotExecute()) {
+                    order.setNotExecute(false);
+                    operationStateAuditDao.updateNotExecuteOrder(order, false);
+                }
+                csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
+            }
+        } else if (priceResult.getState() == PriceResult.PriceResultState.INCOMPLETE) {
+            LOGGER.warn("Order {} , Price result is INCOMPLETE, setting to Warning state", operation.getOrder().getFixOrderId());
+            checkOrderAndSetNotExecuteOrder();
+            operation.removeLastAttempt();
+            operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("EventPriceTimeout.0", priceResult.getReason())), ErrorState.class);
+        } else if (priceResult.getState() == PriceResult.PriceResultState.NULL) {
+            Customer customer = order.getCustomer();
+            checkOrderAndSetNotExecuteOrder();
+            try {
+                csExecutionStrategyService.manageAutomaticUnexecution(order, customer);
+            } catch (BestXException e) {
+                LOGGER.error("Order {}, error while managing NULL price result state {}", order.getFixOrderId(), e.getMessage(), e);
+                operation.removeLastAttempt();
+                operation.setStateResilient(new WarningState(operation.getState(), e, Messages.getString("PriceService.16")), ErrorState.class);
+            }
+        } else if (priceResult.getState() == PriceResult.PriceResultState.ERROR) {
+             Customer customer = order.getCustomer();
+            checkOrderAndSetNotExecuteOrder();
+            try {
+                csExecutionStrategyService.manageAutomaticUnexecution(order, customer);
+            } catch (BestXException e) {
+                LOGGER.error("Order {}, error while managing ERROR price result state {}", order.getFixOrderId(), e.getMessage(), e);
+                operation.removeLastAttempt();
+                operation.setStateResilient(new WarningState(operation.getState(), e, Messages.getString("PriceService.16")), ErrorState.class);
+            }
+        }
+    }
+
+    private void checkOrderAndSetNotExecuteOrder() {
+        Order order = operation.getOrder();
+        if (doNotExecute) {
+            //update Db only when needed
+            if (order.isNotExecute() == null || order.isNotExecute()) {
+            	order.setNotExecute(false);
+                operationStateAuditDao.updateNotExecuteOrder(order, false);
+            }
+        }
+    }
+    protected ClassifiedProposal getInternalProposal(List<ClassifiedProposal> proposals)
+    {
+        //
+        // must internalize if:
+        //
+        // best is RTFI and
+        //  - best is not from internal RTFI MM
+        //  - internal RTFI MM(s) is quoting
+        //
+        // best is BLOOM and
+        //  - internal RTFI MM(s) is quoting
+        // 
+
+        LOGGER.debug("[INT-TRACE] Order {} : Internal brokers list is: {}", operation.getOrder().getFixOrderId(), internalMMcodes );
+
+        ClassifiedProposal internalProposal = null;
+
+        boolean foundInternalMM = false;
+        if (operation.getLastAttempt() == null) {
+            return null;
+        }
+        if (operation.getLastAttempt().getExecutionProposal() == null) {
+            return null;
+        }
+        
+        MarketMaker bestProposalMM = operation.getLastAttempt().getExecutionProposal().getMarketMarketMaker().getMarketMaker();
+        Market bestProposalMkt = operation.getLastAttempt().getExecutionProposal().getMarket();
+
+        // no best proposal (should not happen), so obviously nothing to internalize
+        if (bestProposalMkt == null) {
+            return null;
+        }
+        // this algorythm currently only supports Bloomberg
+        if ( bestProposalMkt.getMarketCode() != MarketCode.BLOOMBERG) {
+            return null;
+        }
+        // best proposal is from an internal MM: execute with him directly
+        if (internalMMcodes.contains(bestProposalMM.getCode())) {
+            return null;
+        }
+
+        // bestInternalMMCode will be used for internalization, if needed
+        MarketMaker proposalMM = null;
+        MarketCode proposalMktCode = null;
+        for (ClassifiedProposal proposal : proposals) {
+            proposalMM = null;
+            proposalMktCode = null;
+            if (proposal != null && proposal.getMarket() != null) {
+                proposalMktCode = proposal.getMarket().getMarketCode();
+            }
+            
+            
+            // looking only for internal MMs proposals on RTFI
+            if (proposalMktCode != MarketCode.RTFI) {
+                continue;
+            }
+
+            if (proposal != null && proposal.getMarketMarketMaker() != null && proposal.getMarketMarketMaker().getMarketMaker() != null) {
+                proposalMM = proposal.getMarketMarketMaker().getMarketMaker();
+            }
+            
+            if ( (proposalMM != null) && (internalMMcodes.contains(proposalMM.getCode())) ) {
+                
+                //[RR20130930] BXMNT-354: if the internal broker proposal has a quantity of zero we must not start the internalization, thus we immediately skip a proposal if
+                //it has a quantity of zero
+                if (proposal.getQty() == null || proposal.getQty().equals(BigDecimal.ZERO)) {
+                    LOGGER.warn("Order {}, proposal {} cannot be considered for internalization because the quantity is zero", operation.getOrder().getFixOrderId(), proposal);
+                    continue;
+                } else {
+                    foundInternalMM = true;
+                    internalProposal = proposal;
+                    break;
+                }
+            }
+        }
+
+        // must internalize if internal broker is quoting, and it is not best (on RTFI)
+        if ( (foundInternalMM) && !( (bestProposalMkt.getMarketCode() == MarketCode.RTFI) && (internalMMcodes.contains(bestProposalMM.getCode())) ) ) {
+            LOGGER.info("[INT-TRACE] Order {} : Internal broker {} is quoting on RTFI and is not best --> enable internalization", operation.getOrder().getFixOrderId(), internalProposal.getMarketMarketMaker().getMarketSpecificCode() );
+            return internalProposal;
+        }
+        else {
+            if (!foundInternalMM) {
+                LOGGER.info("[INT-TRACE] Order {} : No internal broker is quoting --> do not enable internalization", operation.getOrder().getFixOrderId() );
+            }
+            else {
+                LOGGER.info("[INT-TRACE] Order {} : Internal broker {} is quoting but is best --> do not enable internalization", operation.getOrder().getFixOrderId(), internalProposal.getMarketMarketMaker().getMarketSpecificCode() );
+            }
+            return null;
+        }
+
+    }
+
+    @Override
+    public void onUnexecutionResult(Result result, String message) {
+        switch (result) {
+        case CustomerAutoNotExecution:
+        case MaxDeviationLimitViolated:
+            try {
+            	ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
+
+                // [RR20120910] The MaxDeviationLimitViolated case in the old implementation
+                // required the following lines :
+                //
+                // Attempt currentAttempt = operation.getLastAttempt();
+                // currentAttempt.setSortedBook(priceResult.getSortedBook());
+                //
+                // this operation has already been performed in the onPricesResult method
+                // in a piece of code shared by all the callers, we can avoid to reput it
+                // here. Check the behaviour while testing.
+
+                operation.setStateResilient(new SendAutoNotExecutionReportState(message), ErrorState.class);
+            } catch (BestXException e) {
+                LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
+                String errorMessage = e.getMessage();
+                operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
+            }
+            break;
+        case Failure:
+            LOGGER.error("Order {} : ", operation.getOrder().getFixOrderId(), message);
+            operation.setStateResilient(new WarningState(operation.getState(), null, message), ErrorState.class);
+            break;
+        case LimitFileNoPrice:
+            operation.setStateResilient(new LimitFileNoPriceState(message), ErrorState.class);
+            break;
+        case LimitFile:
+            //Update the BestANdLimitDelta field on the TabHistoryOrdini table
+            Order order = operation.getOrder();
+            operationStateAuditDao.updateOrderBestAndLimitDelta(order, order.getBestPriceDeviationFromLimit());
+            operation.setStateResilient(new OrderNotExecutableState(message), ErrorState.class);
+            break;
+        default:
+            LOGGER.error("Order {}, unexpected behaviour while checking for automatic not execution or magnet.", operation.getOrder().getFixOrderId());
+            operation.setStateResilient(new WarningState(operation.getState(), null, message), ErrorState.class);
+            break;
+        }
+    }
+
+    // result on manageAutomaticUnexecution
+    @Override
+    public void onUnexecutionDefault(String executionMarket) {
+        if (customerSpecificHandler!=null) customerSpecificHandler.onUnexecutionDefault(executionMarket);
+        if (operation.hasReachedMaxAttempt(maxAttemptNo)) {
+            operation.setStateResilient(new CurandoState(Messages.getString("EventNoMoreRetry.0")), ErrorState.class);
+        } else {
+            operation.setStateResilient(new CurandoState(), ErrorState.class);
+        }
+    }
+
+}

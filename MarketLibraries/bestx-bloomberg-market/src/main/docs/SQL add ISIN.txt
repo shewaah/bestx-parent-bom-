@@ -1,0 +1,79 @@
+-- "XS0055498413", "FR0010428011", "DE0001134922", "DE0001134468", "AT000B048988", "IT0004759673"
+
+INSERT INTO InstrumentsTable SELECT 'XS0055498413', [Coupon], [MaturityDate], [CurrencyCode], [SPrating], [MoodysRating], 
+[MinimumPiece], [MinimumIncrement], [SeriesPerOTCgo], [SettlementDate], [LastOrderDate], 
+[UpdateDate], [IssueDate], [SecurityType], [BloomTicker], [RTFITicker], [CountryCode], 
+[BondType], [AssetType], [IndustrySubSector], [IssuerIndustry], [Description], [OfferingType], 
+[Issuer_Name], [Rateo], [BBSettlementDate], [Category], [SubCategory], [InInventory], [BBGDescription] 
+FROM [dbo].[InstrumentsTable]
+where isin = 'XS0176823424';
+
+INSERT INTO InstrumentAttributes
+select  'XS0055498413', [internal], [WithProspectFlag], [WithoutProspectFlag], [OutLawFlag], [RetailCustomerDisabledFlag], [PortfolioId] 
+    FROM [dbo].[InstrumentAttributes]
+where isin = 'XS0176823424';
+
+INSERT INTO InstrumentsTable SELECT 'FR0010428011', [Coupon], [MaturityDate], [CurrencyCode], [SPrating], [MoodysRating], 
+[MinimumPiece], [MinimumIncrement], [SeriesPerOTCgo], [SettlementDate], [LastOrderDate], 
+[UpdateDate], [IssueDate], [SecurityType], [BloomTicker], [RTFITicker], [CountryCode], 
+[BondType], [AssetType], [IndustrySubSector], [IssuerIndustry], [Description], [OfferingType], 
+[Issuer_Name], [Rateo], [BBSettlementDate], [Category], [SubCategory], [InInventory], [BBGDescription] 
+FROM [dbo].[InstrumentsTable]
+where isin = 'XS0176823424';
+
+INSERT INTO InstrumentAttributes
+select  'FR0010428011', [internal], [WithProspectFlag], [WithoutProspectFlag], [OutLawFlag], [RetailCustomerDisabledFlag], [PortfolioId] 
+    FROM [dbo].[InstrumentAttributes]
+where isin = 'XS0176823424';
+
+INSERT INTO InstrumentsTable SELECT 'DE0001134922', [Coupon], [MaturityDate], [CurrencyCode], [SPrating], [MoodysRating], 
+[MinimumPiece], [MinimumIncrement], [SeriesPerOTCgo], [SettlementDate], [LastOrderDate], 
+[UpdateDate], [IssueDate], [SecurityType], [BloomTicker], [RTFITicker], [CountryCode], 
+[BondType], [AssetType], [IndustrySubSector], [IssuerIndustry], [Description], [OfferingType], 
+[Issuer_Name], [Rateo], [BBSettlementDate], [Category], [SubCategory], [InInventory], [BBGDescription] 
+FROM [dbo].[InstrumentsTable]
+where isin = 'XS0176823424';
+
+INSERT INTO InstrumentAttributes
+select  'DE0001134922', [internal], [WithProspectFlag], [WithoutProspectFlag], [OutLawFlag], [RetailCustomerDisabledFlag], [PortfolioId] 
+    FROM [dbo].[InstrumentAttributes]
+where isin = 'XS0176823424';
+
+INSERT INTO InstrumentsTable SELECT 'DE0001134468', [Coupon], [MaturityDate], [CurrencyCode], [SPrating], [MoodysRating], 
+[MinimumPiece], [MinimumIncrement], [SeriesPerOTCgo], [SettlementDate], [LastOrderDate], 
+[UpdateDate], [IssueDate], [SecurityType], [BloomTicker], [RTFITicker], [CountryCode], 
+[BondType], [AssetType], [IndustrySubSector], [IssuerIndustry], [Description], [OfferingType], 
+[Issuer_Name], [Rateo], [BBSettlementDate], [Category], [SubCategory], [InInventory], [BBGDescription] 
+FROM [dbo].[InstrumentsTable]
+where isin = 'XS0176823424';
+
+INSERT INTO InstrumentAttributes
+select  'DE0001134468', [internal], [WithProspectFlag], [WithoutProspectFlag], [OutLawFlag], [RetailCustomerDisabledFlag], [PortfolioId] 
+    FROM [dbo].[InstrumentAttributes]
+where isin = 'XS0176823424';
+
+INSERT INTO InstrumentsTable SELECT 'AT000B048988', [Coupon], [MaturityDate], [CurrencyCode], [SPrating], [MoodysRating], 
+[MinimumPiece], [MinimumIncrement], [SeriesPerOTCgo], [SettlementDate], [LastOrderDate], 
+[UpdateDate], [IssueDate], [SecurityType], [BloomTicker], [RTFITicker], [CountryCode], 
+[BondType], [AssetType], [IndustrySubSector], [IssuerIndustry], [Description], [OfferingType], 
+[Issuer_Name], [Rateo], [BBSettlementDate], [Category], [SubCategory], [InInventory], [BBGDescription] 
+FROM [dbo].[InstrumentsTable]
+where isin = 'XS0176823424';
+
+INSERT INTO InstrumentAttributes
+select  'AT000B048988', [internal], [WithProspectFlag], [WithoutProspectFlag], [OutLawFlag], [RetailCustomerDisabledFlag], [PortfolioId] 
+    FROM [dbo].[InstrumentAttributes]
+where isin = 'XS0176823424';
+
+INSERT INTO InstrumentsTable SELECT 'IT0004759673', [Coupon], [MaturityDate], [CurrencyCode], [SPrating], [MoodysRating], 
+[MinimumPiece], [MinimumIncrement], [SeriesPerOTCgo], [SettlementDate], [LastOrderDate], 
+[UpdateDate], [IssueDate], [SecurityType], [BloomTicker], [RTFITicker], [CountryCode], 
+[BondType], [AssetType], [IndustrySubSector], [IssuerIndustry], [Description], [OfferingType], 
+[Issuer_Name], [Rateo], [BBSettlementDate], [Category], [SubCategory], [InInventory], [BBGDescription] 
+FROM [dbo].[InstrumentsTable]
+where isin = 'XS0176823424';
+
+INSERT INTO InstrumentAttributes
+select  'IT0004759673', [internal], [WithProspectFlag], [WithoutProspectFlag], [OutLawFlag], [RetailCustomerDisabledFlag], [PortfolioId] 
+    FROM [dbo].[InstrumentAttributes]
+where isin = 'XS0176823424';

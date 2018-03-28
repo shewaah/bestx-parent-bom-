@@ -1,0 +1,701 @@
+
+--------------------------------------------------------------------------------------------
+Case 1.
+- Mando un newOrderSingle con account non valido (1994aa)
+- Alla ricezione dell'executionReport (Rejected) invio un OrderCancelRequest omettendo OrderID
+- Ricevo 2 OrderCancelReject
+	.la prima OrderCancelReject non è corretta in quanto manca il campo obbligatorio cxlRejResponseTo
+	.la seconda OrderCancelReject è superflua e inoltre non corretta (vedi valori di orderID e origClOrdID)
+
+2012-06-12 16:23:06,519 DEBUG                       FIXClientImpl -> manageNewOrderSingle               :96  - BXNewOrderSingle [clOrdID=1339510986515, account=1994aa, currency=EUR, price=100.5, securityID=XS0170558877, orderQty=30000.0, settlmntTyp=Future, futSettDate=Tue Jun 12 16:23:06 CEST 2012, side=Sell, symbol=[N/A], idSource=IsinNumber, handlInst=AutomatedExecutionOrderPrivate, ordType=Limit, timeInForce=Day, priceType=null, transactTime=Tue Jun 12 16:23:06 CEST 2012, bestExecutionVenue=null]
+2012-06-12 16:23:06,707 DEBUG                     MyFIXClientImpl -> onExecutionReport                  :59  - BXExecutionReport [avgPx=100.5, clOrdID=1339510986515, cumQty=30000.0, execID=0, execTransType=New, lastPx=null, lastShares=null, orderID=1339510986515, orderQty=null, ordStatus=Rejected, side=Sell, symbol=[N/A], text=Order not accepted - Formal validations not passed:Counterpart not present in Database, execType=Rejected, leavesQty=0.0]
+2012-06-12 16:23:06,708 DEBUG                       FIXClientImpl -> manageOrderCancelRequest           :112 - BXOrderCancelRequest [clOrdID=112408323369852, orderID=null, origClOrdID=1339510986515, securityID=IT0001976403, symbol=[N/A], orderQty=50000.0, side=Sell, transactTime=Tue Jun 12 16:23:06 CEST 2012]
+2012-06-12 16:23:06,754 DEBUG                     MyFIXClientImpl -> onOrderCancelReject                :80  - BXOrderCancelReject [clOrdID=112408323369852, orderID=1339510986515, origClOrdID=1339510986515, ordStatus=Rejected, cxlRejResponseTo=null, text=Cancellation rejected: status cannot be cancelled]
+2012-06-12 16:23:06,953 DEBUG                     MyFIXClientImpl -> onOrderCancelReject                :80  - BXOrderCancelReject [clOrdID=112408323369852, orderID=1339510986515, origClOrdID=112408323369852, ordStatus=Canceled, cxlRejResponseTo=OrderCancelRequest, text=Cancellation rejected: status cannot be cancelled]
+
+--------------------------------------------------------------------------------------------
+Case 2.
+- Mando un newOrderSingle con account valido (1994)
+- Alla ricezione dell'executionReport (New) invio un OrderCancelRequest omettendo OrderID, e con l'origClOrdID non valido (AAA#1339513524555)
+- Ricevo un executionReport con il campo 76 (ExecBroker) vuoto, e di conseguenza una Reject > Tag specified without a value:76
+
+2012-06-12 17:05:24,559 DEBUG                       FIXClientImpl -> manageNewOrderSingle               :96  - BXNewOrderSingle [clOrdID=1339513524555, account=1994, currency=EUR, price=100.5, securityID=XS0170558877, orderQty=30000.0, settlmntTyp=Future, futSettDate=Tue Jun 12 17:05:24 CEST 2012, side=Sell, symbol=[N/A], idSource=IsinNumber, handlInst=AutomatedExecutionOrderPrivate, ordType=Limit, timeInForce=Day, priceType=null, transactTime=Tue Jun 12 17:05:24 CEST 2012, bestExecutionVenue=null]
+2012-06-12 17:05:24,744 DEBUG                     MyFIXClientImpl -> onExecutionReport                  :59  - BXExecutionReport [avgPx=100.5, clOrdID=1339513524555, cumQty=30000.0, execID=0, execTransType=New, lastPx=null, lastShares=null, orderID=1339513524555, orderQty=null, ordStatus=New, side=Sell, symbol=[N/A], text=Order Accepted, execType=New, leavesQty=0.0]
+2012-06-12 17:05:34,746 INFO                      MyFIXClientImpl -> sendOrderCancelRequest             :123 - 114946293696472, AAA#1339513524555
+2012-06-12 17:05:34,748 DEBUG                       FIXClientImpl -> manageOrderCancelRequest           :112 - BXOrderCancelRequest [clOrdID=114946293696472, orderID=null, origClOrdID=AAA#1339513524555, securityID=IT0001976403, symbol=[N/A], orderQty=50000.0, side=Sell, transactTime=Tue Jun 12 17:05:34 CEST 2012]
+
+2012-06-12 17:05:36,040 INFO                             incoming -> messageReceived                    :106 - FIX.4.2:OMS1->SOFT1: 8=FIX.4.29=40635=834=349=SOFT152=20120612-15:05:24.99156=OMS16=011=133951352455512=013=314=017=1339513524555_CANCEL20=022=431=032=3000037=133951352455538=3000039=440=244=048=XS017055887754=255=XS017055887758=Cancelled - The order limit price deviation from the best price is greater than that configured for the customer OTEX: 0.1%59=060=20120612-15:05:2463=064=2012061276=150=4151=0423=010=064
+2012-06-12 17:05:36,043 ERROR                          errorEvent -> logError                           :147 - FIX.4.2:OMS1->SOFT1: Rejecting invalid message: quickfix.FieldException: Tag specified without a value, field=76: 8=FIX.4.29=40635=834=349=SOFT152=20120612-15:05:24.99156=OMS16=011=133951352455512=013=314=017=1339513524555_CANCEL20=022=431=032=3000037=133951352455538=3000039=440=244=048=XS017055887754=255=XS017055887758=Cancelled - The order limit price deviation from the best price is greater than that configured for the customer OTEX: 0.1%59=060=20120612-15:05:2463=064=2012061276=150=4151=0423=010=064
+2012-06-12 17:05:36,044 ERROR                          errorEvent -> logError                           :147 - FIX.4.2:OMS1->SOFT1: Reject sent for Message 3: Tag specified without a value:76
+
+2012-06-12 17:05:36,044 DEBUG                        FIXInitiator -> fromAdmin                          :124 - [Reject][FIX.4.2:OMS1->SOFT1]
+2012-06-12 17:05:36,045 WARN                         FIXInitiator -> fromAdmin                          :129 - RefMsgType [8]: ExecutionReport, RefTagID: 76, Text: Tag specified without a value
+2012-06-12 17:05:36,045 INFO                        FIXClientImpl -> onReject                           :162 - 8=FIX.4.29=10935=334=449=OMS152=20120612-15:05:36.04456=SOFT145=358=Tag specified without a value371=76372=8373=410=087
+
+--------------------------------------------------------------------------------------------
+Case 3. (SOLVED)
+- Mando un newOrderSingle con un campo obbligatorio non valorizzato (ad esempio account)
+- Devo ricevere una Reject > Required tag missing (1)
+
+2012-06-12 17:12:26,735 DEBUG                       FIXClientImpl -> manageNewOrderSingle               :96  - BXNewOrderSingle [clOrdID=1339513946731, account=null, currency=EUR, price=100.5, securityID=XS0170558877, orderQty=30000.0, settlmntTyp=Future, futSettDate=Tue Jun 12 17:12:26 CEST 2012, side=Sell, symbol=[N/A], idSource=IsinNumber, handlInst=AutomatedExecutionOrderPrivate, ordType=Limit, timeInForce=Day, priceType=null, transactTime=Tue Jun 12 17:12:26 CEST 2012, bestExecutionVenue=null]
+2012-06-12 17:12:26,875 DEBUG                        FIXInitiator -> fromAdmin                          :124 - [Reject][FIX.4.2:OMS1->SOFT1]
+2012-06-12 17:12:26,876 WARN                         FIXInitiator -> fromAdmin                          :129 - RefMsgType [D]: OrderSingle, RefTagID: 1, Text: Required tag missing
+2012-06-12 17:12:26,877 INFO                        FIXClientImpl -> onReject                           :162 - 8=FIX.4.29=9935=334=249=SOFT152=20120612-15:12:15.83456=OMS145=258=Required tag missing371=1372=D373=110=216
+
+--------------------------------------------------------------------------------------------
+Case 4. (SOLVED)
+- Mando un orderCancelRequest con un campo obbligatorio non valorizzato (ad esempio securityID)
+- Devo ricevere una Reject > Required tag missing (48)
+
+2012-06-12 17:13:59,008 DEBUG                       FIXClientImpl -> manageNewOrderSingle               :96  - BXNewOrderSingle [clOrdID=1339514039005, account=1994, currency=EUR, price=100.5, securityID=XS0170558877, orderQty=30000.0, settlmntTyp=Future, futSettDate=Tue Jun 12 17:13:59 CEST 2012, side=Sell, symbol=[N/A], idSource=IsinNumber, handlInst=AutomatedExecutionOrderPrivate, ordType=Limit, timeInForce=Day, priceType=null, transactTime=Tue Jun 12 17:13:59 CEST 2012, bestExecutionVenue=null]
+2012-06-12 17:13:59,215 DEBUG                     MyFIXClientImpl -> onExecutionReport                  :59  - BXExecutionReport [avgPx=100.5, clOrdID=1339514039005, cumQty=30000.0, execID=0, execTransType=New, lastPx=null, lastShares=null, orderID=1339514039005, orderQty=null, ordStatus=New, side=Sell, symbol=[N/A], text=Order Accepted, execType=New, leavesQty=0.0]
+2012-06-12 17:14:09,215 INFO                      MyFIXClientImpl -> sendOrderCancelRequest             :123 - 115460750182424, 1339514039005
+2012-06-12 17:14:09,217 DEBUG                       FIXClientImpl -> manageOrderCancelRequest           :112 - BXOrderCancelRequest [clOrdID=115460750182424, orderID=null, origClOrdID=1339514039005, securityID=null, symbol=[N/A], orderQty=50000.0, side=Sell, transactTime=Tue Jun 12 17:14:09 CEST 2012]
+2012-06-12 17:14:09,224 DEBUG                        FIXInitiator -> fromAdmin                          :124 - [Reject][FIX.4.2:OMS1->SOFT1]
+2012-06-12 17:14:09,224 WARN                         FIXInitiator -> fromAdmin                          :129 - RefMsgType [F]: OrderCancelRequest, RefTagID: 48, Text: Required tag missing
+2012-06-12 17:14:09,224 INFO                        FIXClientImpl -> onReject                           :162 - 8=FIX.4.29=10035=334=349=SOFT152=20120612-15:13:58.19456=OMS145=358=Required tag missing371=48372=F373=110=061
+
+--------------------------------------------------------------------------------------------
+Case 5.
+- Mando un newOrderSingle 
+- Alla ricezione dell'executionReport (New) invio un OrderCancelRequest con ISIN non corretto (IT0001976403)
+- L'ordine viene correttamente cancellato > ERRORE, dovrebbe rifiutare la OrderCancelRequest in quanto l'ISIN non corrisponde a quello dell'ordine
+
+2012-06-12 17:27:58,139 DEBUG                       FIXClientImpl -> manageNewOrderSingle               :96  - BXNewOrderSingle [clOrdID=1339514878134, account=1994, currency=EUR, price=100.5, securityID=XS0170558877, orderQty=30000.0, settlmntTyp=Future, futSettDate=Tue Jun 12 17:27:58 CEST 2012, side=Sell, symbol=[N/A], idSource=IsinNumber, handlInst=AutomatedExecutionOrderPrivate, ordType=Limit, timeInForce=Day, priceType=null, transactTime=Tue Jun 12 17:27:58 CEST 2012, bestExecutionVenue=null]
+2012-06-12 17:27:58,290 DEBUG                     MyFIXClientImpl -> onExecutionReport                  :59  - BXExecutionReport [avgPx=100.5, clOrdID=1339514878134, cumQty=30000.0, execID=0, execTransType=New, lastPx=null, lastShares=null, orderID=1339514878134, orderQty=null, ordStatus=New, side=Sell, symbol=[N/A], text=Order Accepted, execType=New, leavesQty=0.0]
+2012-06-12 17:28:03,290 INFO                      MyFIXClientImpl -> sendOrderCancelRequest             :123 - 116299802608338, 1339514878134
+2012-06-12 17:28:03,291 DEBUG                       FIXClientImpl -> manageOrderCancelRequest           :112 - BXOrderCancelRequest [clOrdID=116299802608338, orderID=null, origClOrdID=1339514878134, securityID=IT0001976403, symbol=[N/A], orderQty=50000.0, side=Sell, transactTime=Tue Jun 12 17:28:03 CEST 2012]
+2012-06-12 17:28:10,775 DEBUG                     MyFIXClientImpl -> onExecutionReport                  :59  - BXExecutionReport [avgPx=0.0, clOrdID=116299802608338, cumQty=0.0, execID=1339514878134_CANCEL, execTransType=New, lastPx=100.5, lastShares=0.0, orderID=1339514878134, orderQty=30000.0, ordStatus=Canceled, side=Sell, symbol=XS0170558877, text=Cancelled upon Customer request, execType=Canceled, leavesQty=0.0]
+
+--------------------------------------------------------------------------------------------
+Case 6.
+- Mando un newOrderSingle 
+- Alla ricezione dell'executionReport (New) invio un OrderCancelRequest con OrderQty e Side non corretti
+- L'ordine viene correttamente cancellato > ERRORE, dovrebbe rifiutare la OrderCancelRequest in quanto OrderQty e Side non corrispondono a quelli dell'ordine
+
+2012-06-12 17:45:26,842 DEBUG                       FIXClientImpl -> manageNewOrderSingle               :96  - BXNewOrderSingle [clOrdID=1339515926838, account=1994, currency=EUR, price=100.5, securityID=XS0170558877, orderQty=30000.0, settlmntTyp=Future, futSettDate=Tue Jun 12 17:45:26 CEST 2012, side=Sell, symbol=[N/A], idSource=IsinNumber, handlInst=AutomatedExecutionOrderPrivate, ordType=Limit, timeInForce=Day, priceType=null, transactTime=Tue Jun 12 17:45:26 CEST 2012, bestExecutionVenue=null]
+2012-06-12 17:45:27,041 DEBUG                     MyFIXClientImpl -> onExecutionReport                  :59  - BXExecutionReport [avgPx=100.5, clOrdID=1339515926838, cumQty=30000.0, execID=0, execTransType=New, lastPx=null, lastShares=null, orderID=1339515926838, orderQty=null, ordStatus=New, side=Sell, symbol=[N/A], text=Order Accepted, execType=New, leavesQty=0.0]
+2012-06-12 17:45:32,041 INFO                      MyFIXClientImpl -> sendOrderCancelRequest             :123 - 117348526237844, 1339515926838
+2012-06-12 17:45:32,042 DEBUG                       FIXClientImpl -> manageOrderCancelRequest           :112 - BXOrderCancelRequest [clOrdID=117348526237844, orderID=null, origClOrdID=1339515926838, securityID=IT0001976403, symbol=[N/A], orderQty=250000.0, side=Buy, transactTime=Tue Jun 12 17:45:32 CEST 2012]
+2012-06-12 17:45:34,401 DEBUG                     MyFIXClientImpl -> onExecutionReport                  :59  - BXExecutionReport [avgPx=0.0, clOrdID=117348526237844, cumQty=0.0, execID=1339515926838_CANCEL, execTransType=New, lastPx=100.5, lastShares=0.0, orderID=1339515926838, orderQty=30000.0, ordStatus=Canceled, side=Sell, symbol=XS0170558877, text=Cancelled upon Customer request, execType=Canceled, leavesQty=0.0]
+
+--------------------------------------------------------------------------------------------
+Case 7.
+- Mando un newOrderSingle con ISIN di 13 cifre (XS01705588771)
+- Si rompe qualcosa in BestX e OTEX non riceve alcun messaggio d'errore (ad esempio un ExecutionReport Reject)
+
+2012-06-12 17:33:14,684 DEBUG                       FIXClientImpl -> manageNewOrderSingle               :96  - BXNewOrderSingle [clOrdID=1339515194680, account=1994, currency=EUR, price=100.5, securityID=XS01705588771, orderQty=30000.0, settlmntTyp=Future, futSettDate=Tue Jun 12 17:33:14 CEST 2012, side=Sell, symbol=[N/A], idSource=IsinNumber, handlInst=AutomatedExecutionOrderPrivate, ordType=Limit, timeInForce=Day, priceType=null, transactTime=Tue Jun 12 17:33:14 CEST 2012, bestExecutionVenue=null]
+
+-- BestX.log --
+2012-06-12 17:33:03,283 DEBUG         OperationPersistenceManager -> onOperationStateChanged            :52  - [PERSISTENCE]-START onOperationStateChanged
+2012-06-12 17:33:03,283 DEBUG         OperationPersistenceManager -> onOperationStateChanged            :55  - [PERSISTENCE]-STOP CNNACQUIRE :0
+2012-06-12 17:33:03,290 ERROR         OperationPersistenceManager -> onOperationStateChanged            :75  - An error occurred while saving operation state to database. : org.hibernate.exception.DataException: could not insert: [it.softsolutions.bestx.model.Instrument]
+org.hibernate.exception.DataException: could not insert: [it.softsolutions.bestx.model.Instrument]
+        at org.hibernate.exception.SQLStateConverter.convert(SQLStateConverter.java:77) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.exception.JDBCExceptionHelper.convert(JDBCExceptionHelper.java:43) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.persister.entity.AbstractEntityPersister.insert(AbstractEntityPersister.java:2272) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.persister.entity.AbstractEntityPersister.insert(AbstractEntityPersister.java:2665) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.action.EntityInsertAction.execute(EntityInsertAction.java:60) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.ActionQueue.execute(ActionQueue.java:279) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.ActionQueue.executeActions(ActionQueue.java:263) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.ActionQueue.executeInserts(ActionQueue.java:158) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.AbstractSaveEventListener.performSaveOrReplicate(AbstractSaveEventListener.java:245) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.AbstractSaveEventListener.performSave(AbstractSaveEventListener.java:181) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.AbstractSaveEventListener.saveWithGeneratedId(AbstractSaveEventListener.java:107) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.saveWithGeneratedOrRequestedId(DefaultSaveOrUpdateEventListener.java:187) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.entityIsTransient(DefaultSaveOrUpdateEventListener.java:172) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.performSaveOrUpdate(DefaultSaveOrUpdateEventListener.java:94) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.onSaveOrUpdate(DefaultSaveOrUpdateEventListener.java:70) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.impl.SessionImpl.fireSaveOrUpdate(SessionImpl.java:507) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.impl.SessionImpl.saveOrUpdate(SessionImpl.java:499) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.CascadingAction$5.cascade(CascadingAction.java:218) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascadeToOne(Cascade.java:268) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascadeAssociation(Cascade.java:216) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascadeProperty(Cascade.java:169) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascadeCollectionElements(Cascade.java:296) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascadeCollection(Cascade.java:242) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascadeAssociation(Cascade.java:219) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascadeProperty(Cascade.java:169) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascade(Cascade.java:130) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascade(Cascade.java:97) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.cascadeOnUpdate(DefaultSaveOrUpdateEventListener.java:357) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.performUpdate(DefaultSaveOrUpdateEventListener.java:329) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.entityIsDetached(DefaultSaveOrUpdateEventListener.java:223) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.performSaveOrUpdate(DefaultSaveOrUpdateEventListener.java:89) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.onSaveOrUpdate(DefaultSaveOrUpdateEventListener.java:70) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.impl.SessionImpl.fireSaveOrUpdate(SessionImpl.java:507) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.impl.SessionImpl.saveOrUpdate(SessionImpl.java:499) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.impl.SessionImpl.saveOrUpdate(SessionImpl.java:495) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at it.softsolutions.bestx.OperationPersistenceManager.onOperationStateChanged(OperationPersistenceManager.java:70) ~[bestxengine-common-3.0.5-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.updateStateListeners(Operation.java:341) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setState(Operation.java:262) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setStateResilient(Operation.java:280) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.handlers.InitialEventHandler.onCustomerOrder(InitialEventHandler.java:61) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.onCustomerOrder(Operation.java:563) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.connections.AkrosCustomerAdapter$1.run(AkrosCustomerAdapter.java:200) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886) [na:1.6.0_21-ea]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908) [na:1.6.0_21-ea]
+        at java.lang.Thread.run(Thread.java:619) [na:1.6.0_21-ea]
+Caused by: java.sql.DataTruncation: Data truncation
+        at net.sourceforge.jtds.jdbc.SQLDiagnostic.addDiagnostic(SQLDiagnostic.java:382) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.TdsCore.tdsErrorToken(TdsCore.java:2820) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.TdsCore.nextToken(TdsCore.java:2258) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.TdsCore.getMoreResults(TdsCore.java:632) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsStatement.processResults(JtdsStatement.java:584) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsStatement.executeSQL(JtdsStatement.java:546) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsPreparedStatement.executeUpdate(JtdsPreparedStatement.java:506) ~[jtds-1.2.4.jar:1.2.4]
+        at org.apache.commons.dbcp.DelegatingPreparedStatement.executeUpdate(DelegatingPreparedStatement.java:105) ~[commons-dbcp-1.4.jar:1.4]
+        at org.apache.commons.dbcp.DelegatingPreparedStatement.executeUpdate(DelegatingPreparedStatement.java:105) ~[commons-dbcp-1.4.jar:1.4]
+        at org.hibernate.jdbc.NonBatchingBatcher.addToBatch(NonBatchingBatcher.java:23) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.persister.entity.AbstractEntityPersister.insert(AbstractEntityPersister.java:2252) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        ... 42 common frames omitted
+2012-06-12 17:33:03,292 INFO          OperationPersistenceManager -> onOperationStateChanged            :85  - [PERSISTENCE],StoreTime=9,STOP onOperationStateChanged
+2012-06-12 17:33:03,292 DEBUG               CSOperationStateAudit -> onOperationStateChanged            :234 - Audit - Order Received: 1339515194680
+2012-06-12 17:33:03,294 DEBUG         SqlCSOperationStateAuditDao -> saveNewOrder                       :636 - Start saveNewOrder - SQL[INSERT INTO TabHistoryOrdini ( NumOrdine, ISIN, DescrizioneStrumento, Cliente, TipoOrdine, Lato, Prezzo, Quantita, Valuta, DataValuta, DataOraRicezione, Note, Viewed, Stato, Azioni, PropCode, OperatorCode, CustomerOrderId, MeetingOrder, PropName, SessionId, ExecutionDestination) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]
+2012-06-12 17:33:03,295 ERROR                           Operation -> updateStateListeners               :363 - An error occurred while notifying operation change state to listeners : org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO TabHistoryOrdini ( NumOrdine, ISIN, DescrizioneStrumento, Cliente, TipoOrdine, Lato, Prezzo, Quantita, Valuta, DataValuta, DataOraRicezione, Note, Viewed, Stato, Azioni, PropCode, OperatorCode, CustomerOrderId, MeetingOrder, PropName, SessionId, ExecutionDestination) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]; Data truncation; nested exception is java.sql.DataTruncation: Data truncation
+org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO TabHistoryOrdini ( NumOrdine, ISIN, DescrizioneStrumento, Cliente, TipoOrdine, Lato, Prezzo, Quantita, Valuta, DataValuta, DataOraRicezione, Note, Viewed, Stato, Azioni, PropCode, OperatorCode, CustomerOrderId, MeetingOrder, PropName, SessionId, ExecutionDestination) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]; Data truncation; nested exception is java.sql.DataTruncation: Data truncation
+        at org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:100) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:72) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:80) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:80) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:607) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:792) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:850) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at it.softsolutions.bestx.dao.sql.SqlCSOperationStateAuditDao.saveNewOrder(SqlCSOperationStateAuditDao.java:638) ~[bestxengine-cs-3.0.3-SNAPSHOT.jar:1.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.audit.CSOperationStateAudit.onOperationStateChanged(CSOperationStateAudit.java:239) ~[bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.updateStateListeners(Operation.java:341) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setState(Operation.java:262) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setStateResilient(Operation.java:280) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.handlers.InitialEventHandler.onCustomerOrder(InitialEventHandler.java:61) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.onCustomerOrder(Operation.java:563) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.connections.AkrosCustomerAdapter$1.run(AkrosCustomerAdapter.java:200) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886) [na:1.6.0_21-ea]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908) [na:1.6.0_21-ea]
+        at java.lang.Thread.run(Thread.java:619) [na:1.6.0_21-ea]
+Caused by: java.sql.DataTruncation: Data truncation
+        at net.sourceforge.jtds.jdbc.SQLDiagnostic.addDiagnostic(SQLDiagnostic.java:382) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.TdsCore.tdsErrorToken(TdsCore.java:2820) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.TdsCore.nextToken(TdsCore.java:2258) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.TdsCore.getMoreResults(TdsCore.java:632) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsStatement.processResults(JtdsStatement.java:584) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsStatement.executeSQL(JtdsStatement.java:546) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsPreparedStatement.executeUpdate(JtdsPreparedStatement.java:506) ~[jtds-1.2.4.jar:1.2.4]
+        at org.apache.commons.dbcp.DelegatingPreparedStatement.executeUpdate(DelegatingPreparedStatement.java:105) ~[commons-dbcp-1.4.jar:1.4]
+        at org.apache.commons.dbcp.DelegatingPreparedStatement.executeUpdate(DelegatingPreparedStatement.java:105) ~[commons-dbcp-1.4.jar:1.4]
+        at org.springframework.jdbc.core.JdbcTemplate$2.doInPreparedStatement(JdbcTemplate.java:798) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:591) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        ... 13 common frames omitted
+2012-06-12 17:33:03,296 ERROR                           Operation -> setStateResilient                  :282 - Couldn't change to state: it.softsolutions.bestx.states.OrderReceivedState
+it.softsolutions.bestx.BestXException: Unable to notify operation state change to listener: it.softsolutions.bestx.audit.CSOperationStateAudit@3e2de41d - Exception message: org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO TabHistoryOrdini ( NumOrdine, ISIN, DescrizioneStrumento, Cliente, TipoOrdine, Lato, Prezzo, Quantita, Valuta, DataValuta, DataOraRicezione, Note, Viewed, Stato, Azioni, PropCode, OperatorCode, CustomerOrderId, MeetingOrder, PropName, SessionId, ExecutionDestination) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]; Data truncation; nested exception is java.sql.DataTruncation: Data truncation
+        at it.softsolutions.bestx.Operation.updateStateListeners(Operation.java:364) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setState(Operation.java:262) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setStateResilient(Operation.java:280) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.handlers.InitialEventHandler.onCustomerOrder(InitialEventHandler.java:61) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.onCustomerOrder(Operation.java:563) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.connections.AkrosCustomerAdapter$1.run(AkrosCustomerAdapter.java:200) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886) [na:1.6.0_21-ea]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908) [na:1.6.0_21-ea]
+        at java.lang.Thread.run(Thread.java:619) [na:1.6.0_21-ea]
+Caused by: org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO TabHistoryOrdini ( NumOrdine, ISIN, DescrizioneStrumento, Cliente, TipoOrdine, Lato, Prezzo, Quantita, Valuta, DataValuta, DataOraRicezione, Note, Viewed, Stato, Azioni, PropCode, OperatorCode, CustomerOrderId, MeetingOrder, PropName, SessionId, ExecutionDestination) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]; Data truncation; nested exception is java.sql.DataTruncation: Data truncation
+        at org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:100) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:72) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:80) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:80) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:607) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:792) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:850) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at it.softsolutions.bestx.dao.sql.SqlCSOperationStateAuditDao.saveNewOrder(SqlCSOperationStateAuditDao.java:638) ~[bestxengine-cs-3.0.3-SNAPSHOT.jar:1.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.audit.CSOperationStateAudit.onOperationStateChanged(CSOperationStateAudit.java:239) ~[bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.updateStateListeners(Operation.java:341) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        ... 8 common frames omitted
+Caused by: java.sql.DataTruncation: Data truncation
+        at net.sourceforge.jtds.jdbc.SQLDiagnostic.addDiagnostic(SQLDiagnostic.java:382) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.TdsCore.tdsErrorToken(TdsCore.java:2820) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.TdsCore.nextToken(TdsCore.java:2258) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.TdsCore.getMoreResults(TdsCore.java:632) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsStatement.processResults(JtdsStatement.java:584) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsStatement.executeSQL(JtdsStatement.java:546) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsPreparedStatement.executeUpdate(JtdsPreparedStatement.java:506) ~[jtds-1.2.4.jar:1.2.4]
+        at org.apache.commons.dbcp.DelegatingPreparedStatement.executeUpdate(DelegatingPreparedStatement.java:105) ~[commons-dbcp-1.4.jar:1.4]
+        at org.apache.commons.dbcp.DelegatingPreparedStatement.executeUpdate(DelegatingPreparedStatement.java:105) ~[commons-dbcp-1.4.jar:1.4]
+        at org.springframework.jdbc.core.JdbcTemplate$2.doInPreparedStatement(JdbcTemplate.java:798) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:591) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        ... 13 common frames omitted
+2012-06-12 17:33:03,296 DEBUG                           Operation -> setState                           :244 - Set operation state to: it.softsolutions.bestx.states.ErrorState
+2012-06-12 17:33:03,296 DEBUG                           Operation -> updateHandler                      :376 - Operation event handler set from strategy: it.softsolutions.bestx.CSStrategy to: it.softsolutions.bestx.handlers.WarningEventHandler
+2012-06-12 17:33:03,297 INFO                            Operation -> updateStateListeners               :324 - [STATE],Timestamp=Tue Jun 12 17:33:03 CEST 2012,StartOrderDiff=15,LastStateDiff=14,State transition from: it.softsolutions.bestx.states.OrderReceivedState to: it.softsolutions.bestx.states.ErrorState
+2012-06-12 17:33:03,297 DEBUG                           Operation -> updateStateListeners               :335 - Notify listeners of state transition from: it.softsolutions.bestx.states.OrderReceivedState to: it.softsolutions.bestx.states.ErrorState
+2012-06-12 17:33:03,297 DEBUG         OperationPersistenceManager -> onOperationStateChanged            :52  - [PERSISTENCE]-START onOperationStateChanged
+2012-06-12 17:33:03,297 DEBUG         OperationPersistenceManager -> onOperationStateChanged            :55  - [PERSISTENCE]-STOP CNNACQUIRE :0
+2012-06-12 17:33:03,302 ERROR         OperationPersistenceManager -> onOperationStateChanged            :75  - An error occurred while saving operation state to database. : org.hibernate.exception.DataException: could not insert: [it.softsolutions.bestx.model.Instrument]
+org.hibernate.exception.DataException: could not insert: [it.softsolutions.bestx.model.Instrument]
+        at org.hibernate.exception.SQLStateConverter.convert(SQLStateConverter.java:77) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.exception.JDBCExceptionHelper.convert(JDBCExceptionHelper.java:43) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.persister.entity.AbstractEntityPersister.insert(AbstractEntityPersister.java:2272) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.persister.entity.AbstractEntityPersister.insert(AbstractEntityPersister.java:2665) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.action.EntityInsertAction.execute(EntityInsertAction.java:60) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.ActionQueue.execute(ActionQueue.java:279) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.ActionQueue.executeActions(ActionQueue.java:263) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.ActionQueue.executeInserts(ActionQueue.java:158) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.AbstractSaveEventListener.performSaveOrReplicate(AbstractSaveEventListener.java:245) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.AbstractSaveEventListener.performSave(AbstractSaveEventListener.java:181) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.AbstractSaveEventListener.saveWithGeneratedId(AbstractSaveEventListener.java:107) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.saveWithGeneratedOrRequestedId(DefaultSaveOrUpdateEventListener.java:187) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.entityIsTransient(DefaultSaveOrUpdateEventListener.java:172) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.performSaveOrUpdate(DefaultSaveOrUpdateEventListener.java:94) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.onSaveOrUpdate(DefaultSaveOrUpdateEventListener.java:70) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.impl.SessionImpl.fireSaveOrUpdate(SessionImpl.java:507) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.impl.SessionImpl.saveOrUpdate(SessionImpl.java:499) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.CascadingAction$5.cascade(CascadingAction.java:218) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascadeToOne(Cascade.java:268) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascadeAssociation(Cascade.java:216) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascadeProperty(Cascade.java:169) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascadeCollectionElements(Cascade.java:296) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascadeCollection(Cascade.java:242) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascadeAssociation(Cascade.java:219) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascadeProperty(Cascade.java:169) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascade(Cascade.java:130) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascade(Cascade.java:97) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.cascadeOnUpdate(DefaultSaveOrUpdateEventListener.java:357) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.performUpdate(DefaultSaveOrUpdateEventListener.java:329) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.entityIsDetached(DefaultSaveOrUpdateEventListener.java:223) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.performSaveOrUpdate(DefaultSaveOrUpdateEventListener.java:89) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.onSaveOrUpdate(DefaultSaveOrUpdateEventListener.java:70) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.impl.SessionImpl.fireSaveOrUpdate(SessionImpl.java:507) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.impl.SessionImpl.saveOrUpdate(SessionImpl.java:499) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.impl.SessionImpl.saveOrUpdate(SessionImpl.java:495) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at it.softsolutions.bestx.OperationPersistenceManager.onOperationStateChanged(OperationPersistenceManager.java:70) ~[bestxengine-common-3.0.5-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.updateStateListeners(Operation.java:341) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setState(Operation.java:262) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setStateResilient(Operation.java:288) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.handlers.InitialEventHandler.onCustomerOrder(InitialEventHandler.java:61) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.onCustomerOrder(Operation.java:563) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.connections.AkrosCustomerAdapter$1.run(AkrosCustomerAdapter.java:200) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886) [na:1.6.0_21-ea]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908) [na:1.6.0_21-ea]
+        at java.lang.Thread.run(Thread.java:619) [na:1.6.0_21-ea]
+Caused by: java.sql.DataTruncation: Data truncation
+        at net.sourceforge.jtds.jdbc.SQLDiagnostic.addDiagnostic(SQLDiagnostic.java:382) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.TdsCore.tdsErrorToken(TdsCore.java:2820) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.TdsCore.nextToken(TdsCore.java:2258) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.TdsCore.getMoreResults(TdsCore.java:632) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsStatement.processResults(JtdsStatement.java:584) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsStatement.executeSQL(JtdsStatement.java:546) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsPreparedStatement.executeUpdate(JtdsPreparedStatement.java:506) ~[jtds-1.2.4.jar:1.2.4]
+        at org.apache.commons.dbcp.DelegatingPreparedStatement.executeUpdate(DelegatingPreparedStatement.java:105) ~[commons-dbcp-1.4.jar:1.4]
+        at org.apache.commons.dbcp.DelegatingPreparedStatement.executeUpdate(DelegatingPreparedStatement.java:105) ~[commons-dbcp-1.4.jar:1.4]
+        at org.hibernate.jdbc.NonBatchingBatcher.addToBatch(NonBatchingBatcher.java:23) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.persister.entity.AbstractEntityPersister.insert(AbstractEntityPersister.java:2252) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        ... 42 common frames omitted
+2012-06-12 17:33:03,303 INFO          OperationPersistenceManager -> onOperationStateChanged            :85  - [PERSISTENCE],StoreTime=6,STOP onOperationStateChanged
+2012-06-12 17:33:03,304 DEBUG               CSOperationStateAudit -> onOperationStateChanged            :771 - Audit - Error state: 1339515194680
+2012-06-12 17:33:03,304 DEBUG         SqlCSOperationStateAuditDao -> updateOrder                        :831 - Start updateOrder - SQL[UPDATE TabHistoryOrdini SET Stato = ?, Filter262Passed = ?, DescrizioneEvento = ?, Azioni = ?, isCurando = ?, MeetingOrder = ?, Viewed = ?, Final = ?, StateClass = ?, AddCommissionToCustomerPrice = ?, ExecutionDestination = ?  WHERE NumOrdine = ?]
+2012-06-12 17:33:03,305 INFO          SqlCSOperationStateAuditDao -> updateOrder                        :888 - [AUDIT],StoreTime=1,Stop updateOrder
+2012-06-12 17:33:03,305 DEBUG         SqlCSOperationStateAuditDao -> saveNewState                       :157 - Start saveNewState - SQL[INSERT INTO TabHistoryStati (NumOrdine, SaveTime, Stato, StatoPrecedente, DescrizioneEvento, IdEvento, Attempt, UserVisible, CustomerVisible) VALUES (?,?,?,?,?,?,?,?,?)]
+2012-06-12 17:33:03,306 ERROR                           Operation -> updateStateListeners               :363 - An error occurred while notifying operation change state to listeners : org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO TabHistoryStati (NumOrdine, SaveTime, Stato, StatoPrecedente, DescrizioneEvento, IdEvento, Attempt, UserVisible, CustomerVisible) VALUES (?,?,?,?,?,?,?,?,?)]; The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Stati_Ordini". The conflict occurred in database "BESTX_CS_INTEGRATION", table "dbo.TabHistoryOrdini", column 'NumOrdine'.; nested exception is java.sql.SQLException: The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Stati_Ordini". The conflict occurred in database "BESTX_CS_INTEGRATION", table "dbo.TabHistoryOrdini", column 'NumOrdine'.
+org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO TabHistoryStati (NumOrdine, SaveTime, Stato, StatoPrecedente, DescrizioneEvento, IdEvento, Attempt, UserVisible, CustomerVisible) VALUES (?,?,?,?,?,?,?,?,?)]; The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Stati_Ordini". The conflict occurred in database "BESTX_CS_INTEGRATION", table "dbo.TabHistoryOrdini", column 'NumOrdine'.; nested exception is java.sql.SQLException: The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Stati_Ordini". The conflict occurred in database "BESTX_CS_INTEGRATION", table "dbo.TabHistoryOrdini", column 'NumOrdine'.
+        at org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:100) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:72) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:80) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:80) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:607) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:792) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:850) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at it.softsolutions.bestx.dao.sql.SqlCSOperationStateAuditDao.saveNewState(SqlCSOperationStateAuditDao.java:159) ~[bestxengine-cs-3.0.3-SNAPSHOT.jar:1.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.audit.CSOperationStateAudit.onOperationStateChanged(CSOperationStateAudit.java:793) ~[bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.updateStateListeners(Operation.java:341) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setState(Operation.java:262) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setStateResilient(Operation.java:288) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.handlers.InitialEventHandler.onCustomerOrder(InitialEventHandler.java:61) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.onCustomerOrder(Operation.java:563) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.connections.AkrosCustomerAdapter$1.run(AkrosCustomerAdapter.java:200) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886) [na:1.6.0_21-ea]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908) [na:1.6.0_21-ea]
+        at java.lang.Thread.run(Thread.java:619) [na:1.6.0_21-ea]
+Caused by: java.sql.SQLException: The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Stati_Ordini". The conflict occurred in database "BESTX_CS_INTEGRATION", table "dbo.TabHistoryOrdini", column 'NumOrdine'.
+        at net.sourceforge.jtds.jdbc.SQLDiagnostic.addDiagnostic(SQLDiagnostic.java:368) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.TdsCore.tdsErrorToken(TdsCore.java:2820) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.TdsCore.nextToken(TdsCore.java:2258) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.TdsCore.getMoreResults(TdsCore.java:632) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsStatement.processResults(JtdsStatement.java:584) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsStatement.executeSQL(JtdsStatement.java:546) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsPreparedStatement.executeUpdate(JtdsPreparedStatement.java:506) ~[jtds-1.2.4.jar:1.2.4]
+        at org.apache.commons.dbcp.DelegatingPreparedStatement.executeUpdate(DelegatingPreparedStatement.java:105) ~[commons-dbcp-1.4.jar:1.4]
+        at org.apache.commons.dbcp.DelegatingPreparedStatement.executeUpdate(DelegatingPreparedStatement.java:105) ~[commons-dbcp-1.4.jar:1.4]
+        at org.springframework.jdbc.core.JdbcTemplate$2.doInPreparedStatement(JdbcTemplate.java:798) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:591) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        ... 13 common frames omitted
+2012-06-12 17:33:03,307 ERROR                           Operation -> setStateResilient                  :290 - Operation '[Operation=1339515194680, it.softsolutions.bestx.states.ErrorState, it.softsolutions.bestx.BestXException: Unable to notify operation state change to listener: it.softsolutions.bestx.audit.CSOperationStateAudit@3e2de41d - Exception message: org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO TabHistoryOrdini ( NumOrdine, ISIN, DescrizioneStrumento, Cliente, TipoOrdine, Lato, Prezzo, Quantita, Valuta, DataValuta, DataOraRicezione, Note, Viewed, Stato, Azioni, PropCode, OperatorCode, CustomerOrderId, MeetingOrder, PropName, SessionId, ExecutionDestination) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]; Data truncation; nested exception is java.sql.DataTruncation: Data truncation]' change to state 'it.softsolutions.bestx.BestXException: Unable to notify operation state change to listener: it.softsolutions.bestx.audit.CSOperationStateAudit@3e2de41d - Exception message: org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO TabHistoryStati (NumOrdine, SaveTime, Stato, StatoPrecedente, DescrizioneEvento, IdEvento, Attempt, UserVisible, CustomerVisible) VALUES (?,?,?,?,?,?,?,?,?)]; The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Stati_Ordini". The conflict occurred in database "BESTX_CS_INTEGRATION", table "dbo.TabHistoryOrdini", column 'NumOrdine'.; nested exception is java.sql.SQLException: The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Stati_Ordini". The conflict occurred in database "BESTX_CS_INTEGRATION", table "dbo.TabHistoryOrdini", column 'NumOrdine'.' failed: {}
+
+==> BestX-Commons.2012-06-12.0.log <==
+2012-06-12 17:33:03,292 INFO                              Sampler -> dumpToLog                          :222 - [OPERATION_SAVE_STATE_STATISTICS] [MONOBJ=operationLastSaveTime][PeriodTime=0][StatMin=5.0][LastValueTime=Tue Jun 12 17:33:03 CEST 2012][SamplesCount=51][StdDeviation=136.46763891336374][Sum=2139.0][StatMax=955.0][PeriodsCount=0][PeriodicValues=false][GeometricAverage=14.594118740763218][LastValueTimeDiff=42740][Average=41.94117647058823][Variance=18623.416470588232][LastValueTimestamp=1339515183292][TimeDiffMean=36427.29999999999][LastSampleValue=9.0]
+2012-06-12 17:33:03,304 INFO                              Sampler -> dumpToLog                          :222 - [OPERATION_SAVE_STATE_STATISTICS] [MONOBJ=operationLastSaveTime][PeriodTime=0][StatMin=5.0][LastValueTime=Tue Jun 12 17:33:03 CEST 2012][SamplesCount=52][StdDeviation=135.21498858209063][Sum=2145.0][StatMax=955.0][PeriodsCount=0][PeriodicValues=false][GeometricAverage=14.346774972357267][LastValueTimeDiff=11][Average=41.25][Variance=18283.0931372549][LastValueTimestamp=1339515183303][TimeDiffMean=35713.254901960776][LastSampleValue=6.0]
+
+==> BestX-log4j.log <==
+2012-06-12 17:33:03,284 WARN  [=XS01705588771,]                Instrument -> getMinSize               :262 - Instrument  XS01705588771 minimun trading quantity not available, returning 0.
+
+--------------------------------------------------------------------------------------------
+Case 8. (Roldano Malvestiti)
+- Testa anche questa cosa di cui si lamentavano: 63/SettlmntTyp and 64/FutSettDate >> I have left these empty as per standard FIX which is an implied 63=0. 
+There was no rejection, despite the BestX RoE specifying 63=6 as mandatory 
+
+ESITO > if empty > RefMsgType [D]: OrderSingle, RefTagID: 63, Text: Required tag missing
+ESITO > if cash (0) > non lo considera nemmeno, invia corretamente l'ordine 
+
+- Errore, con SettlmntTyp.Cash dovrebbe rifiutare l'ordine
+
+--------------------------------------------------------------------------------------------
+Case 9.
+- Mando un newOrderSingle con FutSettlDate formattato in modo errato (ddMMyyyy)
+- Si rompe qualcosa in BestX e OTEX non riceve alcun messaggio d'errore (ad esempio un ExecutionReport Reject)
+
+2012-06-12 18:40:42,070 ERROR         OperationPersistenceManager -> onOperationStateChanged            :75  - An error occurred while saving operation state to database. : org.hibernate.exception.DataException: could not insert:        [it.softsolutions.bestx.model.Order]
+org.hibernate.exception.DataException: could not insert: [it.softsolutions.bestx.model.Order]
+        at org.hibernate.exception.SQLStateConverter.convert(SQLStateConverter.java:77) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.exception.JDBCExceptionHelper.convert(JDBCExceptionHelper.java:43) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.id.insert.AbstractReturningDelegate.performInsert(AbstractReturningDelegate.java:40) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.persister.entity.AbstractEntityPersister.insert(AbstractEntityPersister.java:2163) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.persister.entity.AbstractEntityPersister.insert(AbstractEntityPersister.java:2643) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.action.EntityIdentityInsertAction.execute(EntityIdentityInsertAction.java:51) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.ActionQueue.execute(ActionQueue.java:279) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.AbstractSaveEventListener.performSaveOrReplicate(AbstractSaveEventListener.java:298) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.AbstractSaveEventListener.performSave(AbstractSaveEventListener.java:181) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.AbstractSaveEventListener.saveWithGeneratedId(AbstractSaveEventListener.java:107) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.saveWithGeneratedOrRequestedId(DefaultSaveOrUpdateEventListener.java:187) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.entityIsTransient(DefaultSaveOrUpdateEventListener.java:172) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.performSaveOrUpdate(DefaultSaveOrUpdateEventListener.java:94) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.onSaveOrUpdate(DefaultSaveOrUpdateEventListener.java:70) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.impl.SessionImpl.fireSaveOrUpdate(SessionImpl.java:507) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.impl.SessionImpl.saveOrUpdate(SessionImpl.java:499) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.CascadingAction$5.cascade(CascadingAction.java:218) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascadeToOne(Cascade.java:268) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascadeAssociation(Cascade.java:216) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascadeProperty(Cascade.java:169) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascade(Cascade.java:130) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascade(Cascade.java:97) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.cascadeOnUpdate(DefaultSaveOrUpdateEventListener.java:357) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.performUpdate(DefaultSaveOrUpdateEventListener.java:329) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.entityIsDetached(DefaultSaveOrUpdateEventListener.java:223) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.performSaveOrUpdate(DefaultSaveOrUpdateEventListener.java:89) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.onSaveOrUpdate(DefaultSaveOrUpdateEventListener.java:70) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.impl.SessionImpl.fireSaveOrUpdate(SessionImpl.java:507) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.impl.SessionImpl.saveOrUpdate(SessionImpl.java:499) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.impl.SessionImpl.saveOrUpdate(SessionImpl.java:495) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at it.softsolutions.bestx.OperationPersistenceManager.onOperationStateChanged(OperationPersistenceManager.java:70) ~[bestxengine-common-3.0.5-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.updateStateListeners(Operation.java:341) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setState(Operation.java:262) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setStateResilient(Operation.java:280) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.handlers.InitialEventHandler.onCustomerOrder(InitialEventHandler.java:61) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.onCustomerOrder(Operation.java:563) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.connections.AkrosCustomerAdapter$1.run(AkrosCustomerAdapter.java:200) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886) [na:1.6.0_21-ea]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908) [na:1.6.0_21-ea]
+        at java.lang.Thread.run(Thread.java:619) [na:1.6.0_21-ea]
+Caused by: java.sql.SQLException: Only dates between January 1, 1753 and December 31, 9999 are accepted.
+        at net.sourceforge.jtds.jdbc.DateTime.packDate(DateTime.java:318) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.DateTime.<init>(DateTime.java:126) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsPreparedStatement.setParameter(JtdsPreparedStatement.java:446) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsPreparedStatement.setTimestamp(JtdsPreparedStatement.java:842) ~[jtds-1.2.4.jar:1.2.4]
+        at org.apache.commons.dbcp.DelegatingPreparedStatement.setTimestamp(DelegatingPreparedStatement.java:147) ~[commons-dbcp-1.4.jar:1.4]
+        at org.apache.commons.dbcp.DelegatingPreparedStatement.setTimestamp(DelegatingPreparedStatement.java:147) ~[commons-dbcp-1.4.jar:1.4]
+        at org.hibernate.type.TimestampType.set(TimestampType.java:45) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.type.NullableType.nullSafeSet(NullableType.java:136) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.type.NullableType.nullSafeSet(NullableType.java:107) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.persister.entity.AbstractEntityPersister.dehydrate(AbstractEntityPersister.java:2002) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.persister.entity.AbstractEntityPersister.dehydrate(AbstractEntityPersister.java:1979) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.persister.entity.AbstractEntityPersister$3.bindValues(AbstractEntityPersister.java:2157) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.id.insert.AbstractReturningDelegate.performInsert(AbstractReturningDelegate.java:32) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        ... 37 common frames omitted
+2012-06-12 18:40:42,071 INFO          OperationPersistenceManager -> onOperationStateChanged            :85  - [PERSISTENCE],StoreTime=6,STOP onOperationStateChanged
+2012-06-12 18:40:42,071 DEBUG               CSOperationStateAudit -> onOperationStateChanged            :234 - Audit - Order Received: 1339519253172
+2012-06-12 18:40:42,073 DEBUG         SqlCSOperationStateAuditDao -> saveNewOrder                       :636 - Start saveNewOrder - SQL[INSERT INTO TabHistoryOrdini ( NumOrdine, ISIN, DescrizioneStrumento, Cliente, TipoOrdine, Lat       o, Prezzo, Quantita, Valuta, DataValuta, DataOraRicezione, Note, Viewed, Stato, Azioni, PropCode, OperatorCode, CustomerOrderId, MeetingOrder, PropName, SessionId, ExecutionDestination) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,       ?,?,?,?)]
+2012-06-12 18:40:42,074 ERROR                           Operation -> updateStateListeners               :363 - An error occurred while notifying operation change state to listeners : org.springframework.dao.DataIntegrityViolationE       xception: PreparedStatementCallback; SQL [INSERT INTO TabHistoryOrdini ( NumOrdine, ISIN, DescrizioneStrumento, Cliente, TipoOrdine, Lato, Prezzo, Quantita, Valuta, DataValuta, DataOraRicezione, Note, Viewed, Stato, Azioni, PropCo       de, OperatorCode, CustomerOrderId, MeetingOrder, PropName, SessionId, ExecutionDestination) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]; Only dates between January 1, 1753 and December 31, 9999 are accepted.; nested exce       ption is java.sql.SQLException: Only dates between January 1, 1753 and December 31, 9999 are accepted.
+org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO TabHistoryOrdini ( NumOrdine, ISIN, DescrizioneStrumento, Cliente, TipoOrdine, Lato, Prezzo, Quantita, Valuta, DataValuta, DataOr       aRicezione, Note, Viewed, Stato, Azioni, PropCode, OperatorCode, CustomerOrderId, MeetingOrder, PropName, SessionId, ExecutionDestination) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]; Only dates between January 1, 1753 a       nd December 31, 9999 are accepted.; nested exception is java.sql.SQLException: Only dates between January 1, 1753 and December 31, 9999 are accepted.
+        at org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:100) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:72) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:80) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:80) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:607) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:792) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:850) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at it.softsolutions.bestx.dao.sql.SqlCSOperationStateAuditDao.saveNewOrder(SqlCSOperationStateAuditDao.java:638) ~[bestxengine-cs-3.0.3-SNAPSHOT.jar:1.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.audit.CSOperationStateAudit.onOperationStateChanged(CSOperationStateAudit.java:239) ~[bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.updateStateListeners(Operation.java:341) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setState(Operation.java:262) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setStateResilient(Operation.java:280) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.handlers.InitialEventHandler.onCustomerOrder(InitialEventHandler.java:61) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.onCustomerOrder(Operation.java:563) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.connections.AkrosCustomerAdapter$1.run(AkrosCustomerAdapter.java:200) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886) [na:1.6.0_21-ea]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908) [na:1.6.0_21-ea]
+        at java.lang.Thread.run(Thread.java:619) [na:1.6.0_21-ea]
+Caused by: java.sql.SQLException: Only dates between January 1, 1753 and December 31, 9999 are accepted.
+        at net.sourceforge.jtds.jdbc.DateTime.packDate(DateTime.java:318) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.DateTime.<init>(DateTime.java:185) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsPreparedStatement.setParameter(JtdsPreparedStatement.java:442) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsPreparedStatement.setDate(JtdsPreparedStatement.java:735) ~[jtds-1.2.4.jar:1.2.4]
+        at org.apache.commons.dbcp.DelegatingPreparedStatement.setDate(DelegatingPreparedStatement.java:141) ~[commons-dbcp-1.4.jar:1.4]
+        at org.apache.commons.dbcp.DelegatingPreparedStatement.setDate(DelegatingPreparedStatement.java:141) ~[commons-dbcp-1.4.jar:1.4]
+        at it.softsolutions.bestx.dao.sql.SqlCSOperationStateAuditDao$6.setValues(SqlCSOperationStateAuditDao.java:685) ~[bestxengine-cs-3.0.3-SNAPSHOT.jar:1.0.3-SNAPSHOT]
+        at org.springframework.jdbc.core.JdbcTemplate$2.doInPreparedStatement(JdbcTemplate.java:796) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:591) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        ... 13 common frames omitted
+2012-06-12 18:40:42,074 ERROR                           Operation -> setStateResilient                  :282 - Couldn't change to state: it.softsolutions.bestx.states.OrderReceivedState
+it.softsolutions.bestx.BestXException: Unable to notify operation state change to listener: it.softsolutions.bestx.audit.CSOperationStateAudit@3e2de41d - Exception message: org.springframework.dao.DataIntegrityViolationException:        PreparedStatementCallback; SQL [INSERT INTO TabHistoryOrdini ( NumOrdine, ISIN, DescrizioneStrumento, Cliente, TipoOrdine, Lato, Prezzo, Quantita, Valuta, DataValuta, DataOraRicezione, Note, Viewed, Stato, Azioni, PropCode, Operat       orCode, CustomerOrderId, MeetingOrder, PropName, SessionId, ExecutionDestination) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]; Only dates between January 1, 1753 and December 31, 9999 are accepted.; nested exception is j       ava.sql.SQLException: Only dates between January 1, 1753 and December 31, 9999 are accepted.
+        at it.softsolutions.bestx.Operation.updateStateListeners(Operation.java:364) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setState(Operation.java:262) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setStateResilient(Operation.java:280) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.handlers.InitialEventHandler.onCustomerOrder(InitialEventHandler.java:61) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.onCustomerOrder(Operation.java:563) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.connections.AkrosCustomerAdapter$1.run(AkrosCustomerAdapter.java:200) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886) [na:1.6.0_21-ea]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908) [na:1.6.0_21-ea]
+        at java.lang.Thread.run(Thread.java:619) [na:1.6.0_21-ea]
+Caused by: org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO TabHistoryOrdini ( NumOrdine, ISIN, DescrizioneStrumento, Cliente, TipoOrdine, Lato, Prezzo, Quantita, Valuta, DataVal       uta, DataOraRicezione, Note, Viewed, Stato, Azioni, PropCode, OperatorCode, CustomerOrderId, MeetingOrder, PropName, SessionId, ExecutionDestination) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]; Only dates between Januar       y 1, 1753 and December 31, 9999 are accepted.; nested exception is java.sql.SQLException: Only dates between January 1, 1753 and December 31, 9999 are accepted.
+        at org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:100) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:72) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:80) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:80) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:607) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:792) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:850) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at it.softsolutions.bestx.dao.sql.SqlCSOperationStateAuditDao.saveNewOrder(SqlCSOperationStateAuditDao.java:638) ~[bestxengine-cs-3.0.3-SNAPSHOT.jar:1.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.audit.CSOperationStateAudit.onOperationStateChanged(CSOperationStateAudit.java:239) ~[bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.updateStateListeners(Operation.java:341) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        ... 8 common frames omitted
+Caused by: java.sql.SQLException: Only dates between January 1, 1753 and December 31, 9999 are accepted.
+        at net.sourceforge.jtds.jdbc.DateTime.packDate(DateTime.java:318) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.DateTime.<init>(DateTime.java:185) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsPreparedStatement.setParameter(JtdsPreparedStatement.java:442) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsPreparedStatement.setDate(JtdsPreparedStatement.java:735) ~[jtds-1.2.4.jar:1.2.4]
+        at org.apache.commons.dbcp.DelegatingPreparedStatement.setDate(DelegatingPreparedStatement.java:141) ~[commons-dbcp-1.4.jar:1.4]
+        at org.apache.commons.dbcp.DelegatingPreparedStatement.setDate(DelegatingPreparedStatement.java:141) ~[commons-dbcp-1.4.jar:1.4]
+        at it.softsolutions.bestx.dao.sql.SqlCSOperationStateAuditDao$6.setValues(SqlCSOperationStateAuditDao.java:685) ~[bestxengine-cs-3.0.3-SNAPSHOT.jar:1.0.3-SNAPSHOT]
+        at org.springframework.jdbc.core.JdbcTemplate$2.doInPreparedStatement(JdbcTemplate.java:796) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:591) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        ... 13 common frames omitted
+2012-06-12 18:40:42,075 DEBUG                           Operation -> setState                           :244 - Set operation state to: it.softsolutions.bestx.states.ErrorState
+2012-06-12 18:40:42,075 DEBUG                           Operation -> updateHandler                      :376 - Operation event handler set from strategy: it.softsolutions.bestx.CSStrategy to: it.softsolutions.bestx.handlers.Warnin       gEventHandler
+2012-06-12 18:40:42,075 INFO                            Operation -> updateStateListeners               :324 - [STATE],Timestamp=Tue Jun 12 18:40:42 CEST 2012,StartOrderDiff=11,LastStateDiff=10,State transition from: it.softsoluti       ons.bestx.states.OrderReceivedState to: it.softsolutions.bestx.states.ErrorState
+2012-06-12 18:40:42,075 DEBUG                           Operation -> updateStateListeners               :335 - Notify listeners of state transition from: it.softsolutions.bestx.states.OrderReceivedState to: it.softsolutions.bestx.       states.ErrorState
+2012-06-12 18:40:42,075 DEBUG         OperationPersistenceManager -> onOperationStateChanged            :52  - [PERSISTENCE]-START onOperationStateChanged
+2012-06-12 18:40:42,075 DEBUG         OperationPersistenceManager -> onOperationStateChanged            :55  - [PERSISTENCE]-STOP CNNACQUIRE :0
+2012-06-12 18:40:42,079 ERROR         OperationPersistenceManager -> onOperationStateChanged            :75  - An error occurred while saving operation state to database. : org.hibernate.exception.DataException: could not insert:        [it.softsolutions.bestx.model.Order]
+org.hibernate.exception.DataException: could not insert: [it.softsolutions.bestx.model.Order]
+        at org.hibernate.exception.SQLStateConverter.convert(SQLStateConverter.java:77) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.exception.JDBCExceptionHelper.convert(JDBCExceptionHelper.java:43) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.id.insert.AbstractReturningDelegate.performInsert(AbstractReturningDelegate.java:40) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.persister.entity.AbstractEntityPersister.insert(AbstractEntityPersister.java:2163) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.persister.entity.AbstractEntityPersister.insert(AbstractEntityPersister.java:2643) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.action.EntityIdentityInsertAction.execute(EntityIdentityInsertAction.java:51) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.ActionQueue.execute(ActionQueue.java:279) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.AbstractSaveEventListener.performSaveOrReplicate(AbstractSaveEventListener.java:298) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.AbstractSaveEventListener.performSave(AbstractSaveEventListener.java:181) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.AbstractSaveEventListener.saveWithGeneratedId(AbstractSaveEventListener.java:107) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.saveWithGeneratedOrRequestedId(DefaultSaveOrUpdateEventListener.java:187) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.entityIsTransient(DefaultSaveOrUpdateEventListener.java:172) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.performSaveOrUpdate(DefaultSaveOrUpdateEventListener.java:94) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.onSaveOrUpdate(DefaultSaveOrUpdateEventListener.java:70) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.impl.SessionImpl.fireSaveOrUpdate(SessionImpl.java:507) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.impl.SessionImpl.saveOrUpdate(SessionImpl.java:499) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.CascadingAction$5.cascade(CascadingAction.java:218) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascadeToOne(Cascade.java:268) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascadeAssociation(Cascade.java:216) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascadeProperty(Cascade.java:169) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascade(Cascade.java:130) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.engine.Cascade.cascade(Cascade.java:97) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.cascadeOnUpdate(DefaultSaveOrUpdateEventListener.java:357) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.performUpdate(DefaultSaveOrUpdateEventListener.java:329) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.entityIsDetached(DefaultSaveOrUpdateEventListener.java:223) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.performSaveOrUpdate(DefaultSaveOrUpdateEventListener.java:89) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.event.def.DefaultSaveOrUpdateEventListener.onSaveOrUpdate(DefaultSaveOrUpdateEventListener.java:70) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.impl.SessionImpl.fireSaveOrUpdate(SessionImpl.java:507) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.impl.SessionImpl.saveOrUpdate(SessionImpl.java:499) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.impl.SessionImpl.saveOrUpdate(SessionImpl.java:495) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at it.softsolutions.bestx.OperationPersistenceManager.onOperationStateChanged(OperationPersistenceManager.java:70) ~[bestxengine-common-3.0.5-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.updateStateListeners(Operation.java:341) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setState(Operation.java:262) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setStateResilient(Operation.java:288) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.handlers.InitialEventHandler.onCustomerOrder(InitialEventHandler.java:61) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.onCustomerOrder(Operation.java:563) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.connections.AkrosCustomerAdapter$1.run(AkrosCustomerAdapter.java:200) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886) [na:1.6.0_21-ea]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908) [na:1.6.0_21-ea]
+        at java.lang.Thread.run(Thread.java:619) [na:1.6.0_21-ea]
+Caused by: java.sql.SQLException: Only dates between January 1, 1753 and December 31, 9999 are accepted.
+        at net.sourceforge.jtds.jdbc.DateTime.packDate(DateTime.java:318) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.DateTime.<init>(DateTime.java:126) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsPreparedStatement.setParameter(JtdsPreparedStatement.java:446) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsPreparedStatement.setTimestamp(JtdsPreparedStatement.java:842) ~[jtds-1.2.4.jar:1.2.4]
+        at org.apache.commons.dbcp.DelegatingPreparedStatement.setTimestamp(DelegatingPreparedStatement.java:147) ~[commons-dbcp-1.4.jar:1.4]
+        at org.apache.commons.dbcp.DelegatingPreparedStatement.setTimestamp(DelegatingPreparedStatement.java:147) ~[commons-dbcp-1.4.jar:1.4]
+        at org.hibernate.type.TimestampType.set(TimestampType.java:45) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.type.NullableType.nullSafeSet(NullableType.java:136) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.type.NullableType.nullSafeSet(NullableType.java:107) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.persister.entity.AbstractEntityPersister.dehydrate(AbstractEntityPersister.java:2002) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.persister.entity.AbstractEntityPersister.dehydrate(AbstractEntityPersister.java:1979) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.persister.entity.AbstractEntityPersister$3.bindValues(AbstractEntityPersister.java:2157) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        at org.hibernate.id.insert.AbstractReturningDelegate.performInsert(AbstractReturningDelegate.java:32) ~[hibernate-3.2.6.ga.jar:3.2.6.ga]
+        ... 37 common frames omitted
+2012-06-12 18:40:42,080 INFO          OperationPersistenceManager -> onOperationStateChanged            :85  - [PERSISTENCE],StoreTime=5,STOP onOperationStateChanged
+2012-06-12 18:40:42,080 DEBUG               CSOperationStateAudit -> onOperationStateChanged            :771 - Audit - Error state: 1339519253172
+2012-06-12 18:40:42,081 DEBUG         SqlCSOperationStateAuditDao -> updateOrder                        :831 - Start updateOrder - SQL[UPDATE TabHistoryOrdini SET Stato = ?, Filter262Passed = ?, DescrizioneEvento = ?, Azioni = ?,        isCurando = ?, MeetingOrder = ?, Viewed = ?, Final = ?, StateClass = ?, AddCommissionToCustomerPrice = ?, ExecutionDestination = ?  WHERE NumOrdine = ?]
+2012-06-12 18:40:42,081 INFO          SqlCSOperationStateAuditDao -> updateOrder                        :888 - [AUDIT],StoreTime=0,Stop updateOrder
+2012-06-12 18:40:42,081 DEBUG         SqlCSOperationStateAuditDao -> saveNewState                       :157 - Start saveNewState - SQL[INSERT INTO TabHistoryStati (NumOrdine, SaveTime, Stato, StatoPrecedente, DescrizioneEvento, I       dEvento, Attempt, UserVisible, CustomerVisible) VALUES (?,?,?,?,?,?,?,?,?)]
+2012-06-12 18:40:42,083 ERROR                           Operation -> updateStateListeners               :363 - An error occurred while notifying operation change state to listeners : org.springframework.dao.DataIntegrityViolationE       xception: PreparedStatementCallback; SQL [INSERT INTO TabHistoryStati (NumOrdine, SaveTime, Stato, StatoPrecedente, DescrizioneEvento, IdEvento, Attempt, UserVisible, CustomerVisible) VALUES (?,?,?,?,?,?,?,?,?)]; The INSERT statem       ent conflicted with the FOREIGN KEY constraint "FK_Stati_Ordini". The conflict occurred in database "BESTX_CS_INTEGRATION", table "dbo.TabHistoryOrdini", column 'NumOrdine'.; nested exception is java.sql.SQLException: The INSERT s       tatement conflicted with the FOREIGN KEY constraint "FK_Stati_Ordini". The conflict occurred in database "BESTX_CS_INTEGRATION", table "dbo.TabHistoryOrdini", column 'NumOrdine'.
+org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO TabHistoryStati (NumOrdine, SaveTime, Stato, StatoPrecedente, DescrizioneEvento, IdEvento, Attempt, UserVisible, CustomerVisible)        VALUES (?,?,?,?,?,?,?,?,?)]; The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Stati_Ordini". The conflict occurred in database "BESTX_CS_INTEGRATION", table "dbo.TabHistoryOrdini", column 'NumOrdine'.; nested e       xception is java.sql.SQLException: The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Stati_Ordini". The conflict occurred in database "BESTX_CS_INTEGRATION", table "dbo.TabHistoryOrdini", column 'NumOrdine'.
+        at org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:100) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:72) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:80) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:80) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:607) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:792) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:850) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at it.softsolutions.bestx.dao.sql.SqlCSOperationStateAuditDao.saveNewState(SqlCSOperationStateAuditDao.java:159) ~[bestxengine-cs-3.0.3-SNAPSHOT.jar:1.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.audit.CSOperationStateAudit.onOperationStateChanged(CSOperationStateAudit.java:793) ~[bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.updateStateListeners(Operation.java:341) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setState(Operation.java:262) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setStateResilient(Operation.java:288) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.handlers.InitialEventHandler.onCustomerOrder(InitialEventHandler.java:61) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.onCustomerOrder(Operation.java:563) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.connections.AkrosCustomerAdapter$1.run(AkrosCustomerAdapter.java:200) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886) [na:1.6.0_21-ea]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908) [na:1.6.0_21-ea]
+        at java.lang.Thread.run(Thread.java:619) [na:1.6.0_21-ea]
+Caused by: java.sql.SQLException: The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Stati_Ordini". The conflict occurred in database "BESTX_CS_INTEGRATION", table "dbo.TabHistoryOrdini", column 'NumOrdine'.
+        at net.sourceforge.jtds.jdbc.SQLDiagnostic.addDiagnostic(SQLDiagnostic.java:368) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.TdsCore.tdsErrorToken(TdsCore.java:2820) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.TdsCore.nextToken(TdsCore.java:2258) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.TdsCore.getMoreResults(TdsCore.java:632) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsStatement.processResults(JtdsStatement.java:584) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsStatement.executeSQL(JtdsStatement.java:546) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsPreparedStatement.executeUpdate(JtdsPreparedStatement.java:506) ~[jtds-1.2.4.jar:1.2.4]
+        at org.apache.commons.dbcp.DelegatingPreparedStatement.executeUpdate(DelegatingPreparedStatement.java:105) ~[commons-dbcp-1.4.jar:1.4]
+        at org.apache.commons.dbcp.DelegatingPreparedStatement.executeUpdate(DelegatingPreparedStatement.java:105) ~[commons-dbcp-1.4.jar:1.4]
+        at org.springframework.jdbc.core.JdbcTemplate$2.doInPreparedStatement(JdbcTemplate.java:798) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:591) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        ... 13 common frames omitted
+2012-06-12 18:40:42,084 ERROR                           Operation -> setStateResilient                  :290 - Operation '[Operation=1339519253172, it.softsolutions.bestx.states.ErrorState, it.softsolutions.bestx.BestXException: U       nable to notify operation state change to listener: it.softsolutions.bestx.audit.CSOperationStateAudit@3e2de41d - Exception message: org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT I       NTO TabHistoryOrdini ( NumOrdine, ISIN, DescrizioneStrumento, Cliente, TipoOrdine, Lato, Prezzo, Quantita, Valuta, DataValuta, DataOraRicezione, Note, Viewed, Stato, Azioni, PropCode, OperatorCode, CustomerOrderId, MeetingOrder, P       ropName, SessionId, ExecutionDestination) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]; Only dates between January 1, 1753 and December 31, 9999 are accepted.; nested exception is java.sql.SQLException: Only dates between        January 1, 1753 and December 31, 9999 are accepted.]' change to state 'it.softsolutions.bestx.BestXException: Unable to notify operation state change to listener: it.softsolutions.bestx.audit.CSOperationStateAudit@3e2de41d - Exce       ption message: org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO TabHistoryStati (NumOrdine, SaveTime, Stato, StatoPrecedente, DescrizioneEvento, IdEvento, Attempt, UserVisible, C       ustomerVisible) VALUES (?,?,?,?,?,?,?,?,?)]; The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Stati_Ordini". The conflict occurred in database "BESTX_CS_INTEGRATION", table "dbo.TabHistoryOrdini", column 'NumOrd       ine'.; nested exception is java.sql.SQLException: The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Stati_Ordini". The conflict occurred in database "BESTX_CS_INTEGRATION", table "dbo.TabHistoryOrdini", column 'N       umOrdine'.' failed: {}
+
+==> BestX-Commons.2012-06-12.0.log <==
+2012-06-12 18:40:42,071 INFO                              Sampler -> dumpToLog                          :222 - [OPERATION_SAVE_STATE_STATISTICS] [MONOBJ=operationLastSaveTime][PeriodTime=0][StatMin=5.0][LastValueTime=Tue Jun 12 18       :40:42 CEST 2012][SamplesCount=93][StdDeviation=102.2814880858168][Sum=2811.0][StatMax=955.0][PeriodsCount=0][PeriodicValues=false][GeometricAverage=12.29478277901668][LastValueTimeDiff=172940][Average=30.2258064516129][Variance=1       0461.502805049086][LastValueTimestamp=1339519242071][TimeDiffMean=63914.60869565217][LastSampleValue=6.0]
+2012-06-12 18:40:42,080 INFO                              Sampler -> dumpToLog                          :222 - [OPERATION_SAVE_STATE_STATISTICS] [MONOBJ=operationLastSaveTime][PeriodTime=0][StatMin=5.0][LastValueTime=Tue Jun 12 18       :40:42 CEST 2012][SamplesCount=94][StdDeviation=101.76336824217132][Sum=2816.0][StatMax=955.0][PeriodsCount=0][PeriodicValues=false][GeometricAverage=12.177662572643257][LastValueTimeDiff=9][Average=29.957446808510635][Variance=10       355.783115991762][LastValueTimestamp=1339519242080][TimeDiffMean=63227.45161290322][LastSampleValue=5.0]
+
+==> BestX-log4j.log <==
+2012-06-12 18:40:42,068 INFO  [N=XS0055498413,]             TimestampType -> nullSafeSet              :144 - could not bind value '1207-08-12 00:00:00' to parameter: 2; Only dates between January 1, 1753 and December 31, 9999 are        accepted.
+2012-06-12 18:40:42,069 WARN  [N=XS0055498413,]     JDBCExceptionReporter -> logExceptions            :77  - SQL Error: 0, SQLState: 22003
+2012-06-12 18:40:42,069 ERROR [N=XS0055498413,]     JDBCExceptionReporter -> logExceptions            :78  - Only dates between January 1, 1753 and December 31, 9999 are accepted.
+2012-06-12 18:40:42,078 INFO  [N=XS0055498413,]             TimestampType -> nullSafeSet              :144 - could not bind value '1207-08-12 00:00:00' to parameter: 2; Only dates between January 1, 1753 and December 31, 9999 are        accepted.
+2012-06-12 18:40:42,078 WARN  [N=XS0055498413,]     JDBCExceptionReporter -> logExceptions            :77  - SQL Error: 0, SQLState: 22003
+2012-06-12 18:40:42,078 ERROR [N=XS0055498413,]     JDBCExceptionReporter -> logExceptions            :78  - Only dates between January 1, 1753 and December 31, 9999 are accepted.
+
+--------------------------------------------------------------------------------------------
+Case 10.
+- Mando un newOrderSingle con FutSettlDate nel passato (20120610)
+- Devo ricevere un reject > Requested Settlement Date (Jan 6, 2012) earlier than tomorrow
+- NOTA: è stato riabilitato il controllo it.softsolutions.bestx.services.ordervalidation.PastSettlementControl
+
+2012-06-13 08:51:43,269 DEBUG                       FIXClientImpl -> manageNewOrderSingle               :96  - BXNewOrderSingle [clOrdID=1339570303262, account=1994, currency=EUR, price=100.5, securityID=XS0055498413, orderQty=30000.0, settlmntTyp=Cash, futSettDate=Fri Jan 06 00:10:00 CET 2012, side=Sell, symbol=[N/A], idSource=IsinNumber, handlInst=AutomatedExecutionOrderPrivate, ordType=Limit, timeInForce=Day, priceType=null, transactTime=Wed Jun 13 08:51:43 CEST 2012, bestExecutionVenue=null]
+2012-06-13 08:51:43,646 DEBUG                     MyFIXClientImpl -> onExecutionReport                  :61  - BXExecutionReport [avgPx=100.5, clOrdID=1339570303262, cumQty=30000.0, execID=0, execTransType=New, lastPx=null, lastShares=null, orderID=1339570303262, orderQty=null, ordStatus=Rejected, side=Sell, symbol=[N/A], text=Order not accepted - Formal validations not passed:Requested Settlement Date (Jan 6, 2012) earlier than tomorrow , execType=Rejected, leavesQty=0.0]
+
+--------------------------------------------------------------------------------------------
+Case 11.
+- Mando un newOrderSingle con Side diversa da BUY/SELL (SellPlus)
+- Si rompe qualcosa in BestX e OTEX non riceve alcun messaggio d'errore (ad esempio un ExecutionReport Reject)
+
+2012-06-13 09:12:17,681 DEBUG               CSOperationStateAudit -> onOperationStateChanged            :234 - Audit - Order Received: 1339571544785
+2012-06-13 09:12:17,682 DEBUG         SqlCSOperationStateAuditDao -> saveNewOrder                       :636 - Start saveNewOrder - SQL[INSERT INTO TabHistoryOrdini ( NumOrdine, ISIN, DescrizioneStrumento, Cliente, TipoOrdine, Lato, Prezzo, Quantita, Valuta, DataValuta, DataOraRicezione, Note, Viewed, Stato, Azioni, PropCode, OperatorCode, CustomerOrderId, MeetingOrder, PropName, SessionId, ExecutionDestination) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]
+2012-06-13 09:12:17,683 ERROR                           Operation -> updateStateListeners               :363 - An error occurred while notifying operation change state to listeners : java.lang.NullPointerException
+java.lang.NullPointerException: null
+        at it.softsolutions.bestx.dao.sql.SqlCSOperationStateAuditDao$6.setValues(SqlCSOperationStateAuditDao.java:668) ~[bestxengine-cs-3.0.3-SNAPSHOT.jar:1.0.3-SNAPSHOT]
+        at org.springframework.jdbc.core.JdbcTemplate$2.doInPreparedStatement(JdbcTemplate.java:796) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:591) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:792) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:850) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at it.softsolutions.bestx.dao.sql.SqlCSOperationStateAuditDao.saveNewOrder(SqlCSOperationStateAuditDao.java:638) ~[bestxengine-cs-3.0.3-SNAPSHOT.jar:1.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.audit.CSOperationStateAudit.onOperationStateChanged(CSOperationStateAudit.java:239) ~[bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.updateStateListeners(Operation.java:341) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setState(Operation.java:262) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setStateResilient(Operation.java:280) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.handlers.InitialEventHandler.onCustomerOrder(InitialEventHandler.java:61) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.onCustomerOrder(Operation.java:563) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.connections.AkrosCustomerAdapter$1.run(AkrosCustomerAdapter.java:200) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886) [na:1.6.0_21-ea]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908) [na:1.6.0_21-ea]
+        at java.lang.Thread.run(Thread.java:619) [na:1.6.0_21-ea]
+2012-06-13 09:12:17,684 ERROR                           Operation -> setStateResilient                  :282 - Couldn't change to state: it.softsolutions.bestx.states.OrderReceivedState
+it.softsolutions.bestx.BestXException: Unable to notify operation state change to listener: it.softsolutions.bestx.audit.CSOperationStateAudit@2e1df471 - Exception message: java.lang.NullPointerException
+        at it.softsolutions.bestx.Operation.updateStateListeners(Operation.java:364) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setState(Operation.java:262) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setStateResilient(Operation.java:280) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.handlers.InitialEventHandler.onCustomerOrder(InitialEventHandler.java:61) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.onCustomerOrder(Operation.java:563) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.connections.AkrosCustomerAdapter$1.run(AkrosCustomerAdapter.java:200) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886) [na:1.6.0_21-ea]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908) [na:1.6.0_21-ea]
+        at java.lang.Thread.run(Thread.java:619) [na:1.6.0_21-ea]
+Caused by: java.lang.NullPointerException: null
+        at it.softsolutions.bestx.dao.sql.SqlCSOperationStateAuditDao$6.setValues(SqlCSOperationStateAuditDao.java:668) ~[bestxengine-cs-3.0.3-SNAPSHOT.jar:1.0.3-SNAPSHOT]
+        at org.springframework.jdbc.core.JdbcTemplate$2.doInPreparedStatement(JdbcTemplate.java:796) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:591) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:792) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:850) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at it.softsolutions.bestx.dao.sql.SqlCSOperationStateAuditDao.saveNewOrder(SqlCSOperationStateAuditDao.java:638) ~[bestxengine-cs-3.0.3-SNAPSHOT.jar:1.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.audit.CSOperationStateAudit.onOperationStateChanged(CSOperationStateAudit.java:239) ~[bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.updateStateListeners(Operation.java:341) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        ... 8 common frames omitted
+2012-06-13 09:12:17,684 DEBUG                           Operation -> setState                           :244 - Set operation state to: it.softsolutions.bestx.states.ErrorState
+2012-06-13 09:12:17,684 DEBUG                           Operation -> updateHandler                      :376 - Operation event handler set from strategy: it.softsolutions.bestx.CSStrategy to: it.softsolutions.bestx.handlers.WarningEventHandler
+2012-06-13 09:12:17,684 INFO                            Operation -> updateStateListeners               :324 - [STATE],Timestamp=Wed Jun 13 09:12:17 CEST 2012,StartOrderDiff=15,LastStateDiff=14,State transition from: it.softsolutions.bestx.states.OrderReceivedState to: it.softsolutions.bestx.states.ErrorState
+2012-06-13 09:12:17,685 DEBUG                           Operation -> updateStateListeners               :335 - Notify listeners of state transition from: it.softsolutions.bestx.states.OrderReceivedState to: it.softsolutions.bestx.states.ErrorState
+2012-06-13 09:12:17,685 DEBUG         OperationPersistenceManager -> onOperationStateChanged            :52  - [PERSISTENCE]-START onOperationStateChanged
+2012-06-13 09:12:17,685 DEBUG         OperationPersistenceManager -> onOperationStateChanged            :55  - [PERSISTENCE]-STOP CNNACQUIRE :0
+2012-06-13 09:12:17,691 INFO          OperationPersistenceManager -> onOperationStateChanged            :85  - [PERSISTENCE],StoreTime=6,STOP onOperationStateChanged
+2012-06-13 09:12:17,691 DEBUG               CSOperationStateAudit -> onOperationStateChanged            :771 - Audit - Error state: 1339571544785
+2012-06-13 09:12:17,692 DEBUG         SqlCSOperationStateAuditDao -> updateOrder                        :831 - Start updateOrder - SQL[UPDATE TabHistoryOrdini SET Stato = ?, Filter262Passed = ?, DescrizioneEvento = ?, Azioni = ?, isCurando = ?, MeetingOrder = ?, Viewed = ?, Final = ?, StateClass = ?, AddCommissionToCustomerPrice = ?, ExecutionDestination = ?  WHERE NumOrdine = ?]
+2012-06-13 09:12:17,692 INFO          SqlCSOperationStateAuditDao -> updateOrder                        :888 - [AUDIT],StoreTime=0,Stop updateOrder
+2012-06-13 09:12:17,693 DEBUG         SqlCSOperationStateAuditDao -> saveNewState                       :157 - Start saveNewState - SQL[INSERT INTO TabHistoryStati (NumOrdine, SaveTime, Stato, StatoPrecedente, DescrizioneEvento, IdEvento, Attempt, UserVisible, CustomerVisible) VALUES (?,?,?,?,?,?,?,?,?)]
+2012-06-13 09:12:17,695 ERROR                           Operation -> updateStateListeners               :363 - An error occurred while notifying operation change state to listeners : org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO TabHistoryStati (NumOrdine, SaveTime, Stato, StatoPrecedente, DescrizioneEvento, IdEvento, Attempt, UserVisible, CustomerVisible) VALUES (?,?,?,?,?,?,?,?,?)]; The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Stati_Ordini". The conflict occurred in database "BESTX_CS_INTEGRATION", table "dbo.TabHistoryOrdini", column 'NumOrdine'.; nested exception is java.sql.SQLException: The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Stati_Ordini". The conflict occurred in database "BESTX_CS_INTEGRATION", table "dbo.TabHistoryOrdini", column 'NumOrdine'.
+org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO TabHistoryStati (NumOrdine, SaveTime, Stato, StatoPrecedente, DescrizioneEvento, IdEvento, Attempt, UserVisible, CustomerVisible) VALUES (?,?,?,?,?,?,?,?,?)]; The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Stati_Ordini". The conflict occurred in database "BESTX_CS_INTEGRATION", table "dbo.TabHistoryOrdini", column 'NumOrdine'.; nested exception is java.sql.SQLException: The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Stati_Ordini". The conflict occurred in database "BESTX_CS_INTEGRATION", table "dbo.TabHistoryOrdini", column 'NumOrdine'.
+        at org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:100) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:72) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:80) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:80) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:607) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:792) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.update(JdbcTemplate.java:850) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at it.softsolutions.bestx.dao.sql.SqlCSOperationStateAuditDao.saveNewState(SqlCSOperationStateAuditDao.java:159) ~[bestxengine-cs-3.0.3-SNAPSHOT.jar:1.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.audit.CSOperationStateAudit.onOperationStateChanged(CSOperationStateAudit.java:793) ~[bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.updateStateListeners(Operation.java:341) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setState(Operation.java:262) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.setStateResilient(Operation.java:288) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.handlers.InitialEventHandler.onCustomerOrder(InitialEventHandler.java:61) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.Operation.onCustomerOrder(Operation.java:563) [bestxengine-3.0.4-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at it.softsolutions.bestx.connections.AkrosCustomerAdapter$1.run(AkrosCustomerAdapter.java:200) [bestxengine-cs-3.0.3-SNAPSHOT.jar:3.0.3-SNAPSHOT]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:886) [na:1.6.0_21-ea]
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:908) [na:1.6.0_21-ea]
+        at java.lang.Thread.run(Thread.java:619) [na:1.6.0_21-ea]
+Caused by: java.sql.SQLException: The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Stati_Ordini". The conflict occurred in database "BESTX_CS_INTEGRATION", table "dbo.TabHistoryOrdini", column 'NumOrdine'.
+        at net.sourceforge.jtds.jdbc.SQLDiagnostic.addDiagnostic(SQLDiagnostic.java:368) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.TdsCore.tdsErrorToken(TdsCore.java:2820) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.TdsCore.nextToken(TdsCore.java:2258) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.TdsCore.getMoreResults(TdsCore.java:632) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsStatement.processResults(JtdsStatement.java:584) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsStatement.executeSQL(JtdsStatement.java:546) ~[jtds-1.2.4.jar:1.2.4]
+        at net.sourceforge.jtds.jdbc.JtdsPreparedStatement.executeUpdate(JtdsPreparedStatement.java:506) ~[jtds-1.2.4.jar:1.2.4]
+        at org.apache.commons.dbcp.DelegatingPreparedStatement.executeUpdate(DelegatingPreparedStatement.java:105) ~[commons-dbcp-1.4.jar:1.4]
+        at org.apache.commons.dbcp.DelegatingPreparedStatement.executeUpdate(DelegatingPreparedStatement.java:105) ~[commons-dbcp-1.4.jar:1.4]
+        at org.springframework.jdbc.core.JdbcTemplate$2.doInPreparedStatement(JdbcTemplate.java:798) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:591) ~[spring-2.5.6.SEC03.jar:2.5.6.SEC03]
+        ... 13 common frames omitted
+2012-06-13 09:12:17,696 ERROR                           Operation -> setStateResilient                  :290 - Operation '[Operation=1339571544785, it.softsolutions.bestx.states.ErrorState, it.softsolutions.bestx.BestXException: Unable to notify operation state change to listener: it.softsolutions.bestx.audit.CSOperationStateAudit@2e1df471 - Exception message: java.lang.NullPointerException]' change to state 'it.softsolutions.bestx.BestXException: Unable to notify operation state change to listener: it.softsolutions.bestx.audit.CSOperationStateAudit@2e1df471 - Exception message: org.springframework.dao.DataIntegrityViolationException: PreparedStatementCallback; SQL [INSERT INTO TabHistoryStati (NumOrdine, SaveTime, Stato, StatoPrecedente, DescrizioneEvento, IdEvento, Attempt, UserVisible, CustomerVisible) VALUES (?,?,?,?,?,?,?,?,?)]; The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Stati_Ordini". The conflict occurred in database "BESTX_CS_INTEGRATION", table "dbo.TabHistoryOrdini", column 'NumOrdine'.; nested exception is java.sql.SQLException: The INSERT statement conflicted with the FOREIGN KEY constraint "FK_Stati_Ordini". The conflict occurred in database "BESTX_CS_INTEGRATION", table "dbo.TabHistoryOrdini", column 'NumOrdine'.' failed: {}
+
+==> BestX-Commons.2012-06-13.0.log <==
+2012-06-13 09:12:17,681 INFO                              Sampler -> dumpToLog                          :222 - [OPERATION_SAVE_STATE_STATISTICS] [MONOBJ=operationLastSaveTime][PeriodTime=0][StatMin=6.0][LastValueTime=Wed Jun 13 09:12:17 CEST 2012][SamplesCount=13][StdDeviation=32.12575450575601][Sum=308.0][StatMax=121.0][PeriodsCount=0][PeriodicValues=false][GeometricAverage=14.361415241478545][LastValueTimeDiff=164478][Average=23.692307692307693][Variance=1032.0641025641025][LastValueTimestamp=1339571537681][TimeDiffMean=109836.5][LastSampleValue=11.0]
+2012-06-13 09:12:17,691 INFO                              Sampler -> dumpToLog                          :222 - [OPERATION_SAVE_STATE_STATISTICS] [MONOBJ=operationLastSaveTime][PeriodTime=0][StatMin=6.0][LastValueTime=Wed Jun 13 09:12:17 CEST 2012][SamplesCount=14][StdDeviation=31.22551788254227][Sum=314.0][StatMax=121.0][PeriodsCount=0][PeriodicValues=false][GeometricAverage=13.49343514310539][LastValueTimeDiff=10][Average=22.42857142857143][Variance=975.032967032967][LastValueTimestamp=1339571537691][TimeDiffMean=101388.30769230769][LastSampleValue=6.0]
+
+==> BestX.2012-06-13.0.log <==
+2012-06-13 09:12:25,090 DEBUG                         TimerServer -> run                                :41  - [TIMER] Timer RECEIVED_ORDERS_STATISTICS_TIMER_AMOS expired: remove timer from central map and execute listener callback
+
+
+

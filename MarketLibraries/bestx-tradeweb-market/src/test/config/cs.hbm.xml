@@ -1,0 +1,352 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+	<!-- USER TYPE DEFINITIONS -->
+	<typedef name="money" class="it.softsolutions.bestx.hibernate.MoneyUserType"/>
+	<typedef name="operationIdType" class='it.softsolutions.bestx.hibernate.EnumUserType'>
+		<param name="enumClassName">it.softsolutions.bestx.OperationIdType</param>
+	</typedef>
+	<typedef name="proposalSide" class='it.softsolutions.bestx.hibernate.EnumUserType'>
+		<param name="enumClassName">it.softsolutions.bestx.model.Proposal$ProposalSide</param>
+	</typedef>
+	<typedef name="proposalType" class='it.softsolutions.bestx.hibernate.EnumUserType'>
+		<param name="enumClassName">it.softsolutions.bestx.model.Proposal$ProposalType</param>
+	</typedef>
+	<typedef name="proposalState" class='it.softsolutions.bestx.hibernate.EnumUserType'>
+		<param name="enumClassName">it.softsolutions.bestx.model.Proposal$ProposalState</param>
+	</typedef>
+	<typedef name="commissionType" class='it.softsolutions.bestx.hibernate.EnumUserType'>
+		<param name="enumClassName">it.softsolutions.bestx.model.Commission$CommissionType</param>
+	</typedef>
+	<typedef name="quoteType" class='it.softsolutions.bestx.hibernate.EnumUserType'> <!--  not mapped yet -->
+		<param name="enumClassName">it.softsolutions.bestx.model.Quote$QuoteType</param>
+	</typedef>
+	<typedef name="orderSide" class='it.softsolutions.bestx.hibernate.EnumUserType'>
+		<param name="enumClassName">it.softsolutions.bestx.model.Order$OrderSide</param>
+	</typedef>
+	<typedef name="orderType" class='it.softsolutions.bestx.hibernate.EnumUserType'>
+		<param name="enumClassName">it.softsolutions.bestx.model.Order$OrderType</param>
+	</typedef>
+	<typedef name="executionReportState" class='it.softsolutions.bestx.hibernate.EnumUserType'>
+		<param name="enumClassName">it.softsolutions.bestx.model.ExecutionReport$ExecutionReportState</param>
+	</typedef>
+	<typedef name="marketCode" class='it.softsolutions.bestx.hibernate.EnumUserType'>
+		<param name="enumClassName">it.softsolutions.bestx.model.Market$MarketCode</param>
+	</typedef>
+	<typedef name="subMarketCode" class='it.softsolutions.bestx.hibernate.EnumUserType'>
+		<param name="enumClassName">it.softsolutions.bestx.model.Market$SubMarketCode</param>
+	</typedef>
+	<typedef name="timeInForce" class='it.softsolutions.bestx.hibernate.EnumUserType'>
+		<param name="enumClassName">it.softsolutions.bestx.model.Order$TimeInForce</param>
+	</typedef>
+	<typedef name="priceDiscoveryType" class='it.softsolutions.bestx.hibernate.EnumUserType'>
+		<param name="enumClassName">it.softsolutions.bestx.services.price.PriceService$PriceDiscoveryType</param>
+	</typedef>
+
+	
+	<!-- ENTITY DEFINITIONS -->
+	<class name="it.softsolutions.bestx.model.ExchangeRate" table="CurrencyExchange">
+		<id name="currency" column="Valuta" access="field"/>
+		<property name="exchangeRateAmount" column="ExchangeRate" access="field"/>
+		<property name="baseCurrency" formula="'EUR'" access="field"/>	
+		<property name="settlementDate" column="SettlementDate" access="field"/>	
+	</class>
+	
+	<class name="it.softsolutions.bestx.model.Trader" table="Trader">
+		<id name="traderId" column="TraderId"/>
+	</class>
+	
+	<class name="it.softsolutions.bestx.model.Policy" table="PolicyTable" mutable="false">
+		<id name="name" column="PolicyCode"/>
+		<property name="description" column="PolicyDesc"/>
+		<set name="venues" lazy="false" table="ExecutionVenuePolicies" cascade="all-delete-orphan">
+			<key column="PolicyCode"/>
+			<many-to-many class="it.softsolutions.bestx.model.Venue" column="ExecutionVenueCode"/>
+		</set>
+	</class>
+
+	<class name="it.softsolutions.bestx.model.Venue" table="ExecutionVenueTable" mutable="false">
+		<id name="code" column="ExecutionVenueCode"/>
+		<property name="isMarket" column="IsMarket" access="field"/>
+		<many-to-one name="marketMaker" column="BankCode" class="it.softsolutions.bestx.model.MarketMaker" lazy="false" cascade="none"/>
+		<many-to-one name="market" column="MarketId" class="it.softsolutions.bestx.model.Market" lazy="false" cascade="none"/>
+	</class>
+	
+
+	<class name="it.softsolutions.bestx.model.ClassifiedProposal" table="Proposal">
+		<id name="id" column="ProposalId" access="field">
+			<generator class="native"/>
+		</id>
+		<property name="originalPrice" column="OriginalPrice"/>
+		<property name="price" type="money">
+			<column name="CurrencyCode"/>
+			<column name="Price"/>
+		</property>
+		<property name="orderPrice" type="money">
+			<column name="OrderPriceCurrencyCode"/>
+			<column name="OrderPrice"/>
+		</property>
+		<property name="customerAdditionalExpenses" type="money">
+			<column name="CustAddExpensesCurrencyCode"/>
+			<column name="CustAddExpenses"/>
+		</property>
+		<property name="commission" type="money">
+			<column name="CommissionCurrencyCode"/>
+			<column name="Commission"/>
+		</property>
+		<property name="priceTelQuel" type="money">
+			<column name="PriceTelQuelCurrencyCode"/>
+			<column name="PriceTelQuel"/>
+		</property>
+		<property name="worstPriceUsed" type="money">
+			<column name="WorstPriceCurrencyCode"/>
+			<column name="WorstPrice"/>
+		</property>
+		<property name="accruedInterest" type="money">
+			<column name="AccruedInterestCurrencyCode"/>
+			<column name="AccruedInterest"/>
+		</property>
+		<property name="type" column="Type" type="proposalType"/>
+		<property name="commissionType" column="CommissionType" type="commissionType"/>
+		<property name="proposalState" column="State" type="proposalState"/>
+		<property name="timestamp" column="Timestamp"/>
+		<property name="side" column="ProposalSide" type="proposalSide"/>
+		<property name="qty" column="Quantity"/>
+		<property name="expiration" column="Expiration"/>
+		<property name="futSettDate" column="SettlementDate"/>
+		<property name="reason" column="Reason"/>
+		<property name="commissionTick" column="CommissionTick"/>
+		<property name="accruedDays" column="AccruedDays"/>
+		<property name="nonStandardSettlementDateAllowed" column="NonStandardSettlementDateAllowed"/>
+		<property name="senderQuoteId" column="SenderQuoteId"/>
+		<many-to-one name="market" column="MarketId" class="it.softsolutions.bestx.model.Market" cascade="none" lazy="false" not-null="false"/>
+		<many-to-one name="venue" column="Venue" class="it.softsolutions.bestx.model.Venue" cascade="none" lazy="false" not-null="false"/>
+		<many-to-one name="trader" column="TraderId" class="it.softsolutions.bestx.model.Trader" cascade="all" lazy="false" not-null="false"/>
+		<many-to-one name="marketMarketMaker" class="it.softsolutions.bestx.model.MarketMarketMaker" cascade="none" lazy="false">
+			<column name="MMMMarketId" not-null="false"></column>
+			<column name="MMMBankMarketCode" not-null="false"></column>
+		</many-to-one>
+	</class>
+	
+	<class name="it.softsolutions.bestx.model.ExecutionReport" table="ExecutionReport">
+		<id name="id" column="ExecutionReportId" access="field">
+			<generator class="native"/>
+		</id>
+		<property name="sequenceId" column="SequenceId"/>
+		<property name="side" column="OrderSide" type="orderSide"/>
+		<property name="state" column="State" type="executionReportState"/>
+		<property name="orderQty" column="OrderQuantity"/>
+		<property name="actualQty" column="ActualQuantity"/>
+		<property name="ticket" column="Ticket"/>
+		<property name="futSettDate" column="FutSettDate"/>
+		<property name="transactTime" column="TransactionTime"/>
+		<property name="price" type="money">
+			<column name="Currency"/>
+			<column name="Price"/>
+		</property>
+		<property name="account" column="Account"/>
+		<property name="lastPx" column="LastPx"/>
+<!-- 	<property name="cumQuantity" column="CumQuantity"/>  -->
+		<property name="remainingQty" column="RemainingQuantity"/>
+		<property name="averagePrice" column="AveragePrice"/>
+		<property name="commission" column="Commission"/>
+		<property name="amountCommission" column="AmountCommission" />
+		<property name="commissionType" column="CommissionType"/>
+		<property name="tipoConto" column="TipoConto"/>
+		<property name="execBroker" column="ExecBroker"/>
+		<property name="text" column="Text"/>
+		<property name="accruedInterestAmount" type="money">
+			<column name="AccruedInterestCurrency"/>
+			<column name="AccruedInterestAmount"/>
+		</property>
+		<property name="accruedInterestDays" column="AccruedInterestDays"/>
+		<property name="accruedInterestRate" column="AccruedInterestRate"/>
+		<property name="counterPart" column="Counterpart"/>
+		<property name="property" column="Property"/> 
+		<property name="marketOrderID" column="MarketOrderID"/>
+		<many-to-one name="market" column="MarketId" class="it.softsolutions.bestx.model.Market" cascade="none" lazy="false" not-null="false"/>
+		<many-to-one name="instrument" column="ISIN" class="it.softsolutions.bestx.model.Instrument" cascade="none" lazy="false" not-null="false"/>
+		<property name="priceType" column="PriceType"/>
+	</class>
+	
+	<class name="it.softsolutions.bestx.model.MarketExecutionReport" table="MarketExecutionReport" discriminator-value="0">
+		<id name="id" column="ExecutionReportId" access="field">
+			<generator class="native"/>
+		</id>
+		<discriminator column="IsTradeFill" type="int"/>
+		<property name="futSettDate" column="FutSettDate"/>
+		<property name="sequenceId" column="SequenceId"/>
+		<property name="side" column="OrderSide" type="orderSide"/>
+		<property name="state" column="State" type="executionReportState"/>
+		<property name="orderQty" column="OrderQuantity"/>
+		<property name="actualQty" column="ActualQuantity"/>
+		<property name="ticket" column="Ticket"/>
+		<property name="transactTime" column="TransactionTime"/>
+		<property name="price" type="money">
+			<column name="Currency"/>
+			<column name="Price"/>
+		</property>
+		<many-to-one name="market" column="MarketId" class="it.softsolutions.bestx.model.Market" cascade="none" lazy="false" not-null="false"/>
+		<many-to-one name="instrument" column="ISIN" class="it.softsolutions.bestx.model.Instrument" cascade="none" lazy="false" not-null="false"/>
+		<many-to-one name="marketMaker" column="BankCode" class="it.softsolutions.bestx.model.MarketMaker" cascade="none" lazy="false" not-null="false"/>
+		<subclass name="it.softsolutions.bestx.model.TradeFill" discriminator-value="1">
+			<property name="assigned" column="Assigned"/>
+		</subclass>
+	</class>
+	
+	<class name="it.softsolutions.bestx.model.Country" table="CountryCodeTable">
+		<id name="code" column="CountryCode"/>
+		<property name="name" column="CountryName"/>
+		<property name="ocse" column="IsOcseFlag"/>
+		<property name="ue" column="IsUEFlag"/>
+		<property name="valid262Ocse" column="isValid262OcseFlag"/>
+	</class>
+	
+	<class name="it.softsolutions.bestx.model.Holiday" table="Holidays" lazy="false">
+		<composite-id>
+			<key-property name="currency" column="CurrencyCode"/>
+			<key-property name="date" column="DataValuta"/>
+		</composite-id>
+		<property name="description" column="HolidayDesc"/>
+	</class>
+
+	<class name="it.softsolutions.bestx.model.Instrument" table="InstrumentsTable">
+		<id name="isin" column="ISIN"/>
+		<property name="inInventory" column="InInventory"/>
+		<property name="category" column="Category"/>
+		<property name="subCategory" column="SubCategory"/>
+		<property name="securityType" column="SecurityType"/>
+		<property name="coupon" column="Coupon"/>
+		<property name="currency" column="CurrencyCode"/>
+		<property name="description" column="Description"/>
+		<property name="incSize" column="MinimumIncrement"/>
+		<property name="issueDate" column="IssueDate"/>
+		<property name="issuerName" column="Issuer_Name"/>
+		<property name="maturityDate" column="MaturityDate"/>
+		<property name="defaultSettlementDate" column="SettlementDate"/>
+		<property name="minSize" column="MinimumPiece"/>
+		<property name="moodyRating" column="MoodysRating"/>
+		<property name="spRating" column="SPrating"/>
+		<property name="RTFITicker" column="RTFITicker"/>
+		<property name="updateDate" column="UpdateDate"/>
+		<property name="offeringType" column="OfferingType"/>
+		<property name="BBSettlementDate" column="BBSettlementDate"/>
+		<property name="bondType" column="BondType"/>
+		<property name="assetType" column="AssetType"/>
+		<property name="rateo" column="Rateo"/>
+		<many-to-one name="country" column="CountryCode" class="it.softsolutions.bestx.model.Country" cascade="none" lazy="false"/>
+		<one-to-one name="instrumentAttributes" class="it.softsolutions.bestx.model.Instrument$InstrumentAttributes" cascade="all"/>
+	</class>
+	
+	<class name="it.softsolutions.bestx.markets.MarketSecurityStatus" table="MarketSecurityStatus">
+		<id name="id" column="MarketSecurityStatusId" access="field">
+			<generator class="native"/>
+		</id>
+		<property name="marketCode" column="MarketCode" type="marketCode"/>
+		<property name="subMarketCode" column="SubMarketCode" type="subMarketCode"/>
+		<property name="instrument" column="ISIN"/>
+		<property name="statusCode" column="StatusCode"/>
+		<property name="settlementDate" column="SettlementDate"/>
+		<property name="minQty" column="MinQty"/>
+		<property name="minIncrement" column="MinIncrement"/>
+		<property name="qtyMultiplier" column="QtyMultiplier" />
+		<property name="bondType" column="MarketBondType" />
+		<property name="marketAffiliation" column="marketAffiliation" />
+		<property name="marketAffiliationEnum" column="marketAffiliationEnum"/>
+		<property name="quoteIndicatorString" column="QuoteIndicatorString" not-null="false"/>
+		<property name="quoteIndicatorEnum" column="QuoteIndicatorEnum"/>
+	</class>
+	
+	<class name="it.softsolutions.bestx.model.Instrument$InstrumentAttributes" table="InstrumentAttributes">
+		<id name="isin" column="ISIN" access="field"/>
+		<property name="internal" column="internal"/>
+		<property name="withProspect" column="WithProspectFlag"/>
+		<property name="withoutProspect" column="WithoutProspectFlag"/>
+		<property name="outlaw" column="OutlawFlag"/>
+		<property name="retailCustomerDisabled" column="RetailCustomerDisabledFlag"/>
+		<many-to-one name="portfolio" column="PortfolioId" class="it.softsolutions.bestx.model.Portfolio" cascade="none" lazy="false"/>
+	</class>
+	
+	<class name="it.softsolutions.bestx.model.Portfolio" table="PortfolioTable">
+		<id name="id" column="PortfolioId" access="field"/>
+		<property name="description" column="Description"/>
+		<property name="internalizable" column="Internalizable"/>
+	</class>
+	
+	<class name="it.softsolutions.bestx.model.TickerOutlaw" table="OutlawRuleTable">
+		<id name="ticker" column="Ticker"/>
+		<property name="currencyCode" column="CurrencyCode" />
+	</class>
+
+	<class name="it.softsolutions.bestx.model.MarketMaker" table="BankTable">
+		<id name="code" column="BankCode"/>
+		<property name="enabled" column="Enabled"/>
+		<property name="name" column="BankName"/>
+		<property name="classId" column="ClassId"/>
+		<property name="rank" column="Rank"/>
+		<property name="sinfoCode" column="SinfoCode"/>	
+		<set name="marketMarketMakers" inverse="true" lazy="false">
+			<key>
+				<column name="BankCode"></column>
+			</key>
+			<one-to-many class="it.softsolutions.bestx.model.MarketMarketMaker"/>
+		</set>
+		<set name="accountCodes" inverse="true" lazy="false" cascade="all-delete-orphan">
+			<key column="BankCode"/>
+			<one-to-many class="it.softsolutions.bestx.model.MarketMakerAccount"/>
+		</set>
+	</class>
+	
+	<class name="it.softsolutions.bestx.model.MarketMarketMaker" table="MarketBanks">
+		<composite-id>
+			<key-property name="marketId" column="MarketId" access="field"/>
+			<key-property name="marketSpecificCode" column="BankMarketCode"/>
+		</composite-id>
+		<many-to-one name="market" formula="marketId" class="it.softsolutions.bestx.model.Market" lazy="false" cascade="none"/>
+		<many-to-one name="marketMaker" column="BankCode" class="it.softsolutions.bestx.model.MarketMaker" lazy="false" cascade="none"/>
+		<property name="enabledFilter" column="EnabledFilter"/>	
+	</class>
+	
+	<class name="it.softsolutions.bestx.model.MarketMakerAccount" table="MarketMakerAccount">
+		<composite-id>
+			<key-property name="bankCode" column="BankCode" access="field"/>
+			<key-property name="accountCode" column="AccountCode"/>
+		</composite-id>
+		<many-to-one name="marketMaker" formula="BankCode" class="it.softsolutions.bestx.model.MarketMaker" lazy="false" cascade="none"/>
+	</class>
+	
+	<class name="it.softsolutions.bestx.model.Market" table="MarketTable">
+		<id name="marketId" column="MarketId" access="field"/>
+		<property name="marketCode" column="MarketName" type="marketCode" access="field"/>
+		<property name="subMarketCode" column="SubMarketCode" type="subMarketCode" access="field"/>
+		<property name="name" formula="MarketName"/>
+		<property name="ranking" column="Ranking" access="field"/>
+		<property name="enabledAutoexecution" column="Autoexecution" access="field"/>
+		<property name="secure" column="IsSecure" access="field"/>
+		<property name="disabled" column="Disabled" access="field"/>
+		<property name="reusePrices" column="ReusePrices" access="field"/>
+		<property name="micCode" column="MicCode" access="field"/>
+		<property name="marketBehaviour"  column="MarketBehaviour"/>
+	</class>
+	
+	<class name="it.softsolutions.bestx.model.SortedBook" table="Book">
+		<id name="id" column="BookId" access="field">
+			<generator class="native"/>
+		</id>
+		<many-to-one name="instrument" column="ISIN" class="it.softsolutions.bestx.model.Instrument"  lazy="false" not-null="true"/>
+  		<!-- list name="askProposals" lazy="false" where="ProposalSide = 'ASK'" cascade="all-delete-orphan" -->
+  		<list name="askProposals" lazy="false" where="ProposalSide = 'ASK'" cascade="delete">
+			<key column="BookId"/>
+			<index column="RankInBook"/>
+			<one-to-many class="it.softsolutions.bestx.model.ClassifiedProposal"/>
+		</list>
+		<!-- list name="bidProposals" lazy="false" where="ProposalSide = 'BID'" cascade="all-delete-orphan" -->
+		<list name="bidProposals" lazy="false" where="ProposalSide = 'BID'" cascade="delete">
+			<key column="BookId"/>
+			<index column="RankInBook"/>
+			<one-to-many class="it.softsolutions.bestx.model.ClassifiedProposal"/>
+		</list>
+	</class>
+</hibernate-mapping>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <jmxConfigurator />
+    <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener" />  
+    <appender name="JDDEServerLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <prudent>false</prudent>
+        <encoder>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-3line - %message%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./log/JDDEServer.%d.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+    </appender>
+    <appender name="DDEManagerLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <prudent>false</prudent>
+        <encoder>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-3line - %message%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./log/DDEManager.%d.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+    </appender>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %15.15logger{0} - %message%n</Pattern>
+<!--             <Pattern>%date{ISO8601} %-5level %35.35logger{0} -> %-35.35method:%-3line - %message%n</Pattern> -->
+        </layout>
+    </appender>
+    <logger name="it.softsolutions.jdde.dde" additivity="true" level="TRACE">
+        <appender-ref ref="DDEManagerLogger" />
+    </logger>
+    <logger name="it.softsolutions.jdde.server" additivity="true" level="TRACE">
+        <appender-ref ref="JDDEServerLogger" />
+    </logger>
+    <logger name="com.pretty_tools.dde" additivity="true" level="WARNING">
+        <appender-ref ref="DDEManagerLogger" />
+    </logger>
+    <root level="TRACE">
+        <appender-ref ref="STDOUT" />
+    </root>
+</configuration>

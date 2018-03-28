@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <jmxConfigurator />
+    <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener" />
+    
+    <appender name="TradeStacLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <prudent>false</prudent>
+        <encoder>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./log/TradeStac.%d.%i.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>20MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+    <appender name="BestXLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <prudent>false</prudent>
+        <encoder>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./log/BestX.%d.%i.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>20MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+    <appender name="QuickfixLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <prudent>false</prudent>
+        <encoder>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./log/Quickfix.%d.%i.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>20MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %15.15logger{0} - %message%n</Pattern>
+<!--             <Pattern>%date{ISO8601} %-5level %35.35logger{0} -> %-35.35method:%-4line - %message%n</Pattern> -->
+        </layout>
+    </appender>
+    <logger name="quickfix.mina" additivity="false" level="WARN">
+        <appender-ref ref="QuickfixLogger" />
+    </logger>
+    <logger name="quickfixj" additivity="false" level="INFO">
+        <appender-ref ref="QuickfixLogger" />
+    </logger>
+    <logger name="org.simpleframework" additivity="false" level="INFO">
+        <appender-ref ref="BestXLogger" />
+    </logger>
+    <logger name="it.softsolutions.tradestac" additivity="false" level="DEBUG">
+        <appender-ref ref="TradeStacLogger" />
+    </logger>
+    <logger name="it.softsolutions.bestx.connections.tradeweb" additivity="false" level="TRACE">
+        <appender-ref ref="TradeStacLogger" />
+    </logger>
+    
+    <logger name="it.softsolutions.bestx" additivity="false" level="DEBUG">
+        <appender-ref ref="BestXLogger" />
+    </logger>
+    <root level="INFO">
+        <appender-ref ref="BestXLogger" />
+    </root>
+</configuration>

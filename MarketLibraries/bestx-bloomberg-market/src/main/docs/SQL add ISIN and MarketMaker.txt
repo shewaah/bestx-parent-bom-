@@ -1,0 +1,93 @@
+
+- TODO -------------------------------------------------------------------------------------
+- assegnare all'utente 1994 una policy ad-hoc "BPipeTest" e assegnare i 6 MarketMaker alla stessa policy
+
+INSERT INTO PolicyTable(PolicyCode) VALUES ('BPipeTest')
+UPDATE ExecutionVenuePolicies SET PolicyCode = 'BPipeTest' WHERE ExecutionVenueCode IN ('BGN', 'CBBT', 'SG', 'DKFI', 'LLOX', 'RLLOX', 'RSG', 'ERGB', 'MELI', 'HMTF', 'ETLX', 'EMTS', 'MILA' )
+UPDATE CustomerTable SET PolicyCode = 'BPipeTest' WHERE ClientCode = '1994'
+
+- Configurare correttamente i seguenti ISIN e MarketMaker
+isin = {"XS0055498413", "FR0010428011", "DE0001134922", "DE0001134468", "AT000B048988", "IT0004759673"};
+marketMakers = {"BGN", "CBBT", "SG", "DKFI", "LLOX", "ERGB", "MELI", "HMTF", "ETLX", "EMTS", "MILA"};
+--------------------------------------------------------------------------------------------
+
+- Consegna QSD ------------------------------------------------------------------------------
+- BestX 	 > .120
+- TradeStac  > dev-bsrh564-72
+- Database	 > .120
+
+- Script creazione tabelle TradeStac Bloomberg per reportistica > report-bloomberg-schema.sql
+
+- Configurazione BestX
+	- cs-spring.xml
+		- exporter
+			<entry key="it.softsolutions.bestx.cs:name=BLPMarketConnection" value-ref="blpMarket" />
+		- assembler
+			<prop key="it.softsolutions.bestx.cs:name=BLPMarketConnection">it.softsolutions.bestx.management.MarketMBean</prop>
+		- akisMarketConnections
+			<ref bean="blpMarket"/>
+		- configurableMarketConnectionRegistry
+			<ref bean="blpMarket"/>
+		- NEW BEANS ADDED
+			<bean id="blpMarket" class="it.softsolutions.bestx.markets.bloomberg.BLPMarket" init-method="init">
+			<bean id="bloombergToBLPTranslator" class="it.softsolutions.bestx.connections.bloomberg.BloombergToBLPTranslator" init-method="init">
+			<bean id="blpConnector" class="it.softsolutions.bestx.connections.bloomberg.BLPConnector" init-method="init">
+	- NEW FILES
+		fix-tradestac-blp.properties
+		logback.xml
+	- UPDATED PROPERTIES
+		log4j.properties > replace the old one
+		SSLog.properties > replace the old one
+
+		
+----------------------------- 
+questa per gli isin : vado a prendere i dati da un isin a caso 14:24 
+
+INSERT INTO InstrumentsTable SELECT 'XS0055498413', [Coupon], [MaturityDate], [CurrencyCode], [SPrating], [MoodysRating], 
+[MinimumPiece], [MinimumIncrement], [SeriesPerOTCgo], [SettlementDate], [LastOrderDate], 
+[UpdateDate], [IssueDate], [SecurityType], [BloomTicker], [RTFITicker], [CountryCode], 
+[BondType], [AssetType], [IndustrySubSector], [IssuerIndustry], [Description], [OfferingType], 
+[Issuer_Name], [Rateo], [BBSettlementDate], [Category], [SubCategory], [InInventory], [BBGDescription] 
+FROM [dbo].[InstrumentsTable]
+where isin = 'XS0176823424'
+GO
+
+-- forse non serve --------------------------- 
+INSERT INTO InstrumentAttributes
+select  'XS0055498413', [internal], [WithProspectFlag], [WithoutProspectFlag], [OutLawFlag], [RetailCustomerDisabledFlag], [PortfolioId] 
+    FROM [dbo].[InstrumentAttributes]
+where isin = 'XS0176823424'
+GO
+ 
+ 
+----------------------------- 
+ho generato le query necessarie ad un market maker, dovrebbero bastare queste: 14:31 
+
+-- il valore 84 è il ranking, puoi metterci un numero a caso, forse sarebbe corretto cercare il più alto già presente nella BankTable
+
+INSERT INTO [dbo].[BankTable]([BankCode], [BankName], [ClassId], [Rank], [Enabled], [SinfoCode])
+VALUES('ERGB', 'ERGB', 1, 84, 1, NULL)
+GO
+
+-- qua vanno inseriti gli abbinamenti con i mercati su cui opera quel market maker, ho usato come esempio bloomberg
+
+INSERT INTO [dbo].[MarketBanks]([MarketId], [MarketCode], [BankCode], [BankMarketCode], [SinfoCode], [PriceRank], [EnabledFilter])
+VALUES(1, 'BLOOMBERG', 'ERGB', 'ERGB', NULL, 100, 'All')
+GO
+
+-- qua va censita la venue
+
+INSERT INTO [dbo].[ExecutionVenueTable]([ExecutionVenueCode], [IsMarket], [MarketId], [SubMarketCode], [BankCode])
+VALUES('ERGB', 0, NULL, NULL, 'ERGB')
+GO
+
+-- qua va abbinato il market maker ad una delle policy
+
+INSERT INTO [dbo].[ExecutionVenuePolicies]([PolicyCode], [ExecutionVenueCode])
+VALUES('BPipeTest', 'ERGB')
+GO 
+ 
+
+INSERT INTO marketmakerAccount VALUES ('DKFI', 'DKFI Description')
+GO
+ 
