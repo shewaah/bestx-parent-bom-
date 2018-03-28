@@ -528,8 +528,8 @@
     </build>
 
     <scm>
-        <connection>scm:svn:http://it-vsrv-svn-79/BestX/bestxengine-parent/trunk</connection>
-        <developerConnection>scm:svn:http://it-vsrv-svn-79/BestX/bestxengine-parent/trunk</developerConnection>
+        <connection>scm:git:ssh://git@git.softsolutions.io/labs/bestxengineparent-test.git</connection>
+        <developerConnection>scm:git:ssh://git@git.softsolutions.io/labs/bestxengineparent-test.git</developerConnection>
     </scm>
 
     <distributionManagement>
