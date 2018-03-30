@@ -128,11 +128,6 @@
         </pluginManagement>
     </build>
 
-    <scm>
-        <connection>scm:svn:http://it-vsrv-svn-79/BestX/bestx-protocol-api/trunk</connection>
-        <developerConnection>scm:svn:http://it-vsrv-svn-79/BestX/bestx-protocol-api/trunk</developerConnection>
-    </scm>
-
     <distributionManagement>
         <repository>
             <id>releases</id>

@@ -218,10 +218,6 @@
         </pluginManagement>
 
     </build>
-    <scm>
-        <connection>scm:svn:http://it-vsrv-svn-79/BestX/bestxengine/trunk</connection>
-        <developerConnection>scm:svn:http://it-vsrv-svn-79/BestX/bestxengine/trunk</developerConnection>
-    </scm>
 
     <distributionManagement>
         <repository>

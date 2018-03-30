@@ -117,12 +117,6 @@
 
     </build>
 
-    <scm>
-        <connection>scm:svn:http://it-vsrv-svn-79/BestX/market-libs/bestx-marketaxess-market/trunk</connection>
-        <developerConnection>scm:svn:http://it-vsrv-svn-79/BestX/market-libs/bestx-marketaxess-market/trunk
-        </developerConnection>
-    </scm>
-
     <distributionManagement>
         <repository>
             <id>releases</id>

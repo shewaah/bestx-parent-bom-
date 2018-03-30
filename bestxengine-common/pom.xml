@@ -160,10 +160,6 @@
             </plugin>
         </plugins>
     </build>
-    <scm>
-        <connection>scm:svn:http://it-vsrv-svn-79/BestX/bestxengine-common/trunk</connection>
-        <developerConnection>scm:svn:http://it-vsrv-svn-79/BestX/bestxengine-common/trunk</developerConnection>
-    </scm>
 
     <distributionManagement>
         <repository>

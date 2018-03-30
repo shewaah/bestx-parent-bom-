@@ -139,12 +139,6 @@
         </plugins>
     </build>
 
-    <scm>
-        <connection>scm:svn:http://it-vsrv-svn-79/BestX/market-libs/bestx-bloomberg-market/trunk</connection>
-        <developerConnection>scm:svn:http://it-vsrv-svn-79/BestX/market-libs/bestx-bloomberg-market/trunk
-        </developerConnection>
-    </scm>
-
     <distributionManagement>
         <repository>
             <id>releases</id>

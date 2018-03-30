@@ -249,11 +249,6 @@
 
     </build>
 
-    <scm>
-        <connection>scm:svn:http://it-vsrv-svn-79/BestX/bestxengine-product/trunk</connection>
-        <developerConnection>scm:svn:http://it-vsrv-svn-79/BestX/bestxengine-product/trunk</developerConnection>
-    </scm>
-
     <distributionManagement>
         <repository>
             <id>releases</id>
