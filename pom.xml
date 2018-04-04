@@ -38,7 +38,7 @@
         <module>bestx-protocol-api</module>
         <module>bestxengine-product</module>
         <module>bestx-fix-client</module>
-        <module>MarketLibraries</module>
+        <module>marketlibraries</module>
     </modules>
 
     <dependencyManagement>
