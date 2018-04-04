@@ -7,7 +7,7 @@
     <groupId>it.softsolutions.bestx</groupId>
     <artifactId>bestxengine-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.0.6-SNAPSHOT</version>
+    <version>4.0.7-SNAPSHOT</version>
 
     <name>BestX! Engine Develop</name>
     <description>Comprising all the modules in bestengine installation for CS</description>
@@ -15,11 +15,7 @@
     <properties>
         <DB-Version>2.0.0</DB-Version>
 
-        <bestxengine-cs.version>4.0.8-SNAPSHOT</bestxengine-cs.version>
-
         <!--  additional services -->
-        <bestx-mq-service.version>1.0.3</bestx-mq-service.version>
-        <bestx-sod-loader.version>1.0.2</bestx-sod-loader.version>
         <bestxgui-usermanagement.version>1.0.8</bestxgui-usermanagement.version>
 
         <!--  markets  -->
@@ -50,26 +46,6 @@
             <!-- bestxengine -->
             <dependency>
                 <groupId>it.softsolutions.bestx</groupId>
-                <artifactId>bestxengine</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>it.softsolutions.bestx</groupId>
-                <artifactId>bestxengine-common</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>it.softsolutions.bestx</groupId>
-                <artifactId>bestx-protocol-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>it.softsolutions.bestx</groupId>
-                <artifactId>bestxengine-product</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>it.softsolutions.bestx</groupId>
                 <artifactId>bestx-tradeweb-market</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -82,16 +58,6 @@
                 <groupId>it.softsolutions.bestx</groupId>
                 <artifactId>bestx-db</artifactId>
                 <version>${DB-Version}</version>
-            </dependency>
-            <dependency>
-                <groupId>it.softsolutions.bestx</groupId>
-                <artifactId>bestx-mq-service</artifactId>
-                <version>${bestx-mq-service.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>it.softsolutions.bestx</groupId>
-                <artifactId>bestx-fix-client</artifactId>
-                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>it.softsolutions.bestx.web</groupId>
