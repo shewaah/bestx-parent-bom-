@@ -494,8 +494,8 @@
     </build>
 
     <scm>
-        <connection>scm:git:ssh://git@git.softsolutions.io/labs/bestxengineparent-test.git</connection>
-        <developerConnection>scm:git:ssh://git@git.softsolutions.io/labs/bestxengineparent-test.git</developerConnection>
+        <connection>scm:git:ssh://git@git.softsolutions.io/bestx/bestx-parent-bom.git</connection>
+        <developerConnection>scm:git:ssh://git@git.softsolutions.io/bestx/bestx-parent-bom.git</developerConnection>
     </scm>
 
     <distributionManagement>
