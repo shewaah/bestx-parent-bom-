@@ -11,4 +11,8 @@ public interface ConnectionRegistry {
     OperatorConsoleConnection getOperatorConsoleConnection(String identifier);
 
     void setConnectionStateListeners(List<ConnectionStateListener> listeners);
+    
+    Connection getMqPriceDiscoveryConnection();
+    
+    Connection getGrdLiteConnection();
 }

@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.softsolutions.bestx.MarketConnectionRegistry;
+import it.softsolutions.bestx.connections.Connection;
 import it.softsolutions.bestx.connections.ConnectionRegistry;
 import it.softsolutions.bestx.connections.CustomerConnection;
 import it.softsolutions.bestx.connections.MarketConnection;
@@ -36,6 +37,11 @@ public class ChannelStatusReplyMessage extends IBcsMessage {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ChannelStatusReplyMessage.class);
 
     private static final long serialVersionUID = -6062875247598715718L;
+    
+    public static enum MqQueues {
+       GRDLITE, PRICEDISCOVERY 
+    }
+    
 
     /**
      * Instantiates a new akros channel status reply message.
@@ -97,6 +103,15 @@ public class ChannelStatusReplyMessage extends IBcsMessage {
         CustomerConnection customerConnection = connectionRegistry.getCustomerConnection();
         setStringProperty(IB4JOperatorConsoleMessage.FLD_FIX_CHANNEL_NAME, customerConnection.getChannelName());
         setIntProperty(IB4JOperatorConsoleMessage.FLD_FIX_CHANNEL_STATUS, customerConnection.isConnected() ? 1 : 0);
+        
+        Connection mqPriceDiscoveryConnection = connectionRegistry.getMqPriceDiscoveryConnection();
+        setStringProperty(IB4JOperatorConsoleMessage.FLD_MQ_CHANNEL_NAME + MqQueues.PRICEDISCOVERY, mqPriceDiscoveryConnection.getConnectionName());
+        setIntProperty(IB4JOperatorConsoleMessage.FLD_MQ_CHANNEL_STATUS + MqQueues.PRICEDISCOVERY, mqPriceDiscoveryConnection.isConnected() ? 1 : 0);
+        
+        Connection grdLiteConnection = connectionRegistry.getGrdLiteConnection();
+        setStringProperty(IB4JOperatorConsoleMessage.FLD_MQ_CHANNEL_NAME + MqQueues.GRDLITE, grdLiteConnection.getConnectionName());
+        setIntProperty(IB4JOperatorConsoleMessage.FLD_MQ_CHANNEL_STATUS + MqQueues.GRDLITE, grdLiteConnection.isConnected() ? 1 : 0);
+        
         
         LOGGER.trace("ChannelStatusReplyMessage = {}", this);
     }
