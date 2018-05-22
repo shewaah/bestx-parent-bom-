@@ -298,6 +298,9 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 		//newOrderSingle.addGroup(originator);
 
 		newOrderSingle.setField(new IncludeDealers(2));
+		//SP-for test purpose
+      //newOrderSingle.setField(new IncludeDealers(1));
+		
 		
 		//MIFID II
 		//TradingCapacity
