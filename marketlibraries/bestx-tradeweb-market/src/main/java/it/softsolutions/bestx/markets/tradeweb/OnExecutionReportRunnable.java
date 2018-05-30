@@ -57,6 +57,8 @@ public class OnExecutionReportRunnable implements Runnable {
     private final String text;
     private final MarketMarketMaker executionBroker;
     private String micCode;
+    private BigDecimal accruedInterestAmount;
+    private BigDecimal accruedInterestRate;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OnExecutionReportRunnable.class);
 
@@ -92,8 +94,9 @@ public class OnExecutionReportRunnable implements Runnable {
      * @param executionBroker
      * 				the execution firm code
      */
-    public OnExecutionReportRunnable(Operation operation, TradewebMarket market, Market counterMarket, String clOrdID, ExecType execType, OrdStatus ordStatus, BigDecimal accruedInterestAmount, BigDecimal accruedInterestRate, BigDecimal lastPrice, String contractNo, Date futSettDate,
-                    Date transactTime, String text, MarketMarketMaker executionBroker, String micCode) {
+    public OnExecutionReportRunnable(Operation operation, TradewebMarket market, Market counterMarket, String clOrdID, ExecType execType, OrdStatus ordStatus, BigDecimal accruedInterestAmount, 
+                   BigDecimal accruedInterestRate, BigDecimal lastPrice, String contractNo, Date futSettDate,
+                   Date transactTime, String text, MarketMarketMaker executionBroker, String micCode) {
         this.operation = operation;
         this.counterMarket = counterMarket;
         this.lastPrice = lastPrice;
@@ -107,6 +110,8 @@ public class OnExecutionReportRunnable implements Runnable {
         this.text = text;
         this.executionBroker = executionBroker;
         this.micCode = micCode;
+        this.accruedInterestAmount = accruedInterestAmount;
+        this.accruedInterestRate = accruedInterestRate;
     }
 
     @Override
@@ -167,8 +172,8 @@ public class OnExecutionReportRunnable implements Runnable {
         marketExecutionReport.setTicket(contractNo);
         marketExecutionReport.setFutSettDate(futSettDate);
         marketExecutionReport.setText(text);
-        marketExecutionReport.setAccruedInterestAmount(null);
-        marketExecutionReport.setAccruedInterestRate(null);
+        marketExecutionReport.setAccruedInterestAmount(new Money(order.getInstrument().getCurrency(), accruedInterestAmount));
+        marketExecutionReport.setAccruedInterestRate(accruedInterestRate);
         if (order.getInstrument().getBBSettlementDate() != null && order.getInstrument().getCurrency() != null && order.getInstrument().getRateo() != null && order.getFutSettDate().equals(order.getInstrument().getBBSettlementDate()) && order.getCurrency().equals(order.getInstrument().getCurrency())) {
 
             BigDecimal interestAmount;
