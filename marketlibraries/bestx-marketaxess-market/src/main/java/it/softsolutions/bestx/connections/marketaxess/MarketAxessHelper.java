@@ -586,7 +586,12 @@ public class MarketAxessHelper extends MarketPriceDiscoveryHelper {
 				executionReport.setMKTXTradeReportingInd(tsExecutionReport.getChar(MKTXTradeReportingInd.FIELD));
 			} catch (@SuppressWarnings("unused") FieldNotFound fnf) {
 			}
-
+			try {
+			   executionReport.setFutSettDate(tsExecutionReport.getUtcDateOnly(FutSettDate.FIELD));
+         } catch (@SuppressWarnings("unused") FieldNotFound fnf) {
+         }
+			
+			
 			Parties parties = tsExecutionReport.getPartiesComponent();
 			for (Group party : parties.getGroups(NoPartyIDs.FIELD)) {
 
