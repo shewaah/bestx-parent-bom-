@@ -55,6 +55,7 @@ public class FixExecutionReportOutputLazyBean extends FixOutputLazyBean {
     private String rejectReason;
     protected String rejectReasonDescription;
     protected Integer settlementType;
+    protected String strSettlementType;
     protected Date futSettDate;
     private String securityId;
     protected String symbol;
@@ -79,7 +80,7 @@ public class FixExecutionReportOutputLazyBean extends FixOutputLazyBean {
     protected Date transactTime;
     private int errorCode;
     private String executionDestination;
-    private String strFutSettDate; // FIXME togliere appena fix gateway accettera' la data come un long
+    protected String strFutSettDate; // FIXME togliere appena fix gateway accettera' la data come un long
     protected String internalizationIndicator = null;
     private Integer bestExecutionVenueFlag;
     private Integer priceType;
@@ -389,6 +390,8 @@ public class FixExecutionReportOutputLazyBean extends FixOutputLazyBean {
         }
         if (settlementType != null) {
             msg.setValue(FixMessageFields.FIX_SettlmntTyp, settlementType);
+        } else if (strSettlementType != null) {
+           msg.setValue(FixMessageFields.FIX_SettlmntTyp, strSettlementType);
         }
         if (futSettDate != null) {
             try {
