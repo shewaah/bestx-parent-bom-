@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>it.softsolutions.bestx</groupId>
     <artifactId>bestxengine-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.0.7-SNAPSHOT</version>
+    <version>4.0.7</version>
 
     <name>BestX! Engine Develop</name>
     <description>Comprising all the modules in bestengine installation for CS</description>
@@ -496,7 +494,8 @@
     <scm>
         <connection>scm:git:ssh://git@git.softsolutions.io/bestx/bestx-parent-bom.git</connection>
         <developerConnection>scm:git:ssh://git@git.softsolutions.io/bestx/bestx-parent-bom.git</developerConnection>
-    </scm>
+      <tag>bestxengine-parent-4.0.7</tag>
+  </scm>
 
     <distributionManagement>
         <repository>

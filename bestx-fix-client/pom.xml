@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>it.softsolutions.bestx</groupId>
         <artifactId>bestxengine-parent</artifactId>
-        <version>4.0.7-SNAPSHOT</version>
+        <version>4.0.7</version>
     </parent>
 
     <artifactId>bestx-fix-client</artifactId>
@@ -69,12 +67,11 @@
                         </goals>
                         <configuration>
                             <tasks>
-                                <mkdir dir="${project.build.directory}/additional_res"/>
-                                <mkdir dir="${project.build.directory}/additional_res/META-INF"/>
-                                <mkdir dir="${project.build.directory}/additional_res/META-INF/svn"/>
-                                <exec dir="${basedir}" executable="svn" failifexecutionfails="false"
-                                      output="${project.build.directory}/additional_res/META-INF/svn/svn_info.txt">
-                                    <arg line="info"/>
+                                <mkdir dir="${project.build.directory}/additional_res" />
+                                <mkdir dir="${project.build.directory}/additional_res/META-INF" />
+                                <mkdir dir="${project.build.directory}/additional_res/META-INF/svn" />
+                                <exec dir="${basedir}" executable="svn" failifexecutionfails="false" output="${project.build.directory}/additional_res/META-INF/svn/svn_info.txt">
+                                    <arg line="info" />
                                 </exec>
                             </tasks>
                         </configuration>
@@ -147,7 +144,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore/>
+                                        <ignore />
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -166,7 +163,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore/>
+                                        <ignore />
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>
