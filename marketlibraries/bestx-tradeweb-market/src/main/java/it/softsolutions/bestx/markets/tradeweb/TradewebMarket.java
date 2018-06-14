@@ -70,6 +70,9 @@ import it.softsolutions.bestx.model.MarketMarketMaker;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal;
+import it.softsolutions.bestx.model.Proposal.ProposalSide;
+import it.softsolutions.bestx.model.Proposal.ProposalType;
+import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.Venue;
 import it.softsolutions.bestx.model.Venue.VenueType;
 import it.softsolutions.bestx.services.price.SimpleMarketProposalAggregator;
@@ -88,9 +91,16 @@ import it.softsolutions.tradestac.fix.field.OrdStatus;
 import it.softsolutions.tradestac.fix.field.PartyRole;
 import it.softsolutions.tradestac.fix50.TSExecutionReport;
 import it.softsolutions.tradestac.fix50.TSNoPartyID;
-import it.softsolutions.tradestac.tw.fix.component.CompDealersGrpComponent;
+import it.softsolutions.tradestac.fix50.component.TSCompDealersGrpComponent;
+import quickfix.DoubleField;
 import quickfix.FieldNotFound;
+import quickfix.Group;
+import quickfix.IntField;
 import quickfix.MessageComponent;
+import quickfix.StringField;
+import quickfix.field.CompDealerQuote;
+import quickfix.field.CompDealerStatus;
+import tw.quickfix.field.CompDealerID;
 import tw.quickfix.field.MiFIDMIC;
 
 /**
@@ -866,43 +876,73 @@ public class TradewebMarket extends MarketCommon
             List<MessageComponent> customComp = tsExecutionReport.getCustomComponents();
             if (customComp != null) {
                for (MessageComponent comp : customComp) {
-                  if (comp instanceof CompDealersGrpComponent) {
+                  if (comp instanceof TSCompDealersGrpComponent) {
                      try {
-                        for (int i = 0; i < ((CompDealersGrpComponent)comp).getNoCompDealers().getValue(); i++) {
+                        quickfix.field.NoCompDealers compDealerGrp = ((TSCompDealersGrpComponent) comp).get(new quickfix.field.NoCompDealers());
+                        List<Group> groups = ((TSCompDealersGrpComponent) comp).getGroups(compDealerGrp.getField());
+                        for (int i = 0; i < groups.size(); i++) {
                            
-                           CompDealersGrpComponent.NoCompDealers compDealer = (CompDealersGrpComponent.NoCompDealers)((CompDealersGrpComponent)comp).getGroup(i, new CompDealersGrpComponent.NoCompDealers());
-                           
+                           int status = -1;
+                           if (groups.get(i).isSetField(CompDealerStatus.FIELD)) {
+                              status = groups.get(i).getField(new IntField(CompDealerStatus.FIELD)).getValue();
+                           }
+
                            ExecutablePrice price = new ExecutablePrice();
                            //0= Error, 1= Pass, 2= Timed out, 3= Rejected, 4= Expired, 5= Ended, 6= Pass on Last Look
-                           switch (compDealer.getCompDealerStatus().getValue()) {
+                           switch (status) {
                               case 0:
                                  price.setAuditQuoteState("Error");
                                  break;
                               case 1:
-                                 price.setAuditQuoteState("Pass");
+                                 price.setAuditQuoteState("Passed");
                                  break;
                               case 2:
-                                 price.setAuditQuoteState("Timed out");
+                                 price.setAuditQuoteState("Timed Out");
                                  break;
                               case 3:
                                  price.setAuditQuoteState("Rejected");
                                  break;
                               case 4:
-                                 price.setAuditQuoteState("Expired");
+                                 price.setAuditQuoteState("EXP-Price");
                                  break;
                               case 5:
-                                 price.setAuditQuoteState("Ended");
+                                 price.setAuditQuoteState("Cancelled");
                                  break;
                               case 6:
-                                 price.setAuditQuoteState("Pass on Last Look");
+                                 price.setAuditQuoteState("Passed");
+                                 break;
+                              default:
+                                 if (i == 0) {
+                                    price.setAuditQuoteState("Done");
+                                 } else {
+                                    price.setAuditQuoteState("Covered");
+                                 }
                                  break;
                            }
-                           price.setOriginatorID(compDealer.getCompDealerID().getValue());
-                           price.setPrice(new Money(operation.getOrder().getCurrency(), new BigDecimal(compDealer.getCompDealerQuote().getValue())));
+                           
+                            
+                           if (groups.get(i).isSetField(CompDealerID.FIELD)) {
+                              String quotingDealer = groups.get(i).getField(new StringField(CompDealerID.FIELD)).getValue();
+                              
+                              mmm = marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), quotingDealer);
+                              if(mmm == null) {
+                                 LOGGER.info("IMPORTANT! Tradeweb returned dealer {} not configured in BestX!. Please configure it", quotingDealer);
+                                 price.setOriginatorID(quotingDealer);
+                              } else {
+                                 price.setMarketMarketMaker(mmm);
+                              }
+                           }
+                           if (groups.get(i).isSetField(CompDealerQuote.FIELD)) {
+                              Double compDealerQuote = groups.get(i).getField(new DoubleField(CompDealerQuote.FIELD)).getValue();
+                              price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerQuote)));
+                           }
                            price.setQty(operation.getOrder().getQty());
                            price.setTimestamp(tsExecutionReport.getTransactTime());
-                           
-                           attempt.addExecutablePrice(price, 0);
+                           price.setType(ProposalType.COUNTER);
+                           price.setSide(operation.getOrder().getSide() == OrderSide.BUY ? ProposalSide.ASK : ProposalSide.BID);
+                           price.setQuoteReqId(attempt.getMarketOrder().getFixOrderId());
+
+                           attempt.addExecutablePrice(price, i);
                         }
                      }
                      catch (FieldNotFound e) {
