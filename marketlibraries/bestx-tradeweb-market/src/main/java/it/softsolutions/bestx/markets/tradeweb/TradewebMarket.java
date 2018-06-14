@@ -864,50 +864,54 @@ public class TradewebMarket extends MarketCommon
             }
          } else {
             List<MessageComponent> customComp = tsExecutionReport.getCustomComponents();
-            for (MessageComponent comp : customComp) {
-               if (comp instanceof CompDealersGrpComponent) {
-                  try {
-                     for (int i = 0; i < ((CompDealersGrpComponent)comp).getNoCompDealers().getValue(); i++) {
-                        
-                        CompDealersGrpComponent.NoCompDealers compDealer = (CompDealersGrpComponent.NoCompDealers)((CompDealersGrpComponent)comp).getGroup(i, new CompDealersGrpComponent.NoCompDealers());
-                        
-                        ExecutablePrice price = new ExecutablePrice();
-                        //0= Error, 1= Pass, 2= Timed out, 3= Rejected, 4= Expired, 5= Ended, 6= Pass on Last Look
-                        switch (compDealer.getCompDealerStatus().getValue()) {
-                           case 0:
-                              price.setAuditQuoteState("Error");
-                              break;
-                           case 1:
-                              price.setAuditQuoteState("Pass");
-                              break;
-                           case 2:
-                              price.setAuditQuoteState("Timed out");
-                              break;
-                           case 3:
-                              price.setAuditQuoteState("Rejected");
-                              break;
-                           case 4:
-                              price.setAuditQuoteState("Expired");
-                              break;
-                           case 5:
-                              price.setAuditQuoteState("Ended");
-                              break;
-                           case 6:
-                              price.setAuditQuoteState("Pass on Last Look");
-                              break;
+            if (customComp != null) {
+               for (MessageComponent comp : customComp) {
+                  if (comp instanceof CompDealersGrpComponent) {
+                     try {
+                        for (int i = 0; i < ((CompDealersGrpComponent)comp).getNoCompDealers().getValue(); i++) {
+                           
+                           CompDealersGrpComponent.NoCompDealers compDealer = (CompDealersGrpComponent.NoCompDealers)((CompDealersGrpComponent)comp).getGroup(i, new CompDealersGrpComponent.NoCompDealers());
+                           
+                           ExecutablePrice price = new ExecutablePrice();
+                           //0= Error, 1= Pass, 2= Timed out, 3= Rejected, 4= Expired, 5= Ended, 6= Pass on Last Look
+                           switch (compDealer.getCompDealerStatus().getValue()) {
+                              case 0:
+                                 price.setAuditQuoteState("Error");
+                                 break;
+                              case 1:
+                                 price.setAuditQuoteState("Pass");
+                                 break;
+                              case 2:
+                                 price.setAuditQuoteState("Timed out");
+                                 break;
+                              case 3:
+                                 price.setAuditQuoteState("Rejected");
+                                 break;
+                              case 4:
+                                 price.setAuditQuoteState("Expired");
+                                 break;
+                              case 5:
+                                 price.setAuditQuoteState("Ended");
+                                 break;
+                              case 6:
+                                 price.setAuditQuoteState("Pass on Last Look");
+                                 break;
+                           }
+                           price.setOriginatorID(compDealer.getCompDealerID().getValue());
+                           price.setPrice(new Money(operation.getOrder().getCurrency(), new BigDecimal(compDealer.getCompDealerQuote().getValue())));
+                           price.setQty(operation.getOrder().getQty());
+                           price.setTimestamp(tsExecutionReport.getTransactTime());
+                           
+                           attempt.addExecutablePrice(price, 0);
                         }
-                        price.setOriginatorID(compDealer.getCompDealerID().getValue());
-                        price.setPrice(new Money(operation.getOrder().getCurrency(), new BigDecimal(compDealer.getCompDealerQuote().getValue())));
-                        price.setQty(operation.getOrder().getQty());
-                        price.setTimestamp(tsExecutionReport.getTransactTime());
-                        
-                        attempt.addExecutablePrice(price, 0);
+                     }
+                     catch (FieldNotFound e) {
+                        LOGGER.warn("[MktMsg] Field not found in component dealers", e);
                      }
                   }
-                  catch (FieldNotFound e) {
-                     LOGGER.error("[MktMsg] Firld not found in component dealers", e);
-                  }
                }
+            } else {
+               LOGGER.info("[MktMsg] No custom component found in execution report {}", tsExecutionReport.getClOrdID());
             }
          }
          
