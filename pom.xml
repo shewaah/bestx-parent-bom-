@@ -23,7 +23,7 @@
         <tradestac-client.version>2.1.5-SNAPSHOT</tradestac-client.version>
         <tradestac2-client.version>1.2.1</tradestac2-client.version>
         <quickfixjrootobjects.version>1.1.4</quickfixjrootobjects.version>
-        <tradestac-tw-adapter.version>2.0.3-SNAPSHOT</tradestac-tw-adapter.version>
+        <tradestac-tw-adapter.version>2.1.1-SNAPSHOT</tradestac-tw-adapter.version>
 
         <!-- third party -->
         <quickfix.version>1.6.4</quickfix.version>
