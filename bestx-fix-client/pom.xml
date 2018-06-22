@@ -6,7 +6,7 @@
     <parent>
         <groupId>it.softsolutions.bestx</groupId>
         <artifactId>bestxengine-parent</artifactId>
-        <version>4.1.3-SNAPSHOT</version>
+        <version>4.1.3</version>
     </parent>
 
     <artifactId>bestx-fix-client</artifactId>
