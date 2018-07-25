@@ -126,4 +126,9 @@ public class FixMessageFields {
     public final static String FIX_OrderRevokeAccept = "ORDCANCELACCEPT";
     public final static String FIX_OrderRevokeReject = "ORDCANCELREJECT";
     public final static String FIX_OrderRevokeResponse = "ORDCANCEL_RESP";
+    
+    //TMO
+    public final static String FIX_CustOrderHandlingInstr = "CustOrderHandlingInstr";
+    public static final String FIX_EffectiveTime = "EffectiveTime";
+    public final static String FIX_TryAfterMinutes = "TryAfterMinutes";
 }

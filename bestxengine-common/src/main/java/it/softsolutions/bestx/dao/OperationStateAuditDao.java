@@ -251,6 +251,16 @@ public interface OperationStateAuditDao {
 	 */
 	void updateOrderSettlementDate(final Order order);
 	
+
+	/**
+	 * update the next execution time to show to web in limit files management
+	 * 
+	 * @param order
+	 * @param nextExecutionTime
+	 */
+   void updateOrderNextExecutionTime(final Order order, final Date nextExecutionTime);
+	
+	
 	/**
 	 * 
 	 * @return

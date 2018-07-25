@@ -13,9 +13,9 @@
  */
 package it.softsolutions.bestx;
 
-import it.softsolutions.bestx.model.Market;
-
 import java.util.Date;
+
+import it.softsolutions.bestx.model.Market;
 
 /**
  * 
@@ -28,7 +28,7 @@ public interface OperationState extends Cloneable {
 
     // [RR20120903] rimosso CurandoPopup, pare non essere usato
     public enum Type {
-        AcceptQuote, BusinessValidation, Cancelled, CurandoAuto, CurandoRetry, Curando, DifferentDatesExecuted, Error, Executed, MarketExecuted, Filling, FormalValidationOK, FormalValidationKO, Initial, InternalInCurando, InternalRejectInternalAndAcceptBestState, InternalAcceptInternalAndRejectBestState, MagnetNotExecution, ManageCounter, ManualExecutionWaitingPrice, ManualManage, ManualWaitingFill, MatchFound, NotExecuted, OrderNotExecutable, OrderNotExecuted, OrderReceived, OrderRejectable, OrderRevocated, ReceiveQuote, InternalReceiveInternalQuote, InternalAcceptBestIfStillValid, InternalReceiveExecutableQuote, Rejected, RejectQuote, Revocation, SendAutoNotExecutionReport, SendExecutionReport, SendNotExecutionReport, SendOrder, SendReports, SendRfq, InternalSendRfqToBest, StandbyBook, StandbyNoBook, Standby, StandbyWithBook, StandbyWithoutBook, StartExecution, InternalSendRfqToInternal, StartMagnetExecution, UnreconciledTrade, ValidateByPunctualFilter, WaitFillAfterCancel, WaitFillAfterRevocation, WaitingFill, WaitingPrice, Warning, InternalGetExecutableQuote, RejectQuoteAndAutoNotExecutionReport, LimitFileNoPrice, PriceDiscovery
+        AcceptQuote, BusinessValidation, Cancelled, CurandoAuto, CurandoRetry, Curando, DifferentDatesExecuted, Error, Executed, MarketExecuted, Filling, FormalValidationOK, FormalValidationKO, Initial, InternalInCurando, InternalRejectInternalAndAcceptBestState, InternalAcceptInternalAndRejectBestState, MagnetNotExecution, ManageCounter, ManualExecutionWaitingPrice, ManualManage, ManualWaitingFill, MatchFound, NotExecuted, OrderNotExecutable, OrderNotExecuted, OrderReceived, OrderRejectable, OrderRevocated, ReceiveQuote, InternalReceiveInternalQuote, InternalAcceptBestIfStillValid, InternalReceiveExecutableQuote, Rejected, RejectQuote, Revocation, SendAutoNotExecutionReport, SendExecutionReport, SendNotExecutionReport, SendOrder, SendReports, SendRfq, InternalSendRfqToBest, StandbyBook, StandbyNoBook, Standby, StandbyWithBook, StandbyWithoutBook, StartExecution, InternalSendRfqToInternal, StartMagnetExecution, UnreconciledTrade, ValidateByPunctualFilter, WaitFillAfterCancel, WaitFillAfterRevocation, WaitingFill, WaitingPrice, Warning, InternalGetExecutableQuote, RejectQuoteAndAutoNotExecutionReport, LimitFileNoPrice, PriceDiscovery, LimitFileParkedOrder
     }
 
     /**

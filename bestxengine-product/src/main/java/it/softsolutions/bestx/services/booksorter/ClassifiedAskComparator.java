@@ -16,9 +16,6 @@ package it.softsolutions.bestx.services.booksorter;
 
 import java.util.Comparator;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Proposal.ProposalState;
 import it.softsolutions.bestx.model.Proposal.ProposalType;
@@ -35,8 +32,6 @@ import it.softsolutions.bestx.model.Venue.VenueType;
  * 
  **/
 public class ClassifiedAskComparator implements Comparator<ClassifiedProposal> {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(ClassifiedAskComparator.class);
 
 	/* (non-Javadoc)
 	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
@@ -90,8 +85,6 @@ public class ClassifiedAskComparator implements Comparator<ClassifiedProposal> {
 				result = -1;
 			}
 		}
-
-		LOGGER.debug("result={}", result);
 		return result;
 	}
 }

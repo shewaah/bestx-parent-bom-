@@ -9,9 +9,11 @@ import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.services.OrderValidationService;
 import it.softsolutions.bestx.services.logutils.ApplicationStatisticsHelper;
 import it.softsolutions.bestx.services.ordervalidation.FilterOnPortfolioBasis;
+import it.softsolutions.bestx.services.ordervalidation.LimitFileParkTagFilter;
 import it.softsolutions.bestx.services.ordervalidation.OrderResult;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.OrderRejectableState;
+import it.softsolutions.bestx.states.ParkedOrderState;
 import it.softsolutions.bestx.states.WaitingPriceState;
 import it.softsolutions.bestx.states.WarningState;
 
@@ -40,6 +42,11 @@ public class BusinessValidationEventHandler extends BaseOperationEventHandler {
 		   {
 		      //	        	orderResult.getReason().replaceAll(FilterOnPortfolioBasis.INTERNAL_PRODUCT_STR, "");
 		      operation.setStateResilient(new WaitingPriceState(Messages.getString("FilterOverridedDueToInternalProduct.0")), ErrorState.class);	
+		   }
+		   else if (orderResult.getReason() != null &&
+               orderResult.getReason().indexOf(LimitFileParkTagFilter.TO_PARK_VAL) > -1)
+		   {
+            operation.setStateResilient(new ParkedOrderState(Messages.getString("LimitFileParkedOrder.0")), ErrorState.class);  
 		   }
 		   else
 		   {

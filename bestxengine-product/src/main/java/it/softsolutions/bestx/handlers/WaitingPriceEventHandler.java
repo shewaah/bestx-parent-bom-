@@ -306,7 +306,9 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
     public void onPricesResult(PriceService source, PriceResult priceResult) {
     	Order order = operation.getOrder();
         LOGGER.info("Order {},  price result received: {}", order.getFixOrderId(), priceResult.getState());
-        if (customerSpecificHandler!=null) customerSpecificHandler.onPricesResult(source, priceResult);
+        //2018-07-25 BESTX-334 SP: this clause allows BestX to send the price discovery result to OTEX for limit file before sending it to automatic execution
+        //for limit file which are not found executable (no prices available or out of market) BestX doesn't send any price discovery result  
+        if (customerSpecificHandler!=null && !order.isLimitFile()) customerSpecificHandler.onPricesResult(source, priceResult);
         // Stefano - 20080616 - for statistic purpose
         long time = System.currentTimeMillis() - operation.getState().getEnteredTime().getTime();
         LOGGER.info("[STATISTICS],Order={},OrderArrival={},PriceDiscoverStart={},PriceDiscoverStop={},TimeDiffMillis={}", operation.getOrder().getFixOrderId(),
@@ -487,6 +489,9 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
                     order.setNotExecute(false);
                     operationStateAuditDao.updateNotExecuteOrder(order, false);
                 }
+                //2018-07-25 BESTX-334 SP: this call allows BestX to send the price discovery result to OTEX for limit file before sending it to automatic execution
+                //for limit file which are not found executable (no prices available or out of market) BestX doesn't send any price discovery result  
+                if (customerSpecificHandler!=null && order.isLimitFile()) customerSpecificHandler.onPricesResult(source, priceResult);
                 csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
             }
         } else if (priceResult.getState() == PriceResult.PriceResultState.INCOMPLETE) {

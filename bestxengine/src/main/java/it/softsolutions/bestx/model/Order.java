@@ -41,91 +41,76 @@ import it.softsolutions.jsscommon.Money;
 import quickfix.fix50sp2.component.Parties;
 
 public class Order extends Rfq {
+
    private static final Logger LOGGER = LoggerFactory.getLogger(Order.class);
-   
+
    public static final String IS_EXECUTION_DESTINATION = "SI";
 
-    public static enum OrderStatus {
-        UNKNOWN, RECEIVED, CANCELLED, REJECTED, COUNTER_SENT, FILLED_PARTIAL, FILLED_TOTAL
-    }
-   
-    // [DR20120613] Adopted the standard FIX constant instead of an anonymous "1" and "2"
-    public static enum OrderType {
-        NOT_RECOGNIZED(""), 
-        MARKET("" + quickfix.field.OrdType.MARKET), 
-        LIMIT("" + quickfix.field.OrdType.LIMIT),
-        STOP("" + quickfix.field.OrdType.STOP_STOP_LOSS),
-        STOP_LIMIT("" + quickfix.field.OrdType.STOP_LIMIT),
-        MARKET_ON_CLOSE("" + quickfix.field.OrdType.MARKET_ON_CLOSE),
-        WITH_OR_WITHOUT("" + quickfix.field.OrdType.WITH_OR_WITHOUT),
-        LIMIT_OR_BETTER("" + quickfix.field.OrdType.LIMIT_OR_BETTER),
-        LIMIT_WITH_OR_WITHOUT("" + quickfix.field.OrdType.LIMIT_WITH_OR_WITHOUT),
-        ON_BASIS("" + quickfix.field.OrdType.ON_BASIS),
-        ON_CLOSE("" + quickfix.field.OrdType.ON_CLOSE),
-        LIMIT_ON_CLOSE("" + quickfix.field.OrdType.LIMIT_ON_CLOSE),
-        FOREX_MARKET("" + quickfix.field.OrdType.FOREX_MARKET),
-        ATQUOTE("" + quickfix.field.OrdType.PREVIOUSLY_QUOTED), 
-        FOREX_LIMIT("" + quickfix.field.OrdType.FOREX_LIMIT),
-        FOREX_SWAP("" + quickfix.field.OrdType.FOREX_SWAP),
-        FOREX_PREVIOUSLY_QUOTED("" + quickfix.field.OrdType.FOREX_PREVIOUSLY_QUOTED),
-        FUNARI("" + quickfix.field.OrdType.FUNARI),
-        MARKET_IF_TOUCHED("" + quickfix.field.OrdType.MARKET_IF_TOUCHED),
-        MARKET_WITH_LEFT_OVER_AS_LIMIT("" + quickfix.field.OrdType. MARKET_WITH_LEFT_OVER_AS_LIMIT),
-        PREVIOUS_FUND_VALUATION_POINT("" + quickfix.field.OrdType.PREVIOUS_FUND_VALUATION_POINT),
-        NEXT_FUND_VALUATION_POINT("" + quickfix.field.OrdType.NEXT_FUND_VALUATION_POINT),
-        PEGGED("" + quickfix.field.OrdType.PEGGED),
-        COUNTER_ORDER_SELECTION("" + quickfix.field.OrdType.COUNTER_ORDER_SELECTION);        
+   public static enum OrderStatus {
+      UNKNOWN, RECEIVED, CANCELLED, REJECTED, COUNTER_SENT, FILLED_PARTIAL, FILLED_TOTAL
+   }
 
-        /**
-         * Get the order side fix code
-         * 
-         * @return fix code for the side
-         */
-        public String getFixCode() {
-            return mFIXValue;
-        }
+   // [DR20120613] Adopted the standard FIX constant instead of an anonymous "1" and "2"
+   public static enum OrderType {
+      NOT_RECOGNIZED(""), MARKET("" + quickfix.field.OrdType.MARKET), LIMIT("" + quickfix.field.OrdType.LIMIT), STOP("" + quickfix.field.OrdType.STOP_STOP_LOSS), STOP_LIMIT(
+            "" + quickfix.field.OrdType.STOP_LIMIT), MARKET_ON_CLOSE("" + quickfix.field.OrdType.MARKET_ON_CLOSE), WITH_OR_WITHOUT("" + quickfix.field.OrdType.WITH_OR_WITHOUT), LIMIT_OR_BETTER(
+                  "" + quickfix.field.OrdType.LIMIT_OR_BETTER), LIMIT_WITH_OR_WITHOUT("" + quickfix.field.OrdType.LIMIT_WITH_OR_WITHOUT), ON_BASIS("" + quickfix.field.OrdType.ON_BASIS), ON_CLOSE(
+                        "" + quickfix.field.OrdType.ON_CLOSE), LIMIT_ON_CLOSE("" + quickfix.field.OrdType.LIMIT_ON_CLOSE), FOREX_MARKET("" + quickfix.field.OrdType.FOREX_MARKET), ATQUOTE(
+                              "" + quickfix.field.OrdType.PREVIOUSLY_QUOTED), FOREX_LIMIT("" + quickfix.field.OrdType.FOREX_LIMIT), FOREX_SWAP(
+                                    "" + quickfix.field.OrdType.FOREX_SWAP), FOREX_PREVIOUSLY_QUOTED("" + quickfix.field.OrdType.FOREX_PREVIOUSLY_QUOTED), FUNARI(
+                                          "" + quickfix.field.OrdType.FUNARI), MARKET_IF_TOUCHED("" + quickfix.field.OrdType.MARKET_IF_TOUCHED), MARKET_WITH_LEFT_OVER_AS_LIMIT(
+                                                "" + quickfix.field.OrdType.MARKET_WITH_LEFT_OVER_AS_LIMIT), PREVIOUS_FUND_VALUATION_POINT(
+                                                      "" + quickfix.field.OrdType.PREVIOUS_FUND_VALUATION_POINT), NEXT_FUND_VALUATION_POINT(
+                                                            "" + quickfix.field.OrdType.NEXT_FUND_VALUATION_POINT), PEGGED(
+                                                                  "" + quickfix.field.OrdType.PEGGED), COUNTER_ORDER_SELECTION("" + quickfix.field.OrdType.COUNTER_ORDER_SELECTION);
 
-        private final String mFIXValue;
+      /**
+       * Get the order side fix code
+       * 
+       * @return fix code for the side
+       */
+      public String getFixCode() {
+         return mFIXValue;
+      }
 
-        private OrderType(String inFIXValue) {
-            mFIXValue = inFIXValue;
-        }
-    }
-   
+      private final String mFIXValue;
+
+      private OrderType(String inFIXValue){
+         mFIXValue = inFIXValue;
+      }
+   }
+
    public static enum TimeInForce {
-      DAY_OR_SESSION(quickfix.field.TimeInForce.DAY),
-      GOOD_TILL_CANCEL(quickfix.field.TimeInForce.GOOD_TILL_CANCEL),
-      AT_THE_OPENING(quickfix.field.TimeInForce.AT_THE_OPENING),
-      IMMEDIATE_OR_CANCEL(quickfix.field.TimeInForce.IMMEDIATE_OR_CANCEL),
-      FILL_OR_KILL(quickfix.field.TimeInForce.FILL_OR_KILL),
-      GOOD_TILL_CROSSING(quickfix.field.TimeInForce.GOOD_TILL_CROSSING),
-      GOOD_TILL_DATE(quickfix.field.TimeInForce.GOOD_TILL_DATE),
-      AT_THE_CLOSE(quickfix.field.TimeInForce.AT_THE_CLOSE);
-      
+      DAY_OR_SESSION(quickfix.field.TimeInForce.DAY), GOOD_TILL_CANCEL(quickfix.field.TimeInForce.GOOD_TILL_CANCEL), AT_THE_OPENING(quickfix.field.TimeInForce.AT_THE_OPENING), IMMEDIATE_OR_CANCEL(
+            quickfix.field.TimeInForce.IMMEDIATE_OR_CANCEL), FILL_OR_KILL(quickfix.field.TimeInForce.FILL_OR_KILL), GOOD_TILL_CROSSING(
+                  quickfix.field.TimeInForce.GOOD_TILL_CROSSING), GOOD_TILL_DATE(quickfix.field.TimeInForce.GOOD_TILL_DATE), AT_THE_CLOSE(quickfix.field.TimeInForce.AT_THE_CLOSE);
+
       public char getFixCode() {
          return mFIXValue;
       }
+
       /**
        * GEt the time force starting from the fix code
        * @param fixCode of the time in force tag
        * @return the BestX! enum value
        */
       public static TimeInForce getByFixCode(char fixCode) {
-    	  TimeInForce timeInForce = mFIXValueTable.get(fixCode);
-          return timeInForce == null ? null : timeInForce;
+         TimeInForce timeInForce = mFIXValueTable.get(fixCode);
+         return timeInForce == null ? null : timeInForce;
       }
 
-      private TimeInForce(char inFIXValue) {
-          mFIXValue = inFIXValue;
+      private TimeInForce(char inFIXValue){
+         mFIXValue = inFIXValue;
       }
+
       private final char mFIXValue;
       private static final Map<Character, TimeInForce> mFIXValueTable;
       static {
-          Map<Character, TimeInForce> table = new HashMap<Character, TimeInForce>();
-          for(TimeInForce timeInForce: values()) {
-              table.put(timeInForce.getFixCode(), timeInForce);
-          }
-          mFIXValueTable = Collections.unmodifiableMap(table);
+         Map<Character, TimeInForce> table = new HashMap<Character, TimeInForce>();
+         for (TimeInForce timeInForce : values()) {
+            table.put(timeInForce.getFixCode(), timeInForce);
+         }
+         mFIXValueTable = Collections.unmodifiableMap(table);
       }
    }
 
@@ -146,7 +131,7 @@ public class Order extends Rfq {
    private boolean law262Passed = true;
    private boolean addCommissionToCustomerPrice;
    private String executionDestination;
-   
+
    /* AMC 20170822 MiFID II Related fields */
    protected Boolean miFIDRestricted = null;
    protected TradingCapacity tradingCapacity = null;
@@ -157,10 +142,10 @@ public class Order extends Rfq {
    protected Parties client = null;
    protected OrderSide shortSellIndicator = null;
    protected OrderCapacity orderCapacity = null;
-   
+
    // [RR20110328] Maps where we save market/mmm not quoting the order instrument
    private Map<MarketCode, String> marketNotQuotingInstr = new TreeMap<MarketCode, String>();
-   private Map<MarketCode, String> marketNotNegotiatingInstr = new TreeMap<MarketCode, String>();	// instrument quoted on market, but currently non negotiated (QuotingStatus!= NEG)
+   private Map<MarketCode, String> marketNotNegotiatingInstr = new TreeMap<MarketCode, String>(); // instrument quoted on market, but currently non negotiated (QuotingStatus!= NEG)
    private Map<MarketMarketMaker, String> mmmNotQuotingInstr = new ConcurrentHashMap<MarketMarketMaker, String>(64);
    private PriceDiscoveryType priceDiscoveryType;
    private int logIdCounter = 0;
@@ -174,757 +159,802 @@ public class Order extends Rfq {
    private Double bestPriceDeviationFromLimit;
    private Boolean notExecute;
    protected String ticketOwner;
-   
+
+   //[SP20180712]BESTX-335 Limit file orders TMO manage
+   private String custOrderHandlingInstr;
+   private int tryAfterMinutes;
+   private Date effectiveTime;
 
    public TradingCapacity getTradingCapacity() {
-		return this.tradingCapacity;
-	}
+      return this.tradingCapacity;
+   }
 
-	public void setTradingCapacity(TradingCapacity tradingCapacity) {
-		this.tradingCapacity = tradingCapacity;
-	}
-    /**
-     * Get the execution destination
-     * 
-     * @return execution destination
-     */
-    public String getExecutionDestination() {
-        return this.executionDestination;
-    }
+   public void setTradingCapacity(TradingCapacity tradingCapacity) {
+      this.tradingCapacity = tradingCapacity;
+   }
 
-    /**
-     * Set the execution destination
-     * 
-     * @param executionDestination
-     *            the execution destination
-     */
-    public void setExecutionDestination(String executionDestination) {
-        this.executionDestination = executionDestination;
-    }
+   /**
+    * Get the execution destination
+    * 
+    * @return execution destination
+    */
+   public String getExecutionDestination() {
+      return this.executionDestination;
+   }
 
-    /**
-     * Check if the order requires the best execution
-     * 
-     * @return true or false
-     */
-    public boolean isBestExecutionRequired() {
-        return (executionDestination == null || !executionDestination.equalsIgnoreCase(IS_EXECUTION_DESTINATION));
-    }
+   /**
+    * Set the execution destination
+    * 
+    * @param executionDestination
+    *            the execution destination
+    */
+   public void setExecutionDestination(String executionDestination) {
+      this.executionDestination = executionDestination;
+   }
 
-    /**
-     * Init the order starting from another order
-     * 
-     * @param source
-     *            the source order
-     */
-    public void setValues(Order source) {
-        super.setValues(source);
-        
-        customerOrderId = source.getCustomerOrderId();
-        type = source.getType();
-        currency = source.getCurrency();
-        fIXOrderId = source.getFixOrderId();
-        matchingOrder = source.isMatchingOrder();
-        priceDiscoveryType = source.getPriceDiscoverySelected();
+   /**
+    * Check if the order requires the best execution
+    * 
+    * @return true or false
+    */
+   public boolean isBestExecutionRequired() {
+      return (executionDestination == null || !executionDestination.equalsIgnoreCase(IS_EXECUTION_DESTINATION));
+   }
 
-        this.setTradingCapacity(source.getTradingCapacity());
-    	this.setDecisionMaker(source.getDecisionMaker());
+   /**
+    * Init the order starting from another order
+    * 
+    * @param source
+    *            the source order
+    */
+   public void setValues(Order source) {
+      super.setValues(source);
 
-    	this.setExecutionDecisor(source.getExecutionDecisor());
-    	this.setClient(source.getClient());
-    	this.setShortSellIndicator(source.getShortSellIndicator());
-    	this.setMiFIDRestricted(source.isMiFIDRestricted());
+      customerOrderId = source.getCustomerOrderId();
+      type = source.getType();
+      currency = source.getCurrency();
+      fIXOrderId = source.getFixOrderId();
+      matchingOrder = source.isMatchingOrder();
+      priceDiscoveryType = source.getPriceDiscoverySelected();
 
-        if (source.getLimit() != null) {
-            setLimit(source.getLimit());
-        }
-        if (source.getTimeInForce() != null) {
-            timeInForce = source.getTimeInForce();
-        }
-        if (source.getVenue() != null) {
-            venue = source.getVenue();
-        }
-        if (source.getExecutionDestination() != null) {
-            executionDestination = source.getExecutionDestination(); // solo per debug setExecutionDestination("IS");
-        }
-        if (source.getBestExecutionVenueFlag() != null) {
-            bestExecutionVenueFlag = source.getBestExecutionVenueFlag();
-        }
-        if (source.getPriceType() != null) {
-            priceType = source.getPriceType();
-        }
-        if (source.getInstrumentCode() != null) {
-            instrumentCode = source.getInstrumentCode();
-        }
-        if (source.getText() != null) {
-            text = source.getText();
-        }
-        if (source.getTicketOwner() != null) {
-            ticketOwner = source.getTicketOwner();
-        }
-        orderSource = source.getOrderSource();
-    }
+      this.setTradingCapacity(source.getTradingCapacity());
+      this.setDecisionMaker(source.getDecisionMaker());
 
-    /**
-     * Set the customer order id
-     * 
-     * @param customerOrderId
-     *            the customer order id
-     */
-    public void setCustomerOrderId(String customerOrderId) {
-        this.customerOrderId = customerOrderId;
-    }
+      this.setExecutionDecisor(source.getExecutionDecisor());
+      this.setClient(source.getClient());
+      this.setShortSellIndicator(source.getShortSellIndicator());
+      this.setMiFIDRestricted(source.isMiFIDRestricted());
 
-    /**
-     * Get the customer order id
-     * 
-     * @return customer order id
-     */
-    public String getCustomerOrderId() {
-        return customerOrderId;
-    }
+      this.setCustOrderHandlingInstr(source.getCustOrderHandlingInstr());
+      this.setEffectiveTime(source.getEffectiveTime());
+      this.setTryAfterMinutes(source.getTryAfterMinutes());
+      
+      if (source.getLimit() != null) {
+         setLimit(source.getLimit());
+      }
+      if (source.getTimeInForce() != null) {
+         timeInForce = source.getTimeInForce();
+      }
+      if (source.getVenue() != null) {
+         venue = source.getVenue();
+      }
+      if (source.getExecutionDestination() != null) {
+         executionDestination = source.getExecutionDestination(); // solo per debug setExecutionDestination("IS");
+      }
+      if (source.getBestExecutionVenueFlag() != null) {
+         bestExecutionVenueFlag = source.getBestExecutionVenueFlag();
+      }
+      if (source.getPriceType() != null) {
+         priceType = source.getPriceType();
+      }
+      if (source.getInstrumentCode() != null) {
+         instrumentCode = source.getInstrumentCode();
+      }
+      if (source.getText() != null) {
+         text = source.getText();
+      }
+      if (source.getTicketOwner() != null) {
+         ticketOwner = source.getTicketOwner();
+      }
+      orderSource = source.getOrderSource();
+   }
 
-    /**
-     * Set the order type
-     * 
-     * @param type
-     *            order type
-     */
-    public void setType(Order.OrderType type) {
-        this.type = type;
-    }
+   /**
+    * Set the customer order id
+    * 
+    * @param customerOrderId
+    *            the customer order id
+    */
+   public void setCustomerOrderId(String customerOrderId) {
+      this.customerOrderId = customerOrderId;
+   }
 
-    /**
-     * Get the order type
-     * 
-     * @return order type
-     */
-    public Order.OrderType getType() {
-        return type;
-    }
+   /**
+    * Get the customer order id
+    * 
+    * @return customer order id
+    */
+   public String getCustomerOrderId() {
+      return customerOrderId;
+   }
 
-    /**
-     * Set the limit price
-     * 
-     * @param limit
-     *            price limit
-     */
-    public void setLimit(Money limit) {
-        this.limit = limit;
-    }
+   /**
+    * Set the order type
+    * 
+    * @param type
+    *            order type
+    */
+   public void setType(Order.OrderType type) {
+      this.type = type;
+   }
 
-    /**
-     * Get the limit price
-     * 
-     * @return limit price
-     */
-    public Money getLimit() {
-        return limit;
-    }
+   /**
+    * Get the order type
+    * 
+    * @return order type
+    */
+   public Order.OrderType getType() {
+      return type;
+   }
 
-    /**
-     * Set the currency
-     * 
-     * @param currency
-     *            order currency
-     */
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
+   /**
+    * Set the limit price
+    * 
+    * @param limit
+    *            price limit
+    */
+   public void setLimit(Money limit) {
+      this.limit = limit;
+   }
 
-    /**
-     * Return the currency
-     * 
-     * @return currency
-     */
-    public String getCurrency() {
-        return currency;
-    }
+   /**
+    * Get the limit price
+    * 
+    * @return limit price
+    */
+   public Money getLimit() {
+      return limit;
+   }
 
-    /**
-     * Get the fix order id
-     * 
-     * @return the fIXOrderId
-     */
-    public String getFixOrderId() {
-        return fIXOrderId;
-    }
+   /**
+    * Set the currency
+    * 
+    * @param currency
+    *            order currency
+    */
+   public void setCurrency(String currency) {
+      this.currency = currency;
+   }
 
-    /**
-     * Set the fix order id
-     * 
-     * @param fIXorderId
-     *            the fIXOrderId to set
-     */
-    public void setFixOrderId(String fIXorderId) {
-        this.fIXOrderId = fIXorderId;
-    }
+   /**
+    * Return the currency
+    * 
+    * @return currency
+    */
+   public String getCurrency() {
+      return currency;
+   }
 
-    /**
-     * Get the time in force fix value
-     * 
-     * @return time in force
-     */
-    public TimeInForce getTimeInForce() {
-        return timeInForce;
-    }
+   /**
+    * Get the fix order id
+    * 
+    * @return the fIXOrderId
+    */
+   public String getFixOrderId() {
+      return fIXOrderId;
+   }
 
-    /**
-     * Set the time in force
-     * 
-     * @param timeInForce
-     *            the time in force tag value
-     */
-    public void setTimeInForce(TimeInForce timeInForce) {
-        this.timeInForce = timeInForce;
-    }
+   /**
+    * Set the fix order id
+    * 
+    * @param fIXorderId
+    *            the fIXOrderId to set
+    */
+   public void setFixOrderId(String fIXorderId) {
+      this.fIXOrderId = fIXorderId;
+   }
 
-    /**
-     * Get the time in force related date
-     * 
-     * @return time in force date
-     */
-    public Date getTimeInForceDate() {
-        return timeInForceDate;
-    }
+   /**
+    * Get the time in force fix value
+    * 
+    * @return time in force
+    */
+   public TimeInForce getTimeInForce() {
+      return timeInForce;
+   }
 
-    /**
-     * Set the time in force related date
-     * 
-     * @param timeInForceDate
-     *            time in force date
-     */
-    public void setTimeInForceDate(Date timeInForceDate) {
-        this.timeInForceDate = timeInForceDate;
-    }
+   /**
+    * Set the time in force
+    * 
+    * @param timeInForce
+    *            the time in force tag value
+    */
+   public void setTimeInForce(TimeInForce timeInForce) {
+      this.timeInForce = timeInForce;
+   }
 
-    /**
-     * Check if the order is a matching
-     * 
-     * @return true or false
-     */
-    public boolean isMatchingOrder() {
-        return matchingOrder;
-    }
+   /**
+    * Get the time in force related date
+    * 
+    * @return time in force date
+    */
+   public Date getTimeInForceDate() {
+      return timeInForceDate;
+   }
 
-    /**
-     * Set the order as matching or not
-     * 
-     * @param matchingOrder
-     *            true or false
-     */
-    public void setMatchingOrder(boolean matchingOrder) {
-        this.matchingOrder = matchingOrder;
-    }
+   /**
+    * Set the time in force related date
+    * 
+    * @param timeInForceDate
+    *            time in force date
+    */
+   public void setTimeInForceDate(Date timeInForceDate) {
+      this.timeInForceDate = timeInForceDate;
+   }
 
-    /**
-     * Get the venue
-     * 
-     * @return the venue
-     */
-    public Venue getVenue() {
-        return venue;
-    }
+   /**
+    * Check if the order is a matching
+    * 
+    * @return true or false
+    */
+   public boolean isMatchingOrder() {
+      return matchingOrder;
+   }
 
-    /**
-     * Set the venue
-     * 
-     * @param venue
-     *            the venue to set
-     */
-    public void setVenue(Venue venue) {
-        this.venue = venue;
-    }
+   /**
+    * Set the order as matching or not
+    * 
+    * @param matchingOrder
+    *            true or false
+    */
+   public void setMatchingOrder(boolean matchingOrder) {
+      this.matchingOrder = matchingOrder;
+   }
 
-    /**
-     * Check if the order passes the 262 law
-     * 
-     * @return true or false
-     */
-    public boolean isLaw262Passed() {
-        return law262Passed;
-    }
+   /**
+    * Get the venue
+    * 
+    * @return the venue
+    */
+   public Venue getVenue() {
+      return venue;
+   }
 
-    /**
-     * Set the order as compliant to the 262 law or not
-     * 
-     * @param law262Passed
-     *            true or false
-     */
-    public void setLaw262Passed(boolean law262Passed) {
-        this.law262Passed = law262Passed;
-    }
+   /**
+    * Set the venue
+    * 
+    * @param venue
+    *            the venue to set
+    */
+   public void setVenue(Venue venue) {
+      this.venue = venue;
+   }
 
-    @Override
-    public String toString() {
-        return "ORDER -> OrderId: "
-                + getFixOrderId()
-                + "- CustomerOrderId: "
-                + getCustomerOrderId()
-                + "- Customer: "
-                + (getCustomer() == null ? "" : getCustomer().getName())
-                + "- ISIN: "
-                + (getInstrument() == null ? "" : getInstrument().getIsin())
-                + "- Venue: "
-                + (getVenue() != null && getVenue().getMarketMaker() != null && getVenue().getMarket() != null ? (getVenue().getMarketMaker().getCode() + "-" + getVenue().getMarket().getMarketCode()
-                        .name()) : "") + "- TimeInForce: " + (getTimeInForce() == null ? "" : getTimeInForce().toString()) + "- TimeInForce Date: "
-                + (getTimeInForceDate() == null ? "" : getTimeInForceDate().toString()) + "- Price: " + (getLimit() == null ? "market price" : getLimit().getAmount().toPlainString()) + "- Currency: "
-                + (getCurrency() == null ? "" : getCurrency()) + "- Quantity: "
-                + (getQty() == null ? "" : getQty() + "- ExecutionDestination: " + (getExecutionDestination() == null ? "" : getExecutionDestination()) + "- Side: " + getSide());
-    }
+   /**
+    * Check if the order passes the 262 law
+    * 
+    * @return true or false
+    */
+   public boolean isLaw262Passed() {
+      return law262Passed;
+   }
 
-    /**
-     * Check if we have already done the query for knowing if the order is a matching or not
-     * 
-     * @return true or false
-     */
-    public IsMatchingFromQueryStates getIsMatchingFromQuery() {
-        return isMatchingFromQuery;
-    }
+   /**
+    * Set the order as compliant to the 262 law or not
+    * 
+    * @param law262Passed
+    *            true or false
+    */
+   public void setLaw262Passed(boolean law262Passed) {
+      this.law262Passed = law262Passed;
+   }
 
-    /**
-     * Set the variable to tell if we have already done the query for knowing if the order is a matching or not
-     * 
-     * @param isMatchingFromQuery
-     *            true or false
-     */
-    public void setIsMatchingFromQuery(IsMatchingFromQueryStates isMatchingFromQuery) {
-        this.isMatchingFromQuery = isMatchingFromQuery;
-    }
+   @Override
+   public String toString() {
+      return "ORDER -> OrderId: " + getFixOrderId() + "- CustomerOrderId: " + getCustomerOrderId() + "- Customer: " + (getCustomer() == null ? "" : getCustomer().getName()) + "- ISIN: "
+            + (getInstrument() == null ? "" : getInstrument().getIsin()) + "- Venue: "
+            + (getVenue() != null && getVenue().getMarketMaker() != null && getVenue().getMarket() != null
+                  ? (getVenue().getMarketMaker().getCode() + "-" + getVenue().getMarket().getMarketCode().name()) : "")
+            + "- TimeInForce: " + (getTimeInForce() == null ? "" : getTimeInForce().toString()) + "- TimeInForce Date: " + (getTimeInForceDate() == null ? "" : getTimeInForceDate().toString())
+            + "- Price: " + (getLimit() == null ? "market price" : getLimit().getAmount().toPlainString()) + "- Currency: " + (getCurrency() == null ? "" : getCurrency()) + "- Quantity: "
+            + (getQty() == null ? "" : getQty() + "- ExecutionDestination: " + (getExecutionDestination() == null ? "" : getExecutionDestination()) + "- Side: " + getSide());
+   }
 
-    /**
-     * Check if in this order we must add commissions to the customer price
-     * 
-     * @return true or false
-     */
-    public boolean isAddCommissionToCustomerPrice() {
-        return addCommissionToCustomerPrice;
-    }
+   /**
+    * Check if we have already done the query for knowing if the order is a matching or not
+    * 
+    * @return true or false
+    */
+   public IsMatchingFromQueryStates getIsMatchingFromQuery() {
+      return isMatchingFromQuery;
+   }
 
-    /**
-     * Set the add commission to customer price flag
-     * 
-     * @param addCommissionToCustomerPrice
-     *            true or false
-     */
-    public void setAddCommissionToCustomerPrice(boolean addCommissionToCustomerPrice) {
-        this.addCommissionToCustomerPrice = addCommissionToCustomerPrice;
-    }
+   /**
+    * Set the variable to tell if we have already done the query for knowing if the order is a matching or not
+    * 
+    * @param isMatchingFromQuery
+    *            true or false
+    */
+   public void setIsMatchingFromQuery(IsMatchingFromQueryStates isMatchingFromQuery) {
+      this.isMatchingFromQuery = isMatchingFromQuery;
+   }
 
-    /**
-     * Get the market not quoting the order instrument
-     * 
-     * @return market with reason
-     */
-    public Map<MarketCode, String> getMarketNotQuotingInstr() {
-        return marketNotQuotingInstr;
-    }
+   /**
+    * Check if in this order we must add commissions to the customer price
+    * 
+    * @return true or false
+    */
+   public boolean isAddCommissionToCustomerPrice() {
+      return addCommissionToCustomerPrice;
+   }
 
-    /**
-     * Add a market to those not quoting the order instrument
-     * 
-     * @param mCode
-     *            not quoting market
-     * @param reason
-     *            reason
-     */
-    public synchronized void addMarketNotQuotingInstr(MarketCode mCode, String reason) {
-        marketNotQuotingInstr.put(mCode, reason);
-    }
+   /**
+    * Set the add commission to customer price flag
+    * 
+    * @param addCommissionToCustomerPrice
+    *            true or false
+    */
+   public void setAddCommissionToCustomerPrice(boolean addCommissionToCustomerPrice) {
+      this.addCommissionToCustomerPrice = addCommissionToCustomerPrice;
+   }
 
-    /**
-     * Remove the market from the list of those not quoting the order instrument
-     * 
-     * @param mCode
-     *            market to remove
-     */
-    public synchronized void removeMarketNotQuotingInstr(MarketCode mCode) {
-        marketNotQuotingInstr.remove(mCode);
-    }
+   /**
+    * Get the market not quoting the order instrument
+    * 
+    * @return market with reason
+    */
+   public Map<MarketCode, String> getMarketNotQuotingInstr() {
+      return marketNotQuotingInstr;
+   }
 
-    /**
-     * Clear the map of the market not quoting the order instrument
-     */
-    public synchronized void clearMarketNotQuotingInstr() {
-        marketNotQuotingInstr.clear();
-    }
+   /**
+    * Add a market to those not quoting the order instrument
+    * 
+    * @param mCode
+    *            not quoting market
+    * @param reason
+    *            reason
+    */
+   public synchronized void addMarketNotQuotingInstr(MarketCode mCode, String reason) {
+      marketNotQuotingInstr.put(mCode, reason);
+   }
 
-    /**
-     * Get the markets not negotiating the instrument with the reason
-     * 
-     * @return markets and reason
-     */
-    public Map<MarketCode, String> getMarketNotNegotiatingInstr() {
-        return marketNotNegotiatingInstr;
-    }
+   /**
+    * Remove the market from the list of those not quoting the order instrument
+    * 
+    * @param mCode
+    *            market to remove
+    */
+   public synchronized void removeMarketNotQuotingInstr(MarketCode mCode) {
+      marketNotQuotingInstr.remove(mCode);
+   }
 
-    /**
-     * Add a market not negotiating the instrument
-     * 
-     * @param mCode
-     *            market not negotiating
-     * @param reason
-     *            reason
-     */
-    public synchronized void addMarketNotNegotiatingInstr(MarketCode mCode, String reason) {
-        marketNotNegotiatingInstr.put(mCode, reason);
-    }
+   /**
+    * Clear the map of the market not quoting the order instrument
+    */
+   public synchronized void clearMarketNotQuotingInstr() {
+      marketNotQuotingInstr.clear();
+   }
 
-    /**
-     * Remove the market from those not negotiating
-     * 
-     * @param mCode
-     */
-    public synchronized void removeMarketNotNegotiatingInstr(MarketCode mCode) {
-        marketNotNegotiatingInstr.remove(mCode);
-    }
+   /**
+    * Get the markets not negotiating the instrument with the reason
+    * 
+    * @return markets and reason
+    */
+   public Map<MarketCode, String> getMarketNotNegotiatingInstr() {
+      return marketNotNegotiatingInstr;
+   }
 
-    /**
-     * Clear the map of the market not negotiating the instrument
-     */
-    public synchronized void clearMarketNotNegotiatingInstr() {
-        marketNotNegotiatingInstr.clear();
-    }
+   /**
+    * Add a market not negotiating the instrument
+    * 
+    * @param mCode
+    *            market not negotiating
+    * @param reason
+    *            reason
+    */
+   public synchronized void addMarketNotNegotiatingInstr(MarketCode mCode, String reason) {
+      marketNotNegotiatingInstr.put(mCode, reason);
+   }
 
-    /**
-     * Get the map of market market makers not quoting the instrument with its reason
-     * 
-     * @return market market maker with reason
-     */
-    public Map<MarketMarketMaker, String> getMarketMarketMakerNotQuotingInstr() {
-        return mmmNotQuotingInstr;
-    }
+   /**
+    * Remove the market from those not negotiating
+    * 
+    * @param mCode
+    */
+   public synchronized void removeMarketNotNegotiatingInstr(MarketCode mCode) {
+      marketNotNegotiatingInstr.remove(mCode);
+   }
 
-    /**
-     * Add a market maker not quoting the instrument
-     * 
-     * @param mmm
-     *            market market maker
-     * @param reason
-     *            reason
-     */
-    public void addMarketMakerNotQuotingInstr(MarketMarketMaker mmm, String reason) {
-        mmmNotQuotingInstr.put(mmm, reason);
-    }
+   /**
+    * Clear the map of the market not negotiating the instrument
+    */
+   public synchronized void clearMarketNotNegotiatingInstr() {
+      marketNotNegotiatingInstr.clear();
+   }
 
-    /**
-     * Add a list of market market makers not quoting instrument with a common reason
-     * 
-     * @param mmmList
-     *            a list of mmm
-     * @param reason
-     *            common reason
-     */
-    public void addMarketMakerNotQuotingInstr(List<MarketMarketMaker> mmmList, String reason) {
-        for (MarketMarketMaker mmm : mmmList) {
-            mmmNotQuotingInstr.put(mmm, reason);
-        }
-    }
+   /**
+    * Get the map of market market makers not quoting the instrument with its reason
+    * 
+    * @return market market maker with reason
+    */
+   public Map<MarketMarketMaker, String> getMarketMarketMakerNotQuotingInstr() {
+      return mmmNotQuotingInstr;
+   }
 
-    /**
-     * Remove the market market maker from those not quoting the instrument
-     * 
-     * @param mmm
-     *            market market maker to remove
-     */
-    public void removeMarketMakerNotQuotingInstr(MarketMarketMaker mmm) {
-        if (mmmNotQuotingInstr.containsKey(mmm)) {
-            mmmNotQuotingInstr.remove(mmm);
-            LOGGER.debug("Order {}, mmm {} removed, market makers not quoting remained : {}", getFixOrderId(), mmm, mmmNotQuotingInstr.size());
-        }
-    }
-    
-    public void removeMarketMakerNotQuotingInstr(MarketCode marketCode, List<String> marketMakersOnBothSides) {
-        
-        for (String marketMaker : marketMakersOnBothSides) {
-            Iterator<MarketMarketMaker> iter = mmmNotQuotingInstr.keySet().iterator();
-            while (iter.hasNext()) {
-                MarketMarketMaker marketMarketMaker = (MarketMarketMaker) iter.next();
-                if (marketMarketMaker.getMarket().getMarketCode() == marketCode && marketMarketMaker.getMarketSpecificCode().equals(marketMaker)) {
-                    mmmNotQuotingInstr.remove(marketMarketMaker);
-                }
+   /**
+    * Add a market maker not quoting the instrument
+    * 
+    * @param mmm
+    *            market market maker
+    * @param reason
+    *            reason
+    */
+   public void addMarketMakerNotQuotingInstr(MarketMarketMaker mmm, String reason) {
+      mmmNotQuotingInstr.put(mmm, reason);
+   }
+
+   /**
+    * Add a list of market market makers not quoting instrument with a common reason
+    * 
+    * @param mmmList
+    *            a list of mmm
+    * @param reason
+    *            common reason
+    */
+   public void addMarketMakerNotQuotingInstr(List<MarketMarketMaker> mmmList, String reason) {
+      for (MarketMarketMaker mmm : mmmList) {
+         mmmNotQuotingInstr.put(mmm, reason);
+      }
+   }
+
+   /**
+    * Remove the market market maker from those not quoting the instrument
+    * 
+    * @param mmm
+    *            market market maker to remove
+    */
+   public void removeMarketMakerNotQuotingInstr(MarketMarketMaker mmm) {
+      if (mmmNotQuotingInstr.containsKey(mmm)) {
+         mmmNotQuotingInstr.remove(mmm);
+         LOGGER.debug("Order {}, mmm {} removed, market makers not quoting remained : {}", getFixOrderId(), mmm, mmmNotQuotingInstr.size());
+      }
+   }
+
+   public void removeMarketMakerNotQuotingInstr(MarketCode marketCode, List<String> marketMakersOnBothSides) {
+
+      for (String marketMaker : marketMakersOnBothSides) {
+         Iterator<MarketMarketMaker> iter = mmmNotQuotingInstr.keySet().iterator();
+         while (iter.hasNext()) {
+            MarketMarketMaker marketMarketMaker = (MarketMarketMaker) iter.next();
+            if (marketMarketMaker.getMarket().getMarketCode() == marketCode && marketMarketMaker.getMarketSpecificCode().equals(marketMaker)) {
+               mmmNotQuotingInstr.remove(marketMarketMaker);
             }
-        }
-    }
+         }
+      }
+   }
 
-    /**
-     * Clear the map of the market market makers not quoting the instrument
-     */
-    public void clearMarketMakerNotQuotingInstr() {
-        mmmNotQuotingInstr.clear();
-    }
+   /**
+    * Clear the map of the market market makers not quoting the instrument
+    */
+   public void clearMarketMakerNotQuotingInstr() {
+      mmmNotQuotingInstr.clear();
+   }
 
-    /**
-     * Get the not quoting reason for the given market market maker
-     * 
-     * @param mmm
-     *            market market maker whose reason we must look for
-     * @return the reason
-     */
-    public synchronized String getReason(MarketMarketMaker mmm) {
-        return mmmNotQuotingInstr.get(mmm);
-    }
+   /**
+    * Get the not quoting reason for the given market market maker
+    * 
+    * @param mmm
+    *            market market maker whose reason we must look for
+    * @return the reason
+    */
+   public synchronized String getReason(MarketMarketMaker mmm) {
+      return mmmNotQuotingInstr.get(mmm);
+   }
 
-    /**
-     * Get the reason for a market not quoting the instrument
-     * 
-     * @param marketCode
-     *            market whose reason we are looking for
-     * @return the reason
-     */
-    public synchronized String getReason(MarketCode marketCode) {
-        return marketNotQuotingInstr.get(marketCode);
-    }
+   /**
+    * Get the reason for a market not quoting the instrument
+    * 
+    * @param marketCode
+    *            market whose reason we are looking for
+    * @return the reason
+    */
+   public synchronized String getReason(MarketCode marketCode) {
+      return marketNotQuotingInstr.get(marketCode);
+   }
 
-    /**
-     * Check if the given market market maker does not quote the instrument
-     * 
-     * @param mmm
-     *            market market maker we are verifying
-     * @return true or false
-     */
-    public boolean isMarketMakerNotQuotingInstr(MarketMarketMaker mmm) {
-        return mmmNotQuotingInstr.containsKey(mmm);
-    }
+   /**
+    * Check if the given market market maker does not quote the instrument
+    * 
+    * @param mmm
+    *            market market maker we are verifying
+    * @return true or false
+    */
+   public boolean isMarketMakerNotQuotingInstr(MarketMarketMaker mmm) {
+      return mmmNotQuotingInstr.containsKey(mmm);
+   }
 
-    /**
-     * Get the price discovery type for this order
-     * 
-     * @return the price discovery type
-     */
-    public PriceDiscoveryType getPriceDiscoverySelected() {
-        return priceDiscoveryType;
-    }
+   /**
+    * Get the price discovery type for this order
+    * 
+    * @return the price discovery type
+    */
+   public PriceDiscoveryType getPriceDiscoverySelected() {
+      return priceDiscoveryType;
+   }
 
-    public PriceDiscoveryType getPriceDiscoveryType() {
-        return priceDiscoveryType;
-    }
+   public PriceDiscoveryType getPriceDiscoveryType() {
+      return priceDiscoveryType;
+   }
 
-    public void setPriceDiscoveryType(PriceDiscoveryType priceDiscType) {
-        priceDiscoveryType = priceDiscType;
-    }
+   public void setPriceDiscoveryType(PriceDiscoveryType priceDiscType) {
+      priceDiscoveryType = priceDiscType;
+   }
 
-    /**
-     * Get the log id
-     * 
-     * @return log id
-     */
-    public String getLogId() {
-        if (logIdCounter == 0) {
-            return null;
-        } else {
-            return fIXOrderId + "_" + logIdCounter;
-        }
-    }
+   /**
+    * Get the log id
+    * 
+    * @return log id
+    */
+   public String getLogId() {
+      if (logIdCounter == 0) {
+         return null;
+      }
+      else {
+         return fIXOrderId + "_" + logIdCounter;
+      }
+   }
 
-    /**
-     * Increment the log id counter
-     */
-    public void generateNextLogId() {
-        logIdCounter++;
-    }
+   /**
+    * Increment the log id counter
+    */
+   public void generateNextLogId() {
+      logIdCounter++;
+   }
 
-    /*
-     * Get the current log id counter
-     */
-    public int getLogIdCounter() {
-        return logIdCounter;
-    }
+   /*
+    * Get the current log id counter
+    */
+   public int getLogIdCounter() {
+      return logIdCounter;
+   }
 
-    /**
-     * Set the log id counter
-     * 
-     * @param logIdCounter
-     *            log id counter
-     */
-    public void setLogIdCounter(int logIdCounter) {
-        this.logIdCounter = logIdCounter;
-    }
+   /**
+    * Set the log id counter
+    * 
+    * @param logIdCounter
+    *            log id counter
+    */
+   public void setLogIdCounter(int logIdCounter) {
+      this.logIdCounter = logIdCounter;
+   }
 
-    /**
-     * Set the best execution venue flag
-     * 
-     * @param bestExecutionVenueFlag
-     *            true or false
-     */
-    public void setBestExecutionVenueFlag(int bestExecutionVenueFlag) {
-        this.bestExecutionVenueFlag = bestExecutionVenueFlag;
-    }
+   /**
+    * Set the best execution venue flag
+    * 
+    * @param bestExecutionVenueFlag
+    *            true or false
+    */
+   public void setBestExecutionVenueFlag(int bestExecutionVenueFlag) {
+      this.bestExecutionVenueFlag = bestExecutionVenueFlag;
+   }
 
-    /**
-     * Get the best execution venue flag
-     * 
-     * @return the flag
-     */
-    public Integer getBestExecutionVenueFlag() {
-        return bestExecutionVenueFlag;
-    }
+   /**
+    * Get the best execution venue flag
+    * 
+    * @return the flag
+    */
+   public Integer getBestExecutionVenueFlag() {
+      return bestExecutionVenueFlag;
+   }
 
-    /**
-     * Set the price type
-     * 
-     * @param priceType
-     *            type
-     */
-    public void setPriceType(int priceType) {
-        this.priceType = priceType;
-    }
+   /**
+    * Set the price type
+    * 
+    * @param priceType
+    *            type
+    */
+   public void setPriceType(int priceType) {
+      this.priceType = priceType;
+   }
 
-    /**
-     * Get the price type
-     * 
-     * @return price type
-     */
-    public Integer getPriceType() {
-        return priceType;
-    }
+   /**
+    * Get the price type
+    * 
+    * @return price type
+    */
+   public Integer getPriceType() {
+      return priceType;
+   }
 
-    /**
-     * Sets the order source.
-     *
-     * @param orderSource the new order source
-     */
-    public void setOrderSource(String orderSource) {
-        this.orderSource = orderSource;
-    }
-    
-    /**
-     * Gets the order source.
-     *
-     * @return the order source
-     */
-    public String getOrderSource() {
-        return orderSource;
-    }
+   /**
+    * Sets the order source.
+    *
+    * @param orderSource the new order source
+    */
+   public void setOrderSource(String orderSource) {
+      this.orderSource = orderSource;
+   }
 
-    /**
-     * @return the instrumentCode
-     */
-    public String getInstrumentCode() {
-        return instrumentCode;
-    }
+   /**
+    * Gets the order source.
+    *
+    * @return the order source
+    */
+   public String getOrderSource() {
+      return orderSource;
+   }
 
-    /**
-     * @param instrumentCode the instrumentCode to set
-     */
-    public void setInstrumentCode(String instrumentCode) {
-        this.instrumentCode = instrumentCode;
-    }
-   
-    /**
-     * Check if the order is a LimitFile order:
-     * - type must be LIMIT
-     * - timeInForce must be GOOD_TILL_CANCEL
-     * 
-     * It is a CS specific request
-     * 
-     * @return true if both the conditions have been met
-     */
-    public boolean isLimitFile(){
-        return (type == OrderType.LIMIT && timeInForce == TimeInForce.GOOD_TILL_CANCEL);
-    }
+   /**
+    * @return the instrumentCode
+    */
+   public String getInstrumentCode() {
+      return instrumentCode;
+   }
 
-    /**
-     * @return the text
-     */
-    public String getText() {
-        return text;
-    }
+   /**
+    * @param instrumentCode the instrumentCode to set
+    */
+   public void setInstrumentCode(String instrumentCode) {
+      this.instrumentCode = instrumentCode;
+   }
 
-    /**
-     * @param text the text to set
-     */
-    public void setText(String text) {
-        this.text = text;
-    }
+   /**
+    * Check if the order is a LimitFile order:
+    * - type must be LIMIT
+    * - timeInForce must be GOOD_TILL_CANCEL
+    * 
+    * It is a CS specific request
+    * 
+    * @return true if both the conditions have been met
+    */
+   public boolean isLimitFile() {
+      return (type == OrderType.LIMIT && timeInForce == TimeInForce.GOOD_TILL_CANCEL);
+   }
 
-    /**
-     * @return the bestPriceDeviationFromLimit
-     */
-    public Double getBestPriceDeviationFromLimit() {
-        return bestPriceDeviationFromLimit;
-    }
+   /**
+    * @return the text
+    */
+   public String getText() {
+      return text;
+   }
 
-    /**
-     * @param bestPriceDeviationFromLimit the bestPriceDeviationFromLimit to set
-     */
-    public void setBestPriceDeviationFromLimit(Double bestPriceDeviationFromLimit) {
-        this.bestPriceDeviationFromLimit = bestPriceDeviationFromLimit;
-    }
+   /**
+    * @param text the text to set
+    */
+   public void setText(String text) {
+      this.text = text;
+   }
 
-    /**
-     * @return the notExecuteOrder
-     */
-    public Boolean isNotExecute() {
-        return notExecute;
-    }
+   /**
+    * @return the bestPriceDeviationFromLimit
+    */
+   public Double getBestPriceDeviationFromLimit() {
+      return bestPriceDeviationFromLimit;
+   }
 
-    /**
-     * @param notExecuteOrder the notExecuteOrder to set
-     */
-    public void setNotExecute(Boolean notExecuteOrder) {
-        this.notExecute = notExecuteOrder;
-    }
+   /**
+    * @param bestPriceDeviationFromLimit the bestPriceDeviationFromLimit to set
+    */
+   public void setBestPriceDeviationFromLimit(Double bestPriceDeviationFromLimit) {
+      this.bestPriceDeviationFromLimit = bestPriceDeviationFromLimit;
+   }
 
-    /**
-     * @return the ticketOwner
-     */
-    public String getTicketOwner() {
-        return ticketOwner;
-    }
+   /**
+    * @return the notExecuteOrder
+    */
+   public Boolean isNotExecute() {
+      return notExecute;
+   }
 
-    /**
-     * @param ticketOwner the ticketOwner to set
-     */
-    public void setTicketOwner(String ticketOwner) {
-        this.ticketOwner = ticketOwner;
-    }
+   /**
+    * @param notExecuteOrder the notExecuteOrder to set
+    */
+   public void setNotExecute(Boolean notExecuteOrder) {
+      this.notExecute = notExecuteOrder;
+   }
 
-	public Parties getDecisionMaker() {
-		return decisionMaker;
-	}
+   /**
+    * @return the ticketOwner
+    */
+   public String getTicketOwner() {
+      return ticketOwner;
+   }
 
-	public void setDecisionMaker(Parties decisionMaker) {
-		this.decisionMaker = decisionMaker;
-	}
+   /**
+    * @param ticketOwner the ticketOwner to set
+    */
+   public void setTicketOwner(String ticketOwner) {
+      this.ticketOwner = ticketOwner;
+   }
 
-	public Parties getExecutionDecisor() {
-		return executionDecisor;
-	}
+   public Parties getDecisionMaker() {
+      return decisionMaker;
+   }
 
-	public void setExecutionDecisor(Parties executionDecisor) {
-		this.executionDecisor = executionDecisor;
-	}
+   public void setDecisionMaker(Parties decisionMaker) {
+      this.decisionMaker = decisionMaker;
+   }
 
-	public Parties getClient() {
-		return client;
-	}
+   public Parties getExecutionDecisor() {
+      return executionDecisor;
+   }
 
-	public void setClient(Parties client) {
-		this.client = client;
-	}
+   public void setExecutionDecisor(Parties executionDecisor) {
+      this.executionDecisor = executionDecisor;
+   }
 
-	public OrderSide getShortSellIndicator() {
-		return shortSellIndicator;
-	}
+   public Parties getClient() {
+      return client;
+   }
 
-	public void setShortSellIndicator(OrderSide shortSellIndicator) {
-		this.shortSellIndicator = shortSellIndicator;
-	}
+   public void setClient(Parties client) {
+      this.client = client;
+   }
 
-	public Boolean isMiFIDRestricted() {
-		return miFIDRestricted;
-	}
+   public OrderSide getShortSellIndicator() {
+      return shortSellIndicator;
+   }
 
-	public void setMiFIDRestricted(Boolean miFIDRestricted) {
-		this.miFIDRestricted = miFIDRestricted;
-	}
+   public void setShortSellIndicator(OrderSide shortSellIndicator) {
+      this.shortSellIndicator = shortSellIndicator;
+   }
 
-	public OrderCapacity getOrderCapacity() {
-		return orderCapacity;
-	}
+   public Boolean isMiFIDRestricted() {
+      return miFIDRestricted;
+   }
 
-	public void setOrderCapacity(OrderCapacity orderCapacity) {
-		this.orderCapacity = orderCapacity;
-	}
+   public void setMiFIDRestricted(Boolean miFIDRestricted) {
+      this.miFIDRestricted = miFIDRestricted;
+   }
+
+   public OrderCapacity getOrderCapacity() {
+      return orderCapacity;
+   }
+
+   public void setOrderCapacity(OrderCapacity orderCapacity) {
+      this.orderCapacity = orderCapacity;
+   }
+
+   /**
+    * @return the custOrderHandlingInstr
+    */
+   public String getCustOrderHandlingInstr() {
+      return custOrderHandlingInstr;
+   }
+
+   /**
+    * @param custOrderHandlingInstr the custOrderHandlingInstr to set
+    */
+   public void setCustOrderHandlingInstr(String custOrderHandlingInstr) {
+      this.custOrderHandlingInstr = custOrderHandlingInstr;
+   }
+
+   /**
+    * @return the tryAfterMinutes
+    */
+   public int getTryAfterMinutes() {
+      return tryAfterMinutes;
+   }
+
+   /**
+    * @param tryAfterMinutes the tryAfterMinutes to set
+    */
+   public void setTryAfterMinutes(int tryAfterMinutes) {
+      this.tryAfterMinutes = tryAfterMinutes;
+   }
+
+   /**
+    * @return the effectiveTime
+    */
+   public Date getEffectiveTime() {
+      return effectiveTime;
+   }
+
+   /**
+    * @param effectiveTime the effectiveTime to set
+    */
+   public void setEffectiveTime(Date effectiveTime) {
+      this.effectiveTime = effectiveTime;
+   }
 }

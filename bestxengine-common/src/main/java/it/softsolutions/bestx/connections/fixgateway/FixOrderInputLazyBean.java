@@ -462,6 +462,7 @@ public class FixOrderInputLazyBean extends Order {
     public String getTicketOwner() {
         return getStringField(FixMessageFields.FIX_TicketOwner);
     }
+   
 	   
 	/**
 	 * Gets the received time.
@@ -550,5 +551,32 @@ public class FixOrderInputLazyBean extends Order {
 	public Boolean isMiFIDRestricted() {
 		return ("Y".equals(getStringField(FixMessageFields.FIX_MiFIDTVRestricted)));
 	}
+	
+   @Override
+	public String getCustOrderHandlingInstr() {
+      return getStringField(FixMessageFields.FIX_CustOrderHandlingInstr);
+	}
+	
+   @Override
+	public int getTryAfterMinutes() {
+      if (getIntField(FixMessageFields.FIX_TryAfterMinutes) != null) {
+         return getIntField(FixMessageFields.FIX_TryAfterMinutes);
+      }
+	   return 0;
+	}
+	
+   @Override
+   public Date getEffectiveTime() {
+      String stringFormattedDate = getStringField(FixMessageFields.FIX_EffectiveTime);
+      if (stringFormattedDate != null) {
+         try {
+            DateTime dateTime = dateTimeFormatter.parseDateTime(stringFormattedDate);
+            return dateTime.toDate();
+         } catch (Exception e) {
+            LOGGER.error("Parsing error while converting field '{}', value: {}", FixMessageFields.FIX_EffectiveTime, stringFormattedDate);
+         }
+      }
+      return null;
+   }
 
 }
