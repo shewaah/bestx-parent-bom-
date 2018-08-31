@@ -38,6 +38,7 @@ import quickfix.StringField;
 import quickfix.field.Account;
 import quickfix.field.ClOrdID;
 import quickfix.field.ClientID;
+import quickfix.field.EffectiveTime;
 import quickfix.field.FutSettDate;
 import quickfix.field.MsgSeqNum;
 import quickfix.field.Price;
@@ -81,6 +82,8 @@ public class BXNewOrderSingle extends BXMessage<quickfix.fix41.NewOrderSingle, q
     // custom fields
     private Boolean bestExecutionVenue;
     private String ticketOwner;
+    
+    private Date effectiveTime;
     
     public BXNewOrderSingle() {
         super(MsgType.OrderSingle);
@@ -163,6 +166,9 @@ public class BXNewOrderSingle extends BXMessage<quickfix.fix41.NewOrderSingle, q
         //TicketOwner, CS custom field
         if (message.isSetField(5715)) {
             res.ticketOwner = message.getString(5715);
+        }
+        if (message.isSetEffectiveTime()) {
+            res.effectiveTime = message.getEffectiveTime().getValue();
         }
         return res;
     }
@@ -309,6 +315,7 @@ public class BXNewOrderSingle extends BXMessage<quickfix.fix41.NewOrderSingle, q
         if (securityExchange != null) {
             res.setField(new SecurityExchange(securityExchange));
         }
+
         return res;
     }
 
@@ -388,6 +395,9 @@ public class BXNewOrderSingle extends BXMessage<quickfix.fix41.NewOrderSingle, q
         
         if (ticketOwner != null){
             res.setField(new StringField(5715 , ticketOwner));
+        }
+        if(effectiveTime != null) {
+        	res.setField(new EffectiveTime(effectiveTime));
         }
         
         return res;
