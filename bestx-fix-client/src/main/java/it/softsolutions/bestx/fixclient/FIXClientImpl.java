@@ -80,16 +80,17 @@ public class FIXClientImpl implements FIXClient, FIXInitiatorListener {
             MessageStoreFactory messageStoreFactory = new MemoryStoreFactory();
             MessageFactory messageFactory = new DefaultMessageFactory();
             
-            final String dataDictionaryFileName = sessionSettings.getDefaultProperties().getProperty("DataDictionary");
+            final String dataDictionaryFileName = sessionSettings.getDefaultProperties().getProperty("AppDataDictionary");
             DataDictionary dataDictionary = null;
             //Retrieving property file
     		File[] xmlList = settingFolder.listFiles(new FileFilter() {
     			@Override
     			public boolean accept(File pathname) {
-    				if ((pathname.getName()).toUpperCase().equals(dataDictionaryFileName.toUpperCase())) {
+     				if (pathname != null && pathname.getName() != null && (pathname.getName()).toUpperCase() != null && 
+     						(pathname.getName()).toUpperCase().contains(dataDictionaryFileName.toUpperCase())) 
     					return true;
-    				} 
-    				return false;
+     				else
+     					return false;
     			}
     		});
     		if (xmlList==null || xmlList.length==0) return;
