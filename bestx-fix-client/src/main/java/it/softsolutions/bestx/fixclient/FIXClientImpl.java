@@ -59,9 +59,9 @@ public class FIXClientImpl implements FIXClient, FIXInitiatorListener {
     private Initiator initiator;
     
     @Override
-    public void init(String filename, FIXClientCallback fixClientCallback) throws FIXClientException {
+    public void init(String filename, String foldername, FIXClientCallback fixClientCallback) throws FIXClientException {
     	try {
-			init(new FileInputStream(new File(filename)), new File(filename).getParentFile(), fixClientCallback);
+			init(new FileInputStream(new File(filename)), new File(foldername), fixClientCallback);
 		} catch (FileNotFoundException e) {
 			logger.error("Failed Fix connection initialization using configuration  " ,e);
 			throw new FIXClientException(e);

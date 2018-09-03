@@ -52,6 +52,7 @@ public class MyFIXClient {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MyFIXClient.class);
 	
     public static String CFG_FILE = "bestx-fix-client.properties";
+	public static String CFG_FILE_BASE_PATH = "./config";
 	
     private static FIXClient fixClient; 
     private static Semaphore semaphore;
@@ -76,7 +77,7 @@ public class MyFIXClient {
         fixClient = new FIXClientImpl();
         semaphore = new Semaphore(0); 
 
-        fixClient.init(CFG_FILE, new FIXClientCallback() {
+        fixClient.init(CFG_FILE, CFG_FILE_BASE_PATH, new FIXClientCallback() {
 			
 			@Override
 			public void onReject(BXReject bxReject) throws FIXClientException {
