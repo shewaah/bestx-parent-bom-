@@ -32,7 +32,7 @@ public interface FIXClient {
     
 	void init(InputStream settings, File settingFolder, FIXClientCallback fixClientCallback) throws FIXClientException;
 	
-    void init(String filename, FIXClientCallback fixClientCallback) throws FIXClientException;
+    void init(String filename, String foldername, FIXClientCallback fixClientCallback) throws FIXClientException;
     
     void manageNewOrderSingle(BXNewOrderSingle bxNewOrderSingle) throws FIXClientException;
     
