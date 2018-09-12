@@ -120,6 +120,9 @@ public class FixMessageFields {
     public final static String FIX_CustomerOrderSource = "OrderSource";
     /**Custom TAG String*/
     public static final String FIX_TicketOwner = "TicketOwner";
+    //BESTX-348: SP-20180905 added numDaysInterest field
+    public static final String FIX_NumDaysInterest = "NumDaysInterest";
+    
     
     // REVOKE
     public final static String FIX_OrigClOrdID = "OrigClOrdID";

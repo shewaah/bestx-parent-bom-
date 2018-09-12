@@ -822,6 +822,11 @@ public class TradewebMarket extends MarketCommon
       String micCode = null;
       micCode = tsExecutionReport.getCustomFieldString(MiFIDMIC.FIELD);
 
+      //BESTX-348: SP-20180905 added numDaysInterest field
+      Integer numDaysInterest = tsExecutionReport.getNumDaysInterest();
+
+      
+      
       LOGGER.debug(
             "sessionId = {}, clOrdID = {}, execType = {}, ordStatus = {}, accruedInterestAmount = {}, accruedInterestRate = {}, lastPrice = {}, contractNo = {}, futSettDate = {}, transactTime = {}, text = {}",
             sessionId, clOrdID, execType, ordStatus, accruedInterestAmount, accruedInterestRate, lastPrice, contractNo, futSettDate, transactTime, text);
@@ -956,7 +961,7 @@ public class TradewebMarket extends MarketCommon
          }
          
          executor.execute(new OnExecutionReportRunnable(operation, this, market, cleanClOrdId, execType, ordStatus, accruedInterestAmount, accruedInterestRate, lastPrice, contractNo, futSettDate,
-               transactTime, cleanText, mmm, micCode));
+               transactTime, cleanText, mmm, micCode, numDaysInterest));
 
       }
       catch (OperationNotExistingException e) {

@@ -27,4 +27,9 @@ public interface SimpleOperationRestorerMBean {
 	void restoreActiveOperations() throws BestXException;
 
 	void restoreOperationStates() throws BestXException;
+	
+	boolean isRestoreActiveOperationsCompleted();
+	
+   boolean isRestoreOperationStatesCompleted();
+	
 }

@@ -86,7 +86,7 @@ public class ExecutionReport implements Cloneable {
     private String ticket;
     private Money accruedInterestAmount;
     private BigDecimal accruedInterestRate;
-    private int accruedInterestDays;
+    private Integer accruedInterestDays;
     private Date futSettDate;
 
     private String account;
@@ -112,6 +112,7 @@ public class ExecutionReport implements Cloneable {
     
     private Character lastCapacity;
     private Character orderCapacity;
+    
 
     public BigDecimal getRemainingQty() {
         return remainingQty;
@@ -583,10 +584,8 @@ public class ExecutionReport implements Cloneable {
    public Character getOrderCapacity() {
       return orderCapacity;
    }
-
    
    public void setOrderCapacity(Character orderCapacity) {
       this.orderCapacity = orderCapacity;
    }
-	
 }

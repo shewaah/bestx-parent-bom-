@@ -109,6 +109,7 @@ import it.softsolutions.tradestac2.api.TradeStacException;
 import quickfix.FieldNotFound;
 import quickfix.Group;
 import quickfix.field.FutSettDate;
+import quickfix.field.NumDaysInterest;
 
 /**
  *
@@ -554,7 +555,6 @@ public class MarketAxessHelper extends MarketPriceDiscoveryHelper {
 			// } catch (@SuppressWarnings("unused") FieldNotFound e) {
 			// }
 			try {
-				// executionReport.setAccruedInterestDays();
 				// get text and notes
 				executionReport.setText(tsExecutionReport.getString(Text.FIELD));
 			} catch (@SuppressWarnings("unused") FieldNotFound e) {
@@ -590,6 +590,11 @@ public class MarketAxessHelper extends MarketPriceDiscoveryHelper {
 			   executionReport.setFutSettDate(tsExecutionReport.getUtcDateOnly(FutSettDate.FIELD));
          } catch (@SuppressWarnings("unused") FieldNotFound fnf) {
          }
+         try {
+            executionReport.setAccruedInterestDays(tsExecutionReport.getInt(NumDaysInterest.FIELD));
+         } catch (@SuppressWarnings("unused") FieldNotFound fnf) {
+         }
+
 			
 			
 			Parties parties = tsExecutionReport.getPartiesComponent();

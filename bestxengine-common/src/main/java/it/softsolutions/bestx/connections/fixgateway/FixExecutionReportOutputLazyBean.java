@@ -91,6 +91,9 @@ public class FixExecutionReportOutputLazyBean extends FixOutputLazyBean {
     // 20110801 - Ruggero ticket 7610 : currently used only for a TLX execution to store the market pdu. TAS wants this value in the tag 37.
     protected String marketOrderId = null;
     private String ticketOwner;
+    
+    //BESTX-348: SP-20180905 added numDaysInterest field
+    protected Integer numDaysInterest;
 
     /**
      * Constructor of the execution report bean for new orders
@@ -486,6 +489,10 @@ public class FixExecutionReportOutputLazyBean extends FixOutputLazyBean {
         }
         if (ticketOwner != null) {
             msg.setValue(FixMessageFields.FIX_TicketOwner, ticketOwner);
+        }
+        //BESTX-348: SP-20180905 added numDaysInterest field
+        if (numDaysInterest != null) {
+           msg.setValue(FixMessageFields.FIX_NumDaysInterest, numDaysInterest);
         }
     }
 
