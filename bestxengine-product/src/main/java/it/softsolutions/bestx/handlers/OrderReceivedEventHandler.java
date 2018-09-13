@@ -94,7 +94,7 @@ public class OrderReceivedEventHandler extends BaseOperationEventHandler {
                             operation.getOrder(), 
                             operation.getIdentifier(OperationIdType.ORDER_ID), 
                             "Order not accepted - " + Messages.getString("CustomService.NotAvailable"));
-                    operation.setStateResilient(new OrderNotExecutedState(Messages.getString("CustomServiceNotAvailable")), ErrorState.class);
+                    operation.setStateResilient(new OrderNotExecutedState(Messages.getString("CustomService.NotAvailable")), ErrorState.class);
                 } catch (BestXException e) {
                 	LOGGER.warn("{}", e.getMessage(), e);
                     operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("EventFixNoConfirm.0", operation.getIdentifier(OperationIdType.CUSTOMER_CHANNEL))), ErrorState.class);
