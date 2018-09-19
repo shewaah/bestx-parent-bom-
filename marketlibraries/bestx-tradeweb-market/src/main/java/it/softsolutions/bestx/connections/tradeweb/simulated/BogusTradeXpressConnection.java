@@ -78,7 +78,7 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 		new Thread() {
     		@Override
     		public void run() {
-    			try { Thread.sleep(2000); } catch (InterruptedException e) { }
+    			try { Thread.sleep(3000); } catch (InterruptedException e) { }
     			
     			tradeXpressConnectionListener.onMarketConnectionStatusChange(getConnectionName(), ConnectionStatus.Connected);
     		}
