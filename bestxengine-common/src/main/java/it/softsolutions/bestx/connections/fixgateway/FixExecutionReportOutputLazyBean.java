@@ -92,9 +92,7 @@ public class FixExecutionReportOutputLazyBean extends FixOutputLazyBean {
     protected String marketOrderId = null;
     private String ticketOwner;
     
-    //BESTX-348: SP-20180905 added numDaysInterest field
-    protected Integer numDaysInterest;
-
+    //BESTX-348: SP-20180905 
     /**
      * Constructor of the execution report bean for new orders
      * 
@@ -490,9 +488,9 @@ public class FixExecutionReportOutputLazyBean extends FixOutputLazyBean {
         if (ticketOwner != null) {
             msg.setValue(FixMessageFields.FIX_TicketOwner, ticketOwner);
         }
-        //BESTX-348: SP-20180905 added numDaysInterest field
-        if (numDaysInterest != null) {
-           msg.setValue(FixMessageFields.FIX_NumDaysInterest, numDaysInterest);
+        //BESTX-348: SP-20180905 
+        if (accruedDays != null) {
+           msg.setValue(FixMessageFields.FIX_NumDaysInterest, accruedDays);
         }
     }
 
