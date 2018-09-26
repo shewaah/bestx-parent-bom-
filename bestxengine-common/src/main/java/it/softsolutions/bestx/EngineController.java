@@ -31,49 +31,54 @@ import it.softsolutions.bestx.services.DateService;
  * 
  **/
 public class EngineController implements EngineControllerMBean {
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(EngineController.class);
-    
-    private volatile boolean shutdown = false;
-    private Date startup;
 
-    public synchronized void idle() {
-        LOGGER.info("Enter controller idle loop");
-        startup = DateService.newLocalDate();
-        while (true) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                LOGGER.debug("Controller idle loop exiting" + " : " + e.toString(), e);
-            }
-            
-            if (shutdown) {
-                break;
-            }
-        }
-        LOGGER.info("Shutdown application");
-    }
+   private static final Logger LOGGER = LoggerFactory.getLogger(EngineController.class);
 
-    @Override
-    public synchronized void shutdown() {
-        shutdown = true;
-        notify();
-    }
+   private volatile boolean shutdown = false;
+   private Date startup;
 
-    @Override
-    public long getUptime() {
-        return (DateService.currentTimeMillis() - startup.getTime());
-    }
+   public synchronized void idle() {
+      LOGGER.info("Enter controller idle loop");
+      startup = DateService.newLocalDate();
+      while (true) {
+         try {
+            wait();
+         }
+         catch (InterruptedException e) {
+            LOGGER.debug("Controller idle loop exiting" + " : " + e.toString(), e);
+         }
 
-    @Override
-    public void reloadConfiguration() {
-        LOGGER.info("Reload configuration has no implementation");
-    }
+         if (shutdown) {
+            break;
+         }
+      }
+      LOGGER.info("Shutdown application");
+   }
 
-    public boolean getMaintainTLXNoFOKBehaviour() {
-        return false;
-    }
+   @Override
+   public synchronized void shutdown() {
+      shutdown = true;
+      notify();
+   }
 
-    public void setMaintainTLXNoFOKBehaviour(boolean getMaintainTLXNoFOKBehaviour) {
-    }
+   @Override
+   public long getUptime() {
+      return (DateService.currentTimeMillis() - startup.getTime());
+   }
+
+   @Override
+   public void reloadConfiguration() {
+      LOGGER.info("Reload configuration has no implementation");
+   }
+
+   public boolean getMaintainTLXNoFOKBehaviour() {
+      return false;
+   }
+
+   public void setMaintainTLXNoFOKBehaviour(boolean getMaintainTLXNoFOKBehaviour) {}
+
+   @Override
+   public void reloadTimerProfiles() {
+      LOGGER.info("Reload timer profiles has no implementation");
+   }
 }

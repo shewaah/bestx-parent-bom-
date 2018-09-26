@@ -373,11 +373,11 @@ public class ExecutionReport implements Cloneable {
         this.futSettDate = futSettDate;
     }
 
-    public int getAccruedInterestDays() {
+    public Integer getAccruedInterestDays() {
         return accruedInterestDays;
     }
 
-    public void setAccruedInterestDays(int accruedInterestDays) {
+    public void setAccruedInterestDays(Integer accruedInterestDays) {
         this.accruedInterestDays = accruedInterestDays;
     }
 

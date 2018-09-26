@@ -27,4 +27,6 @@ public interface EngineControllerMBean {
 	void reloadConfiguration();
 
 	long getUptime();
+	
+	void reloadTimerProfiles();
 }
