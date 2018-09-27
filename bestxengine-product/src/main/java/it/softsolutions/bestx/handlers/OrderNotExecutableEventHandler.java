@@ -99,14 +99,8 @@ public class OrderNotExecutableEventHandler extends BaseOperationEventHandler {
 
         if (jobName.equalsIgnoreCase(handlerJobName)) {
             LOGGER.debug("Timer: " + jobName + " expired. Clean-up data.");
-            if (AutoCurandoStatus.SUSPENDED.equalsIgnoreCase(autoCurandoStatus.getAutoCurandoStatus())) {
-                //nothing to do, recreate the timer
-                LOGGER.debug("Order {}, LimitFile price discovery suspended, re-start the timer", operation.getOrder().getFixOrderId());
-                setupDefaultTimer(getTimerInterval(operation.getOrder(), operation.getOrder().getCustomer()), false);
-            } else {
-                //time to do the price discovery
-                operation.setStateResilient(new CurandoRetryState(), ErrorState.class);
-            }
+             //time to do the price discovery
+             operation.setStateResilient(new CurandoRetryState(), ErrorState.class);
         } else {
             super.onTimerExpired(jobName, groupName);
         }

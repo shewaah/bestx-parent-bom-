@@ -66,7 +66,6 @@ import it.softsolutions.bestx.states.LimitFileNoPriceState;
 import it.softsolutions.bestx.states.OrderNotExecutableState;
 import it.softsolutions.bestx.states.SendAutoNotExecutionReportState;
 import it.softsolutions.bestx.states.WarningState;
-import it.softsolutions.bestx.states.autocurando.AutoCurandoStatus;
 import it.softsolutions.jsscommon.Money;
 import it.softsolutions.manageability.sl.monitoring.NumericValueMonitor;
 /**
@@ -114,7 +113,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
      * @param venueFinder the venue finder
      * @param serialNumberService the serial number service
      * @param regulatedMktIsinsLoader the regulated mkt isins loader
-     * @param autoCurandoStatus the auto curando status
      * @param regulatedMarketPolicies the regulated market policies
      * @param internalMarketMaker the internal market maker
      * @param waitingPriceDelay the waiting price delay
@@ -130,7 +128,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
      */
     
     public WaitingPriceEventHandler(Operation operation, PriceService priceService, TitoliIncrociabiliService titoliIncrociabiliService, CustomerFinder customerFinder,
-                    SerialNumberService serialNumberService, RegulatedMktIsinsLoader regulatedMktIsinsLoader, AutoCurandoStatus autoCurandoStatus,
+                    SerialNumberService serialNumberService, RegulatedMktIsinsLoader regulatedMktIsinsLoader, 
                     List<String> regulatedMarketPolicies, long waitingPriceDelay, int maxAttemptNo, long marketPriceTimeout,
                     MarketSecurityStatusService marketSecurityStatusService, ExecutionDestinationService executionDestinationService, boolean rejectOrderWhenBloombergIsBest, boolean doNotExecute, 
                     BookDepthValidator bookDepthValidator, List<String> internalMMcodes, OperationStateAuditDao operationStateAuditDao) throws BestXException {
@@ -524,7 +522,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 
     private void checkOrderAndSetNotExecuteOrder() {
         Order order = operation.getOrder();
-        if (doNotExecute) {
+        if (order.isLimitFile() && doNotExecute) {
             //update Db only when needed
             if (order.isNotExecute() == null || order.isNotExecute()) {
             	order.setNotExecute(false);

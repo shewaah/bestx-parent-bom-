@@ -45,7 +45,6 @@ import it.softsolutions.bestx.services.serial.SerialNumberService;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.ManualManageState;
 import it.softsolutions.bestx.states.WarningState;
-import it.softsolutions.bestx.states.autocurando.AutoCurandoStatus;
 import it.softsolutions.manageability.sl.monitoring.NumericValueMonitor;
 
 /**
@@ -70,10 +69,10 @@ public class ManualExecutionWaitingPriceEventHandler extends WaitingPriceEventHa
      */
     public ManualExecutionWaitingPriceEventHandler(Operation operation, PriceService priceService, TitoliIncrociabiliService titoliIncrociabiliService, CustomerFinder customerFinder,
             SerialNumberService serialNumberService, RegulatedMktIsinsLoader regulatedMktIsinsLoader,
-            AutoCurandoStatus autoCurandoStatus, List<String> regulatedMarketPolicies, long waitingPriceDelay, int maxAttemptNo, long marketPriceTimeout,
+            List<String> regulatedMarketPolicies, long waitingPriceDelay, int maxAttemptNo, long marketPriceTimeout,
             MarketSecurityStatusService marketSecurityStatusService, ExecutionDestinationService executionDestinationService, boolean rejectWhenBloombergIsBest, boolean doNotExecute, BookDepthValidator bookDepthValidator, OperationStateAuditDao operationStateAuditDao) throws BestXException {
 
-        super(operation, priceService, titoliIncrociabiliService, customerFinder, serialNumberService, regulatedMktIsinsLoader, autoCurandoStatus,
+        super(operation, priceService, titoliIncrociabiliService, customerFinder, serialNumberService, regulatedMktIsinsLoader, 
                 regulatedMarketPolicies, waitingPriceDelay, maxAttemptNo, marketPriceTimeout, marketSecurityStatusService, executionDestinationService, rejectWhenBloombergIsBest, doNotExecute, bookDepthValidator, null, operationStateAuditDao);
     }
 

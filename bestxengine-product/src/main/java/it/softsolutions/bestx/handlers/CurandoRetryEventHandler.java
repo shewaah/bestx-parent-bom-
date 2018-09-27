@@ -338,7 +338,7 @@ public class CurandoRetryEventHandler extends BaseOperationEventHandler implemen
             if (portfolio != null && portfolio.isInternalizable() && !operation.hasBeenInternalized()) {
                 operation.setStateResilient(new INT_StartExecutionState(Messages.getString("Curando_Venue_Found.0")), ErrorState.class);
             } else {                
-                if (this.doNotExecute) {
+                if (order.isLimitFile() && doNotExecute) {
                     LOGGER.info("Order {} could be executed, but BestX is configured to no execute limit file orders.", order.getFixOrderId());
                     currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
                     //update Db only when needed
@@ -393,7 +393,7 @@ public class CurandoRetryEventHandler extends BaseOperationEventHandler implemen
 
     private void checkOrderAndSetNotExecuteOrder() {
     	Order order = operation.getOrder();
-        if (this.doNotExecute) {
+        if (order.isLimitFile() && doNotExecute) {
             //update Db only when needed
             if (order.isNotExecute() == null || order.isNotExecute()) {
                 order.setNotExecute(false);
