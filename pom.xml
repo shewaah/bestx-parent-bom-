@@ -494,7 +494,7 @@
     <scm>
         <connection>scm:git:ssh://git@git.softsolutions.io/bestx/bestx-parent-bom.git</connection>
         <developerConnection>scm:git:ssh://git@git.softsolutions.io/bestx/bestx-parent-bom.git</developerConnection>
-      <tag>bestxengine-parent-4.2.4-1</tag>
+      <tag>bestxengine-parent-4.2.4-rebuild</tag>
   </scm>
 
     <distributionManagement>
