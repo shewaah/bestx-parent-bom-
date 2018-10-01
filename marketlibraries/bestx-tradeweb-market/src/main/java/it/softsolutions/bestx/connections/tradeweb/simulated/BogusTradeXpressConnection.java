@@ -129,11 +129,11 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 			Thread.sleep(2000);
 		} catch (InterruptedException e) {}
 
-		if(cancelIsins.size() <= 0) cancelIsins.add("XS0563306314");
+		if(cancelIsins.size() <= 0) cancelIsins.add("XS0365323608");
 		if (cancelIsins.contains(marketOrder.getInstrument().getIsin())) {
 			sendCancelledExecutionReport(marketOrder);
-		} else if (rejectIsins.contains(marketOrder.getInstrument().getIsin())){
-			sendOrderReject(marketOrder);
+		} else if (rejectIsins.contains(marketOrder.getInstrument().getIsin())){  //rejectIsins.add("XS0365323608");
+			sendOrderReject(marketOrder);										//rejectIsins.remove("XS0365323608");
 		} else {
 			sendFilledExecutionReport(marketOrder);
 		}
@@ -176,12 +176,13 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 		TSExecutionReport execReport = new TSExecutionReport();
 		execReport.setExecType(ExecType.Trade);
 		execReport.setOrdStatus(OrdStatus.Filled);
-		execReport.setAccruedInterestAmt(null);
 		execReport.setLastPx(marketOrder.getLimit().getAmount().doubleValue());
 		execReport.setExecID("C#" + System.currentTimeMillis());
 		execReport.setSettlDate(DateUtils.addDays(new Date(), 3));
 		execReport.setTransactTime(new Date());
 		execReport.setText(null);
+		execReport.setAccruedInterestAmt(12056.0);
+		execReport.setNumDaysInterest(124);
 
 		TSParties tsp = new TSParties();
 		ArrayList<TSNoPartyID> tsNoPartyIDsList = new ArrayList<TSNoPartyID>();
