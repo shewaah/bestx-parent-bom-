@@ -11,7 +11,7 @@
     <description>Comprising all the modules in bestengine installation for CS</description>
 
     <properties>
-        <DB-Version>2.0.0</DB-Version>
+        <DB-Version>2.0.1</DB-Version>
 
         <!--  additional services -->
         <bestxgui-usermanagement.version>1.0.8</bestxgui-usermanagement.version>
