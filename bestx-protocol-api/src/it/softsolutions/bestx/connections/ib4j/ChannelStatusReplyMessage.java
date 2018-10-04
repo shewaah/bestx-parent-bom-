@@ -105,14 +105,22 @@ public class ChannelStatusReplyMessage extends IBcsMessage {
         setIntProperty(IB4JOperatorConsoleMessage.FLD_FIX_CHANNEL_STATUS, customerConnection.isConnected() ? 1 : 0);
         
         Connection mqPriceDiscoveryConnection = connectionRegistry.getMqPriceDiscoveryConnection();
-        setStringProperty(IB4JOperatorConsoleMessage.FLD_MQ_CHANNEL_NAME + MqQueues.PRICEDISCOVERY, mqPriceDiscoveryConnection.getConnectionName());
-        setIntProperty(IB4JOperatorConsoleMessage.FLD_MQ_CHANNEL_STATUS + MqQueues.PRICEDISCOVERY, mqPriceDiscoveryConnection.isConnected() ? 1 : 0);
-        
+        if (mqPriceDiscoveryConnection != null) {
+        	setStringProperty(IB4JOperatorConsoleMessage.FLD_MQ_CHANNEL_NAME + MqQueues.PRICEDISCOVERY, mqPriceDiscoveryConnection.getConnectionName());
+        	setIntProperty(IB4JOperatorConsoleMessage.FLD_MQ_CHANNEL_STATUS + MqQueues.PRICEDISCOVERY, mqPriceDiscoveryConnection.isConnected() ? 1 : 0);
+        } else {
+        	setStringProperty(IB4JOperatorConsoleMessage.FLD_MQ_CHANNEL_NAME + MqQueues.PRICEDISCOVERY, "mqPriceDiscoveryConnection");
+        	setIntProperty(IB4JOperatorConsoleMessage.FLD_MQ_CHANNEL_STATUS + MqQueues.PRICEDISCOVERY, 0);
+        }
         Connection grdLiteConnection = connectionRegistry.getGrdLiteConnection();
-        setStringProperty(IB4JOperatorConsoleMessage.FLD_MQ_CHANNEL_NAME + MqQueues.GRDLITE, grdLiteConnection.getConnectionName());
-        setIntProperty(IB4JOperatorConsoleMessage.FLD_MQ_CHANNEL_STATUS + MqQueues.GRDLITE, grdLiteConnection.isConnected() ? 1 : 0);
+        if(grdLiteConnection != null) {
+	        setStringProperty(IB4JOperatorConsoleMessage.FLD_MQ_CHANNEL_NAME + MqQueues.GRDLITE, grdLiteConnection.getConnectionName());
+	        setIntProperty(IB4JOperatorConsoleMessage.FLD_MQ_CHANNEL_STATUS + MqQueues.GRDLITE, grdLiteConnection.isConnected() ? 1 : 0);
+        }   else {
+        	setStringProperty(IB4JOperatorConsoleMessage.FLD_MQ_CHANNEL_NAME + MqQueues.GRDLITE, "grdLiteConnection");
+        	setIntProperty(IB4JOperatorConsoleMessage.FLD_MQ_CHANNEL_STATUS + MqQueues.GRDLITE, 0);
+        }     
         
-        
-        LOGGER.trace("ChannelStatusReplyMessage = {}", this);
+        LOGGER.debug("ChannelStatusReplyMessage = {}", this);
     }
 }
