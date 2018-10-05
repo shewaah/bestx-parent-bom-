@@ -35,7 +35,14 @@ import it.softsolutions.tradestac.fix.field.PartyIDSource;
 import it.softsolutions.tradestac.fix.field.PartyRole;
 import it.softsolutions.tradestac.fix50.TSExecutionReport;
 import it.softsolutions.tradestac.fix50.TSNoPartyID;
+import it.softsolutions.tradestac.fix50.component.TSCompDealersGrpComponent;
 import it.softsolutions.tradestac.fix50.component.TSParties;
+import quickfix.Field;
+import quickfix.Group;
+import tw.quickfix.field.CompDealerID;
+import tw.quickfix.field.CompDealerQuote;
+import tw.quickfix.field.CompDealerStatus;
+import tw.quickfix.field.MiFIDMIC;
 
 /**
  *
@@ -183,13 +190,45 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 		execReport.setText(null);
 		execReport.setAccruedInterestAmt(12056.0);
 		execReport.setNumDaysInterest(124);
-
+		
+		List<Field<?>> customFields = new ArrayList<Field<?>>();
+		MiFIDMIC mic = new MiFIDMIC("TREU");
+		customFields.add(mic);
+		execReport.setCustomFields(customFields);
+		
 		TSParties tsp = new TSParties();
 		ArrayList<TSNoPartyID> tsNoPartyIDsList = new ArrayList<TSNoPartyID>();
 		tsNoPartyIDsList.add(new TSNoPartyID(marketOrder.getMarketMarketMaker().getMarketSpecificCode(), PartyIDSource.BIC, PartyRole.ExecutingFirm));
 		tsp.setTSNoPartyIDsList(tsNoPartyIDsList);
 		execReport.setTSParties(tsp);
 		//FIXME add MiFID II fields
+
+		TSCompDealersGrpComponent compdealersComp = new TSCompDealersGrpComponent();
+
+		Group compdealer1 = new Group(10009, 10010, new int[] { 10010, 10011, 10012, 10015, 10016, 0 });
+		compdealer1.setField(new CompDealerQuote(100.00));
+		compdealer1.setField(new CompDealerID(marketOrder.getMarketMarketMaker().getMarketSpecificCode()));	
+		compdealersComp.addGroup(compdealer1);
+		
+		Group compdealer2 = new Group(10009, 10010, new int[] { 10010, 10011, 10012, 10015, 10016, 0 });
+		compdealer2.setField(new CompDealerStatus(2));
+		compdealer2.setField(new CompDealerQuote(100.674));
+		compdealer2.setField(new CompDealerID("DLRY"));	
+		compdealersComp.addGroup(compdealer2);
+		
+		Group compdealer3 = new Group(10009, 10010, new int[] { 10010, 10011, 10012, 10015, 10016, 0 });
+		compdealer3.setField(new CompDealerStatus(6));
+		compdealer3.setField(new CompDealerQuote(101.435));
+		compdealer3.setField(new CompDealerID("DLRX"));	
+		compdealersComp.addGroup(compdealer3);
+		
+		Group compdealer4 = new Group(10009, 10010, new int[] { 10010, 10011, 10012, 10015, 10016, 0 });
+		compdealer4.setField(new CompDealerStatus(2));
+		compdealer4.setField(new CompDealerQuote(0.0));
+		compdealer4.setField(new CompDealerID("DLRZ"));	
+		compdealersComp.addGroup(compdealer4);
+		
+		execReport.addCustomComponent(compdealersComp);
 		
 		tradeXpressConnectionListener.onExecutionReport(sessionId, clOrdId, execReport);
 		
@@ -207,15 +246,15 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 		execReport.setExecID("C#" + System.currentTimeMillis());
 		execReport.setSettlDate(DateUtils.addDays(new Date(), 3));
 		execReport.setTransactTime(new Date());
-		execReport.setText("Trader not available in simulated env");
-
+		execReport.setText("Target price not met/Quoted:DLRX,DLRY");
+		
 		TSParties tsp = new TSParties();
 		ArrayList<TSNoPartyID> tsNoPartyIDsList = new ArrayList<TSNoPartyID>();
 		tsNoPartyIDsList.add(new TSNoPartyID(marketOrder.getMarketMarketMaker().getMarketSpecificCode(), PartyIDSource.BIC, PartyRole.ExecutingFirm));
 		tsp.setTSNoPartyIDsList(tsNoPartyIDsList);
 		execReport.setTSParties(tsp);
 		//FIXME add MiFID II fields
-		
+				
 		tradeXpressConnectionListener.onExecutionReport(sessionId, clOrdId, execReport);
 		
 	}
