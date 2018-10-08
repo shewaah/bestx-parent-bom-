@@ -272,7 +272,7 @@ public class MarketStatistics extends JMXNotifier implements TimerEventListener 
    public double getExecutionRatio() {
       int executed = this.getExecutionCount();
       int unexecuted = this.getUnexecutionCount();
-      return (executed == 0) ? 0.0 : (double) (executed / (unexecuted + executed));
+      return (executed == 0) ? 0.0 : (double) executed / (unexecuted + executed);
    }
 
 }
