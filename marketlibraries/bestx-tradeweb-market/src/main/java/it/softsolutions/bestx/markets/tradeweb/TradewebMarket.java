@@ -924,12 +924,12 @@ public class TradewebMarket extends MarketCommon
                            if (groups.get(i).isSetField(CompDealerID.FIELD)) {
                               String quotingDealer = groups.get(i).getField(new StringField(CompDealerID.FIELD)).getValue();
                               
-                              mmm = marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), quotingDealer);
-                              if(mmm == null) {
+                              MarketMarketMaker tempMM = marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), quotingDealer);
+                              if(tempMM == null) {
                                  LOGGER.info("IMPORTANT! Tradeweb returned dealer {} not configured in BestX!. Please configure it", quotingDealer);
                                  price.setOriginatorID(quotingDealer);
                               } else {
-                                 price.setMarketMarketMaker(mmm);
+                                 price.setMarketMarketMaker(tempMM);
                               }
                            }
                            if (groups.get(i).isSetField(CompDealerQuote.FIELD)) {
