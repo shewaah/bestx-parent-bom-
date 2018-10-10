@@ -14,7 +14,6 @@
 package it.softsolutions.bestx.markets.tradeweb;
 
 import java.math.BigDecimal;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
@@ -26,17 +25,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
 import org.quartz.JobDetail;
+import org.quartz.SchedulerException;
+import org.quartz.Trigger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.Trigger;
 
-import akka.actor.SchedulerException;
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.CommonMetricRegistry;
 import it.softsolutions.bestx.ConnectionHelper;
 import it.softsolutions.bestx.Messages;
+import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationIdType;
 import it.softsolutions.bestx.OperationRegistry;
+import it.softsolutions.bestx.connections.Connection;
 import it.softsolutions.bestx.connections.ConnectionListener;
 import it.softsolutions.bestx.connections.MarketBuySideConnection;
 import it.softsolutions.bestx.connections.MarketPriceConnection;
@@ -59,6 +60,7 @@ import it.softsolutions.bestx.markets.tradeweb.services.TradewebTradeMatchingSer
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.ExecutablePrice;
+import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.Instrument.QuotingStatus;
 import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
@@ -66,11 +68,13 @@ import it.softsolutions.bestx.model.MarketExecutionReport;
 import it.softsolutions.bestx.model.MarketMaker;
 import it.softsolutions.bestx.model.MarketMarketMaker;
 import it.softsolutions.bestx.model.MarketOrder;
+import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Proposal.ProposalSide;
 import it.softsolutions.bestx.model.Proposal.ProposalType;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.Venue;
+import it.softsolutions.bestx.model.Venue.VenueType;
 import it.softsolutions.bestx.services.price.SimpleMarketProposalAggregator;
 import it.softsolutions.bestx.services.pricediscovery.ProposalAggregator;
 import it.softsolutions.bestx.services.pricediscovery.ProposalAggregatorListener;
@@ -96,10 +100,8 @@ import quickfix.MessageComponent;
 import quickfix.StringField;
 import quickfix.field.CompDealerQuote;
 import quickfix.field.CompDealerStatus;
-import quickfix.field.VenueType;
 import tw.quickfix.field.CompDealerID;
 import tw.quickfix.field.MiFIDMIC;
-
 /**
  * 
  * @author Davide Rossoni
