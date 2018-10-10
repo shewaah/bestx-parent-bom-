@@ -877,6 +877,23 @@ public class TradewebMarket extends MarketCommon
                }
             }
          } else {
+            //BESTX-363 SP20181010 : Added executable price of execution broker
+            ExecutablePrice priceExec = new ExecutablePrice();
+            priceExec.setAuditQuoteState("Done");
+            if(mmm == null) {
+               priceExec.setOriginatorID(executionBroker);
+            } else {
+               priceExec.setMarketMarketMaker(mmm);
+            }
+            priceExec.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(lastPrice.doubleValue())));
+            priceExec.setQty(operation.getOrder().getQty());
+            priceExec.setTimestamp(tsExecutionReport.getTransactTime());
+            priceExec.setType(ProposalType.COUNTER);
+            priceExec.setSide(operation.getOrder().getSide() == OrderSide.BUY ? ProposalSide.ASK : ProposalSide.BID);
+            priceExec.setQuoteReqId(attempt.getMarketOrder().getFixOrderId());
+            attempt.addExecutablePrice(priceExec, 0);
+            //END BESTX-366
+            
             List<MessageComponent> customComp = tsExecutionReport.getCustomComponents();
             if (customComp != null) {
                for (MessageComponent comp : customComp) {
@@ -916,11 +933,7 @@ public class TradewebMarket extends MarketCommon
                                  price.setAuditQuoteState("Passed");
                                  break;
                               default:
-                                 if (i == 0) {
-                                    price.setAuditQuoteState("Done");
-                                 } else {
-                                    price.setAuditQuoteState("Covered");
-                                 }
+                                 price.setAuditQuoteState("Covered");
                                  break;
                            }
                            
@@ -946,7 +959,7 @@ public class TradewebMarket extends MarketCommon
                            price.setSide(operation.getOrder().getSide() == OrderSide.BUY ? ProposalSide.ASK : ProposalSide.BID);
                            price.setQuoteReqId(attempt.getMarketOrder().getFixOrderId());
 
-                           attempt.addExecutablePrice(price, i);
+                           attempt.addExecutablePrice(price, i + 1);
                         }
                      }
                      catch (FieldNotFound e) {
