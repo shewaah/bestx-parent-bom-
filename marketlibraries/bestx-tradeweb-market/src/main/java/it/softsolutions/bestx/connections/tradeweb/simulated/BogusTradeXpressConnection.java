@@ -205,21 +205,15 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 
 		TSCompDealersGrpComponent compdealersComp = new TSCompDealersGrpComponent();
 
-		Group compdealer1 = new Group(10009, 10010, new int[] { 10010, 10011, 10012, 10015, 10016, 0 });
-		compdealer1.setField(new CompDealerQuote(100.00));
-		compdealer1.setField(new CompDealerID(marketOrder.getMarketMarketMaker().getMarketSpecificCode()));	
-		compdealersComp.addGroup(compdealer1);
-		
 		Group compdealer2 = new Group(10009, 10010, new int[] { 10010, 10011, 10012, 10015, 10016, 0 });
-		compdealer2.setField(new CompDealerStatus(2));
 		compdealer2.setField(new CompDealerQuote(100.674));
 		compdealer2.setField(new CompDealerID("DLRY"));	
 		compdealersComp.addGroup(compdealer2);
 		
 		Group compdealer3 = new Group(10009, 10010, new int[] { 10010, 10011, 10012, 10015, 10016, 0 });
-		compdealer3.setField(new CompDealerStatus(6));
+//		compdealer3.setField(new CompDealerStatus(6));
 		compdealer3.setField(new CompDealerQuote(101.435));
-		compdealer3.setField(new CompDealerID("DLRX"));	
+		compdealer3.setField(new CompDealerID("DLRB"));	
 		compdealersComp.addGroup(compdealer3);
 		
 		Group compdealer4 = new Group(10009, 10010, new int[] { 10010, 10011, 10012, 10015, 10016, 0 });
@@ -227,7 +221,12 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 		compdealer4.setField(new CompDealerQuote(0.0));
 		compdealer4.setField(new CompDealerID("DLRZ"));	
 		compdealersComp.addGroup(compdealer4);
-		
+
+		Group compdealer5 = new Group(10009, 10010, new int[] { 10010, 10011, 10012, 10015, 10016, 0 });
+		compdealer5.setField(new CompDealerStatus(2));
+		compdealer5.setField(new CompDealerID("DLRK"));	
+		compdealersComp.addGroup(compdealer5);
+
 		execReport.addCustomComponent(compdealersComp);
 		
 		tradeXpressConnectionListener.onExecutionReport(sessionId, clOrdId, execReport);
