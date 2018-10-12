@@ -892,13 +892,13 @@ public class TradewebMarket extends MarketCommon
                priceExec.setType(ProposalType.COUNTER);
                priceExec.setSide(operation.getOrder().getSide() == OrderSide.BUY ? ProposalSide.ASK : ProposalSide.BID);
                priceExec.setQuoteReqId(attempt.getMarketOrder().getFixOrderId());
+               attempt.addExecutablePrice(priceExec, 0);
                
                if(mmm == null) {
                   LOGGER.debug("Added Executable price for {}, price {}, status {}", priceExec.getOriginatorID(), priceExec.getPrice().getAmount().toString(), priceExec.getAuditQuoteState());
                } else {
                   LOGGER.debug("Added Executable price for {}, price {}, status {}", priceExec.getMarketMarketMaker().getMarketMaker().getName(), priceExec.getPrice().getAmount().toString(), priceExec.getAuditQuoteState());
                }
-               attempt.addExecutablePrice(priceExec, 0);
                //END BESTX-366
             }            
             
@@ -945,11 +945,11 @@ public class TradewebMarket extends MarketCommon
                                  break;
                            }
                            
-                            
+                           MarketMarketMaker tempMM = null;
                            if (groups.get(i).isSetField(CompDealerID.FIELD)) {
                               String quotingDealer = groups.get(i).getField(new StringField(CompDealerID.FIELD)).getValue();
                               
-                              MarketMarketMaker tempMM = marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), quotingDealer);
+                              tempMM = marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), quotingDealer);
                               if(tempMM == null) {
                                  LOGGER.info("IMPORTANT! Tradeweb returned dealer {} not configured in BestX!. Please configure it", quotingDealer);
                                  price.setOriginatorID(quotingDealer);
@@ -960,19 +960,19 @@ public class TradewebMarket extends MarketCommon
                            if (groups.get(i).isSetField(CompDealerQuote.FIELD)) {
                               Double compDealerQuote = groups.get(i).getField(new DoubleField(CompDealerQuote.FIELD)).getValue();
                               price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerQuote)));
-                           }
+                           } else
+                        	   price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
                            price.setQty(operation.getOrder().getQty());
                            price.setTimestamp(tsExecutionReport.getTransactTime());
                            price.setType(ProposalType.COUNTER);
                            price.setSide(operation.getOrder().getSide() == OrderSide.BUY ? ProposalSide.ASK : ProposalSide.BID);
                            price.setQuoteReqId(attempt.getMarketOrder().getFixOrderId());
-                           if(mmm == null) {
+                           attempt.addExecutablePrice(price, i + 1);
+                           if(tempMM == null) {
                               LOGGER.debug("Added Executable price for {}, price {}, status {}", price.getOriginatorID(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
                            } else {
                               LOGGER.debug("Added Executable price for {}, price {}, status {}", price.getMarketMarketMaker().getMarketMaker().getName(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
                            }
-
-                           attempt.addExecutablePrice(price, i + 1);
                         }
                      }
                      catch (FieldNotFound e) {
