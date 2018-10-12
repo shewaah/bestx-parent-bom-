@@ -873,23 +873,31 @@ public class TradewebMarket extends MarketCommon
                }
             }
          } else {
-            //BESTX-363 SP20181010 : Added executable price of execution broker
-            ExecutablePrice priceExec = new ExecutablePrice();
-            priceExec.setAuditQuoteState("Done");
-            if(mmm == null) {
-               priceExec.setOriginatorID(executionBroker);
-            } else {
-               priceExec.setMarketMarketMaker(mmm);
+            if(OrdStatus.Filled.equals(tsExecutionReport.getOrdStatus()) || OrdStatus.PartiallyFilled.equals(tsExecutionReport.getOrdStatus()) ) {
+                //BESTX-363 SP20181010 : Added executable price of execution broker
+                ExecutablePrice priceExec = new ExecutablePrice();
+                priceExec.setAuditQuoteState("Done");
+                if(mmm == null) {
+                   priceExec.setOriginatorID(executionBroker);
+                } else {
+                   priceExec.setMarketMarketMaker(mmm);
+                }
+                priceExec.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(lastPrice.doubleValue())));
+                priceExec.setQty(operation.getOrder().getQty());
+                priceExec.setTimestamp(tsExecutionReport.getTransactTime());
+                priceExec.setType(ProposalType.COUNTER);
+                priceExec.setSide(operation.getOrder().getSide() == OrderSide.BUY ? ProposalSide.ASK : ProposalSide.BID);
+                priceExec.setQuoteReqId(attempt.getMarketOrder().getFixOrderId());
+                attempt.addExecutablePrice(priceExec, 0);
+                
+                if(mmm == null) {
+                    LOGGER.debug("Added Executable price for {}, price {}, status {}", priceExec.getOriginatorID(), priceExec.getPrice().getAmount().toString(), priceExec.getAuditQuoteState());
+                } else {
+                    LOGGER.debug("Added Executable price for {}, price {}, status {}", priceExec.getMarketMarketMaker().getMarketMaker().getName(), priceExec.getPrice().getAmount().toString(), priceExec.getAuditQuoteState());
+                }
+                //END BESTX-366
             }
-            priceExec.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(lastPrice.doubleValue())));
-            priceExec.setQty(operation.getOrder().getQty());
-            priceExec.setTimestamp(tsExecutionReport.getTransactTime());
-            priceExec.setType(ProposalType.COUNTER);
-            priceExec.setSide(operation.getOrder().getSide() == OrderSide.BUY ? ProposalSide.ASK : ProposalSide.BID);
-            priceExec.setQuoteReqId(attempt.getMarketOrder().getFixOrderId());
-            attempt.addExecutablePrice(priceExec, 0);
-            //END BESTX-366
-
+            
             List<MessageComponent> customComp = tsExecutionReport.getCustomComponents();
             if (customComp != null) {
                for (MessageComponent comp : customComp) {
@@ -954,8 +962,13 @@ public class TradewebMarket extends MarketCommon
                            price.setType(ProposalType.COUNTER);
                            price.setSide(operation.getOrder().getSide() == OrderSide.BUY ? ProposalSide.ASK : ProposalSide.BID);
                            price.setQuoteReqId(attempt.getMarketOrder().getFixOrderId());
+                           if(mmm == null) {
+                              LOGGER.debug("Added Executable price for {}, price {}, status {}", price.getOriginatorID(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
+                           } else {
+                              LOGGER.debug("Added Executable price for {}, price {}, status {}", price.getMarketMarketMaker().getMarketMaker().getName(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
+                           }
 
-                           attempt.addExecutablePrice(price, i);
+                           attempt.addExecutablePrice(price, i + 1);
                         }
                      }
                      catch (FieldNotFound e) {
