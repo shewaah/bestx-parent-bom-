@@ -196,6 +196,15 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 	private int minTimeDelay;
 	private int validSeconds;
 	private String traderPartyID;
+	private int numCompetitiveQuotes = 1;
+
+	public int getNumCompetitiveQuotes() {
+		return numCompetitiveQuotes;
+	}
+
+	public void setNumCompetitiveQuotes(int numCompetitiveQuotes) {
+		this.numCompetitiveQuotes = numCompetitiveQuotes;
+	}
 
 	private double tolerance;
 
@@ -287,7 +296,7 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 		if(this.validSeconds > 0)
 			newOrderSingle.setField(new ValidSeconds(this.validSeconds)); //ValidSeconds.FIELD
 		
-		newOrderSingle.setField(new NumCompetitiveQuotes(1));
+		newOrderSingle.setField(new NumCompetitiveQuotes(this.numCompetitiveQuotes));
 		if(this.tolerance > 0.0)
 			newOrderSingle.setField(new Tolerance(this.tolerance));
 		
