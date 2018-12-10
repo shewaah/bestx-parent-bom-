@@ -241,7 +241,7 @@ public class CurandoRetryEventHandler extends BaseOperationEventHandler implemen
         Order order = operation.getOrder();
 
         /* BXMNT-327 */
-        if (!bookDepthValidator.isBookDepthValid(operation.getLastAttempt(), operation.getOrder())){
+        if (!bookDepthValidator.isBookDepthValid(operation.getLastAttempt(), order)){
             try {
                 ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
                 operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("RejectInsufficientBookDepth.0", bookDepthValidator.getMinimumRequiredBookDepth())), ErrorState.class);

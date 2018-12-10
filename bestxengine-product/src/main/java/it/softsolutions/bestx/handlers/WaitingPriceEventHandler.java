@@ -332,7 +332,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
         Attempt currentAttempt = operation.getLastAttempt();
         currentAttempt.setSortedBook(priceResult.getSortedBook());
         /* BXMNT-327 */
-        if (!bookDepthValidator.isBookDepthValid(currentAttempt, operation.getOrder())){
+        if (!bookDepthValidator.isBookDepthValid(currentAttempt, order)){
             try {
                 ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
                 operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("RejectInsufficientBookDepth.0", bookDepthValidator.getMinimumRequiredBookDepth())), ErrorState.class);
@@ -379,7 +379,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
                 marketOrder.setMarket(currentAttempt.getExecutionProposal().getMarket());
             }
             // Limit File orders: never go in CurandoState, keep trying to find a price, at worst go to Limit File No Price
-            if (operation.hasPassedMaxAttempt(maxAttemptNo) && !operation.getOrder().isLimitFile()) {
+            if (operation.hasPassedMaxAttempt(maxAttemptNo) /*&& !operation.getOrder().isLimitFile() AMC 20181210 removed because maxAttemptNo is in current lifecycle BESTX-380 */) {
                 LOGGER.info("Order={}, Max number of attempts reached.", operation.getOrder().getFixOrderId());
                 currentAttempt.setByPassableForVenueAlreadyTried(true);
                 
