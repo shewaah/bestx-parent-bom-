@@ -126,4 +126,7 @@
             <url>${Snapshot.url}</url>
         </snapshotRepository>
     </distributionManagement>
+    <properties>
+    	<maven.test.skip>true</maven.test.skip>
+    </properties>
 </project>
