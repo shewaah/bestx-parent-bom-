@@ -11,13 +11,13 @@
     <description>Comprising all the modules in bestengine installation for CS</description>
 
     <properties>
-        <DB-Version>2.0.1</DB-Version>
+        <DB-Version>2.0.2</DB-Version>
 
         <!--  additional services -->
         <bestxgui-usermanagement.version>1.0.8</bestxgui-usermanagement.version>
 
         <!--  markets  -->
-        <bestx-marketaxess-fi-buyside-fix-messages.version>2.0.4</bestx-marketaxess-fi-buyside-fix-messages.version>
+        <bestx-marketaxess-fi-buyside-fix-messages.version>2.0.8</bestx-marketaxess-fi-buyside-fix-messages.version>
 
         <!--  gateways dependency -->
         <tradestac-client.version>2.1.7</tradestac-client.version>
