@@ -60,7 +60,6 @@ public class Instrument implements Cloneable {
     private boolean inInventory;
     private String issuerIndustry;
     private String industrySubSector;
-    private String RTFITicker;
     private UEMemberIssuer uEMemberIssuer;
     private String offeringType;
     private InstrumentAttributes instrumentAttributes;
@@ -447,21 +446,6 @@ public class Instrument implements Cloneable {
      */
     public String getIndustrySubSector() {
         return industrySubSector;
-    }
-
-    /**
-     * @return the rTFITicker
-     */
-    public String getRTFITicker() {
-        return RTFITicker;
-    }
-
-    /**
-     * @param ticker
-     *            the rTFITicker to set
-     */
-    public void setRTFITicker(String ticker) {
-        RTFITicker = ticker;
     }
 
     /**

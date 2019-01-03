@@ -178,23 +178,7 @@ public class MultipleQuotesHandler {
             throw new BestXException("QuoteID is empty");
         }
 
-        if (mktCode == MarketCode.RTFI) {
-            //
-            // expected format for RTFI quoteIDs: 5.1.1360764697107:<progressive number>
-            //
-            int newProgressivePos = quoteID.indexOf(':');
-            if (newProgressivePos < 0) {
-                throw new BestXException("QuoteID [" + quoteID + "] wrong format (does not contain progressive number delimiter \":\"");
-            }
-            try {
-                String newProgressiveStr = quoteID.substring(newProgressivePos+1);
-                int newProgressive = Integer.parseInt(newProgressiveStr);
-            }
-            catch (NumberFormatException e) {
-                throw new BestXException("QuoteID [" + quoteID + "] wrong format (does not contain a valid progressive number after delimiter \":\"");
-            }
-        }
-        else if (mktCode == MarketCode.BLOOMBERG) {
+        if (mktCode == MarketCode.BLOOMBERG) {
             //
             // expected format for BLOOMBERG quoteIDs: 13857296630342097984:0:<progressive number>
             // but no check is done (except for quoteID not being null/empty
@@ -224,48 +208,7 @@ public class MultipleQuotesHandler {
             throw new BestXException("New QuoteID is empty");
         }
 
-        if (mktCode == MarketCode.RTFI) {
-            int newProgressive = -1;
-            int newProgressivePos = newQuoteID.indexOf(':');
-            if (newProgressivePos >= 0) {
-                String newProgressiveStr = newQuoteID.substring(newProgressivePos+1);
-                try {
-                    newProgressive = Integer.parseInt(newProgressiveStr);
-                }
-                catch (NumberFormatException e) {
-                    LOGGER.error("Could not extract progressive number from new quoteId: {}", newQuoteID);
-                    throw new BestXException("Could not extract progressive number from new quoteID [" + newQuoteID + "]");
-                }
-            }
-
-            if (oldQuoteID == null) {
-                LOGGER.debug("{} IS NEWER than {}", newQuoteID, oldQuoteID);
-                return true;
-            }
-
-            int oldProgressive = -1;
-            int oldProgressivePos = oldQuoteID.indexOf(':');
-            if (oldProgressivePos >= 0) {
-                String oldProgressiveStr = oldQuoteID.substring(oldProgressivePos+1);
-                try {
-                    oldProgressive = Integer.parseInt(oldProgressiveStr);
-                }
-                catch (NumberFormatException e) {
-                    LOGGER.error("Could not extract progressive number from old quoteId: {}", oldQuoteID);
-                    throw new BestXException("Could not extract progressive number from old quoteID [" + oldQuoteID + "]");
-                }
-            }
-
-            if ( (oldProgressive >= 0) && (newProgressive > oldProgressive) ) {
-                LOGGER.debug("{} IS NEWER than {}", newQuoteID, oldQuoteID);
-                return true;
-            }
-            else {
-                LOGGER.debug("New QuoteID [{}] is not newer than old QuoteID [{}], discarding update", newQuoteID, oldQuoteID);
-                return false;
-            }            
-        }
-        else if (mktCode == MarketCode.BLOOMBERG) {
+        if (mktCode == MarketCode.BLOOMBERG) {
             //
             // expected format for BLOOMBERG quoteIDs: 13857296630342097984:0:<progressive number>
             // but no check is done (except for quoteID not being null/empty, or equal to the existing one)
@@ -288,7 +231,6 @@ public class MultipleQuotesHandler {
         }
 
         switch (mktCode) {
-        case RTFI:
         case BLOOMBERG:
             return true;
 

@@ -1,0 +1,49 @@
+#!/bin/bash
+# /*
+# * Copyright 1997-2016 SoftSolutions! srl
+# * All Rights Reserved.
+# *
+# * This script starts the <%=@servicename%> application.
+# *
+# * artifact ref.: <%=@servicename%>
+# * script version 1.0 - 2016/03/10
+# *
+# * NOTICE: All information contained herein is, and remains the property of SoftSolutions! srl
+# * The intellectual and technical concepts contained herein are proprietary to SoftSolutions! srl and
+# * may be covered by EU, U.S. and other Foreign Patents, patents in process, and
+# * are protected by trade secret or copyright law.
+# * Dissemination of this information or reproduction of this material is strictly forbidden
+# * unless prior written permission is obtained from SoftSolutions! srl.
+# * Any additional licenses, terms and conditions, if any, are defined in file 'LICENSE.txt',
+# * which may be part of this software package.
+# */
+
+# Scripts vars
+EXE_DIR=<%=@exedir%>
+PIDFILE=<%=@exedir%>/<%=@servicename-%>.pid
+
+# Env vars
+export JAVA_HOME=<%=@javapath%>
+export PATH=${JAVA_HOME}/bin:$PATH
+
+# VM vars
+OPT_1="-XX:+UseParallelGC -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -Xms128m -Xmx256m -XX:PermSize=32m -XX:MaxPermSize=64m -Dlogback.configurationFile=config/logback.xml"
+SYSOUTPATH= "/opt/SoftSolutions/BestX/services/GRDLite-bogus/log"
+OPT_2="-cp ../config:../lib/* it.softsolutions.bestx.grdlite.bogus.BogusGRDLite > %SYSOUTPATH%\sysout.log"
+
+# Start the game!
+echo "java arguments: $OPT_1 $OPT_2 "
+if [ -f $PIDFILE ] && kill -0 $(cat $PIDFILE); then
+    echo 'Service <%=@servicename-%> already running' >&2
+    exit 1
+fi
+# start "BestX GDR Lite Simulator"
+cd $EXE_DIR/bin
+${JAVA_HOME}/bin/java $OPT_1 $OPT_2 &
+echo $! 1>$PIDFILE
+if [ "$?" != "0" ];
+then
+        echo "<%=@servicename-%> exited with code $?."
+        exit $?
+fi
+exit 0

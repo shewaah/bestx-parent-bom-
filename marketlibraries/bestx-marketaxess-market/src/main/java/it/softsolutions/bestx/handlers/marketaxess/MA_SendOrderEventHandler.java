@@ -463,11 +463,7 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 			MarketOrder marketOrder = operation.getLastAttempt().getMarketOrder();
 
 			String reason = Messages.getString("EventRevocationRequest.0");
-         operation.setRevocationState(RevocationState.ACKNOWLEDGED);
-         operation.getOrder().setText(reason);
-         //needed otherwise it won't be consider in CSPriceService.internalRequestPrices to generate "fake" prices result
-         operation.setCustomerRevokeReceived(true);
-         operatorConsoleConnection.updateRevocationStateChange(operation, operation.getRevocationState(), reason);
+			updateOperationToRevocated(reason);
 			try {
 				connection.revokeOrder(operation, marketOrder, reason);
 			} catch (BestXException e) {

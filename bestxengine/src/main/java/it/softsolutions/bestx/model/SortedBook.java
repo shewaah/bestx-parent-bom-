@@ -297,20 +297,6 @@ public class SortedBook implements Book, Cloneable {
 		return null;
 	}
 
-	public ClassifiedProposal getSecondBest(ProposalSide side) {
-		List<ClassifiedProposal> sideProposals = getSideProposals(side);
-		boolean foundFirst= false;
-
-		for (ClassifiedProposal prop : sideProposals) {
-			if (prop.getProposalState() == ProposalState.VALID && foundFirst) {
-				return prop;
-			} else if (prop.getProposalState() == ProposalState.VALID) {
-				foundFirst = true;
-			}
-		}
-		return null;
-	}
-
 	//    public String toStringDetailed() {
 	//        String output = "BOOK, ASK proposals : ";
 	//        int count = 1;

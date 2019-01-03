@@ -57,7 +57,7 @@ public class DbCommissionFinder implements CommissionFinder {
     }
     
     /*
-     * Alla richiesta di commissioni vengono caricate dal DAO apposito entrambi i tipi possibili, quelle per ticker e quelle per portfolio.
+     * OUT OF DATE- Alla richiesta di commissioni vengono caricate dal DAO apposito entrambi i tipi possibili, quelle per ticker e quelle per portfolio.
      * Le commissioni per ticker sono collegate ai ticker RTFI. Se l'instrument e' abbinato ad uno dei ticker associati al cliente nella
      * CustomerTickerTable, quella commissione rientra nelle righe accettate e viene inserita nella lista. Si procede poi a controllare il
      * portfolioId associato all'instrument. La riga di commissioni prevista per quel portfolio viene caricata nella lista. Vi e' un'altra
@@ -95,7 +95,7 @@ public class DbCommissionFinder implements CommissionFinder {
         }
 
         // Retrieve customerTicker commissions
-        String rtfiTicker = instrument != null ? instrument.getRTFITicker() : null;
+        String rtfiTicker = instrument != null ? instrument.getBondType() : null;
         CustomerTicker customerTicker  = customerTickerDao.getCustomerTicker(clientCode, rtfiTicker);
         
         if (customerTicker != null) {

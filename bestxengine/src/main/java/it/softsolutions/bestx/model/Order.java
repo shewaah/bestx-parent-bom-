@@ -157,7 +157,6 @@ public class Order extends Rfq {
    //[RR20131205] Store the comment sent by the customer, it will be used if the order is a limit file
    protected String text;
    private Double bestPriceDeviationFromLimit;
-   private Boolean notExecute;
    protected String ticketOwner;
 
    //[SP20180712]BESTX-335 Limit file orders TMO manage
@@ -838,20 +837,6 @@ public class Order extends Rfq {
     */
    public void setBestPriceDeviationFromLimit(Double bestPriceDeviationFromLimit) {
       this.bestPriceDeviationFromLimit = bestPriceDeviationFromLimit;
-   }
-
-   /**
-    * @return the notExecuteOrder
-    */
-   public Boolean isNotExecute() {
-      return notExecute;
-   }
-
-   /**
-    * @param notExecuteOrder the notExecuteOrder to set
-    */
-   public void setNotExecute(Boolean notExecuteOrder) {
-      this.notExecute = notExecuteOrder;
    }
 
    /**

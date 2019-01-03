@@ -135,12 +135,6 @@ public class Attempt {
 		consecutiveExecutionRetries++;
 	}
 	
-	// was useful when retries were inconsistently associated to Operation
-	@Deprecated
-	public void resetConsecutiveRetries(){
-		consecutiveExecutionRetries = 0;
-	}
-
 	public AttemptState getAttemptState() {
 		return attemptState;
 	}

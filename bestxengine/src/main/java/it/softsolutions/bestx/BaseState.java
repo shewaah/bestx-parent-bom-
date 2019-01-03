@@ -107,7 +107,7 @@ public abstract class BaseState implements OperationState, Cloneable {
 
     /**
      * Are quote updates allowed.
-     * Some markets (e.g. RTFI) can send quote unsolicited updates to rfqs. 
+     * Some markets can send quote unsolicited updates to rfqs. 
      * This flag is used to identify the states which can handle them, so that
      * they can be handled or discarded
      *      

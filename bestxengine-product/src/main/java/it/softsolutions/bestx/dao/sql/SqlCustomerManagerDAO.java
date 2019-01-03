@@ -110,7 +110,7 @@ public class SqlCustomerManagerDAO implements CustomerManagerDAO {
         final Customer customer = order.getCustomer();
         final String orderId = order.getFixOrderId();
         Instrument instrument = order.getInstrument();
-        final String ticker = instrument.getRTFITicker();
+        final String ticker = instrument.getBondType();
         LOGGER.info("Order " + orderId + ". Check if the customer " + customer.getName() + ", fix id " + customer.getFixId() + ", can trade the instrument " + instrument.getIsin() + " with ticker "
                 + ticker);
         if (OrderSide.SELL.equals(order.getSide())) {

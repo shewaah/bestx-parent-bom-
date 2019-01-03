@@ -3,7 +3,6 @@
  */
 package it.softsolutions.bestx.handlers;
 
-import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
@@ -20,8 +19,7 @@ import it.softsolutions.bestx.states.ManualExecutionWaitingPriceState;
 import it.softsolutions.bestx.states.OrderNotExecutableState;
 import it.softsolutions.bestx.states.SendNotExecutionReportState;
 import it.softsolutions.bestx.states.WaitingPriceState;
-import it.softsolutions.bestx.states.WarningState;
-import it.softsolutions.bestx.states.internal.INT_InternalInCurandoState;
+import it.softsolutions.bestx.states.internal.deprecated.INT_InternalInCurandoState;
 
 import java.util.List;
 
@@ -69,9 +67,10 @@ public class CurandoEventHandler extends BaseOperationEventHandler {
                 }
             }
         }
+        
     }
-
-    @Override
+    
+	@Override
     public void onOperatorSendDDECommand(OperatorConsoleConnection source, String comment) {
         throw new UnsupportedOperationException();
     }

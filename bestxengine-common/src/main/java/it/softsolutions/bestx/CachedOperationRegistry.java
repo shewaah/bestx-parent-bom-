@@ -134,7 +134,7 @@ public class CachedOperationRegistry implements OperationRegistry, ConfigurableO
         checkPreRequisites();
 
         operation.addIdentifier(idType, id);
-        String key = idType + "#" + id; // key is, e.g., 'RTFI_SESSION_ID#xxxyyy'
+        String key = idType + "#" + id; // key is, e.g., 'SESSION_ID#xxxyyy'
         idToOperationIdMap.put(key, operation.getId());
 
         operationPersistenceManager.saveOperation(operation);

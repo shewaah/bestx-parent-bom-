@@ -13,9 +13,6 @@
  */
 package it.softsolutions.bestx.handlers;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.states.ErrorState;
@@ -23,7 +20,7 @@ import it.softsolutions.bestx.states.WaitingPriceState;
 
 /**
  * 
- * Purpose: this class is mainly for ...
+ * Purpose: this class is mainly for managing RejectedState
  * 
  * Project Name : bestxengine-product 
  * First created by: ruggero.rizzo 
@@ -32,7 +29,11 @@ import it.softsolutions.bestx.states.WaitingPriceState;
  **/
 public class RejectedEventHandler extends BaseOperationEventHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RejectedEventHandler.class);
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -828153138571045312L;
+//	private static final Logger LOGGER = LoggerFactory.getLogger(RejectedEventHandler.class);
 
     /**
      * Instantiates a new rejected event handler.

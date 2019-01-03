@@ -70,8 +70,8 @@ public class PriceForgeInstrumentsManager {
         priceForgeMktCode = PriceForgeService.getPriceForgeMarketCode();
 
         if (priceForgeMktCode != null) {
-            if (priceForgeMktCode.equals(MarketCode.RTFI)) {
-                LOGGER.info("Order " + order.getFixOrderId() + ", the price forge market is RTFI, check if the isin is in the PriceForgeInstrumentsTable");
+            if (priceForgeMktCode.equals(MarketCode.MARKETAXESS)) {
+                LOGGER.info("Order " + order.getFixOrderId() + ", the price forge market is MarketAxess, check if the isin is in the PriceForgeInstrumentsTable");
                 canProcess = checkPriceForgeInstruments(instrument, order);
             } else if (priceForgeMktCode.equals(MarketCode.XBRIDGE)) {
                 LOGGER.info("Order " + order.getFixOrderId() + ", the price forge market is XBRIDGE, check if we received the isin data from the market or if it is a new instrument for BestX!.");

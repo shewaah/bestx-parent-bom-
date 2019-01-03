@@ -60,12 +60,32 @@ public interface ExecutionStrategyService
     *            : the operation that is going to be executed
     * @param currentAttempt
     *            : current attempt
-    * @param matchingVenue
-    *            : the venue for the matching market
-    * @param internalVenue
-    *            : the venue for the internal market
     * @param serialNumberService
     *            : the serial number service
     */
    public abstract void startExecution(Operation operation, Attempt currentAttempt, SerialNumberService serialNumberService);
+   /**
+    * The choice about what to do next after a failed execution attempt
+    * @param operation
+    *            : the operation that is going to be executed
+    * @param currentAttempt
+    *            : current attempt
+    * @param serialNumberService
+    *            : the serial number service
+    * @throws BestXException : if something wrong happens
+    **/
+   public abstract void manageMarketReject(Operation operation, Attempt currentAttempt, SerialNumberService serialNumberService) throws BestXException;
+   
+   /**
+    * The choice about what to do when the user or the client has cancelled the order
+    * @param operation
+    *            : the operation that is going to be executed
+    * @param currentAttempt
+    *            : current attempt
+    * @param serialNumberService
+    *            : the serial number service
+    **/
+   public abstract void manageOrderRevoke(Operation operation, Attempt currentAttempt,
+			SerialNumberService serialNumberService);
+
 }

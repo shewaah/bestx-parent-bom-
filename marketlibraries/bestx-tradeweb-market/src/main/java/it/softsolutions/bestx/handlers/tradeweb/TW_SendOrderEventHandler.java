@@ -233,7 +233,7 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
 		        					LOGGER.info ("Order {}, received a CANCEL exec report with reason [{}], maximum resends {} reached", order.getFixOrderId(), quotedDealers, maxRetries);
 									marketExecutionReport.setState(ExecutionReportState.REJECTED);
 									marketExecutionReport.setReason(RejectReason.TRADER_REJECTED);
-									currentAttempt.resetConsecutiveRetries();
+									//currentAttempt.resetConsecutiveRetries();
 									operation.setStateResilient(new TW_RejectedState(isNoDealerReply ? Messages.getString("TWNoReply.Rejected", maxRetries) : Messages.getString("TWDealerNotInQuotedList.Rejected",  marketOrderTarget, quotedDealers, maxRetries)), ErrorState.class);
 		        				 }
 		        			 } catch (NumberFormatException nfe) {
@@ -245,17 +245,17 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
 		        	 } else {
 							marketExecutionReport.setState(ExecutionReportState.REJECTED);
 							marketExecutionReport.setReason(RejectReason.TRADER_REJECTED);
-							currentAttempt.resetConsecutiveRetries();
+							//currentAttempt.resetConsecutiveRetries();
 							operation.setStateResilient(new TW_RejectedState(Messages.getString("TWRejectPrefix", marketExecutionReport.getText())), ErrorState.class);
 		        	 }
 		        } else {
-		        	currentAttempt.resetConsecutiveRetries();
+		        	//currentAttempt.resetConsecutiveRetries();
 					operation.setStateResilient(new TW_CancelledState(), ErrorState.class);
 				}
 				break;
             case REJECTED:
                 stopDefaultTimer();
-                currentAttempt.resetConsecutiveRetries();               
+                //currentAttempt.resetConsecutiveRetries();               
                 operation.setStateResilient(new TW_RejectedState(marketExecutionReport.getText()), ErrorState.class);
                 break;
 			case FILLED:
@@ -346,15 +346,12 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
    @Override
    public void onFixRevoke(CustomerConnection source) {
       
-      //onFixRevoke is invoked by customer and must cancel all operations (this should happen setting customerRevokeReceived to true)
+      //onFixRevoke may be invoked by customer and must cancel the order from BestX! (this should happen setting customerRevokeReceived to true)
       
       MarketOrder marketOrder = operation.getLastAttempt().getMarketOrder();
 
       String reason = Messages.getString("EventRevocationRequest.0");
-      operation.setRevocationState(RevocationState.ACKNOWLEDGED);
-      operation.getOrder().setText(reason);
-      operation.setCustomerRevokeReceived(true);
-      operatorConsoleConnection.updateRevocationStateChange(operation, operation.getRevocationState(), reason);
+      updateOperationToRevocated(reason);
       try {
          twConnection.revokeOrder(operation, marketOrder, reason);
       } catch (BestXException e) {

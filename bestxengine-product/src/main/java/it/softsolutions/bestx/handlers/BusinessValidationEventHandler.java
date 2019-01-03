@@ -11,6 +11,8 @@ import it.softsolutions.bestx.services.logutils.ApplicationStatisticsHelper;
 import it.softsolutions.bestx.services.ordervalidation.FilterOnPortfolioBasis;
 import it.softsolutions.bestx.services.ordervalidation.LimitFileParkTagFilter;
 import it.softsolutions.bestx.services.ordervalidation.OrderResult;
+import it.softsolutions.bestx.services.ordervalidation.StopAutoExecOnQuantity;
+import it.softsolutions.bestx.states.CurandoState;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.OrderRejectableState;
 import it.softsolutions.bestx.states.ParkedOrderState;
@@ -50,6 +52,11 @@ public class BusinessValidationEventHandler extends BaseOperationEventHandler {
 		   {
             operation.setStateResilient(new ParkedOrderState(Messages.getString("LimitFileParkedOrder.0")), ErrorState.class);  
 		   }
+		   else if (orderResult.getReason() != null &&
+	               orderResult.getReason().indexOf(StopAutoExecOnQuantity.CURANDO_VAL) > -1)
+			   {
+	            operation.setStateResilient(new CurandoState(Messages.getString("StopAutoExecOnQuantity.1")), ErrorState.class);  
+			   }
 		   else
 		   {
 		      operation.setStateResilient(new WaitingPriceState(), ErrorState.class);

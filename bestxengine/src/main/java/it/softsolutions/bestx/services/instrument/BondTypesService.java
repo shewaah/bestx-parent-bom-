@@ -22,6 +22,8 @@ package it.softsolutions.bestx.services.instrument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.softsolutions.bestx.model.Instrument;
+
 public class BondTypesService {
     private static final Logger LOGGER = LoggerFactory.getLogger(BondTypesService.class);
 
@@ -31,11 +33,11 @@ public class BondTypesService {
         BondTypesService.enabledBondTypes = enabledBondTypes;
     }
 
-    public static boolean checkBondType(String bondType) {
+    public static boolean checkBondType(Instrument bond) {
         boolean contains = false;
         for (String enabledBondType : enabledBondTypes) {
-            if (enabledBondType.equalsIgnoreCase(bondType)) {
-                LOGGER.debug("Check if the market maker can trade the instrument. Instrument bond type {} is one of those allowed.", bondType);
+            if (enabledBondType.equalsIgnoreCase(bond.getBondType())) {
+                LOGGER.debug("Check if the market maker can trade the instrument. Instrument bond type {} is one of those allowed.", bond.getBondType());
                 contains = true;
                 break;
             }

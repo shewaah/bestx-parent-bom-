@@ -38,6 +38,18 @@ import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.ib4j.IBMessage;
 import it.softsolutions.ib4j.clientserver.IBcsReqRespService;
 
+/**
+ * 
+ * @author anna.cochetti
+ * BaseOperatorConsoleAdapter base class for interaction with the dashboard and the other services.
+ * Operators send commands to bestxengine which are managed here or in a subclass.
+ * Implements all connectivity and monitoring statistics.
+ * Known subclasses are:
+ * it.softsolutions.bestx.connections.CSIB4JOperatorConsoleAdapter
+ * it.softsolutions.bestx.services.grdlite.GRDLiteService
+ * it.softsolutions.bestx.connections.IB4JOperatorConsoleAdapter
+ * it.softsolutions.bestx.connections.MQPriceDiscoveryOperatorConsoleAdapter
+ */
 public abstract class BaseOperatorConsoleAdapter implements OperatorConsoleConnection, OperatorConsoleAdapterMBean {
 
    // Service Variables
@@ -65,6 +77,10 @@ public abstract class BaseOperatorConsoleAdapter implements OperatorConsoleConne
    private AtomicLong statInNoOfForceState;
    private AtomicLong statExceptions;
 
+   /**
+    * Checks that all the needed resources have been properly initialized
+    * @throws ObjectNotInitializedException
+    */
    protected void checkPreRequisites() throws ObjectNotInitializedException {
       if (this.serviceName == null) {
          throw new ObjectNotInitializedException("Service name not set");
@@ -88,6 +104,10 @@ public abstract class BaseOperatorConsoleAdapter implements OperatorConsoleConne
 
    }
 
+   /**
+    * must be implemented in all subclasses
+    * @throws BestXException
+    */
    public abstract void init() throws BestXException;
 
    public void setServiceName(String serviceName) {
@@ -144,6 +164,9 @@ public abstract class BaseOperatorConsoleAdapter implements OperatorConsoleConne
       this.listener = listener;
    }
 
+   /**
+    * Allows ConnectionListener to be notified of connection up and downs.
+    */
    protected void notifyConnectionListener() {
       if (this.listener != null) {
          if (isConnected()) {
@@ -309,41 +332,6 @@ public abstract class BaseOperatorConsoleAdapter implements OperatorConsoleConne
 
    public long incrementInNoOfForceState() {
       return this.statInNoOfForceState.incrementAndGet();
-   }
-
-   public boolean ownershipManagement(IBMessage msg, IBcsReqRespService reqRespService, Operation operation, UserModelFinder userModelFinder, Logger LOGGER, String sessionId, String clientId, String orderNumber, OperationStateAuditDao operationStateAuditDao) {
-    //this method is difficult to move in superclass since it has dependecy on userModelFinder, reqRespService
-      //operation owner checks
-      String messageRequestor      = msg.getStringProperty(IB4JOperatorConsoleMessage.FLD_REQUESTOR, null);         
-      UserModel operationOwner     = operation.getOwner();
-      UserModel requestorUserModel = null;
-      
-      try {
-         
-         requestorUserModel = userModelFinder.getUserByUserName(messageRequestor);
-      
-         if (operationOwner == null || (requestorUserModel != null && requestorUserModel.isSuperTrader())) {
-            
-            operation.setOwner(requestorUserModel);
-            operationStateAuditDao.updateTabHistoryOperatorCode(orderNumber, requestorUserModel.getUserName());
-         
-         } else {
-            
-            if (!operationOwner.getUserName().equals(messageRequestor)) {
-               LOGGER.warn("Operation has owner {} but requestor is {}", operationOwner.getUserName(), messageRequestor);
-               reqRespService.sendReply(new IllegalArgumentReplyMessage(sessionId, "Operation has owner " + operationOwner.getUserName() + " but requestor is " + messageRequestor), clientId);
-               return false;
-            }
-         
-         }
-         
-         return true;
-      
-      } catch (Exception e) {
-         LOGGER.warn("Error while retrieving requestor user model for userName {}", messageRequestor, e.getMessage());
-         reqRespService.sendReply(new IllegalArgumentReplyMessage(sessionId, "Error while retrieving requestor user model for userName " + messageRequestor), clientId);
-         return false;
-      }
    }
    
 }

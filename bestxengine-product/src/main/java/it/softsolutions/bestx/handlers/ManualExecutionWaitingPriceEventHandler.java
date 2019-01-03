@@ -73,7 +73,7 @@ public class ManualExecutionWaitingPriceEventHandler extends WaitingPriceEventHa
             MarketSecurityStatusService marketSecurityStatusService, ExecutionDestinationService executionDestinationService, boolean rejectWhenBloombergIsBest, boolean doNotExecute, BookDepthValidator bookDepthValidator, OperationStateAuditDao operationStateAuditDao) throws BestXException {
 
         super(operation, priceService, titoliIncrociabiliService, customerFinder, serialNumberService, regulatedMktIsinsLoader, 
-                regulatedMarketPolicies, waitingPriceDelay, maxAttemptNo, marketPriceTimeout, marketSecurityStatusService, executionDestinationService, rejectWhenBloombergIsBest, doNotExecute, bookDepthValidator, null, operationStateAuditDao);
+                regulatedMarketPolicies, waitingPriceDelay, maxAttemptNo, marketPriceTimeout, marketSecurityStatusService, executionDestinationService, rejectWhenBloombergIsBest, doNotExecute, bookDepthValidator, null, operationStateAuditDao, 2/*ignored*/);
     }
 
     @Override

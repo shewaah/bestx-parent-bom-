@@ -15,6 +15,8 @@ package it.softsolutions.bestx.handlers;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
@@ -36,6 +38,7 @@ import it.softsolutions.bestx.connections.TradingConsoleConnection;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Commission;
+import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.ExecutionReport;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.model.Instrument;
@@ -44,7 +47,9 @@ import it.softsolutions.bestx.model.MarketExecutionReport;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
+import it.softsolutions.bestx.model.Venue.VenueType;
 import it.softsolutions.bestx.model.UserModel;
+import it.softsolutions.bestx.model.Venue;
 import it.softsolutions.bestx.services.CommissionService;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.FillManagerService;
@@ -367,14 +372,9 @@ public class BaseOperationEventHandler extends DefaultOperationEventHandler {
 				if (operation.getState().isRevocable()) {
 					// stop default timer, if any
 					stopDefaultTimer();
-	
-					LOGGER.info("Revoke received, it will be managed automatically");
-					operation.setRevocationState(RevocationState.ACKNOWLEDGED);
-					LOGGER.info("Sending automatic revoke accepted to customer");
-	
 					String comment = Messages.getString("REVOKE_ACKNOWLEDGED");
-					operation.getOrder().setText(comment);
-					operatorConsoleConnection.updateRevocationStateChange(operation, operation.getRevocationState(), comment);
+					updateOperationToRevocated(comment);
+					LOGGER.info("Order {}: revoke received, it will be managed automatically. Sending automatic revoke accepted to customer", order.getFixOrderId());
 					operation.setStateResilient(new OrderRevocatedState(comment), ErrorState.class);
 				} 
 				else {
@@ -544,5 +544,54 @@ public class BaseOperationEventHandler extends DefaultOperationEventHandler {
       }
    }
 	
+	/**
+	 * @param customer
+	 * @return
+	 */
+	protected Set<Venue> selectVenuesForPriceDiscovery( Customer customer) {
+		Set<Venue> venues = null;
+       if (customer.getPolicy() != null) {
+           venues = new HashSet<Venue>();
+           for (Venue venue : customer.getPolicy().getVenues()) {
+               if (venue.getVenueType().equals(VenueType.MARKET) || venue.getMarketMaker() != null && venue.getMarketMaker().isEnabled()) {
+                   venues.add(venue);
+               } else {
+                   LOGGER.debug("Skipped Venue: {}", venue);
+               }
+           }
+       } else {
+           return null;
+       }
+       LOGGER.debug("Retrieved venues: {}", venues);
+       LOGGER.info("[COUNTER_PRICE_REQ] operationID={}, Order={}", operation.getId(), operation.getOrder().getFixOrderId());
+		return venues;
+	}
+	
+
+    protected void checkOrderAndsetNotAutoExecuteOrder(Operation operation, boolean doNotExecute) {
+        Order order = operation.getOrder();
+        if (order.isLimitFile() && doNotExecute) {
+        	setNotAutoExecuteOrder(operation);
+        }
+    }
+    
+    protected void setNotAutoExecuteOrder(Operation operation) {
+    	if (operation.isNotAutoExecute() == null || !operation.isNotAutoExecute()) {
+    		operation.setNotAutoExecute(true);
+    	}
+    }
+
+
+    /**
+     * @param reason the text sent in the cancel message to the client
+     */
+    protected void updateOperationToRevocated(String reason) {
+    	operation.setRevocationState(RevocationState.ACKNOWLEDGED);
+    	operation.getOrder().setText(reason);
+    	operation.setCustomerRevokeReceived(true);
+    	if(operatorConsoleConnection != null)
+    		operatorConsoleConnection.updateRevocationStateChange(operation, operation.getRevocationState(), reason);
+    }
+
 	
 }

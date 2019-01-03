@@ -17,7 +17,7 @@ public interface RegulatedConnectionListener {
     void onOrdeReceived(String regSessionId, String orderId);
     void onOrderReject(String regSessionId, String reason);
     void onOrderTechnicalReject(String regSessionId, String reason);
-    void onInstrumentPrices(String rtfiSessionId, List<RegulatedProposalInputLazyBean> rtfibsProposal);
+    void onInstrumentPrices(String sessionId, List<RegulatedProposalInputLazyBean> proposal);
     void onNullPrices(String regulatedSessionId, String reason, ProposalSide side) throws OperationNotSupportedException;
     void onSecurityStatus(String isin, String subMarket, String statusCode);
     void onSecurityDefinition(String isin, String subMarket, Date settlementDate, BigDecimal minQty, BigDecimal minIncrement, BigDecimal qtyMultiplier);

@@ -130,11 +130,8 @@ public class MarketMarketMaker implements Serializable, Comparable<MarketMarketM
             return false;
         }
 
-        if (instrument.getRTFITicker() == null) {
-            return true;
-        }
 
-        boolean contains = BondTypesService.checkBondType(instrument.getRTFITicker());
+        boolean contains = BondTypesService.checkBondType(instrument);
 
         boolean currencyEUR = "EUR".equals(instrument.getCurrency());
         LOGGER.debug("MarketMaker {}, instrument {}. Instrument currency is EUR : {}", marketSpecificCode, isin, currencyEUR);

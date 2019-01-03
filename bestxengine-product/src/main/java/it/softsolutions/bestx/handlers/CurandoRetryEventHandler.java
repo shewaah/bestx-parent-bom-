@@ -14,7 +14,6 @@
 package it.softsolutions.bestx.handlers;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -33,6 +32,7 @@ import it.softsolutions.bestx.exceptions.MarketNotAvailableException;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.finders.VenueFinder;
 import it.softsolutions.bestx.model.Attempt;
+import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.ExecutionReport;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
@@ -40,7 +40,6 @@ import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Portfolio;
 import it.softsolutions.bestx.model.Venue;
-import it.softsolutions.bestx.model.Venue.VenueType;
 import it.softsolutions.bestx.services.BookDepthValidator;
 import it.softsolutions.bestx.services.ExecutionDestinationService;
 import it.softsolutions.bestx.services.TitoliIncrociabiliService;
@@ -63,7 +62,7 @@ import it.softsolutions.bestx.states.SendNotExecutionReportState;
 import it.softsolutions.bestx.states.WaitingPriceState;
 import it.softsolutions.bestx.states.WarningState;
 import it.softsolutions.bestx.states.autocurando.AutoCurandoStatus;
-import it.softsolutions.bestx.states.internal.INT_StartExecutionState;
+import it.softsolutions.bestx.states.internal.deprecated.INT_StartExecutionState;
 import it.softsolutions.jsscommon.Money;
 import it.softsolutions.manageability.sl.monitoring.NumericValueMonitor;
 
@@ -75,6 +74,7 @@ import it.softsolutions.manageability.sl.monitoring.NumericValueMonitor;
  * Project Name : bestxengine-product First created by: stefano.pontillo Creation date: 18/mag/2012
  * 
  **/
+@Deprecated
 public class CurandoRetryEventHandler extends BaseOperationEventHandler implements ExecutionStrategyServiceCallback {
 
     private static final long serialVersionUID = -5505068293102619787L;
@@ -87,13 +87,15 @@ public class CurandoRetryEventHandler extends BaseOperationEventHandler implemen
     private final PriceService priceService;
     private final long waitingPriceDelay;
     private final long marketPriceTimeout;
-    private final ExecutionDestinationService executionDestinationService;
+    @SuppressWarnings("unused")
+	private final ExecutionDestinationService executionDestinationService;
     private int maxAttemptNo;
     private PriceResult priceResult;
     private boolean rejectOrderWhenBloombergIsBest;
     private BookDepthValidator bookDepthValidator;
     private OperationStateAuditDao operationStateAuditDao;
     private boolean doNotExecute;
+    private int targetPriceMaxLevel;
     
     /**
      * Instantiates a new curando retry event handler.
@@ -117,7 +119,8 @@ public class CurandoRetryEventHandler extends BaseOperationEventHandler implemen
      */
     public CurandoRetryEventHandler(Operation operation, PriceService priceService, TitoliIncrociabiliService titoliIncrociabiliService, MarketFinder marketFinder, VenueFinder venueFinder,
             SerialNumberService serialNumberService, long waitingPriceDelay, int maxAttemptNo, long marketPriceTimeout,
-            ExecutionDestinationService executionDestinationService, boolean rejectOrderWhenBloombergIsBest, boolean doNotExecute, BookDepthValidator bookDepthValidator, OperationStateAuditDao operationStateAuditDao) throws BestXException {
+            ExecutionDestinationService executionDestinationService, boolean rejectOrderWhenBloombergIsBest, boolean doNotExecute, BookDepthValidator bookDepthValidator, OperationStateAuditDao operationStateAuditDao,
+            int targetPriceMaxLevel) throws BestXException {
         super(operation);
         this.priceService = priceService;
         this.waitingPriceDelay = waitingPriceDelay;
@@ -129,6 +132,7 @@ public class CurandoRetryEventHandler extends BaseOperationEventHandler implemen
         this.bookDepthValidator = bookDepthValidator;
         this.operationStateAuditDao = operationStateAuditDao;
         this.doNotExecute = doNotExecute;
+        this.targetPriceMaxLevel = targetPriceMaxLevel;
     }
 
     @Override
@@ -137,37 +141,32 @@ public class CurandoRetryEventHandler extends BaseOperationEventHandler implemen
 
         int totalCurandoPriceRequests = AutoCurandoStatus.INSTANCE.incTotalCurandoPriceRequestsNumber();
         LOGGER.info("[CurandoRetry] operationID = {}, TotalCurandoPriceRequestsNumber : {}", operation.getId(), totalCurandoPriceRequests);
+        if (customerSpecificHandler!=null) customerSpecificHandler.onNewState(currentState);
 
-        Set<Venue> venues = null;
         Customer customer = operation.getOrder().getCustomer();
-        if (customer.getPolicy() != null) {
-            venues = new HashSet<Venue>();
-            for (Venue venue : customer.getPolicy().getVenues()) {
-                if (venue.getVenueType().equals(VenueType.MARKET) || venue.getMarketMaker() != null && venue.getMarketMaker().isEnabled()) {
-                    venues.add(venue);
-                }
-            }
-        } else {
-            LOGGER.error("Customer {} with no policy assigned.", customer.getFixId());
-            operation.removeLastAttempt();
-            operation.setStateResilient(new WarningState(currentState, null, Messages.getString("CustomerWithoutPolicy.0", customer.getName(), customer.getFixId())), ErrorState.class);
-            return;
-        }
+		Set<Venue> venues = selectVenuesForPriceDiscovery(customer);
+		if(venues == null) {
+			LOGGER.error("Order {}, Customer {} with no policy assigned.", operation.getOrder().getFixOrderId(), customer.getFixId());
+			operation.removeLastAttempt();
+			operation.setStateResilient(new WarningState(currentState, null, Messages.getString("CustomerWithoutPolicy.0", customer.getName(), customer.getFixId())), ErrorState.class);
+		}
+
         Order order = operation.getOrder();
+ 
         try {
             priceService.requestPrices(operation, order, operation.getAttempts(), venues, marketPriceTimeout, -1, null);
         } catch (MarketNotAvailableException mnae) {
             LOGGER.error("An error occurred while calling Price Service", mnae);
-            checkOrderAndSetNotExecuteOrder();
-            // Create the execution strategy with a null priceResult, we did not receive any price
-            try {
-                ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), this, null, rejectOrderWhenBloombergIsBest);
-                csExecutionStrategyService.manageAutomaticUnexecution(order, customer);
-            } catch (BestXException e) {
-                LOGGER.error("Order {}, error while managing no market available situation {}", order.getFixOrderId(), e.getMessage(), e);
-                operation.removeLastAttempt();
-                operation.setStateResilient(new WarningState(currentState, e, Messages.getString("PriceService.15")), ErrorState.class);
-            }
+            checkOrderAndsetNotAutoExecuteOrder(operation, doNotExecute);
+            // AMC verify useless code?
+//            // Create the execution strategy with a null priceResult, we did not receive any price
+//            try {
+//                ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, null, rejectOrderWhenBloombergIsBest);
+//            } catch (BestXException e) {
+//                LOGGER.error("Order {}, error while managing no market available situation {}", order.getFixOrderId(), e.getMessage(), e);
+//                operation.removeLastAttempt();
+//                operation.setStateResilient(new WarningState(currentState, e, Messages.getString("PriceService.15")), ErrorState.class);
+//            }
             return;
         } catch (CustomerRevokeReceivedException crre) {
             LOGGER.info("We received a customer revoke while starting the price discovery, we will not do it and instead start the revoking routine.");
@@ -183,13 +182,6 @@ public class CurandoRetryEventHandler extends BaseOperationEventHandler implemen
         curandoPriceRequests++;
         curandoPriceRequestsMonitor.setValue(curandoPriceRequests);
         LOGGER.info("[MONITOR] curando price requests: {}", curandoPriceRequests);
-        
-//        if (waitingPriceDelay == 0) {
-//            LOGGER.error("No delay set for price wait. Risk of stale state");
-//        } else {
-//            //this is a Price Discovery timer, not a Limit File one
-//            setupDefaultTimer(waitingPriceDelay, false);
-//        }
     }
     
     @Override
@@ -210,7 +202,7 @@ public class CurandoRetryEventHandler extends BaseOperationEventHandler implemen
         	if (operation.isStopped()) return;
             //price discovery timer expiration
             LOGGER.debug("Order {} : Timer: {} expired.", operation.getOrder().getFixOrderId(), jobName);
-            //CurandoAuto will send the order to the OrderNotExecutableEventHandler
+            //CS: CurandoAuto will manage the order with the OrderNotExecutableEventHandler
             operation.setStateResilient(new CurandoAutoState(), ErrorState.class);
         }
         else {
@@ -236,12 +228,12 @@ public class CurandoRetryEventHandler extends BaseOperationEventHandler implemen
 
         
         // [RR20120912] BXM-109 initializing the execution strategy service
-        ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), this, priceResult, rejectOrderWhenBloombergIsBest);
+        ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, priceResult, rejectOrderWhenBloombergIsBest);
 //        CSNormalExecutionStrategyService csExecutionStrategyService = new CSNormalExecutionStrategyService(this, priceResult, rejectOrderWhenBloombergIsBest);
         Order order = operation.getOrder();
 
         /* BXMNT-327 */
-        if (!bookDepthValidator.isBookDepthValid(operation.getLastAttempt(), order)){
+        if (!bookDepthValidator.isBookDepthValid(operation.getLastAttempt(), order) && !order.isLimitFile()){
             try {
                 ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
                 operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("RejectInsufficientBookDepth.0", bookDepthValidator.getMinimumRequiredBookDepth())), ErrorState.class);
@@ -283,31 +275,33 @@ public class CurandoRetryEventHandler extends BaseOperationEventHandler implemen
             if (currentAttempt.getExecutionProposal() != null) {
                 marketOrder.setMarketMarketMaker(currentAttempt.getExecutionProposal().getMarketMarketMaker());
                 Money limitPrice = null;
-                Money secondBest = null;
+                Money ithbest = null;
+                ClassifiedProposal ithBestProp = null;
                 Money best = null;
                 try {
                 	best = currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide()).getPrice();
-                	secondBest = currentAttempt.getSortedBook().getSecondBest(operation.getOrder().getSide()).getPrice();
-
+                	ithBestProp = BookHelper.getValidIthProposal(currentAttempt.getSortedBook().getSideProposals(operation.getOrder().getSide()),this.targetPriceMaxLevel);
+                	ithbest = ithBestProp.getPrice();
                 } catch(NullPointerException e) {
-                	LOGGER.debug("NullPointerException trying to manage widen best or get second best for order {}", order.getFixOrderId());
+                	LOGGER.debug("NullPointerException trying to manage widen best or get {}-th best for order {}", this.targetPriceMaxLevel, order.getFixOrderId());
                 }
 				try {
-					double spread = BookHelper.getQuoteSpread(currentAttempt.getSortedBook().getValidSideProposals(operation.getOrder().getSide()));
+					double spread = BookHelper.getQuoteSpread(currentAttempt.getSortedBook().getValidSideProposals(operation.getOrder().getSide()),this.targetPriceMaxLevel);
 			        CustomerAttributes custAttr = (CustomerAttributes) order.getCustomer().getCustomerAttributes();
 			        BigDecimal customerMaxWideSpread = custAttr.getWideQuoteSpread();
-			        if(customerMaxWideSpread != null && customerMaxWideSpread.doubleValue() < spread) { // must use the spread, not the second best
+			        if(customerMaxWideSpread != null && customerMaxWideSpread.doubleValue() < spread) { // must use the spread, not the i-th best
 			        	limitPrice = BookHelper.widen(best, customerMaxWideSpread, operation.getOrder().getSide(), order.getLimit() == null ? null : order.getLimit().getAmount());
-			        	LOGGER.info("Order {}: widening market order limit price {}. Max wide spread is {} and spread between best {} and second best {} has been calculated as {}",
+			        	LOGGER.info("Order {}: widening market order limit price {}. Max wide spread is {} and spread between best {} and {}-th best {} has been calculated as {}",
 			        			order.getFixOrderId(),
 			        			limitPrice == null?" N/A":limitPrice.getAmount().toString(),
 			        			customerMaxWideSpread == null?" N/A":customerMaxWideSpread.toString(),
 			        			best == null?" N/A":best.getAmount().toString(),
-			        			secondBest == null?" N/A":secondBest.getAmount().toString(),
+			        			this.targetPriceMaxLevel,
+			        			ithbest == null?" N/A":ithbest.getAmount().toString(),
 			        			spread
 			        			);
-			        } else {// use second best
-			        	limitPrice = secondBest;
+			        } else {// use i-th best
+			        	limitPrice = ithbest;
 			        }
 					if(limitPrice == null) { // necessary to avoid null limit price. See the book depth minimum for execution 
 					    if (currentAttempt.getExecutionProposal().getWorstPriceUsed() != null) {
@@ -315,9 +309,9 @@ public class CurandoRetryEventHandler extends BaseOperationEventHandler implemen
 					        LOGGER.debug("Use worst price of consolidated proposal as market order limit price: {}", limitPrice.getAmount().toString());
 					    } else {
 					        limitPrice = currentAttempt.getExecutionProposal() == null ? null : currentAttempt.getExecutionProposal().getPrice();
-					        LOGGER.debug("No second best - Use proposal as market order limit price: {}", limitPrice.getAmount().toString());
+					        LOGGER.debug("No i-th best - Use proposal as market order limit price: {}", limitPrice.getAmount().toString());
 					    }                	
-					} else LOGGER.debug("Use less wide between second best proposal and best widened by {} as market order limit price: {}", customerMaxWideSpread, limitPrice.getAmount().toString());
+					} else LOGGER.debug("Use less wide between i best proposal and best widened by {} as market order limit price: {}", customerMaxWideSpread, limitPrice.getAmount().toString());
 				} catch (Exception e) {
 
 					e.printStackTrace();
@@ -335,34 +329,26 @@ public class CurandoRetryEventHandler extends BaseOperationEventHandler implemen
             ApplicationStatisticsHelper.logStringAndUpdateOrderIds(operation.getOrder(), "Order.Execution_" + source.getPriceServiceName() + "." + operation.getOrder().getInstrument().getIsin(), this
                     .getClass().getName());
 
+            // if operation must be internalized
             if (portfolio != null && portfolio.isInternalizable() && !operation.hasBeenInternalized()) {
                 operation.setStateResilient(new INT_StartExecutionState(Messages.getString("Curando_Venue_Found.0")), ErrorState.class);
             } else {                
+            	// operation must not be internalized and is a limit file with no autoexecution capabilities
                 if (order.isLimitFile() && doNotExecute) {
                     LOGGER.info("Order {} could be executed, but BestX is configured to no execute limit file orders.", order.getFixOrderId());
                     currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
-                    //update Db only when needed
-                    if (order.isNotExecute() == null || !order.isNotExecute()) {
-                        order.setNotExecute(true);
-                        operationStateAuditDao.updateNotExecuteOrder(order, true);
-                    }
+                    setNotAutoExecuteOrder(operation);
                     //reset the delta, we are executing
                     order.setBestPriceDeviationFromLimit(null);
                     operationStateAuditDao.updateOrderBestAndLimitDelta(order, null);
                     operation.setStateResilient(new OrderNotExecutableState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
                 } else {
-                    //update Db only when needed
-                    if (order.isNotExecute() == null || order.isNotExecute()) {
-                        order.setNotExecute(false);
-                        operationStateAuditDao.updateNotExecuteOrder(order, false);
-                    }
+                    setNotAutoExecuteOrder(operation);
                     csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
                 }
             }
         } else if (priceResult.getState() == PriceResult.PriceResultState.INCOMPLETE) {
-            checkOrderAndSetNotExecuteOrder();
-            // AMC 20090108 lo rimuove gia' la OnTimerExpired()
-            // operation.removeLastAttempt();
+            checkOrderAndsetNotAutoExecuteOrder(operation, doNotExecute);
             try {
                 csExecutionStrategyService.manageAutomaticUnexecution(order, order.getCustomer());
             } catch (BestXException e) {
@@ -371,7 +357,7 @@ public class CurandoRetryEventHandler extends BaseOperationEventHandler implemen
                 this.operation.setStateResilient(new WarningState(operation.getState(), e, Messages.getString("PriceService.16")), ErrorState.class);
             }
         } else if (priceResult.getState() == PriceResult.PriceResultState.NULL) {
-            checkOrderAndSetNotExecuteOrder();            
+            checkOrderAndsetNotAutoExecuteOrder(operation, doNotExecute);
             try {
                 csExecutionStrategyService.manageAutomaticUnexecution(order, order.getCustomer());
             } catch (BestXException e) {
@@ -380,24 +366,13 @@ public class CurandoRetryEventHandler extends BaseOperationEventHandler implemen
                 this.operation.setStateResilient(new WarningState(operation.getState(), e, Messages.getString("PriceService.16")), ErrorState.class);
             }
         } else if (priceResult.getState() == PriceResult.PriceResultState.ERROR) {
-            checkOrderAndSetNotExecuteOrder();            
+            checkOrderAndsetNotAutoExecuteOrder(operation, doNotExecute);
             try {
                 csExecutionStrategyService.manageAutomaticUnexecution(order, order.getCustomer());
             } catch (BestXException e) {
                 LOGGER.error("Order {}, error while managing ERROR price result state {}", order.getFixOrderId(), e.getMessage(), e);
                 this.operation.removeLastAttempt();
                 this.operation.setStateResilient(new WarningState(operation.getState(), e, Messages.getString("PriceService.16")), ErrorState.class);
-            }
-        }
-    }
-
-    private void checkOrderAndSetNotExecuteOrder() {
-    	Order order = operation.getOrder();
-        if (order.isLimitFile() && doNotExecute) {
-            //update Db only when needed
-            if (order.isNotExecute() == null || order.isNotExecute()) {
-                order.setNotExecute(false);
-                operationStateAuditDao.updateNotExecuteOrder(order, false);
             }
         }
     }
@@ -450,6 +425,7 @@ public class CurandoRetryEventHandler extends BaseOperationEventHandler implemen
         operation.setStateResilient(new CurandoAutoState(), ErrorState.class);
     }
 
+    @Deprecated
     @Override
     public void onUnexecutionResult(Result result, String message) {
         switch (result) {

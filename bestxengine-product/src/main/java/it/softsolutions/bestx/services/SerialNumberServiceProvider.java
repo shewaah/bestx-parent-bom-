@@ -1,5 +1,5 @@
 /*
- * Project Name : BestXEngine_Akros
+ * Project Name : BestXEngine-product
  *
  * Copyright    : Copyright (c) 2002 SoftSolutions!.  All rights reserved.
  *                This source code constitutes the unpublished,

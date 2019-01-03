@@ -1,0 +1,7 @@
+set JAVA_HOME=<%=@jpath%>
+set OPTIONS=-XX:+UseParallelGC -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -Xms128m -Xmx256m -XX:PermSize=32m -XX:MaxPermSize=64m
+set SYSOUTPATH=C:\SoftSolutions\BestX\services\GRDLite-bogus\log
+
+start /B "GRDLite Bogus" "%JAVA_HOME%\bin\java" -Dss.app.name=BogusGRDLite %OPTIONS% -classpath "./config;./lib/*;." it.softsolutions.bestx.grdlite.bogus.BogusGRDLite > %SYSOUTPATH%\sysout.log
+
+rem pause

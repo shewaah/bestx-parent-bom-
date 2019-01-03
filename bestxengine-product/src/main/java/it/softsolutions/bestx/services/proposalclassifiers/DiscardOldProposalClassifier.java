@@ -47,7 +47,7 @@ public class DiscardOldProposalClassifier implements ProposalClassifier {
 	@Override
 	public ClassifiedProposal getClassifiedProposal(ClassifiedProposal proposal, Order order, List<Attempt> previousAttempts, Set<Venue> venues, ClassifiedBook book) {
 		// discard prices older than configured number of hours
-		if (proposal.getMarket().getMarketCode() == MarketCode.BLOOMBERG || proposal.getMarket().getMarketCode() == MarketCode.RTFI) {
+		if (proposal.getMarket().getMarketCode() == MarketCode.BLOOMBERG) {
 			Date twelveHoursAgo = DateService.newLocalDate();
 //			long time = twelveHoursAgo.getTime();
 			twelveHoursAgo.setTime(twelveHoursAgo.getTime() - millisecsToTake /* confValue * 60 * 60 *100 */);

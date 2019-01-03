@@ -39,10 +39,10 @@ public class OutlawRTFITickerFinder implements OutlawTickerFinder {
     private OutlawTickerDAO outlawTickerDao;
     
     @Override
-    public boolean isOutLaw(String RTFITicker, String currencyCode) {
+    public boolean isOutLaw(String ticker, String currencyCode) {
         checkPrerequisites();
         for (TickerOutlaw outlawtick : outlawTickerList) {
-            if (outlawtick.getTicker().equalsIgnoreCase(RTFITicker) && outlawtick.getCurrencyCode().equalsIgnoreCase(currencyCode)) {
+            if (outlawtick.getTicker().equalsIgnoreCase(ticker) && outlawtick.getCurrencyCode().equalsIgnoreCase(currencyCode)) {
                 return true;
             }
         }

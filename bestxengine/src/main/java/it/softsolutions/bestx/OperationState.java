@@ -87,7 +87,7 @@ public interface OperationState extends Cloneable {
     void validate() throws BestXException;
 
     /**
-     * Check if, in this state, revokes can be accepted
+     * Check if, in this state, revokes can be automatically accepted
      * 
      * @return true or false
      */

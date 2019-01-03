@@ -22,9 +22,12 @@ import org.slf4j.LoggerFactory;
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.CustomerAttributes;
 import it.softsolutions.bestx.model.ClassifiedProposal;
+import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Order;
+import it.softsolutions.bestx.model.Proposal.ProposalState;
 import it.softsolutions.bestx.model.Rfq;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
+import it.softsolutions.bestx.model.SortedBook;
 import it.softsolutions.jsscommon.Money;
 
 /**  
@@ -73,7 +76,7 @@ public class BookHelper {
         }
         else {
             // verify if (best - 2nd best) is larger than quoteSpread 
-            double deltaPerc = getQuoteSpread(sortedProposals);
+            double deltaPerc = getQuoteSpread(sortedProposals, 2);
 
             if (deltaPerc < custAttr.getWideQuoteSpread().doubleValue()) {
                 LOGGER.debug("{}, Spread between best and second best ({}%) smaller than the customer [{}] configured maximum allowed ({}%)",
@@ -90,16 +93,56 @@ public class BookHelper {
         }
     }
 
-	public static double getQuoteSpread(List<ClassifiedProposal> sortedProposals) {
+    /**
+     * gets the spread in the sorted proposal list between the best and the i-th proposal
+     * @param sortedProposals
+     * @param i the maximum level to be used
+     * @return
+     */
+	public static double getQuoteSpread(List<ClassifiedProposal> sortedProposals, int i) {
 		BigDecimal bestPrice = BigDecimal.ZERO;
-		BigDecimal secondBestPrice = BigDecimal.ZERO;
-		if(sortedProposals.size() > 0)
-			bestPrice = sortedProposals.get(0).getPrice().getAmount();
-		if(sortedProposals.size() > 1)
-			secondBestPrice = sortedProposals.get(1).getPrice().getAmount();
-		double delta = Math.abs(bestPrice.doubleValue() - secondBestPrice.doubleValue());
+		BigDecimal otherPrice = BigDecimal.ZERO;
+		if(sortedProposals.size() > 0) {
+			bestPrice = getValidIthProposal(sortedProposals, 1).getPrice().getAmount();
+			otherPrice = getValidIthProposal(sortedProposals, i).getPrice().getAmount();
+		}
+		double delta = Math.abs(bestPrice.doubleValue() - otherPrice.doubleValue());
 		double deltaPerc = (delta / bestPrice.doubleValue()) * 100;
 		return deltaPerc;
+	}
+
+	/**
+	 * get the i-th proposal in the sorted proposal list
+	 * @param sortedProposals
+	 * @param i the maximum level to be used
+	 * @return
+	 */
+	public static ClassifiedProposal getIthProposal(List<ClassifiedProposal> sortedProposals, int i) {
+		if(sortedProposals.size() == 0) return null;
+		if(sortedProposals.size() >= i && i > 0)
+			return sortedProposals.get(i - 1);
+		else
+			return sortedProposals.get(sortedProposals.size()-1);
+	}
+	
+	/**
+	 * get the valid i-th proposal in the sorted proposal list
+	 * @param sortedProposals
+	 * @param i the maximum level to be used
+	 * @return
+	 */
+	public static ClassifiedProposal getValidIthProposal(List<ClassifiedProposal> sortedProposals, int i) {
+		if(sortedProposals.size() == 0) return null;
+		if(sortedProposals.size() >= i && i > 0 && ProposalState.VALID == sortedProposals.get(i - 1).getProposalState())
+			return sortedProposals.get(i - 1);
+		else if(ProposalState.VALID == sortedProposals.get(sortedProposals.size() - 1).getProposalState())
+			return sortedProposals.get(sortedProposals.size()-1);
+		else {
+			for(int index = 0; i < sortedProposals.size(); index++)
+				if(ProposalState.VALID != sortedProposals.get(index).getProposalState())
+					return sortedProposals.get(index - 1);
+		}
+		return null;
 	}
     
 	/**
@@ -145,5 +188,22 @@ public class BookHelper {
     	return new Money(quote.getStringCurrency(),price);
     }
     
+    /**
+     * Get the best proposal for the given market in the sorted book
+     * @param book the source sorted book
+     * @param marketCode the code of the market to get the be best proposal for
+     * @param side the order side, relevant toget the ask or bid side of the sorted book
+     * @return
+     */
+    public static ClassifiedProposal getBestPrice(SortedBook book, MarketCode marketCode, Rfq.OrderSide side) {
+		if(book == null || marketCode == null || side == null) throw new IllegalArgumentException();
+		List<ClassifiedProposal> sideProposals = (side == Rfq.OrderSide.BUY) ? book.getAskProposals() : book.getBidProposals();
+		for(ClassifiedProposal prop : sideProposals) {
+			if(marketCode.compareTo(prop.getMarket().getMarketCode()) == 0 && ProposalState.VALID == prop.getProposalState())
+				return prop;
+		}
+		// there are no valid proposals for that market
+		return null;
+    }
 
 }

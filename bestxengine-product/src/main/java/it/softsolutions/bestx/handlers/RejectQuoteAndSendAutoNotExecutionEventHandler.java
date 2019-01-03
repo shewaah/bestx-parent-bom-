@@ -43,6 +43,7 @@ public class RejectQuoteAndSendAutoNotExecutionEventHandler extends BaseOperatio
     private final SerialNumberService serialNumberService;
     private final MarketBuySideConnection mktConnection;
 
+    //FIXME there is no timeout on the rejectQuote response
     /**
      * @param operation
      */

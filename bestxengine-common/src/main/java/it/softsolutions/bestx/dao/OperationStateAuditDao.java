@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.exceptions.SaveBookException;
 import it.softsolutions.bestx.model.Attempt;
@@ -287,15 +288,7 @@ public interface OperationStateAuditDao {
      * @param order the order
      * @param bestAndLimitDelta the new delta value
      */
-    public void updateOrderBestAndLimitDelta(final Order order, final Double bestAndLimitDelta);
-    
-    /**
-     * Update the field couldHaveBeenExecuted in the TabHistoryOrdini table
-     * @param order the order
-     * @param couldHaveBeenExecuted true or false
-     */
-    public void updateNotExecuteOrder(final Order order, final Boolean couldHaveBeenExecuted);
-    
+    public void updateOrderBestAndLimitDelta(final Order order, final Double bestAndLimitDelta);  
     
     /**
      * Updates the tab history's operator code field

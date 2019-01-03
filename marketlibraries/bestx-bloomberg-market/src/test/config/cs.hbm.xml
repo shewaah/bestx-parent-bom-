@@ -229,7 +229,6 @@
 		<property name="minSize" column="MinimumPiece"/>
 		<property name="moodyRating" column="MoodysRating"/>
 		<property name="spRating" column="SPrating"/>
-		<property name="RTFITicker" column="RTFITicker"/>
 		<property name="updateDate" column="UpdateDate"/>
 		<property name="offeringType" column="OfferingType"/>
 		<property name="BBSettlementDate" column="BBSettlementDate"/>

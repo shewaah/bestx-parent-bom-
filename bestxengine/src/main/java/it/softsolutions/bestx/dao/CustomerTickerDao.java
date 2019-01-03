@@ -34,7 +34,7 @@ public interface CustomerTickerDao {
      * @param isinType
      * @return
      */
-    CustomerTicker getCustomerTicker(String clientCode, String rtfiTicker);
+    CustomerTicker getCustomerTicker(String clientCode, String BondType);
 
     
 }

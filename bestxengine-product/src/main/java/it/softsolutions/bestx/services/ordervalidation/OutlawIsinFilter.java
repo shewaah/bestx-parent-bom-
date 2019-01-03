@@ -26,7 +26,7 @@ public class OutlawIsinFilter implements OrderValidator {
 			return result;
 		}
 		boolean isISINOutlaw = order.getInstrument().getInstrumentAttributes().isOutlaw();
-		boolean isTickerOutlaw = getOutlawTickerFinder().isOutLaw(order.getInstrument().getRTFITicker(), order.getCurrency());
+		boolean isTickerOutlaw = getOutlawTickerFinder().isOutLaw(order.getInstrument().getBondType(), order.getCurrency());
 		result.setValid(!(isISINOutlaw || isTickerOutlaw));
 		if(!result.isValid()) {
 			result.setReason(Messages.getString("OutlawIsinFilter.0"));

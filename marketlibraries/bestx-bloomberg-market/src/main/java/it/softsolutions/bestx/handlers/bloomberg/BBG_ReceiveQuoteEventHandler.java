@@ -95,7 +95,8 @@ public class BBG_ReceiveQuoteEventHandler extends BaseOperationEventHandler {
             BigDecimal bestPrice = bookProposals.get(0).getPrice().getAmount();
             Money counterOfferPrice = lastQuote.getPrice();
             BigDecimal counterOfferAmount = counterOfferPrice.getAmount();
-            
+
+            // FIXME AMC 20190102 spread must be confirmed as in other markets 
             boolean counterConfirmsTheQuote = (bestPrice.equals(counterOfferAmount));
             if (!counterConfirmsTheQuote) {
                 LOGGER.info("Order {} : quote ({}) is different from best ({}), verifying spread with 2nd best", order.getFixOrderId(), counterOfferAmount, bestPrice);
@@ -117,6 +118,7 @@ public class BBG_ReceiveQuoteEventHandler extends BaseOperationEventHandler {
         }
 
         // check if settlement date is ok
+        // FIXME check is still needed
         if (allConditionsOk) {
             if (!DateUtils.isSameDay(order.getFutSettDate(), operation.getLastAttempt().getExecutablePrice(0).getClassifiedProposal().getFutSettDate())) {
                 allConditionsOk = false;
@@ -126,6 +128,7 @@ public class BBG_ReceiveQuoteEventHandler extends BaseOperationEventHandler {
             }
         }
 
+        // FIXME use target price in MarketOrder, which shall contain the limit price which shall not be worsened by this counter
         // check if counter is better than limit price
         if (allConditionsOk) {
             Money counterOfferPrice = lastQuote.getPrice();
@@ -171,6 +174,7 @@ public class BBG_ReceiveQuoteEventHandler extends BaseOperationEventHandler {
         }
 
         // check if qtys are compatible
+        // FIXME check is still needed
         if (allConditionsOk) {
             boolean qtysCompatible = (order.getQty().compareTo(lastQuote.getQty()) == 0);
             if (!qtysCompatible) {
@@ -184,6 +188,7 @@ public class BBG_ReceiveQuoteEventHandler extends BaseOperationEventHandler {
         if (allConditionsOk) {
         	
             // normal operation or internalization
+            // FIXME check is still needed
         	InternalAttempt internalAttempt = operation.getInternalAttempt();
             Money counterOfferPrice = lastQuote.getPrice();
 

@@ -482,11 +482,13 @@ public class DefaultOperationEventHandler implements OperationEventListener {
         LOGGER.info("Unexpected Market proposal received in an incorrect state. Connection source : {}, instrument: {}, proposal : {}", (source != null ? source.getMarketCode() : null), instrument, proposal);
     }
 
+    @Deprecated
     @Override
     public void onUnexecutionResult(Result result, String message) {
         defaultAction();
     }
 
+    @Deprecated
     @Override
     public void onUnexecutionDefault(String executionMarket) {
         defaultAction();

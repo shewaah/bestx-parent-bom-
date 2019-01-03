@@ -39,7 +39,7 @@ public class TickerFilter implements OrderValidator
       
       if (customerManagerDAO.isTheTickerNotAllowedForTheCustomer(order))
       {
-         result.setReason(Messages.getString("TickerFilterNotPassed.0", order.getInstrument().getRTFITicker(), order.getCustomer().getName())); 
+         result.setReason(Messages.getString("TickerFilterNotPassed.0", order.getInstrument().getBondType(), order.getCustomer().getName())); 
          result.setValid(false);
       } 
       else 

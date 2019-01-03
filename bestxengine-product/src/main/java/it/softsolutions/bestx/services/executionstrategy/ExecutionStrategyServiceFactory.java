@@ -15,11 +15,14 @@
  
 package it.softsolutions.bestx.services.executionstrategy;
 
-import it.softsolutions.bestx.services.price.PriceResult;
-import it.softsolutions.bestx.services.price.PriceService.PriceDiscoveryType;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
+import it.softsolutions.bestx.services.price.PriceResult;
+import it.softsolutions.bestx.services.price.PriceService.PriceDiscoveryType;
   
 /**
  *
@@ -31,10 +34,18 @@ import org.slf4j.LoggerFactory;
  * 
  **/
 
-public abstract class ExecutionStrategyServiceFactory {
+public abstract class ExecutionStrategyServiceFactory implements ApplicationContextAware {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecutionStrategyServiceFactory.class);
 
-	public abstract ExecutionStrategyService getExecutionStrategyService(PriceDiscoveryType priceDiscoveryType, ExecutionStrategyServiceCallback executionStrategyServiceCallback,
+    protected ApplicationContext applicationContext;
+    
+    
+    @Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    	this.applicationContext = applicationContext;
+	}
+
+    public abstract ExecutionStrategyService getExecutionStrategyService(PriceDiscoveryType priceDiscoveryType, ExecutionStrategyServiceCallback executionStrategyServiceCallback,
             PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest);
 	
 	protected static ExecutionStrategyServiceFactory instance;

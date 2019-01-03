@@ -24,5 +24,5 @@ package it.softsolutions.bestx.finders;
 **/
 public interface OutlawTickerFinder {
 
-    boolean isOutLaw(String RTFITicker, String currencyCode);
+    boolean isOutLaw(String bondType, String currencyCode);
 }
