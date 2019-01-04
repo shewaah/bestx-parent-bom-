@@ -1,0 +1,30 @@
+[default]
+DefaultApplVerID=FIX.4.2
+ConnectionType=initiator
+
+## OTEX ########################
+SenderCompID=OMS1
+TargetCompID=SOFT1
+	# localhost
+	SocketConnectHost=localhost
+	# integration
+	#SocketConnectHost=svi-vsrv-poc-105
+	# curando automatico test
+	#SocketConnectHost=dev-vsrv-poc64-141
+SocketConnectPort=33333
+#####################################
+
+StartTime=00:00:00
+EndTime=00:00:00
+HeartBtInt=30
+ReconnectInterval=5
+RefreshOnLogon=Y
+ResetOnLogon=Y
+ResetOnLogout=Y
+
+[session]
+BeginString=FIX.4.2
+DataDictionary=FIX42_BestX_CS.xml
+AppDataDictionary=FIX42_BestX_CS.xml
+TransportDataDictionary=FIX42_BestX_CS.xml
+LogonTimeout=10

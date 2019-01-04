@@ -1,0 +1,207 @@
+###################################
+# SABE Service Configuration File #
+###################################
+
+BestX.LicenseFile = BestX.lic
+version.db = <%=  @env['env_general']['bestx']['bestx_db']['db_version'] %>
+
+#
+# Messages configuration
+#
+Messages.filename = messages
+Messages.language = en
+Messages.country = UK
+
+MetricRegistry.monitor.period = 60
+MetricRegistry.healt.period = 300
+
+#
+# XT2 Connection configuration
+#
+<% if !@env['env_general']['bestx']['bestxengine']['bestxproperties']['xt2markets'].nil? -%>
+XT2.Markets = <%=  @env['env_general']['bestx']['bestxengine']['bestxproperties']['xt2markets'] %>
+<%- end -%>
+<% if !@env['env_general']['bestx']['bestxengine']['bestxproperties']['xt2environment'].nil? -%>
+XT2.Environment = <%=  @env['env_general']['bestx']['bestxengine']['bestxproperties']['xt2environment'] %>
+<%- end -%>
+<% if !@env['env_general']['bestx']['bestxengine']['bestxproperties']['xt2username'].nil? -%>
+XT2.Username = <%=  @env['env_general']['bestx']['bestxengine']['bestxproperties']['xt2username'] %>
+<%- end -%>
+<% if !@env['env_general']['bestx']['bestxengine']['bestxproperties']['xt2password'].nil? -%>
+XT2.Password = <%=  @env['env_general']['bestx']['bestxengine']['bestxproperties']['xt2password'] %>
+<%- end -%>
+
+# Markets specifics configurations
+#
+# Bloomberg.pricesTimeout = long (milliseconds)
+Bloomberg.pricesTimeout = 180000
+Bloomberg.rejectWhenIsBest = true
+# Bloomberg Tsox wiretime, in seconds - the dealer's Quote is active during this time, then goes subject
+Bloomberg.Tsox.wiretime = 15
+# Bloomberg Tsox hit/lift reply, in seconds - the dealer must respond to a QuoteResponse(HitLift) within this time
+# if = 0 it is disabled, and the reply timeout is the wiretime expiry
+Bloomberg.Tsox.hitlift_reply_time = 0
+# list of technical reject reasons, separated by "|"
+Bloomberg.Tsox.technical_reject_reasons = error in validation of selected dealer
+
+# MarketAxess timeouts
+# timeout before automatic execution, to allow manual responder to give their prices before autoexecution
+Marketaxess.Order.MinTimeDelay=10
+# RFCQ expiry time
+Marketaxess.Order.ValidSeconds=60
+# max number of entries due to MarketAxess feedback on ExecutionReport
+Marketaxess.MaxPOBEXEntries=5
+# Tolerance (Fat Finger) for prices too good to be true
+Marketaxess.Order.Tolerance=0
+#timeout on execution on MarketAxess
+MarketAxess.ExecTimeout=60000
+# Client trading capacity
+# P = DEAL (own account)
+MarketAxess.defaultCapacity=P
+MarketAxess.DefaultShortSell=0
+
+#Tradeweb configuration
+# short selling values:
+# 1 = SESH (Short sell)
+# 2 = SSEX (short sell exempted)
+# 3 = SELL (no short sell)
+# 4 = UNDI (information not available
+Tradeweb.defaultShortSell=3
+# Client trading capacity
+# P = DEAL (own account)
+# R = MTCH (matched principal)
+# A = AOTC (Any other capacity)
+Tradeweb.defaultCapacity=P
+# defaultTradingMode values:
+# 5 = onMTF
+# 6 = offMTF
+Tradeweb.defaultTradingMode=5
+
+
+# Market.state.timeout = long (milliseconds) 0 for no timeout
+# timeout for execution report reception
+Market.state.timeout = 180000
+Price.state.timeout = 600000
+
+# Internalization rfq reply timeout
+Internal.rfqreply.timeout = 16000
+# Internalization message for InternalBroker
+Internal.rfq.message.prefix = BESTX_PRICE
+
+#
+# CMF Service specific parameters
+#
+# Number of seconds for CMF order/price inquiry before it expire
+# format must be hhmmss where hh and mm are 00 and 00: es "000030" for
+# expiry in 30 seconds
+# hhmmss
+#
+Cmf.MsgExpiryTime = 100
+# Cmf.OtSrcCode = n (int)
+Cmf.OtSrcCode = 1000
+
+#
+# Internal portfolios costants
+# Codes allowed from 0 to 9
+#
+<% if !@env['env_general']['bestx']['bestxengine']['internalmmcodes'].nil? -%>
+Internal.MM.Codes = <%=  @env['env_general']['bestx']['bestxengine']['internalmmcodes'] %>
+<%- end -%>
+
+#
+# Curando retry timeout in milliseconds 
+#
+Order.Curando.Timeout = 240000
+
+#
+# Parameter for the retail max size filter
+#
+Retail.max.size = 1000000
+#
+# Parameter for the max size filter
+#
+Internal_authorization.size = 500000
+#
+# Parameter for the portfolio based filters
+#
+<% if !@env['env_general']['bestx']['bestxengine']['internalcustomersporfoliolist'].nil? -%>
+InternalCustomers.PortfolioList = <%=  @env['env_general']['bestx']['bestxengine']['internalcustomersporfoliolist'] %>
+<%- end -%>
+
+Send.execRep.timeout = 270000
+
+#
+# Configurazione del monitoring su JMX dell'attivit� di price discovery
+Price.monitor.notify.timeThreshold = 1800000
+Price.monitor.interval = 60
+Price.monitor.intervalInSeconds = 60
+Execution.monitor.intervalInSeconds = 60
+
+# Configurazione del monitoring su JMX per invio/ricezione ordini al mercato
+# Valore da utilizzare in produzione : 2
+Order.monitor.notify.timeThresholdInSeconds = 2
+ 
+# Valore da utilizzare in produzione : 30
+Order.monitor.intervalInSeconds = 30
+
+# Valore da utilizzare in produzione : 2
+Order.monitor.notify.timeThresholdInSeconds = 2
+
+Price.monitor.notify.timeThresholdInSeconds = 60 
+# Valore da utilizzare in produzione : 30
+Order.monitor.intervalInSeconds = 30
+
+# Parameters for the EndOfDay automatic closure of active orders - Usually set to 18.30
+# Timer expiration hour
+OrdersEndOfDay.hour = 17
+# Timer expiration minute
+OrdersEndOfDay.minute = 30 
+#Restart delay, in seconds, to allow restart of all services
+OrdersEndOfDay.restartDelayInSeconds=300
+
+# Parameter for settlement limit order validation
+SettlementLimitControl.allCurrencies = ALL
+SettlementLimitControl.allCountries = ALL
+
+GRDLite.loadResponse.timeout = 180000
+OrdersQueue.Dump.Interval.Milliseconds = 5000
+####################################
+# LIMIT FILES PRICE DISCOVERY TIMERS
+####################################
+# Limit files with best price/limit price delta within configured threshold
+# Usually set to one hour = 3600 seconds
+
+LimitFileBestWithinLimitThresholdPDIntervalInSeconds= 3600
+
+# Limit files with best price/limit price delta outside configured threshold
+# Usually set to four hours = 14400 seconds
+LimitFileBestOutsideLimitThresholdPDIntervalInSeconds= 14400
+# Limit files with no prices
+LimitFileNoPricePDTimes= 10:30:00
+################################
+# LIMIT FILES END OF DAY TIMERS
+################################
+# Limit files non US isin end of day - Usually set to 18.30
+LimitFileNonUSEndOfDay.hour= 18
+LimitFileNonUSEndOfDay.minute= 30
+# Limit files US isin end of day - Usually set to 22.00
+LimitFileUSEndOfDay.hour= 22
+LimitFileUSEndOfDay.minute= 00
+##################################
+# LIMIT FILES COMMENT PREFIXES
+##################################
+LimitFileCommentPrefix= 
+LimitFileNoPriceCommentPrefix= LFNP
+LimitFileCommentMaxLen= 500
+# cancel request timeout in milliseconds
+orderCancel.timeout=8000
+##############################
+# Price Discovery parameters
+##############################
+<% if !@env['env_general']['bestx']['bestxengine']['pricediscoverycustomer'].nil? -%>
+PriceDiscovery.Customer=<%=  @env['env_general']['bestx']['bestxengine']['pricediscoverycustomer'] %>
+<%- end -%>
+PriceDiscovery.BookDepth= 5
+PriceDiscovery.OrderBookDepth=5
+PriceDiscovery.Timeout=30000
+PriceDiscovery.PriceDecimals=6

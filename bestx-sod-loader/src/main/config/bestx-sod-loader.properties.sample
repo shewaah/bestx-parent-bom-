@@ -1,0 +1,41 @@
+# SOD Loader 
+sod.sendInPackets = true
+sod.packetSize = 10
+
+# BestX Database connection
+sod.jdbc.driver_class = net.sourceforge.jtds.jdbc.Driver
+sod.jdbc.url = jdbc:jtds:sqlserver://svi-vsrv-pocdb-106:1433;databasename=BESTX_CS_DEVELOP;SelectMethod=cursor
+sod.jdbc.username = sa
+sod.jdbc.password = ENC(X7rYdC6Vx8hFEISwPhdsSA==)
+
+sod.pbe.algorithm = PBEWITHSHA1ANDDESEDE
+sod.pbe.password = AyT0P%c$=lPwQ**
+
+# GRDLite MQ connection  
+sod.mq.host=192.168.0.72 
+sod.mq.port=1414
+sod.mq.queueManager=QM_windb
+sod.mq.channel=S_windb
+sod.mq.publisherQueue=Dev2_To_OPTES
+sod.mq.subscriberQueue=Dev2_From_OPTES
+sod.mq.topic=TestTopic
+sod.mq.transacted=true 
+sod.mq.acknowledge=1
+sod.mq.expiry=false
+
+sod.mq.sslEnabled=true
+sod.mq.sslCipherSuite=SSL_RSA_WITH_3DES_EDE_CBC_SHA
+#sod.mq.sslDebug=ssl
+
+sod.mq.sslKeyStoreFile=C:/Customers/CreditSuisse/keystore/key.p12
+sod.mq.sslKeyStorePassword=ENC(X7rYdC6Vx8hFEISwPhdsSA==)
+sod.mq.sslKeyStoreType=pkcs12
+
+sod.mq.sslTrustStoreFile=C:/Customers/CreditSuisse/truststore/key.jks
+sod.mq.sslTrustStorePassword=ENC(X7rYdC6Vx8hFEISwPhdsSA==)
+sod.mq.sslTrustStoreType=jks
+
+# GRDLite and Database number of maximum connection tries, -1 means keep trying ad infinitum
+# default value = -1
+sod.grdLiteReconnectionMaxTries=-1
+sod.dbReconnectionMaxTries=-1
