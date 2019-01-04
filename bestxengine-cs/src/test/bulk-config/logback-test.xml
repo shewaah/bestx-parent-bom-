@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <jmxConfigurator />
+    <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener" />
+    
+    <appender name="BestXLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <prudent>false</prudent>
+        <encoder>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-3line - %message%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./bulk/BestX.%d.%i.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>20MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+    <appender name="QuickfixLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <prudent>false</prudent>
+        <encoder>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-3line - %message%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./bulk/Quickfix.%d.%i.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>20MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <Pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %15.15logger{0} - %message%n</Pattern>
+<!--             <Pattern>%date{ISO8601} %-5level %35.35logger{0} -> %-35.35method:%-3line - %message%n</Pattern> -->
+        </encoder>
+    </appender>
+    <logger name="quickfix.mina" additivity="false" level="DEBUG">
+        <appender-ref ref="QuickfixLogger" />
+    </logger>
+    <logger name="quickfixj" additivity="false" level="DEBUG">
+        <appender-ref ref="QuickfixLogger" />
+    </logger>
+    <root level="TRACE">
+        <appender-ref ref="BestXLogger" />
+    </root>
+</configuration>

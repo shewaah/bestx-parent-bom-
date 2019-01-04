@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+    <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener" />
+    <appender name="BestXLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>./log/BestX.log</file>
+        <prudent>false</prudent>
+        <encoder>
+           <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-3line - %message%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>./log/BestX.%i.log.gz</fileNamePattern>
+            <minIndex>1</minIndex> 
+            <maxIndex>3</maxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+      		<maxFileSize>15MB</maxFileSize>
+        </triggeringPolicy>
+    </appender>
+    <appender name="HibernateLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+       <file>./log/Hibernate.log</file>
+        <prudent>false</prudent>
+        <encoder>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
+        </encoder>
+         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>./log/Hibernate.%i.log.gz</fileNamePattern>
+            <minIndex>1</minIndex> 
+            <maxIndex>3</maxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+      		<maxFileSize>15MB</maxFileSize>
+        </triggeringPolicy>
+    </appender>
+    <appender name="BestXBloombergLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <prudent>false</prudent>
+        <encoder>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-3line - %message%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./log/BestX-Bloomberg.%d.%i.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>20MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+    <appender name="BestXCommonsLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <prudent>false</prudent>
+        <encoder>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-3line - %message%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./log/BestX-Commons.%d.%i.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>20MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+    <appender name="QuickfixLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <prudent>false</prudent>
+        <encoder>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-3line - %message%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./log/Quickfix.%d.%i.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>20MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+    <appender name="QuartzLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <prudent>false</prudent>
+        <encoder>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-3line - %message%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./log/Quartz.%d.%i.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>20MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+    <appender name="EhCacheLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <prudent>false</prudent>
+        <encoder>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-3line - %message%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./log/EhCache.%d.%i.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>20MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+    <appender name="SpringLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <prudent>false</prudent>
+        <encoder>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-3line - %message%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./log/Spring.%d.%i.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>20MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+    <appender name="StatisticsLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <prudent>false</prudent>
+        <encoder>
+            <pattern>%date{ISO8601} [%-5level] [%thread] | %message | %logger{0}.%method\(%line\)%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./log/stats/BestX-Statistics.%d.%i.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>20MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+    <appender name="MonitorLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <prudent>false</prudent>
+        <encoder>
+            <pattern>%date{ISO8601} %message | %logger{0}.%method\(%line\)%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./log/monitor/BestX-Monitor.%d.%i.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>20MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+     </appender>
+    <appender name="PasswordNotifierLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <prudent>false</prudent>
+        <encoder>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-3line - %message%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./log/Password-NotifierLogger.%d.%i.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>20MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+    <appender name="PriceDiscoveryLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <prudent>false</prudent>
+        <encoder>
+            <pattern>%message%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./log/BestX-PriceDiscovery.%d.%i.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>40MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <Pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %15.15logger{0} - %message%n</Pattern>
+<!--             <Pattern>%date{ISO8601} %-5level %35.35logger{0} -> %-35.35method:%-3line - %message%n</Pattern> -->
+        </encoder>
+    </appender>
+    
+
+    <root level="DEBUG">
+        <appender-ref ref="BestXLogger" />
+    </root>
+    <logger name="it.softsolutions.bestx.services.passwordnotifier" additivity="false" level="DEBUG">
+        <appender-ref ref="PasswordNotifierLogger" />
+    </logger>
+    <logger name="org.quartz" additivity="false" level="ERROR">
+        <appender-ref ref="QuartzLogger" />
+    </logger>
+    <logger name="quickfix.mina" additivity="false" level="INFO">
+        <appender-ref ref="QuickfixLogger" />
+    </logger>
+    <logger name="quickfixj" additivity="false" level="INFO">
+        <appender-ref ref="QuickfixLogger" />
+    </logger>
+    <logger name="org.hibernate" additivity="false" level="DEBUG">
+        <appender-ref ref="HibernateLogger" />
+    </logger>
+    <logger name="com.microsoft" additivity="false" level="DEBUG">
+        <appender-ref ref="HibernateLogger" />
+    </logger>
+    <logger name="net.sf" additivity="false" level="INFO">
+        <appender-ref ref="EhCacheLogger" />
+    </logger>
+    <logger name="com.mchange" additivity="false" level="INFO">
+        <appender-ref ref="C3p0Logger" />
+    </logger>
+    <logger name="org.springframework" additivity="false" level="INFO">
+        <appender-ref ref="SpringLogger" />
+    </logger>
+    <logger name="org.simpleframework" additivity="false" level="INFO">
+        <appender-ref ref="BestXCommonsLogger" />
+    </logger>
+    <logger name="it.softsolutions.bestx.connections.bloomberg" additivity="false" level="INFO">
+        <appender-ref ref="BestXLogger" /> <!-- BestXBloombergLogger -->
+    </logger>
+    <logger name="it.softsolutions.bestx.markets.bloomberg" additivity="false" level="INFO">
+        <appender-ref ref="BestXLogger" /> <!-- BestXBloombergLogger -->
+    </logger>
+    <logger name="it.softsolutions.bestx" additivity="false" level="INFO">
+        <appender-ref ref="BestXLogger" />
+    </logger>
+    <logger name="it.softsolutions.manageability" additivity="false" level="INFO">
+        <appender-ref ref="MonitorLogger" />
+    </logger>
+    <logger name="it.softsolutions.ib4j" additivity="false" level="INFO">
+        <appender-ref ref="BestXCommonsLogger" />
+    </logger>
+    <logger name="it.softsolutions.bestx.services.logutils.ApplicationStatisticsHelper" additivity="false" level="INFO">
+        <appender-ref ref="StatisticsLogger" />
+    </logger>
+	<logger name="it.softsolutions.bestx.services.PriceDiscoveryPerformanceMonitor" additivity="false" level="OFF">
+		<appender-ref ref="PriceDiscoveryLogger" />
+	</logger>
+	<logger name="it.softsolutions.bestx.services.booksorter.ClassifiedBidComparator" additivity="false" level="INFO">
+		<appender-ref ref="BestXLogger" />
+	</logger>
+	<logger name="it.softsolutions.bestx.services.booksorter.ClassifiedAskComparator" additivity="false" level="INFO">
+		<appender-ref ref="BestXLogger" />
+	</logger>
+	<logger name="it.softsolutions.jsscommon.SSLog" additivity="false" level="ERROR">
+		<appender-ref ref="STDOUT" />
+	</logger>
+	<logger name="it.softsolutions.bestx.CommonMetricRegistry" additivity="false" level="ERROR">
+		<appender-ref ref="STDOUT" />
+	</logger>
+	<logger name="it.softsolutions.bestx.management.statistics" additivity="false" level="ERROR">
+		<appender-ref ref="STDOUT" />
+	</logger>
+
+</configuration>

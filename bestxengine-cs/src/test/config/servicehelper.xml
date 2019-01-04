@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<servicehelper>
+	<xt2node ServiceName="BloombergTradeFeed" InfoBusServiceName="BloombergTradeFeed" NeedUMConnection="false" InfoBusConnType="PS" NetworkTimeOut="5000"/>
+	<xt2node ServiceName="BLOOMBERG" InfoBusServiceName="BLOOMBERG" NeedUMConnection="false" InfoBusConnType="BOTH" NetworkTimeOut="5000"/>
+	<xt2node ServiceName="CFG" InfoBusServiceName="CFG_Service" NeedUMConnection="true" InfoBusConnType="BOTH" NetworkTimeOut="5000"/>
+	<xt2node ServiceName="Oms2FixGateway" InfoBusServiceName="Oms2FixGateway" NeedUMConnection="false" InfoBusConnType="BOTH" NetworkTimeOut="5000"/>
+	<xt2node ServiceName="Oms1FixGateway" InfoBusServiceName="Oms1FixGateway" NeedUMConnection="false" InfoBusConnType="BOTH" NetworkTimeOut="5000"/>
+	<xt2node ServiceName="InstrumentManager" InfoBusServiceName="InstrumentManager" NeedUMConnection="false" InfoBusConnType="RR" NetworkTimeOut="5000"/>
+	<xt2node ServiceName="LicenseManager" InfoBusServiceName="LicenseManager" NeedUMConnection="false" InfoBusConnType="BOTH" NetworkTimeOut="5000"/>
+	<xt2node ServiceName="Logger" InfoBusServiceName="Logger_Service" NeedUMConnection="false" InfoBusConnType="RR" NetworkTimeOut="5000"/>
+	<xt2node ServiceName="Publish" InfoBusServiceName="Publish_Service" NeedUMConnection="false" InfoBusConnType="BOTH" NetworkTimeOut="5000"/>
+	<xt2node ServiceName="DDEBESTX" InfoBusServiceName="DDEBESTX_Service" NeedUMConnection="false" InfoBusConnType="BOTH" NetworkTimeOut="5000"/>	
+</servicehelper>
