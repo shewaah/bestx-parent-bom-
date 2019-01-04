@@ -1,0 +1,57 @@
+<% if !@env['env_general']['bestx']['bestx_mqserver']['mqhost'].nil? -%>
+host=<%=  @env['env_general']['bestx']['bestx_mqserver']['mqhost'] %>
+<%- end -%>
+<% if !@env['env_general']['bestx']['bestx_mqserver']['mqport'].nil? -%>
+port=<%=  @env['env_general']['bestx']['bestx_mqserver']['mqport'] %>
+<%- end -%>
+<% if !@env['env_general']['bestx']['bestx_mqserver']['mqchannel'].nil? -%>
+channel=<%=  @env['env_general']['bestx']['bestx_mqserver']['mqchannel'] %>
+<%- end -%>
+<% if !@env['env_general']['bestx']['bestx_mqserver']['mqqueuemanager'].nil? -%>
+queueManager=<%=  @env['env_general']['bestx']['bestx_mqserver']['mqqueuemanager'] %>
+<%- end -%>
+transacted=true
+acknowledge=1
+expiry=false
+
+sslEnabled=false
+sslCipherSuite=SSL_RSA_WITH_NULL_SHA
+sslKeyStoreFile= C:/Customers/CreditSuisse/keystore/key.p12
+<% if !@env['env_general']['bestx']['bestx_mqserver']['sslkeystorepassword'].nil? -%>
+sslKeyStorePassword=<%=  @env['env_general']['bestx']['bestx_mqserver']['sslkeystorepassword'] %>
+<%- end -%>
+sslKeyStoreType=pkcs12
+
+sslTrustStoreFile=C:/Customers/CreditSuisse/truststore/key.jks
+<% if !@env['env_general']['bestx']['bestx_mqserver']['ssltruststorepassword'].nil? -%>
+sslTrustStorePassword=<%=  @env['env_general']['bestx']['bestx_mqserver']['ssltruststorepassword'] %>
+<%- end -%>
+sslTrustStoreType=jks
+
+<% if !@env['env_general']['bestx']['bestx_mqserver']['pdmqhost'].nil? -%>
+pd.host=<%=  @env['env_general']['bestx']['bestx_mqserver']['pdmqhost'] %>
+<%- end -%>
+<% if !@env['env_general']['bestx']['bestx_mqserver']['pdmqport'].nil? -%>
+pd.port=<%=  @env['env_general']['bestx']['bestx_mqserver']['pdmqport'] %>
+<%- end -%>
+<% if !@env['env_general']['bestx']['bestx_mqserver']['pdmqchannel'].nil? -%>
+pd.channel=<%=  @env['env_general']['bestx']['bestx_mqserver']['pdmqchannel'] %>
+<%- end -%>
+<% if !@env['env_general']['bestx']['bestx_mqserver']['mqqueuemanager'].nil? -%>
+pd.queueManager=<%=  @env['env_general']['bestx']['bestx_mqserver']['pdmqqueuemanager'] %>
+<%- end -%>
+pd.transacted=false 
+<% if !@env['env_general']['bestx']['bestx_mqserver']['pdpublisherqueue'].nil? -%>
+pd.publisherQueue=<%=  @env['env_general']['bestx']['bestx_mqserver']['pdpublisherqueue'] %>
+<%- end -%>
+<% if !@env['env_general']['bestx']['bestx_mqserver']['pdsubscriberqueue'].nil? -%>
+pd.subscriberQueue=<%=  @env['env_general']['bestx']['bestx_mqserver']['pdsubscriberqueue'] %>
+<%- end -%>
+
+<% if !@env['env_general']['bestx']['bestx_mqserver']['grdlitepublisherqueue'].nil? -%>
+grdlite.publisherQueue=<%=  @env['env_general']['bestx']['bestx_mqserver']['grdlitepublisherqueue'] %>
+<%- end -%>
+<% if !@env['env_general']['bestx']['bestx_mqserver']['grdlitesubscriberqueue'].nil? -%>
+grdlite.subscriberQueue=<%=  @env['env_general']['bestx']['bestx_mqserver']['grdlitesubscriberqueue'] %>
+<%- end -%>
+grdlite.messagesSchema= grdLiteMessageSchema.xsd

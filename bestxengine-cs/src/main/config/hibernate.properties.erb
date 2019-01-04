@@ -1,0 +1,51 @@
+<% if !@env['env_general']['bestx']['bestxengine']['hibernatedialect'].nil? -%>
+hibernate.dialect = <%= @env['env_general']['bestx']['bestxengine']['hibernatedialect'] %>
+<%- end -%>
+<%- dbriver = nil -%>
+<%- dialect = nil -%>
+<%- validation = 'select 1' -%>
+<%- db_connection_string = nil -%>
+<%
+# Attention!!! Ask DevOps Team for the exact hierarchy of the db_brand
+# i.e. nexrates db is @env['env_general']['db_brand']
+# but nextrade db is @env['env_general']['nexrates']['optional_components']['nextrade']['db_brand']
+%>
+<%- dbtype = @env['env_general']['db_brand'] -%>
+<%- case dbtype
+ when /^MsS/ -%>
+<%-   dbriver = "net.sourceforge.jtds.jdbc.Driver" -%>
+<%-   dialect =  "mssql"-%>
+<%-   db_connection_string = "jdbc:jtds:sqlserver:" -%>
+<%-   driver_class = "com.microsoft.sqlserver.jdbc.SQLServerDriver" -%>
+<%- when /^Ora/ -%>
+<%-   dbriver = "oracle.jdbc.OracleDriver" -%>
+<%-   dialect =  "oracle"-%>
+<%-   validation =  'select 1 from dual'-%>
+<%-   db_connection_string = "jdbc:oracle:thin:" -%>
+<%-   driver_class = "oracle.jdbc.driver.OracleDriver" -%>
+<%- when /^My/ -%>
+<%-   dbriver = "com.mysql.jdbc.Driver" -%>
+<%-   dialect =  "mysql"-%>
+<%-   db_connection_string = "jdbc:mysql:" -%>
+<%-   driver_class = "com.mysql.jdbc.Driver" -%>
+<%- end -%>
+
+hibernate.connection.driver_class = <%= driver_class-%>
+hibernate.connection.url = <%= db_connection_string-%>//<%= @env['env_general']['db_hostname'] %>:<%= @env['env_general']['db_port'] %>;databasename=<%= @env['env_general']['db_database'] %>;SelectMethod=<%= @env['env_general']['db_method'] %>
+
+dbcp.connection.username = <%= @env['env_general']['db_sa_username'] %>
+#dbcp.connection.password = ENC(X7rYdC6Vx8hFEISwPhdsSA==)
+dbcp.connection.password = <%= @env['env_general']['db_sa_password'] %>
+hibernate.cglib.use_reflection_optimizer = true
+hibernate.cache.use_second_level_cache = true
+hibernate.cache.region.factory_class = org.hibernate.cache.ehcache.EhCacheRegionFactory
+
+# the following properties will be used when allowing sql logging
+hibernate.show_sql = false
+hibernate.format_sql = false
+hibernate.use_sql_comments = true
+hibernate.generate_statistics = false
+hibernate.cache.use_structured_entries = true
+
+
+
