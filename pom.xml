@@ -5,19 +5,19 @@
     <groupId>it.softsolutions.bestx</groupId>
     <artifactId>bestxengine-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.2.14-SNAPSHOT</version>
+    <version>4.3.0-SNAPSHOT</version>
 
     <name>BestX! Engine Develop</name>
     <description>Comprising all the modules in bestengine installation for CS</description>
 
     <properties>
-        <DB-Version>2.0.1</DB-Version>
+        <DB-Version>2.0.2</DB-Version>
 
         <!--  additional services -->
         <bestxgui-usermanagement.version>1.0.8</bestxgui-usermanagement.version>
 
         <!--  markets  -->
-        <bestx-marketaxess-fi-buyside-fix-messages.version>2.0.8</bestx-marketaxess-fi-buyside-fix-messages.version>
+        <bestx-marketaxess-fi-buyside-fix-messages.version>2.0.4</bestx-marketaxess-fi-buyside-fix-messages.version>
 
         <!--  gateways dependency -->
         <tradestac-client.version>2.1.7</tradestac-client.version>
@@ -27,7 +27,7 @@
 
         <!-- third party -->
         <quickfix.version>1.6.4</quickfix.version>
-        <ibm-mq-api.version>7.0.1.9</ibm-mq-api.version>
+        <ibm-mq-api.version>8.0.0.5</ibm-mq-api.version>
     </properties>
 
     <modules>
@@ -37,6 +37,10 @@
         <module>bestxengine-product</module>
         <module>bestx-fix-client</module>
         <module>marketlibraries</module>
+        <module>bestxengine-cs</module>
+        <module>bestx-mq-service</module>
+        <module>bestx-sod-loader</module>
+        <module>bestx-grdlite-simulators</module>
     </modules>
 
     <dependencyManagement>
@@ -136,11 +140,11 @@
             </dependency>
 
             <!-- javax -->
-            <dependency>
-                <groupId>javax.jms</groupId>
-                <artifactId>jms</artifactId>
-                <version>1.1</version>
-            </dependency>
+             <dependency>
+    			<groupId>javax.jms</groupId>
+    			<artifactId>javax.jms-api</artifactId>
+    			<version>2.0</version>
+			</dependency>
             <dependency>
                 <groupId>javax.transaction</groupId>
                 <artifactId>jta</artifactId>
@@ -347,12 +351,8 @@
                 <artifactId>com.ibm.mq.jmqi</artifactId>
                 <version>${ibm-mq-api.version}</version>
             </dependency>
-            <dependency>
-                <groupId>com.ibm</groupId>
-                <artifactId>com.ibm.dhbcore</artifactId>
-                <version>${ibm-mq-api.version}</version>
-            </dependency>
-
+ 
+ 			<!-- marketlibraries -->
             <dependency>
                 <groupId>it.softsolutions.bestx</groupId>
                 <artifactId>bestx-marketaxess-market</artifactId>
@@ -494,7 +494,7 @@
     <scm>
         <connection>scm:git:ssh://git@git.softsolutions.io/bestx/bestx-parent-bom.git</connection>
         <developerConnection>scm:git:ssh://git@git.softsolutions.io/bestx/bestx-parent-bom.git</developerConnection>
-      <tag>bestxengine-parent-4.2.4</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <distributionManagement>
