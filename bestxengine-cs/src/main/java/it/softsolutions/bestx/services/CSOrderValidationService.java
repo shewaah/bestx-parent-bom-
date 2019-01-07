@@ -107,14 +107,9 @@ public class CSOrderValidationService implements OrderValidationService {
                     dbInstCheckOk = false;
                 }
                 result.setValid(false);
-                // 20090617 appende la reason in ogni caso perche' alcuni controlli hanno reasona anche in caso di esito positivo
+                // 20090617 appende la reason in ogni caso perche' alcuni controlli hanno reason anche in caso di esito positivo
                 // reason.append(reason.length() == 0 ? oResult.getReason() : " - " + oResult.getReason());
             }
-            /*
-             * 02-07-2009 Ruggero Tullio ha chiesto che non venga scritto mai Prodotto Interno
-             */
-            // if(oResult.getReason().length() > 0 && (!isProdottoInterno ||
-            // !oResult.getReason().contains(FilterOnPortfolioBasis.Prodotto_Interno))) {
             if (oResult.getReason().length() > 0) {
                 reason.append(reason.length() == 0 ? oResult.getReason() : " - " + oResult.getReason());
             }

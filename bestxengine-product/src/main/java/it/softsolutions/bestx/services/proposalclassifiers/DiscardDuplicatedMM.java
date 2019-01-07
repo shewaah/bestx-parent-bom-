@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 
 /**  
  *
- * Purpose: this class is mainly for ...  
+ * Purpose: this class used to configure a price validation discarding prices coming from dealers who do have better prices or equal prices also in markets with better ranking 
  *
  * Project Name : bestxengine-product 
  * First created by:  
@@ -112,34 +112,48 @@ public class DiscardDuplicatedMM implements ProposalClassifier {
             int proposalMarketRanking = proposalMarket.getRanking();
             Market loopProposalMarket = prop.getMarket();
             int loopProposalMarketRanking = loopProposalMarket.getRanking();
-            // Same market maker, different market -> keep the one with the better ranking market
-            if ((((ClassifiedProposal) prop).getProposalState() == ProposalState.VALID || ((ClassifiedProposal) prop).getProposalState() == ProposalState.NEW)
-                    && proposal.getVenue().getMarketMaker().getCode().equalsIgnoreCase(prop.getVenue().getMarketMaker().getCode())
+            // Same market maker, different market -> keep the one with the better ranking market or better price
+            ClassifiedProposal classProp = (ClassifiedProposal) prop;
+            if ((classProp.getProposalState() == ProposalState.VALID || classProp.getProposalState() == ProposalState.NEW)
+                    && proposal.getVenue().getMarketMaker().getCode().equalsIgnoreCase(classProp.getVenue().getMarketMaker().getCode())
                     && !loopProposalMarket.getMarketCode().equals(proposalMarket.getMarketCode())) {
-                //[RR20121030] BXMNT-193 : sometimes happens that in Akros two markets have the same ranking and both proposals for the same market maker
-                //will be accepted. Add a reason to show the cause.
-                if (proposalMarketRanking == loopProposalMarketRanking){
+                //[RR20121030] BXMNT-193 : sometimes happens that two markets have the same ranking and both proposals for the same market maker
+                // will be accepted. Add a reason to show the cause.
+                if (proposalMarketRanking == loopProposalMarketRanking && isFirstBetterThanSecond(proposal.getPrice().getAmount(), classProp.getPrice().getAmount(), proposal.getSide())){
                     LOGGER.warn("Markets {} and {} have the same ranking: {}=={}", proposalMarket, loopProposalMarket, proposalMarketRanking, loopProposalMarketRanking);
                     proposal.setReason(Messages.getString("ProposalMarketSameRanking", proposalMarket.getMarketCode(), loopProposalMarket.getMarketCode(), proposalMarketRanking));
-                } else if (proposalMarketRanking > loopProposalMarketRanking){
+                } else if (isFirstBetterThanSecond(proposal.getPrice().getAmount(), classProp.getPrice().getAmount(), proposal.getSide())){
                 	//[RR20150409] BXMNT-370 reject only if the better ranking proposal has also a better or equal price
-                	if (proposal.getPrice().getAmount().compareTo(prop.getPrice().getAmount()) >= 0) {
-	                    LOGGER.debug("Venue " + prop.getVenue() + " is duplicated of " + proposal.getVenue() + " rejecting...");
-	                    LOGGER.info("Rejecting proposal: {}", proposal);
-	                    proposal.setProposalState(Proposal.ProposalState.REJECTED);
-	                    proposal.setReason(Messages.getString("BestBook.16"));
-	                    break;
-                	}
+                    LOGGER.debug("Venue " + classProp.getVenue() + " MM has price better than " + proposal.getVenue() + " rejecting...");
+                    LOGGER.info("Rejecting proposal: {}", proposal);
+                    proposal.setProposalState(Proposal.ProposalState.REJECTED);
+                    proposal.setReason(Messages.getString("BestBook.23"));
+                    break;
+                } else if(proposalMarketRanking > loopProposalMarketRanking) {
+                    LOGGER.debug("Venue " + classProp.getVenue() + " is duplicated of " + proposal.getVenue() + " rejecting...");
+                    LOGGER.info("Rejecting proposal: {}", proposal);
+                    proposal.setProposalState(Proposal.ProposalState.REJECTED);
+                    proposal.setReason(Messages.getString("BestBook.16"));
+                    break;
+                	
                 }
-            } else {
-                LOGGER.debug("Venue " + prop.getVenue() + " on market: " + prop.getMarket().getMarketCode() + " retained.");
             }
         }
 
         return proposal;
     }
 
-    @Override
+    private boolean isFirstBetterThanSecond(BigDecimal firstAmount, BigDecimal secondAmount, ProposalSide side) {
+    	if(ProposalSide.ASK == side) {
+    		return firstAmount.compareTo(secondAmount) <= 0;
+    	} 
+    	if(ProposalSide.BID == side) {
+    		return firstAmount.compareTo(secondAmount) >= 0;
+    	} 
+		return false;
+	}
+
+	@Override
     public ClassifiedProposal getClassifiedProposal(ClassifiedProposal proposal, OrderSide orderSide, BigDecimal qty, Date futSettDate, List<Attempt> previousAttempts, Set<Venue> venues) {
         throw new UnsupportedOperationException();
     }

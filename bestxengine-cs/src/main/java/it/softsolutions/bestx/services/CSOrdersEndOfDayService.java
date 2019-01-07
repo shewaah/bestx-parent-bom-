@@ -320,7 +320,7 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
     			continue;
     		}
     	}
-    	LOGGER.error("EndOfDay getOperation: retrivies {} operations for job {}", operationsList.size(), jobName);
+    	LOGGER.error("EndOfDay getOperation: retrieved {} operations for job {}", operationsList.size(), jobName);
     	return operationsList;
     }
 

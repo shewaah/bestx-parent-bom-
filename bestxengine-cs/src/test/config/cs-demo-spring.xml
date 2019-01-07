@@ -722,6 +722,9 @@
                     <property name="allCountryCode"><value>${SettlementLimitControl.allCountries}</value></property>
                     <property name="allCurrencyCode"><value>${SettlementLimitControl.allCurrencies}</value></property>
 				</bean>
+                <bean class="it.softsolutions.bestx.services.ordervalidation.LimitFileParkTagFilter">
+					<property name="custOrderHandlingInstrValue"><value>TMO</value></property>
+				</bean>
                <bean class="it.softsolutions.bestx.services.ordervalidation.StopAutoExecOnQuantity">
                    <property name="noAutoExecSize"><value>${StopAutoExecOnQuantity.NoAutoExecSize}</value></property>               	
                    <property name="exchangeRateFinder" ref="dbBasedExchangeRateFinder" />            	
@@ -1070,7 +1073,7 @@
         <property name="tradeStacPreTradeConnection"><ref bean="mdsConnector"/></property>
         <property name="tradeXpressConnection"><ref bean="tradexpressConnector"/></property>
 	</bean>
-
+<!--
     <bean id="mdsConnector" class="it.softsolutions.bestx.connections.tradeweb.mds.MDSConnectionImpl" init-method="init">
         <property name="executor"><ref bean="threadPoolTradeweb"/></property>
         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
@@ -1084,7 +1087,7 @@
 		</property>
         <property name="fixConfigFileName"><value>fix-tradestac-mds.properties</value></property>
 	</bean>
-<!--  
+ --> 
 	    <bean id="mdsConnector" class="it.softsolutions.bestx.connections.tradestac.TradeStacMarketSimulatorConnectionImpl" init-method="init">
         <property name="marketCode"><value>TW</value></property>
         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
@@ -1099,7 +1102,7 @@
         </property>
         <property name="fixConfigFileName"><value>fix-tradestac-simulated-mds.properties</value></property>
     </bean>
- -->
+ 
 
     <bean id="tradexpressConnector" class="it.softsolutions.bestx.connections.tradeweb.tradexpress.TradeXpressConnectionImpl" init-method="init">
 		<property name="tradeXpressConnectionListener"><ref bean="tradewebMarket"/></property>

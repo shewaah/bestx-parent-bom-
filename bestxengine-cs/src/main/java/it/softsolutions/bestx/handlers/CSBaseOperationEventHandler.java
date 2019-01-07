@@ -204,7 +204,7 @@ public class CSBaseOperationEventHandler extends BaseOperationEventHandler {
 	@Override
 	public void onTimerExpired(String jobName, String groupName) {
 		Order order = operation.getOrder();
-		if (jobName.equals(CSOrdersEndOfDayService.ORDERS_END_OF_DAY_ID) && order.isLimitFile()) {
+		if (jobName.equals(CSOrdersEndOfDayService.ORDERS_END_OF_DAY_ID) && !order.isLimitFile()) {
 			addNotExecutionReportToOperation(ExecutionReportState.EXPIRED);
 			operation.setStateResilient(new SendNotExecutionReportState(operation.getState().getComment()), ErrorState.class);		
 		}
