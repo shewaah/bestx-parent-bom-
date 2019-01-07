@@ -77,7 +77,8 @@ public class OperationPersistenceManager implements OperationStateListener, Init
                     " and   st.EnteredTime <= ?" +
                     " and   st.IsTerminal = 0";
     
-    private static final String operationTotalCountSql = "SELECT count(*)" +
+    @SuppressWarnings("unused")
+	private static final String operationTotalCountSql = "SELECT count(*)" +
             " FROM OPERATION op" +
             " join OperationState st on op.OperationStateId=st.OperationStateId" +
             " where st.EnteredTime >= ?" +
@@ -466,7 +467,8 @@ public class OperationPersistenceManager implements OperationStateListener, Init
      * @param operationStateCanonicalNames: a list of states
      * @return
      */
-    public List<Operation> getActiveOperationForStates(List<String> operationStateCanonicalNames) {
+    @SuppressWarnings("unchecked")
+	public List<Operation> getActiveOperationForStates(List<String> operationStateCanonicalNames) {
        List<Operation> operations = null;
        Session session = null;
        

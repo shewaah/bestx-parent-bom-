@@ -2346,19 +2346,19 @@ public final class Operation implements OperationEventListener {
 		this.owner = owner;
 	}
 	
-	private Boolean notAutoExecute;
+	private boolean notAutoExecute = false;
 
 	/**
 	 * @return the notExecuteOrder
 	 */
-	public Boolean isNotAutoExecute() {
-		return notAutoExecute;
+	public boolean isNotAutoExecute() {
+		return this.notAutoExecute;
 	}
 
 	/**
 	 * @param notExecuteOrder the notExecuteOrder to set
 	 */
-	public void setNotAutoExecute(Boolean notExecuteOrder) {
+	public void setNotAutoExecute(boolean notExecuteOrder) {
 		this.notAutoExecute = notExecuteOrder;
 	}
 

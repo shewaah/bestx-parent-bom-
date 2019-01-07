@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="BestX" version="1.0"
+    xmlns="BestX">
+    <xs:element name="LoadRequest">
+        <xs:complexType>
+            <xs:sequence minOccurs="1" maxOccurs="unbounded">
+                <xs:element name="Instrument">
+                    <xs:complexType>
+                        <xs:attribute ref="SecurityTypeCd" use="optional" default="ISIN"/>
+                        <xs:attribute name="SecurityId" type="xs:string" use="required"/>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute ref="InitialLoadTypeCd" use="optional" default="false"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="Instrument"/>
+    <xs:attribute name="SecurityTypeCd" >
+        <xs:simpleType>
+            <xs:restriction base="xs:string">
+                <xs:enumeration value="ISIN"/>
+                <xs:enumeration value="VALOR"/>
+                <xs:enumeration value="CUSIP"/>
+            </xs:restriction>
+        </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="InitialLoadTypeCd">
+        <xs:simpleType>
+            <xs:restriction base="xs:string">
+                <xs:enumeration value="true"/>
+                <xs:enumeration value="false"/>
+            </xs:restriction>
+        </xs:simpleType>
+    </xs:attribute>
+</xs:schema>

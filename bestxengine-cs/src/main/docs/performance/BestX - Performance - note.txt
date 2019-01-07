@@ -1,0 +1,20 @@
+Performance measurement (BXMNT-146)
+----------------------------------------------------------
+Rossoni Davide added a comment - 05/11/2012 10:38 - edited
+----------------------------------------------------------
+Con l'aiuto di Ruggero Rizzo è stato creato uno script di shell (grep.sh, richiede Cygwin Terminal) per estrarre rapidamente le informazioni necessarie all'analisi delle performance. 
+
+Lo script analizza il file di statistiche prodotto da BestX e genera un file csv (BestX-Statistics.txt) che comprende:
+* Operation: l'orderID
+* Order.CONN: istante t0
+* Order.Validation: validazione
+* PriceService.Out: invio ordine
+* Order.Execution_: price discovery
+* Order.ExecutionReport_CONN: esecuzione
+
+E' stato inoltre creato un foglio Excel (BestX - Performance.xlsx) che carica automaticamente il file csv calcolando i delta e graficando il tutto.
+Ogni qualvolta si voglia analizzare un nuovo file di statistiche è sufficiente
+
+1. invocare il comando $ .\grep.sh BestX-Statistics.2012-11-02.0.log
+2. aprire il foglio excel
+3. forzare il caricamento del csv: Data - Refresh All

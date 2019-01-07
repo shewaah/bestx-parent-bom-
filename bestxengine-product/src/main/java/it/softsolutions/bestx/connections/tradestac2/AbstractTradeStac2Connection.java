@@ -91,6 +91,7 @@ public abstract class AbstractTradeStac2Connection implements Connection, TradeS
 	@Override
 	public void connect() throws BestXException {
 		LOGGER.info("[{}]", connectionName);
+		if(isConnected()) return;
 		try {
 			tradeStacClientSession.startFIX();
 		} catch (TradeStacException e) {
@@ -101,6 +102,7 @@ public abstract class AbstractTradeStac2Connection implements Connection, TradeS
 	@Override
 	public void disconnect() throws BestXException {
 		LOGGER.info("[{}]", connectionName);
+		if(!isConnected()) return;
 		if (tradeStacClientSession != null) {
 			try {
 				tradeStacClientSession.stopFIX();

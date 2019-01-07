@@ -1,0 +1,235 @@
+Flussi di test BloombergTSOX
+
+Esempi ordini (Side = Buy --> vanno sul lato ask del book)
+
+Account da usare: UNIT_TEST_CLIENT_CODE (non 1994)
+_________________________________________________________________
+
+MM interno: TS23
+
+Book per i test senza internalizzazione:
+
+BLOOMBERG/-/RDEU 	| 105.6 	x 100000 		| ASK | INDICATIVE
+BLOOMBERG/-/TEST21 	| 105.7 	x 0 			| ASK | INDICATIVE
+RTFI/-/TEST24 		| 106.01000 x 500000.00000 	| ASK | INDICATIVE
+RTFI/-/TEST21 		| 106.02000 x 500000.00000 	| ASK | INDICATIVE
+RTFI/-/TEST25 		| 106.03000 x 500000.00000 	| ASK | INDICATIVE
+
+Book per i test con internalizzazione:
+
+BLOOMBERG/-/RDEU 	| 105.6 	x 100000 		| ASK | INDICATIVE
+BLOOMBERG/-/TEST21 	| 105.7 	x 0 			| ASK | INDICATIVE
+RTFI/-/TEST24 		| 106.01000 x 500000.00000 	| ASK | INDICATIVE
+RTFI/-/TEST23 		| 106.02000 x 500000.00000 	| ASK | INDICATIVE
+RTFI/-/TEST25 		| 106.03000 x 500000.00000 	| ASK | INDICATIVE
+
+_________________________________________________________________
+
+
+(XS0225369403 per blp "vero")
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=XS022536940348=XS022536940322=454=138=5000040=115=EUR59=060=20121218-08:32:03.9036010=Y10=125
+
+==================================================================
+
+FLUSSI NON INTERNALIZZATI
+
+OK
+BB0000000001: 1 - 2 - 3 - 4 - 5 - 6/1 ...
+Il dealer rifiuta la QuoteRequest.
+RTFI TS24 risponde a nuova rfq con prezzo valido --> chiusura su Rtfi
+
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000000148=BB000000000122=454=138=5000040=115=EUR59=060=20121218-08:32:03.9036010=Y10=125
+
+-----
+
+OK
+BB0000000002: 1 - 2 - 3 - 7 - 9 - 10 - 11
+Il dealer manda una quota valida, il client la accetta --> chiusura su Bloom
+
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000000248=BB000000000222=454=138=5000040=115=EUR59=060=20121218-08:32:03.9036010=Y10=125
+
+-----
+
+OK
+BB0000000003: 1 - 2 - 3 - 4 - 5 - 6/1 ...
+Il dealer non risponde entro due-in (dealer response time)
+RTFI TS24 risponde a nuova rfq con prezzo valido --> chiusura su Rtfi
+
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000000348=BB000000000322=454=138=5000040=115=EUR59=060=20121218-08:32:03.9036010=Y10=125
+
+-----
+
+OK	
+BB0000000004: 1 - 2 - 3 - 7 - 8 - 4 - 5 - 6/1 ...
+Il dealer risponde con una qty non accettabile, il client rifiuta la quote
+RTFI TS24 risponde a nuova rfq con prezzo valido --> chiusura su Rtfi
+
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000000448=BB000000000422=454=138=5000040=115=EUR59=060=20121218-08:32:03.9036010=Y10=125
+
+-----
+
+OK
+BB0000000005: 1 - 2 - 3 - 7 - 9 - 4 - 5 - 6/1 ...
+Il dealer non risponde all'accettazione del client entro il wiretime (Bloomberg.Tsox.wiretime)
+RTFI TS24 risponde a nuova rfq con prezzo valido --> chiusura su Rtfi
+
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000000548=BB000000000522=454=138=5000040=115=EUR59=060=20121218-08:32:03.9036010=Y10=125
+
+==================================================================
+
+FLUSSI INTERNALIZZATI
+
+Rfq a best esterno, il prezzo viene rigirato al MM interno RTFI.
+
+-----
+
+OK
+BB0000000006: 1 - 2 - 3 - 7 - 12 - 9 - 10 - 11
+Il MM interno rifiuta l'rfq, si chiude positivamente con il best externo --> chiusura su Bloom
+
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000000648=BB000000000622=454=138=5000040=115=EUR59=060=20121218-08:32:03.9036010=Y10=125
+
+-----
+
+BB0000000007: 1 - 2 - 3 - 7 - 12 - 20 - warning
+Il MM interno risponde all'rfq confermando il prezzo, poi rifiuta l'hit/lift, quindi si chiude sulla best bloomberg --> chiusura su Bloom
+
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000000748=BB000000000722=454=138=5000040=115=EUR59=060=20121218-08:32:03.9036010=Y10=125
+
+-----
+
+OK
+BB0000000008: 1 - 2 - 3 - 7 - 12 - 19 - 9...
+Il MM interno risponde all'rfq con prezzo molto peggiorativo, si chiude positivamente con il best esterno dopo reject all'interno --> chiusura su Bloom
+
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000000848=BB000000000822=454=138=5000040=115=EUR59=060=20121218-08:32:03.9036010=Y10=125
+
+-----
+
+BB0000000009: 1 - 2 - 3 - 7 - 12 - 20 - 10 - 11
+Il MM interno risponde all'rfq confermando il prezzo, si chiude positivamente con l'interno e mando reject all'esterno --> chiusura su Rtfi
+
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000000948=BB000000000922=454=138=5000040=115=EUR59=060=20121218-08:32:03.9036010=Y10=125
+
+-----
+
+BB0000000010: 1 - 2 - 3 - 7 - 12 - 20 - warning
+Il MM interno risponde all'rfq confermando il prezzo, timeout sull'attesa dell'execution report --> warning
+
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000001048=BB000000001022=454=138=5000040=115=EUR59=060=20121218-08:32:03.9036010=Y10=125
+
+
+-----
+
+OK
+BB0000000011: 1 - 2 - 3 - 7 - 12 - 8 - 4 - 5...
+Il MM interno non risponde all'rfq, nel frattempo il best esterno segnala che la quote è subject.
+Si manda quindi una nuova quoterequest al best esterno, che risponde con lo stesso prezzo, e bestx accetta --> chiusura su Bloom 
+(in teoria, perchè il TSOX simulator non riesce a rispondere alla seconda rfq)
+
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000001148=BB000000001122=454=138=5000040=115=EUR59=060=20121218-08:32:03.9036010=Y10=125
+
+==================================================================
+
+Prove per Limit File
+
+isin:			BB0000000100 --> ottengo un book valido (quello senza internalizzazione)
+
+40=OrdType:		 (1,Market) - (2,Limit) - (...altro...)
+44=Price:		 (0.0) - (null) - (> 0)
+59=TimeInForce:	 (0,Day) - (1,GTC) - (...altro...)
+
+---------------------
+OrdType	:		3=valore non previsto
+Price: 			qualunque
+TimeInForce:	qualunque
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000010048=BB000000010022=454=138=5000040=315=EUR59=160=20121218-08:32:03.90344=1076010=Y10=125
+L'ordine viene rifiutato con Reject(3) - Value is incorrect (out of range) for this tag (40)
+???????
+
+----------------------
+OrdType	:		2=Limit
+Price: 			107.0
+TimeInForce:	1=GTC
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000010048=BB000000010022=454=138=5000040=215=EUR59=160=20121218-08:32:03.90344=1076010=Y10=125
+L'ordine viene accettato, e viene chiuso su bloomberg
+--> OK <--
+
+OrdType	:		2=Limit
+Price: 			107.0
+TimeInForce:	0=Day
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000010048=BB000000010022=454=138=5000040=215=EUR59=060=20121218-08:32:03.90344=1076010=Y10=125
+L'ordine viene accettato, e viene chiuso su bloomberg
+--> OK <--
+
+OrdType	:		2=Limit
+Price: 			0.0
+TimeInForce:	1=GTC
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000010048=BB000000010022=454=138=5000040=215=EUR59=160=20121218-08:32:03.90344=06010=Y10=125
+ExecutionReport/Rejected : Order not accepted - Formal validations not passed -No prices - Order type LIMIT, limit price 0 not valid with TimeInForce value is GOOD_TILL_CANCEL
+--> OK <--
+
+OrdType	:		2=Limit
+Price: 			107.0
+TimeInForce:	manca -> default = Day
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000010048=BB000000010022=454=138=5000040=215=EUR60=20121218-08:32:03.90344=1076010=Y10=125
+ExecutionReport/Rejected : Order not accepted - Formal validations not passed -Field "Time In Force" not specified - Order not accepted, the TimeInForce value is null
+OK???
+
+OrdType	:		2=Limit
+Price: 			manca
+TimeInForce:	1=GTC
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000010048=BB000000010022=454=138=5000040=215=EUR59=160=20121218-08:32:03.90344=06010=Y10=125
+ExecutionReport/Rejected : Order not accepted - Order not accepted - Formal validations not passed -No prices - Order type LIMIT, limit price 0 not valid with TimeInForce value is GOOD_TILL_CANCEL
+--> OK <--
+----------------------
+OrdType	:		1=Market
+Price: 			manca
+TimeInForce:	0=Day
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000010048=BB000000010022=454=138=5000040=115=EUR59=060=20121218-08:32:03.9036010=Y10=125
+L'ordine viene accettato, e viene chiuso su bloomberg
+--> OK <--
+
+OrdType	:		1=Market
+Price: 			107
+TimeInForce:	0=Day
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000010048=BB000000010022=454=138=5000040=115=EUR59=060=20121218-08:32:03.90344=1076010=Y10=125
+L'ordine viene accettato, e viene chiuso su bloomberg
+--> OK <--
+
+OrdType	:		1=Market
+Price: 			0
+TimeInForce:	0=Day
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000010048=BB000000010022=454=138=5000040=115=EUR59=060=20121218-08:32:03.90344=06010=Y10=125
+L'ordine viene accettato, e viene chiuso su bloomberg (ignora limit price)
+--> OK <--
+
+OrdType	:		1=Market
+Price: 			manca
+TimeInForce:	0=Day
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000010048=BB000000010022=454=138=5000040=115=EUR59=060=20121218-08:32:03.9036010=Y10=125
+L'ordine viene accettato, e viene chiuso su bloomberg
+--> OK <--
+
+OrdType	:		1=Market
+Price: 			manca
+TimeInForce:	1=GTC
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000010048=BB000000010022=454=138=5000040=115=EUR59=160=20121218-08:32:03.9036010=Y10=125
+ExecutionReport/Rejected : Order not accepted - Formal validations not passed -Order type MARKET not valid for TimeInForce value MARKET
+--> OK <--
+
+OrdType	:		1=Market
+Price: 			manca
+TimeInForce:	4=FOK
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000010048=BB000000010022=454=138=5000040=115=EUR59=460=20121218-08:32:03.9036010=Y10=125
+ExecutionReport/Rejected : Order not accepted - Formal validations not passed -Order not accepted, the TimeInForce value is FILL_OR_KILL
+--> OK <--
+
+------------------------------
+
+isin:			BB0000000101 --> ottengo un book vuoto valido (tutte le quotes hanno qty=0 e vengono scartate)
+
+OrdType	:		2=Limit
+Price: 			107.0
+TimeInForce:	1=GTC
+8=FIX.4.29=21235=D49=AMOS0356=AKROSSABE0234=13543=N52=20111205-06:56:26122=20111205-06:56:2611=SERIES_2_MO_EX_RTFI_EUR1=UNIT_TEST_CLIENT_CODE63=621=1100=SAB55=BB000000010148=BB000000010122=454=138=5000040=215=EUR59=160=20121218-08:32:03.90344=1076010=Y10=125

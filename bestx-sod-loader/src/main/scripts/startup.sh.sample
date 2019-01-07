@@ -1,0 +1,6 @@
+#!/bin/sh
+
+export JDK_HOME=/usr/java/jdk1.6.0_21
+export SERVER_CONFIG='-XX:+UseParallelGC -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -Xms128m -Xmx256m -XX:PermSize=32m -XX:MaxPermSize=64m'
+
+$JDK_HOME/bin/java -Dss.app.name=BestX-SOD-Loader $SERVER_CONFIG -Djava.ext.dirs=./cfg:./lib:. -jar ./lib/bestx-sod-loader-0.0.1-SNAPSHOT.jar

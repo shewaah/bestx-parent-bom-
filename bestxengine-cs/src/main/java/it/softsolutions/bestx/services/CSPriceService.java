@@ -342,10 +342,7 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 		}
 
 	    private void setNotAutoExecuteOrder(Operation operation) {
-	    	//update Db only when needed
-	    	if (operation.isNotAutoExecute() == null || operation.isNotAutoExecute()) {
-	    		operation.setNotAutoExecute(false);
-	    	}
+    		operation.setNotAutoExecute(false);
 	    }
 	    
 		@Override
@@ -375,7 +372,7 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 						Boolean notExecuteLimitFile = CSConfigurationPropertyLoader.getBooleanProperty(CSConfigurationPropertyLoader.LIMITFILE_DONOTEXECUTE, false);
 
 						if (notExecuteLimitFile && !operation.isVolatile()) {
-							setNotAutoExecuteOrder(operation);						}
+							operation.setNotAutoExecute(false);						}
 						// [DR20140122] Tentativo di risolvere i problemi con gli attempt nei casi di LimitFile che vanno da CurandoRetry in LimitFileNoPrice
 						if (operation.getAttemptNo() > 1 && !operation.getOrder().isLimitFile()) {
 							operation.removeLastAttempt();

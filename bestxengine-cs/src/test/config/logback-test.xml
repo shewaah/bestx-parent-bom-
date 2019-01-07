@@ -223,7 +223,7 @@
 	<logger name="it.softsolutions.bestx.services.PriceDiscoveryPerformanceMonitor" additivity="false" level="OFF">
 		<appender-ref ref="PriceDiscoveryLogger" />
 	</logger>
-	<logger name="it.softsolutions.bestx.services.booksorter.ClassifiedBidComparator" additivity="false" level="INFO">
+	<logger name="it.softsolutions.bestx.services.booksorter.ClassifiedBidComparator" additivity="false" level="OFF">
 		<appender-ref ref="BestXLogger" />
 	</logger>
 	<logger name="it.softsolutions.bestx.services.booksorter.ClassifiedAskComparator" additivity="false" level="INFO">

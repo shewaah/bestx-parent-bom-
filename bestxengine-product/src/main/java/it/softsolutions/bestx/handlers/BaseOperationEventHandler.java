@@ -576,9 +576,7 @@ public class BaseOperationEventHandler extends DefaultOperationEventHandler {
     }
     
     protected void setNotAutoExecuteOrder(Operation operation) {
-    	if (operation.isNotAutoExecute() == null || !operation.isNotAutoExecute()) {
-    		operation.setNotAutoExecute(true);
-    	}
+		operation.setNotAutoExecute(true);
     }
 
 
