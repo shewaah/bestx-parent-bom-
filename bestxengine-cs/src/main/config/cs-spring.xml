@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
@@ -656,6 +657,7 @@
         <property name="priceDecimals"><value>${PriceDiscovery.PriceDecimals}</value></property>
         <property name="pobExMaxSize"><value>${Marketaxess.MaxPOBEXEntries}</value></property>
         <property name="curandoTimerRetriever"><ref bean="curandoTimerRetriever"></ref></property>
+        <property name="targetPriceMaxLevel"><value>${TargetPrice.MaxLevel}</value></property>
 	</bean>
 
 	<!-- VALIDATION FOR ORDERS -->
@@ -721,6 +723,10 @@
                 <bean class="it.softsolutions.bestx.services.ordervalidation.LimitFileParkTagFilter">
 					<property name="custOrderHandlingInstrValue"><value>TMO</value></property>
 				</bean>
+               <bean class="it.softsolutions.bestx.services.ordervalidation.StopAutoExecOnQuantity">
+                   <property name="noAutoExecSize"><value>${StopAutoExecOnQuantity.NoAutoExecSize}</value></property>               	
+                   <property name="exchangeRateFinder" ref="dbBasedExchangeRateFinder" />            	
+				</bean>               
 			</list>
 		</property>
 		<property name="punctualValidatorList">
@@ -906,9 +912,9 @@
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardOldProposalClassifier">
                     <property name="configValue"><value>12</value></property>
 				</bean>
-
+				<!--
                         <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardInsufficientQuantityProposalClassifier"></bean>
-
+                -->
 
                         <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardInadequateOrderedQuantityProposalClassifier">
                             <property name="marketSecurityStatusService"><ref bean="marketSecurityStatusService"></ref></property>
@@ -953,7 +959,14 @@
 
 
 <!-- Execution strategy -->
-    <bean id="executionStrategyServiceFactory" class="it.softsolutions.bestx.services.executionstrategy.CSExecutionStrategyServiceFactory"/>
+    <bean id="executionStrategyServiceFactory" class="it.softsolutions.bestx.services.executionstrategy.CSExecutionStrategyServiceFactory">
+    	<property name="allMarketsToTry">
+    		<list>
+				<value>TW</value>
+				<value>MARKETAXESS</value>
+    		</list>
+    	</property>
+    </bean>
 
 
 	<!-- MARKET REGISTRY -->
@@ -1229,12 +1242,15 @@
 				<entry key="ONLY_PRICEDISCOVERY" value-ref="pDOnlyPriceService" />
 			</map>
 		</property>
-        <property name="doubleQueueActive"><value>false</value></property>
+        <!--property name="doubleQueueActive"><value>false</value></property-->
 	</bean>
     <bean id="serialNumberServiceProvider" class="it.softsolutions.bestx.services.SerialNumberServiceProvider">
         <property name="serialNumberService"><ref bean="serialNumberService"></ref></property>
 	</bean>
 
+    <bean id="operationStateAuditDAOProvider" class="it.softsolutions.bestx.services.OperationStateAuditDAOProvider">
+        <property name="operationStateAuditDao"><ref bean="sqlOperationStateAuditDao"></ref></property>
+	</bean>
     <bean id="grdLiteService" class="it.softsolutions.bestx.services.grdlite.GRDLiteService">
 		<constructor-arg ref="defaultOperationRegistry" />
 		<!-- the service, as default, is activated -->
