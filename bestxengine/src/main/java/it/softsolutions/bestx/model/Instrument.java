@@ -81,8 +81,9 @@ public class Instrument implements Cloneable {
     private String calculationTypeDesc;
     private String referenceRPIMonthConvention;
     private String bondType;
+    private String marketOfIssue;
     
-    public static final String INSTR_ASSET_TYPE_GOVIES = "Sovereign";
+	public static final String INSTR_ASSET_TYPE_GOVIES = "Sovereign";
     public static final String INSTR_SECURITY_TYPE_EURO_ZONE = "EURO-ZONE";
     public static final String INDUSTRY_SUB_SECTOR_SOVEREIGN = "Sovereign";
     
@@ -718,4 +719,14 @@ public class Instrument implements Cloneable {
     public boolean isAnEuroZone() {
         return INSTR_SECURITY_TYPE_EURO_ZONE.equals(getSecurityType());
     }
+
+    public String getMarketOfIssue() {
+		return marketOfIssue;
+	}
+
+	public void setMarketOfIssue(String marketOfIssue) {
+		this.marketOfIssue = marketOfIssue;
+	}
+
+
 }

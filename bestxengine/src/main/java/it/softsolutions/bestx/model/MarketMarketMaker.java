@@ -39,7 +39,9 @@ public class MarketMarketMaker implements Serializable, Comparable<MarketMarketM
     public static final String ENABLED_ALL = Messages.getString("MarketMakerInstrumentsFilter.EnabledAll");
     public static final String ENABLED_NONE = Messages.getString("MarketMakerInstrumentsFilter.EnabledNone");
     public static final String ENABLED_ONLY = Messages.getString("MarketMakerInstrumentsFilter.EnabledOnly");
+    public static final String ENABLED_ONLY_UST = Messages.getString("MarketMakerInstrumentsFilter.EnabledOnly" + "UST");
     public static final String ENABLED_NOT_ON = Messages.getString("MarketMakerInstrumentsFilter.EnabledNotOn");
+    public static final String ENABLED_NOT_ON_UST = Messages.getString("MarketMakerInstrumentsFilter.EnabledNotOn" + "UST");
 
     private String marketId;
     private String enabledFilter;
@@ -115,54 +117,58 @@ public class MarketMarketMaker implements Serializable, Comparable<MarketMarketM
             isin = instrument.getIsin();
         }
         LOGGER.debug("MarketMaker {}, instrument {}. The market maker enabled filter is '{}'. Best execution required : {}", marketSpecificCode, isin, enabledFilter, bestExecutionRequired);
-        if (enabledFilter == null) {
+        if (enabledFilter == null) { // nothing selected, default is "can trade"
             LOGGER.debug("MarketMaker {}, instrument {}. Null enabled filter, consider if the mm can trade the instrument.", marketSpecificCode, isin);
 
             return true;
         }
-        if (enabledFilter.contains(ENABLED_ALL)) {
+        if (enabledFilter.contains(ENABLED_ALL)) {  // can trade all instruments
             LOGGER.debug("MarketMaker {}, instrument {}. Can trade all the instruments.", marketSpecificCode, isin);
 
             return true;
         }
-        if (enabledFilter.contains(ENABLED_NONE) && bestExecutionRequired) {
+        if (enabledFilter.contains(ENABLED_NONE) && bestExecutionRequired) { // can trade no instruments
             LOGGER.info("MarketMaker {}, instrument {}. Cannot trade the instrument (enable filter = None) and best execution is required.", marketSpecificCode, isin);
             return false;
         }
 
+        if(BondTypesService.isUST(instrument)) { // UST as defined in BondTypeService
+        	if(enabledFilter.contains(ENABLED_ONLY_UST)) return true;
+        	else if(enabledFilter.contains(ENABLED_NOT_ON_UST)) return false;
+        } else { 
+	        boolean contains = BondTypesService.checkBondType(instrument);
+	
+	        boolean currencyEUR = "EUR".equals(instrument.getCurrency());
+	        LOGGER.debug("MarketMaker {}, instrument {}. Instrument currency is EUR : {}", marketSpecificCode, isin, currencyEUR);
+	        if (contains && currencyEUR) {  // enabled "EUR govies"
+	            boolean canTrade = enabledFilter.contains(ENABLED_ONLY);
+	            if (!canTrade) {
+	                LOGGER.info(
+	                        "Market maker {} cannot trade the instrument {}. Bond type is one of those allowed and currency is EUR, can trade this instrument only if the filter is 'Solo Govies euro'.",
+	                        marketSpecificCode, isin);
+	            } else {
+	                LOGGER.debug("Market maker {} can trade the instrument {}. Bond type is one of those allowed and currency is EUR, can trade this instrument only if the filter is 'Solo Govies euro'.",
+	                        marketSpecificCode, isin);
+	            }
+	
+	            return canTrade;
+	        }
+	        else 
+	        if (!contains || !currencyEUR) { // all other not "EUR govies"
+	        	boolean canTrade = enabledFilter.contains(ENABLED_NOT_ON);
+	        	if (!canTrade) {
+	        		LOGGER.info(
+	        				"Market maker {} cannot trade the instrument {}. Bond type not one of those allowed or currency not EUR, can trade this instrument only if the filter is 'Non Govies euro'.",
+	        				marketSpecificCode, isin);
+	        	} else {
+	        		LOGGER.info("Market maker {} can trade the instrument {}. Bond type not one of those allowed or currency not EUR, can trade this instrument only if the filter is 'Non Govies euro'.",
+	        				marketSpecificCode, isin);
+	        	}
 
-        boolean contains = BondTypesService.checkBondType(instrument);
-
-        boolean currencyEUR = "EUR".equals(instrument.getCurrency());
-        LOGGER.debug("MarketMaker {}, instrument {}. Instrument currency is EUR : {}", marketSpecificCode, isin, currencyEUR);
-        if (!contains || !currencyEUR) {
-            boolean canTrade = enabledFilter.contains(ENABLED_NOT_ON);
-            if (!canTrade) {
-                LOGGER.info(
-                        "Market maker {} cannot trade the instrument {}. Bond type not one of those allowed or currency not EUR, can trade this instrument only if the filter is 'Non Govies euro'.",
-                        marketSpecificCode, isin);
-            } else {
-                LOGGER.debug("Market maker {} can trade the instrument {}. Bond type not one of those allowed or currency not EUR, can trade this instrument only if the filter is 'Non Govies euro'.",
-                        marketSpecificCode, isin);
-            }
-
-            return canTrade;
+	        	return canTrade;
+	        }
         }
-        if (contains && currencyEUR) {
-            boolean canTrade = enabledFilter.contains(ENABLED_ONLY);
-            if (!canTrade) {
-                LOGGER.info(
-                        "Market maker {} cannot trade the instrument {}. Bond type is one of those allowed and currency is EUR, can trade this instrument only if the filter is 'Solo Govies euro'.",
-                        marketSpecificCode, isin);
-            } else {
-                LOGGER.debug("Market maker {} can trade the instrument {}. Bond type is one of those allowed and currency is EUR, can trade this instrument only if the filter is 'Solo Govies euro'.",
-                        marketSpecificCode, isin);
-            }
-
-            return canTrade;
-        }
-
-        LOGGER.debug("MarketMaker {}, instrument {}. No conditions met, returning true, the mm can trade this instrument.", marketSpecificCode, isin);
+        LOGGER.info("MarketMaker {}, instrument {}. No conditions met, returning true, the mm can trade this instrument.", marketSpecificCode, isin);
 
         return true;
     }

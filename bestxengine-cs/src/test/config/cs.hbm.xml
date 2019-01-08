@@ -665,7 +665,8 @@
 		<property name="updateDate" column="UpdateDate" />
 		<property name="offeringType" column="OfferingType" />
 		<property name="BBSettlementDate" column="BBSettlementDate" />
-		<property name="bondType" column="MarketOfIssue" />
+		<property name="marketOfIssue" column="MarketOfIssue" />
+		<property name="bondType" column="BondType" />
 		<property name="issuerIndustry" column="IssuerIndustry" />
 		<property name="industrySubSector" column="IndustrySubSector" />
 		<property name="assetType" column="AssetType" />
