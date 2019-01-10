@@ -20,6 +20,17 @@ import org.slf4j.LoggerFactory;
 public class RetailMaxSizeFilter implements OrderValidator {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RetailMaxSizeFilter.class);
 	private final BigDecimal maxSize;
+	private String mainCurrencies;
+	
+    public String getMainCurrencies() {
+		return mainCurrencies;
+	}
+
+
+	public void setMainCurrencies(String mainCurrencies) {
+		this.mainCurrencies = mainCurrencies;
+	}
+
 	
 
 	public RetailMaxSizeFilter (BigDecimal retailMaxSize) {
@@ -31,6 +42,12 @@ public class RetailMaxSizeFilter implements OrderValidator {
 		OrderResultBean result = new OrderResultBean();
 		result.setOrder(order);
 		result.setReason("");
+
+        if(mainCurrencies == null) {
+            result.setValid(false);
+            LOGGER.info("Order rejected, mainCurrencies not configured ");
+            result.setReason("MainCurrencies not configured");
+        }
 
 		// if the order is a sell one the filter passes
 		// AMC 20101020 Requested by Tullio Grilli
@@ -44,9 +61,7 @@ public class RetailMaxSizeFilter implements OrderValidator {
 
 		BigDecimal orderedQty;
 		BigDecimal minimumSize;
-		if (orderCurrency.equalsIgnoreCase("EUR")
-				|| orderCurrency.equalsIgnoreCase("USD")
-				|| orderCurrency.equalsIgnoreCase("GBP")) {
+		if (mainCurrencies.indexOf(orderCurrency) >= 0) {
 			orderedQty = order.getQty();
 			minimumSize = order.getInstrument().getMinSize();
 			LOGGER.debug("Ordered quantity is: "+orderedQty+".");

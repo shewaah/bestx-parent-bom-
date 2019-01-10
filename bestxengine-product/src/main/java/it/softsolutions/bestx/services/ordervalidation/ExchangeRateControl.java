@@ -20,13 +20,29 @@ import org.slf4j.LoggerFactory;
 public class ExchangeRateControl implements OrderValidator {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExchangeRateControl.class);
 	private MapExchangeRateFinder finder;
+	private String mainCurrency;
 	
-    public OrderResult validateOrder(Operation operation, Order order) {
+    public String getMainCurrency() {
+		return mainCurrency;
+	}
+
+
+	public void setMainCurrency(String mainCurrency) {
+		this.mainCurrency = mainCurrency;
+	}
+
+
+	public OrderResult validateOrder(Operation operation, Order order) {
         OrderResultBean result = new OrderResultBean();
         result.setOrder(order);
         result.setReason("");       
         String currCode = order.getCurrency();
-        
+        if(mainCurrency == null) {
+            result.setValid(false);
+            LOGGER.info("Order rejected, mainCurrency not configured ");
+            result.setReason("MainCurrency not configured");
+        }
+
         ExchangeRate exchangeRate = null;
         try {
             exchangeRate = finder.getExchangeRateByCurrency(currCode);
@@ -34,7 +50,7 @@ public class ExchangeRateControl implements OrderValidator {
             // already managed below in the else branch
         }
 
-        if (currCode.equals("EUR") || exchangeRate != null ){
+        if (currCode.equals(mainCurrency) || exchangeRate != null ){
             result.setValid(true);
         }else {
             result.setValid(false);

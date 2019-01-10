@@ -699,6 +699,7 @@
                 </bean> --> <!-- commented out as agreed with Deepthi on Gen 30th 2014 -->
                 <bean class="it.softsolutions.bestx.services.ordervalidation.ExchangeRateControl">
                     <property name="finder"><ref bean="dbBasedExchangeRateFinder"/></property>
+                    <property name="mainCurrency"><value>"EUR"</value></property>
 				</bean>
                 <bean class="it.softsolutions.bestx.services.ordervalidation.FormalTimeInForceValidator"/>
 			</list>
@@ -715,6 +716,7 @@
 <!--                 <bean class="it.softsolutions.bestx.services.ordervalidation.InternalMaxSizeFilter">
                     <property name="internalAuthThreshold"><value>${Internal_authorization.size}</value></property>
         			<property name="exchangeRateDao"><ref bean="hibernateExchangeRateDao"></ref></property>
+                    <property name="mainCurrency"><value>"EUR"</value></property>
                 </bean>
  -->
                  <bean class="it.softsolutions.bestx.services.ordervalidation.IncQuantityControl"/>
@@ -1107,7 +1109,7 @@
         <property name="fixConfigFileName"><value>fix-tradestac-simulated-mds.properties</value></property>
     </bean>
  
-
+<!-- 
     <bean id="tradexpressConnector" class="it.softsolutions.bestx.connections.tradeweb.tradexpress.TradeXpressConnectionImpl" init-method="init">
 		<property name="tradeXpressConnectionListener"><ref bean="tradewebMarket"/></property>
 		<property name="tradeStacConnectionListener"><ref bean="tradewebMarket"/></property>
@@ -1123,7 +1125,7 @@
 		<property name="defaultTradingCapacity"><value>${Tradeweb.defaultCapacity}</value></property>
         <property name="fixConfigFileName" value="fix-tradestac-tradexpress.properties" />
 	</bean>
-<!--
+-->
     <bean id="tradexpressConnector" class="it.softsolutions.bestx.connections.tradeweb.simulated.BogusTradeXpressConnection" init-method="init">
 		<property name="tradeXpressConnectionListener"><ref bean="tradewebMarket"/></property>
         <property name="cancelIsins">
@@ -1138,7 +1140,7 @@
         	</list>
 		</property>
 	</bean>
---><!--
+<!--
     <bean id="simulatedTradexpressConnector" class="it.softsolutions.bestx.connections.tradeweb.tradexpress.TradeXpressConnectionImpl" init-method="init">
 		<property name="tradeXpressConnectionListener"><ref bean="tradewebMarket"/></property>
 		<property name="tradeStacConnectionListener"><ref bean="tradewebMarket"/></property>

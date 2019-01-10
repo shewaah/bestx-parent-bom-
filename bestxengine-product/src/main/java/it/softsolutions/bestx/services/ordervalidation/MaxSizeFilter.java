@@ -25,6 +25,17 @@ public class MaxSizeFilter implements OrderValidator {
 	private ExchangeRateDao exchangeRateDao;
 	private BigDecimal internalAuthThreshold;
 
+	private String mainCurrency;
+	
+    public String getMainCurrency() {
+		return mainCurrency;
+	}
+
+
+	public void setMainCurrency(String mainCurrency) {
+		this.mainCurrency = mainCurrency;
+	}
+
 	public MaxSizeFilter (ExchangeRateDao exchangeRateDao, BigDecimal internalAuthThreshold) {
 		this.exchangeRateDao = exchangeRateDao;
 		this.internalAuthThreshold = internalAuthThreshold;
@@ -36,10 +47,16 @@ public class MaxSizeFilter implements OrderValidator {
 		result.setOrder(order);
 		result.setReason("");
 
-		String orderCurrency = order.getCurrency();
+        if(mainCurrency == null) {
+            result.setValid(false);
+            LOGGER.info("Order rejected, mainCurrency not configured ");
+            result.setReason("MainCurrency not configured");
+        }
+
+        String orderCurrency = order.getCurrency();
 
 		BigDecimal orderQtyInEuro;
-		if (orderCurrency.equalsIgnoreCase("EUR")) { //$NON-NLS-1$
+		if (orderCurrency.equalsIgnoreCase(mainCurrency)) {
 			orderQtyInEuro = order.getQty();
 		} else {
 			ExchangeRate exchangeRate = exchangeRateDao.getExchangeRate(orderCurrency);

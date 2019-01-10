@@ -29,7 +29,7 @@ import it.softsolutions.bestx.model.Order;
 **/
 public class LimitFileParkTagFilter implements OrderValidator {
 
-   public static String TO_PARK_VAL = "TO_PARK";
+   public static String TO_PARK_VAL = "Order will be parked.";
    private String custOrderHandlingInstrValue;
    
 
