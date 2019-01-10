@@ -698,6 +698,7 @@
                 </bean> --> <!-- commented out as agreed with Deepthi on Gen 30th 2014 -->
                 <bean class="it.softsolutions.bestx.services.ordervalidation.ExchangeRateControl">
                     <property name="finder"><ref bean="dbBasedExchangeRateFinder"/></property>
+	                <property name="mainCurrency"><value>"EUR"</value></property>
 				</bean>
                 <bean class="it.softsolutions.bestx.services.ordervalidation.FormalTimeInForceValidator"/>
 			</list>
