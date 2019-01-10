@@ -159,11 +159,6 @@
 
 		</build>
 
-		<scm>
-				<connection>scm:git:ssh://git@git.softsolutions.io/bestx/bestx-grdlite-simulators.git</connection>
-				<developerConnection>scm:git:ssh://git@git.softsolutions.io/bestx/bestx-grdlite-simulators.git</developerConnection>
-		</scm>
-
 	<distributionManagement>
 		<repository>
 			<id>releases</id>

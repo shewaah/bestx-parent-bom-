@@ -175,12 +175,6 @@
 
 	</build>
 
-	<scm>
-		<connection>scm:git:ssh://git@git.softsolutions.io/bespoke/creditsuisse/bestx/bestx-sod-loader.git</connection>
-		<developerConnection>scm:git:ssh://git@git.softsolutions.io/bespoke/creditsuisse/bestx/bestx-sod-loader.git</developerConnection>
-	  <tag>HEAD</tag>
-  </scm>
-
 	<distributionManagement>
 		<repository>
 			<id>releases</id>

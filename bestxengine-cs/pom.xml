@@ -357,12 +357,6 @@
 		</pluginManagement>
 	</build>
 
-	<scm>
-		<connection>scm:git:ssh://git@git.softsolutions.io/bespoke/creditsuisse/bestx/bestxengine-cs.git</connection>
-		<developerConnection>scm:git:ssh://git@git.softsolutions.io/bespoke/creditsuisse/bestx/bestxengine-cs.git</developerConnection>
-	  <tag>HEAD</tag>
-  </scm>
-
 	<distributionManagement>
 		<repository>
 			<id>releases</id>
