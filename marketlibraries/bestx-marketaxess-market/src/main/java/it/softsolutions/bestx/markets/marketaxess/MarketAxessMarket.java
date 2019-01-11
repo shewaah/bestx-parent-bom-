@@ -559,14 +559,10 @@ public class MarketAxessMarket extends MarketCommon implements TradeStacPreTrade
 		operationRegistry.bindOperation(operation, OperationIdType.MARKETAXESS_CLORD_ID, clOrdID);
 
 		marketOrder.setMarketSessionId(clOrdID);
-		// Set MarketAxess specific values
-		MarketAxessOrder marketAxessOrder = new MarketAxessOrder(marketOrder);
-		marketAxessOrder.setDealers(operation.getLastAttempt().getSortedBook().getValidProposalDealersByMarket(getMarketCode(), marketAxessOrder.getSide()));
-
 		marketStatistics.orderSent(operation.getOrder().getFixOrderId());
-		LOGGER.info("[MktReq] Order {}, Send Order to {} - ClOrdID: {}", marketAxessOrder.getFixOrderId(), getMarketCode(), marketAxessOrder.getMarketSessionId());
+		LOGGER.info("[MktReq] Order {}, Send Order to {} - ClOrdID: {}", marketOrder.getFixOrderId(), getMarketCode(), marketOrder.getMarketSessionId());
 
-		tradeConnection.sendOrder(marketAxessOrder);
+		tradeConnection.sendOrder(marketOrder);
 	}
 
 	private void checkBuySideConnection()  throws MarketNotAvailableException {

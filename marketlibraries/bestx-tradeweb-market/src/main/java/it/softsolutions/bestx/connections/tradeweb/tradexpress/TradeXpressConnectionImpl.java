@@ -48,7 +48,10 @@ import it.softsolutions.tradestac.fix50.component.TSOrderQtyData;
 import it.softsolutions.tradestac.fix50.component.TSParties;
 import quickfix.ConfigError;
 import quickfix.Field;
+import quickfix.Group;
+import quickfix.MessageComponent;
 import quickfix.SessionID;
+import quickfix.StringField;
 import quickfix.field.ExecType;
 import tw.quickfix.field.ClientTradingCapacity;
 import tw.quickfix.field.ShortSellingIndicator;
@@ -203,10 +206,14 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
         Side side = Side.getInstanceForFIXValue(marketOrder.getSide().getFixCode().charAt(0));
         Double orderQty = marketOrder.getQty().doubleValue();
         Date settlDate = marketOrder.getFutSettDate();
-        OrdType ordType = OrdType.Limit;
-        Double price = marketOrder.getLimit().getAmount().doubleValue();
+    	OrdType ordType = OrdType.Market;        	
+        if(marketOrder.getLimit() != null) {
+        	ordType = OrdType.Limit;
+        	Double price = marketOrder.getLimit().getAmount().doubleValue();
+            tsNewOrderSingle.setPrice(price);
+            tsNewOrderSingle.setPriceType(PriceType.Percentage);
+       }
         String dealerCode = marketOrder.getMarketMarketMaker() != null ? marketOrder.getMarketMarketMaker().getMarketSpecificCode() : null;
-        
         TSInstrument tsInstrument = new TSInstrument();
         tsInstrument.setSymbol("N/A");
         tsInstrument.setSecurityID(securityID);
@@ -225,9 +232,7 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
         
         tsNewOrderSingle.setTSOrderQtyData(tsOrderQtyData);
 
-        tsNewOrderSingle.setPrice(price);
         tsNewOrderSingle.setTimeInForce(TimeInForce.GoodTillDate);
-        tsNewOrderSingle.setPriceType(PriceType.Percentage);
         tsNewOrderSingle.setCurrency(Currency.EUR);      
         
         // ## TraderCode ####
@@ -257,7 +262,6 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
      	tsNoPartyInvestmentDecisor.setPartyRole(PartyRole.InvestmentDecisionMaker);
      	tsNoPartyInvestmentDecisor.setPartyRoleQualifier(PartyRoleQualifier.getInstanceForFIXValue(Integer.parseInt(getInvestmentDecisorRoleQualifier())));
      	//tsNoPartyExecutionWithinFirm.setPartyRoleQualifier(PartyRoleQualifier.NaturalPerson);
-       
         
         List<TSNoPartyID> tsNoPartyIDsList = new ArrayList<TSNoPartyID>();
         if(tradingMode == TradingMode.ON_MTF) {
@@ -271,12 +275,22 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
         tsParties.setTSNoPartyIDsList(tsNoPartyIDsList);
         
         tsNewOrderSingle.setTSParties(tsParties);
+        
+        int noBlockedDealer = 0;
+        int fields[] = {10001};
+        // add here the blocked dealers group (BlockedDealerNo=10000, BlockedDealer=10001
+//        MessageComponent tsBlockedDealersComp = new MessageComponent(fields);
+//        Group tsBlockedDealers = new Group(10000, 10001);
+//        marketOrder.getExcludeDealers().forEach(marketMakerSpec -> {
+//        	StringField dealerField = new StringField(10001, marketMakerSpec.getMarketMakerMarketSpecificCode());
+//        });
+//        tsNewOrderSingle.addCustomComponent(tsBlockedDealers);
 
         LOGGER.info("{}", tsNewOrderSingle);
 
         return tsNewOrderSingle;
     }
-	
+
 	@Override
     public void sendOrder(MarketOrder marketOrder) throws BestXException {
 		LOGGER.debug("marketOrder = {}", marketOrder);

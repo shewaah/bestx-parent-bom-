@@ -85,7 +85,7 @@ public interface ExecutionStrategyService
     * @param serialNumberService
     *            : the serial number service
     **/
-   public abstract void manageOrderRevoke(Operation operation, Attempt currentAttempt,
+   public abstract void acceptOrderRevoke(Operation operation, Attempt currentAttempt,
 			SerialNumberService serialNumberService);
 
 }

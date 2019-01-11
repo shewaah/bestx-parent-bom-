@@ -88,7 +88,7 @@ public class CSCurandoEventHandler extends CSBaseOperationEventHandler {
 	public void onRevoke() {
 		ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(),
 					operation, null, true);
-		csExecutionStrategyService.manageOrderRevoke(operation, operation.getLastAttempt(), SerialNumberServiceProvider.getSerialNumberService());
+		csExecutionStrategyService.acceptOrderRevoke(operation, operation.getLastAttempt(), SerialNumberServiceProvider.getSerialNumberService());
 	}
 
 	@Override
@@ -108,7 +108,7 @@ public class CSCurandoEventHandler extends CSBaseOperationEventHandler {
 	public void onFixRevoke(CustomerConnection source) {
 		ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(),
 				operation, null, true);
-		csExecutionStrategyService.manageOrderRevoke(operation, operation.getLastAttempt(), SerialNumberServiceProvider.getSerialNumberService());
+		csExecutionStrategyService.acceptOrderRevoke(operation, operation.getLastAttempt(), SerialNumberServiceProvider.getSerialNumberService());
 	}
 
 	@Override

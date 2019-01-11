@@ -266,8 +266,7 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 	 * @param maExecutionReport
 	 * @throws NumberFormatException
 	 */
-	private void addQuotesToAttempt(Attempt currentAttempt,
-			MarketExecutionReport marketExecutionReport) throws NumberFormatException {
+	private void addQuotesToAttempt(Attempt currentAttempt, MarketExecutionReport marketExecutionReport) throws NumberFormatException {
 		MarketAxessExecutionReport maExecutionReport = (MarketAxessExecutionReport) marketExecutionReport;
 		for (NoDealers dealer : maExecutionReport.getDealers()) {
 			ExecutablePrice quote = new ExecutablePrice();
@@ -279,7 +278,7 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 				quotingDealer = dealer.getDealerID().getValue();
 				mmm = marketMakerFinder.getMarketMarketMakerByCode(maExecutionReport.getMarket().getMarketCode(), quotingDealer);
 				if(mmm == null) {
-					LOGGER.info("IMPORTANT! MarketAxess returned dealer {} not configured in BestX!. Please configure it", quotingDealer);
+					LOGGER.warn("IMPORTANT! MarketAxess returned dealer {} not configured in BestX!. Please configure it", quotingDealer);
 					quote.setOriginatorID(quotingDealer);
 				} else {
 					quote.setMarketMarketMaker(mmm);
@@ -328,7 +327,7 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 					int rank = Integer.parseInt(dealer.getQuoteRank().getValue());
 					currentAttempt.addExecutablePrice(quote, rank);
 //					if(mmm != null && mmm.getMarketMaker() != null)
-						quote.setVenue(venueFinder.getMarketMakerVenue(mmm.getMarketMaker()));
+					quote.setVenue(venueFinder.getMarketMakerVenue(mmm.getMarketMaker()));
 				} catch (@SuppressWarnings("unused") FieldNotFound e) {
 					LOGGER.info("Quote not valid for dealer {}", quotingDealer);
 				} catch (@SuppressWarnings("unused") NullPointerException|BestXException e) {

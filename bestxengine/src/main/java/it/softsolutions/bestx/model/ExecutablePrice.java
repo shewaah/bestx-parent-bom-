@@ -46,6 +46,10 @@ public class ExecutablePrice implements Comparable<ExecutablePrice> {
 	private String auditQuoteState;
 	private Integer rank;
 	private long AttemptId;
+	
+	public MarketMaker getMarketMaker() {
+		return getMarketMarketMaker().getMarketMaker();
+	}
 
 	public Integer getRank() {
 		return rank;

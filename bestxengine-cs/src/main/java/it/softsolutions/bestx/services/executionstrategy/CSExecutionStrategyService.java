@@ -31,6 +31,9 @@ import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.model.Market.MarketCode;
+import it.softsolutions.bestx.model.MarketMaker;
+import it.softsolutions.bestx.model.MarketMarketMaker;
+import it.softsolutions.bestx.model.MarketMarketMakerSpec;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.services.DateService;
@@ -54,7 +57,6 @@ import it.softsolutions.bestx.states.tradeweb.TW_StartExecutionState;
  * 
  **/
 public abstract class CSExecutionStrategyService implements ExecutionStrategyService {
-	@SuppressWarnings("unused")
 	private static final Logger LOGGER = LoggerFactory.getLogger(CSExecutionStrategyService.class);
     protected ExecutionStrategyServiceCallback executionStrategyServiceCallback;
     protected PriceResult priceResult = null;
@@ -166,15 +168,26 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
      */
     @Override
     public void manageMarketReject(Operation operation, Attempt currentAttempt, SerialNumberService serialNumberService) throws BestXException {
-    	// TODO manage customer revoke
+    	// manage customer revoke
     	if(operation.isCustomerRevokeReceived()) {
-    		this.manageOrderRevoke(operation, currentAttempt, serialNumberService);
+    		this.acceptOrderRevoke(operation, currentAttempt, serialNumberService);
     	}
+    	List<MarketMaker> doNotIncludeMM = new ArrayList<MarketMaker>();
     	// move book to a new attempt
     	operation.addAttempt();
 		Order customerOrder = operation.getOrder();
     	Attempt newAttempt = operation.getLastAttempt();
     	newAttempt.setSortedBook(currentAttempt.getSortedBook());
+    	// remove dealers that were included in the preceding RFQ/Orders
+    	List<Attempt> currentAttempts = 
+    			operation.getAttempts().subList(operation.getFirstAttemptInCurrentCycle(), operation.getAttempts().size() - 1);
+
+    	currentAttempts.forEach(attempt->{ 
+    		currentAttempt.getExecutablePrices().forEach(execPx->{
+    			doNotIncludeMM.add(execPx.getMarketMaker());
+    		});
+    	});
+
     	MarketCode marketCode = this.getNextMarketToTry(operation, currentAttempt.getExecutionProposal().getMarket().getMarketCode());
     	if(marketCode == null) {
     		this.manageAutomaticUnexecution(customerOrder, customerOrder.getCustomer());
@@ -203,18 +216,31 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	        // maintain price
             marketOrder.setValues(currentAttempt.getMarketOrder());
             marketOrder.setTransactTime(DateService.newUTCDate());
+            // generate the list of dealers to be excluded because they have been contacted in one preceding attempt
+            List<MarketMarketMakerSpec> excludeDealers = new ArrayList<MarketMarketMakerSpec>();
             if (currentAttempt.getExecutionProposal() != null) {
                 marketOrder.setMarket(currentAttempt.getExecutionProposal().getMarket());
                 marketOrder.setMarketMarketMaker(executionProposal.getMarketMarketMaker());
+                List<MarketMarketMaker> doNotIncludeMMM = new ArrayList<MarketMarketMaker>();
+                doNotIncludeMM.forEach(marketMaker->{
+                	doNotIncludeMMM.addAll(marketMaker.getMarketMarketMakerForMarket(marketOrder.getMarket().getMarketCode()));
+                });
+                doNotIncludeMMM.forEach(mmm -> {
+                	excludeDealers.add(new MarketMarketMakerSpec(mmm.getMarketSpecificCode(), mmm.getMarketSpecificCodeSource()));
+                });
+                marketOrder.setExcludeDealers(excludeDealers);
             }
+            // create the list of dealers to be included in the order dealers list, which shall not contain any of the excluded dealers
+            List<MarketMarketMakerSpec> dealers = operation.getLastAttempt().getSortedBook().getValidProposalDealersByMarket(marketOrder.getMarket().getMarketCode(), marketOrder.getSide());
+    		dealers.removeAll(excludeDealers);
+            marketOrder.setDealers(dealers);
             newAttempt.setMarketOrder(marketOrder);
-    		// do not go to marketOrder, go directly to execution
     		this.startExecution(operation, currentAttempt, serialNumberService);
     	}
     }
 
     @Override
-    public void manageOrderRevoke(Operation operation, Attempt currentAttempt,
+    public void acceptOrderRevoke(Operation operation, Attempt currentAttempt,
 			SerialNumberService serialNumberService) {
 		operation.setStateResilient(new SendNotExecutionReportState("Revoke accepted"), ErrorState.class);	
 	}

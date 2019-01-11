@@ -33,15 +33,6 @@ import it.softsolutions.bestx.model.MarketOrder;
 
 public class MarketAxessOrder extends MarketOrder {
 
-	private List<MarketMarketMakerSpec> dealers = new ArrayList<MarketMarketMakerSpec>();
-	
-	public void setDealers (List<MarketMarketMakerSpec> dealers) {
-		this.dealers = dealers;
-	}
-	
-	public List<MarketMarketMakerSpec> getDealers () {
-		return this.dealers;
-	}
 	
 	/**
 	 * 

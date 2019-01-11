@@ -72,6 +72,7 @@ import it.softsolutions.marketlibraries.marketaxessfibuysidefix.messages.compone
 import it.softsolutions.tradestac2.api.TradeStacApplicationCallback;
 import it.softsolutions.tradestac2.api.TradeStacException;
 import it.softsolutions.tradestac2.client.TradeStacSessionCallback;
+import quickfix.BooleanField;
 import quickfix.ConfigError;
 import quickfix.FieldNotFound;
 import quickfix.Group;
@@ -353,8 +354,21 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 			if(maDealerCode != null) {
 				dealer.set(new DealerID(maDealerCode.marketMakerCode));
 				dealer.set(new DealerIDSource(maDealerCode.marketMakerCodeSource));
+// 				dealer.setField(new CharField(7762 /*Exclude */, false));  //omitted because it is the default
 				newOrderSingle.addGroup(dealer);
 			}
+		}
+
+		// add dealers that must be excluded
+		for(MarketMarketMakerSpec maDealerCode : maOrder.getExcludeDealers()) {
+			NewOrderSingle.NoDealers dealer = new NewOrderSingle.NoDealers();
+			if(maDealerCode != null) {
+				dealer.set(new DealerID(maDealerCode.marketMakerCode));
+				dealer.set(new DealerIDSource(maDealerCode.marketMakerCodeSource));
+				dealer.setField(new BooleanField(7762 /*Exclude */, true));
+				newOrderSingle.addGroup(dealer);
+			}
+			
 		}
 		try {
 			tradeStacClientSession.manageNewOrderSingle(newOrderSingle);

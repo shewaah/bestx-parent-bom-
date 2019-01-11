@@ -13,6 +13,9 @@
  */
 package it.softsolutions.bestx.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 
  * Purpose: this class is mainly for ...
@@ -29,7 +32,26 @@ public class MarketOrder extends Order {
     private boolean isInternal = false;
     private String marketSessionId;
 
-    public boolean isInternal() {
+	protected List<MarketMarketMakerSpec> dealers = new ArrayList<MarketMarketMakerSpec>();
+	protected List<MarketMarketMakerSpec> excludeDealers = new ArrayList<MarketMarketMakerSpec>();
+	
+	public void setDealers (List<MarketMarketMakerSpec> dealers) {
+		this.dealers = dealers;
+	}
+	
+	public List<MarketMarketMakerSpec> getDealers () {
+		return this.dealers;
+	}
+	
+	public void setExcludeDealers (List<MarketMarketMakerSpec> excludeMarketMakers) {
+		this.excludeDealers = excludeMarketMakers;
+	}
+	
+	public List<MarketMarketMakerSpec> getExcludeDealers () {
+		return this.excludeDealers;
+	}
+
+	public boolean isInternal() {
         return isInternal;
     }
 
