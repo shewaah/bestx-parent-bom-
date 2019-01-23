@@ -107,6 +107,7 @@ public class ExecutionReport implements Cloneable {
     private Integer priceType;
     
     private String execType;
+    private String execTransType;
     
     private String executionReportId;
     
@@ -588,4 +589,12 @@ public class ExecutionReport implements Cloneable {
    public void setOrderCapacity(Character orderCapacity) {
       this.orderCapacity = orderCapacity;
    }
+
+public String getExecTransType() {
+	return execTransType;
+}
+
+public void setExecTransType(String execTransType) {
+	this.execTransType = execTransType;
+}
 }

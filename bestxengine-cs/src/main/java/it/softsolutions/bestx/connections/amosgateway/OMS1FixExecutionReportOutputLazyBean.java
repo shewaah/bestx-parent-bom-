@@ -115,9 +115,10 @@ public class OMS1FixExecutionReportOutputLazyBean extends FixExecutionReportOutp
             // 2009-09-14 Ruggero Following the post pending of _CANCEL to the ExecId, we must send to TAS, for a cancel execution report of the whole order, in the LastShares tag (fix number 32) the total quantity.
             actualQty = orderQty;
         }
-        if (executionReport != null && executionReport.getExecType()!=null) {
-    		execTransType = executionReport.getExecType();
-    	}
+        if (executionReport != null && executionReport.getExecTransType()!=null) {
+     		execTransType = executionReport.getExecTransType();
+     	}
+
         cumQty = BigDecimal.ZERO;
         settlementType = null;
         strSettlementType = "6";
