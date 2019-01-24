@@ -383,7 +383,8 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
             ApplicationStatisticsHelper.logStringAndUpdateOrderIds(operation.getOrder(), "Order.Execution_" + source.getPriceServiceName() + "." + operation.getOrder().getInstrument().getIsin(), this
                             .getClass().getName());
 
-        	setNotAutoExecuteOrder(operation);
+        	if(operation.isNotAutoExecute())
+        		setNotAutoExecuteOrder(operation);
         	// executable limit file with autoexecution disabled
             if (order.isLimitFile() && doNotExecute) {  // limit file order action +++
                 LOGGER.info("Order {} could be executed, but BestX is configured to not execute limit file orders.", order.getFixOrderId());

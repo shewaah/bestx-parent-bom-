@@ -21,6 +21,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.services.price.PriceResult;
 import it.softsolutions.bestx.services.price.PriceService.PriceDiscoveryType;
   
@@ -45,7 +46,7 @@ public abstract class ExecutionStrategyServiceFactory implements ApplicationCont
     	this.applicationContext = applicationContext;
 	}
 
-    public abstract ExecutionStrategyService getExecutionStrategyService(PriceDiscoveryType priceDiscoveryType, ExecutionStrategyServiceCallback executionStrategyServiceCallback,
+    public abstract ExecutionStrategyService getExecutionStrategyService(PriceDiscoveryType priceDiscoveryType, Operation ooperation,
             PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest);
 	
 	protected static ExecutionStrategyServiceFactory instance;

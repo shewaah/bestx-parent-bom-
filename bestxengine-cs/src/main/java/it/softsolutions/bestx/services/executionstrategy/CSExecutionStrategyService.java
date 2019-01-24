@@ -24,13 +24,16 @@ import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationIdType;
+import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.handlers.BookHelper;
 import it.softsolutions.bestx.handlers.ExecutionReportHelper;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
+import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
+import it.softsolutions.bestx.model.MarketComparator;
 import it.softsolutions.bestx.model.MarketMaker;
 import it.softsolutions.bestx.model.MarketMarketMaker;
 import it.softsolutions.bestx.model.MarketMarketMakerSpec;
@@ -56,22 +59,52 @@ import it.softsolutions.bestx.states.tradeweb.TW_StartExecutionState;
  * Creation date: 23/ott/2013 
  * 
  **/
-public abstract class CSExecutionStrategyService implements ExecutionStrategyService {
+public abstract class CSExecutionStrategyService implements ExecutionStrategyService, CSExecutionStrategyServiceMBean {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CSExecutionStrategyService.class);
-    protected ExecutionStrategyServiceCallback executionStrategyServiceCallback;
+//    protected ExecutionStrategyServiceCallback executionStrategyServiceCallback;
     protected PriceResult priceResult = null;
     protected boolean rejectOrderWhenBloombergIsBest;
     
     protected List<MarketCode> allMarketsToTry;
 	protected Operation operation;
+	protected MarketFinder marketFinder;
+	protected ArrayList<Market> marketsToTry;
+
+	
+	public List<Market> getMarketsToTry() {
+		return marketsToTry;
+	}
+
+	public MarketFinder getMarketFinder()
+	{
+		return marketFinder;
+	}
+
+	public void setMarketFinder(MarketFinder marketFinder)
+	{
+		this.marketFinder = marketFinder;
+	}
+
 
 	public List<MarketCode> getAllMarketsToTry() {
 		return allMarketsToTry;
 	}
 
-	public void setAllMarketsToTry(List<MarketCode> allMarketsToTry) {
-		this.allMarketsToTry = allMarketsToTry;
+	public void setAllMarketsToTry(List<MarketCode> inputMarkets) {
+		List<MarketCode>localMarketsToTry = inputMarkets;
+		marketsToTry = new ArrayList<Market>(localMarketsToTry.size());
+		this.allMarketsToTry = new ArrayList<MarketCode>(localMarketsToTry.size());
+		localMarketsToTry.forEach(marketCode ->{
+		try {
+			marketsToTry.addAll(marketFinder.getMarketsByCode(marketCode));
+		} catch (BestXException e) {
+			LOGGER.warn("Exception while trying to get market code {} from Database", marketCode, e);
+		}});
+		marketsToTry.sort(new MarketComparator());
+		for(int i = 0; i < marketsToTry.size(); i++)
+			this.allMarketsToTry.add(i++, marketsToTry.get(i).getMarketCode()); 
 	}
+
 
 	@Override
     public abstract void manageAutomaticUnexecution(Order order, Customer customer) throws BestXException;
@@ -145,7 +178,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
             throw new IllegalArgumentException("executionStrategyServiceCallback is null");
         }
 
-        this.executionStrategyServiceCallback = executionStrategyServiceCallback;
+//        this.executionStrategyServiceCallback = executionStrategyServiceCallback;
         this.priceResult = priceResult;
         this.rejectOrderWhenBloombergIsBest = rejectOrderWhenBloombergIsBest;
     }
@@ -188,18 +221,18 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
     		});
     	});
 
-    	MarketCode marketCode = this.getNextMarketToTry(operation, currentAttempt.getExecutionProposal().getMarket().getMarketCode());
-    	if(marketCode == null) {
+    	Market market = this.getNextMarketToTry(operation, currentAttempt.getExecutionProposal().getMarket());
+    	if(market == null) {
     		this.manageAutomaticUnexecution(customerOrder, customerOrder.getCustomer());
     		return;
     	} else {
     		ClassifiedProposal executionProposal = null;
-    		while (executionProposal == null && marketCode != null)
+    		while (executionProposal == null && market != null)
     		{
-    			executionProposal = BookHelper.getBestPrice(currentAttempt.getSortedBook(), marketCode, customerOrder.getSide());
-    			marketCode = this.getNextMarketToTry(operation, marketCode);
+    			executionProposal = BookHelper.getBestPrice(currentAttempt.getSortedBook(), market.getMarketCode(), customerOrder.getSide());
+    			market = this.getNextMarketToTry(operation, market);
     		}
-    		if(marketCode == null) {  // all marketCodes have been used
+    		if(market == null) {  // all marketCodes have been used
     			this.manageAutomaticUnexecution(customerOrder, customerOrder.getCustomer());
     			return;
     		}
@@ -250,11 +283,11 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	 * @param operation needed to get the market code used in all the attempts in current attempt cycle
 	 * @return
 	 */
-	private MarketCode getNextMarketToTry(Operation operation, MarketCode marketCode) throws IllegalArgumentException{
-		if(marketCode == null) throw new IllegalArgumentException("null MarketCode not allowed in getNextMarketToTry()");
+	private Market getNextMarketToTry(Operation operation, Market market) throws IllegalArgumentException{
+		if(market == null) throw new IllegalArgumentException("null Market not allowed in getNextMarketToTry()");
 		// copy all markets to be tried in local parameter
-		List<MarketCode> currentMarkets = new ArrayList<MarketCode>();
-		currentMarkets.addAll(getAllMarketsToTry());
+		@SuppressWarnings("unchecked")
+		List<Market> currentMarkets = (List<Market>) marketsToTry.clone();
 		// remove from all markets all the tried ones in current execution cycle
 		List<Attempt> currentAttempts = 
 				operation.getAttempts().subList(operation.getFirstAttemptInCurrentCycle(), operation.getAttempts().size() - 1);
@@ -262,14 +295,19 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 //		currentAttempts.forEach(new AttemptConsumer(currentMarkets));
 		currentAttempts.forEach(attempt->{ 
 			if(attempt.getMarketOrder()!= null) 
-				currentMarkets.remove(attempt.getMarketOrder().getMarket().getMarketCode());
+				currentMarkets.remove(attempt.getMarketOrder().getMarket());
 			});
 		// return first not tried or null
-		if(currentMarkets.size() > 0 && currentMarkets.contains(marketCode)) {
-			int marketCodeIndex = currentMarkets.indexOf(marketCode);
+		if(currentMarkets.size() > 0 && currentMarkets.contains(market)) {
+			int marketCodeIndex = currentMarkets.indexOf(market);
 			return marketCodeIndex < currentMarkets.size() ? currentMarkets.get(marketCodeIndex) : null;
 		}
 		return null;
+	}
+
+	@Override
+	public void resetMarketsToTry() {
+		setAllMarketsToTry(this.allMarketsToTry);
 	}
 
 }
@@ -291,5 +329,5 @@ final class AttemptConsumer implements Consumer<Attempt> {
 		if(att.getMarketOrder()!= null)
 			currentMarkets.remove(att.getMarketOrder().getMarket().getMarketCode());
 	}
-		
+			
 }

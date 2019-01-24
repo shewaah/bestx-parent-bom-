@@ -15,6 +15,7 @@ package it.softsolutions.bestx.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -189,6 +190,5 @@ public class Market implements Serializable, Cloneable {
     @Override
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
-    }
-    
+    }  
 }

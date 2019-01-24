@@ -15,9 +15,11 @@
  
 package it.softsolutions.bestx.services.executionstrategy;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import it.softsolutions.bestx.Operation;
+import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.services.price.PriceResult;
 import it.softsolutions.bestx.services.price.PriceService.PriceDiscoveryType;
@@ -35,56 +37,43 @@ import it.softsolutions.bestx.services.price.PriceService.PriceDiscoveryType;
 public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceFactory {
 //    private static final Logger LOGGER = LoggerFactory.getLogger(CSExecutionStrategyServiceFactory.class);
 
+	private MarketFinder marketFinder;
+
+	public MarketFinder getMarketFinder()
+	{
+		return marketFinder;
+	}
+
+	public void setMarketFinder(MarketFinder marketFinder)
+	{
+		this.marketFinder = marketFinder;
+	}
+
     
     public CSExecutionStrategyServiceFactory() {
     	instance = this;
     }
-
-	/* (non-Javadoc)
-	 * @see it.softsolutions.bestx.services.executionstrategy.ExecutionServiceFactory#getExecutionService(it.softsolutions.bestx.Operation)
-	 */
-    @Deprecated
-	@Override
-    public ExecutionStrategyService getExecutionStrategyService(PriceDiscoveryType priceDiscoveryType, ExecutionStrategyServiceCallback executionStrategyServiceCallback,
-            PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest) {
-		switch (priceDiscoveryType) {
-		case LIMIT_FILE_PRICEDISCOVERY: {
-			CSLimitFileExecutionStrategyService execService = new CSLimitFileExecutionStrategyService(executionStrategyServiceCallback, priceResult, rejectOrderWhenBloombergIsBest);
-			execService.setAllMarketsToTry(this.getAllMarketsToTry());
-			return execService;
-		}
-		case NORMAL_PRICEDISCOVERY: {
-			CSNormalExecutionStrategyService execService = new CSNormalExecutionStrategyService(executionStrategyServiceCallback, priceResult, rejectOrderWhenBloombergIsBest);
-			execService.setAllMarketsToTry(this.getAllMarketsToTry());
-			return execService;
-		}
-		    // AMC 20160801 probably not needed
-		case ONLY_PRICEDISCOVERY: {
-			CSNormalExecutionStrategyService execService = new CSNormalExecutionStrategyService(executionStrategyServiceCallback, priceResult, rejectOrderWhenBloombergIsBest);
-			execService.setAllMarketsToTry(this.getAllMarketsToTry());
-			return execService;
-		}
-		default:
-		    return null;
-		}
-	}
     
+    @Override
     public ExecutionStrategyService getExecutionStrategyService(PriceDiscoveryType priceDiscoveryType, Operation operation,
             PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest) {
 		switch (priceDiscoveryType) {
 		case LIMIT_FILE_PRICEDISCOVERY: {
 			CSLimitFileExecutionStrategyService execService = new CSLimitFileExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest);
+			execService.setMarketFinder(marketFinder);
 			execService.setAllMarketsToTry(this.getAllMarketsToTry());
 			return execService;
 		}
 		case NORMAL_PRICEDISCOVERY: {
 			CSNormalExecutionStrategyService execService = new CSNormalExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest);
+			execService.setMarketFinder(marketFinder);
 			execService.setAllMarketsToTry(this.getAllMarketsToTry());
 			return execService;
 		}
 		    // AMC 20160801 probably not needed
 		case ONLY_PRICEDISCOVERY: {
 			CSNormalExecutionStrategyService execService = new CSNormalExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest);
+			execService.setMarketFinder(marketFinder);
 			execService.setAllMarketsToTry(this.getAllMarketsToTry());
 			return execService;
 		}
@@ -101,6 +90,9 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
 	public void setAllMarketsToTry(List<MarketCode> allMarketsToTry) {
 		this.allMarketsToTry = allMarketsToTry;
 	}
-
-
-}
+ public void aaa (){
+	 this.allMarketsToTry = new ArrayList<MarketCode>();
+   this.allMarketsToTry.add(MarketCode.TW);
+ this.allMarketsToTry.add(MarketCode.MARKETAXESS);
+ }
+ }

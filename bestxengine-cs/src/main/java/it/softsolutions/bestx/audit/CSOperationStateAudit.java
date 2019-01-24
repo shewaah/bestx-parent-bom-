@@ -440,7 +440,6 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
                 try {
                     ExecutionReport executionReport = operation.getExecutionReports().get(operation.getExecutionReports().size() - 1);
                     operationStateAuditDao.finalizeOrder(order, operation.getLastAttempt(), operation.getExecutionReports().get(executionReportNo), executionReport.getTransactTime());
-                    // TODO magari cambiare il tipo di LastPx in Money - Verificare il significato di questo campo
                     operationStateAuditDao.updateAttempt(order.getFixOrderId(), attempt, tsn, attemptNo, executionReport.getTicket(), executionReport);
                 } catch (Exception e) {
                     LOGGER.info("Unable to update order: {}", e.getMessage(), e);

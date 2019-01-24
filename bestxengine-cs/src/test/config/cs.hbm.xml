@@ -599,9 +599,6 @@
 			<generator class="native" />
 		</id>
 		<property name="byPassableForVenueAlreadyTried" column="ByPass"/>
-		<many-to-one name="internalAttempt"
-			class="it.softsolutions.bestx.model.InternalAttempt" column="InternalAttemptId"
-			cascade="all" />
 		<many-to-one name="executionProposal" column="ExecutionProposalId"
 			class="it.softsolutions.bestx.model.ClassifiedProposal" cascade="all"
 			lazy="false" not-null="false" />

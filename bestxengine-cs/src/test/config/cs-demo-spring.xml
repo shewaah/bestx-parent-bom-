@@ -75,8 +75,10 @@
                 <entry key="it.softsolutions.bestx.cs:name=ApplicationControl" value-ref="applicationController" />
                 <entry key="it.softsolutions.bestx.cs:name=AutomaticCurandoStatus" value-ref="autoCurandoStatusManager" />
                 <entry key="it.softsolutions.bestx.cs:name=Oms1FixCustomerConnection" value-ref="oms1CustomerAdapter" />
-                <entry key="it.softsolutions.bestx.cs:name=Oms2FixCustomerConnection" value-ref="oms2CustomerAdapter" />
-                   <entry key="it.softsolutions.bestx.cs:name=BloombergMarketConnection" value-ref="bloombergMarket" />
+<!--
+                 <entry key="it.softsolutions.bestx.cs:name=Oms2FixCustomerConnection" value-ref="oms2CustomerAdapter" />
+ -->
+                <entry key="it.softsolutions.bestx.cs:name=BloombergMarketConnection" value-ref="bloombergMarket" />
 				<entry key="it.softsolutions.bestx.cs:name=TradewebMarketConnection" value-ref="tradewebMarket" />
         <entry key="it.softsolutions.bestx.cs:name=MarketAxessMarketConnection" value-ref="marketAxessMarket" />
 				<entry key="it.softsolutions.bestx.cs:name=MarketAxessConnectionImpl" value-ref="autoExecutionTradeConnector" />
@@ -963,6 +965,7 @@
 
 <!-- Execution strategy -->
     <bean id="executionStrategyServiceFactory" class="it.softsolutions.bestx.services.executionstrategy.CSExecutionStrategyServiceFactory">
+        <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
     	<property name="allMarketsToTry">
     		<list>
 				<value>TW</value>

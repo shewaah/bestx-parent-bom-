@@ -112,7 +112,7 @@ public class CSNormalExecutionStrategyService extends CSExecutionStrategyService
      * When a case exists which tells the order to be migrated on a specific state, calls onUnexecutionResult of the executionStrategyServiceCallback
      * When there is no such case calls onSuccess of the executionStrategyServiceCallback
      */
-    @Override
+    @Deprecated
     public void manageAutomaticUnexecution(Order order, Customer customer) throws BestXException {
         if (order == null) {
             throw new IllegalArgumentException("order is null");
@@ -124,7 +124,7 @@ public class CSNormalExecutionStrategyService extends CSExecutionStrategyService
 
         if (customer.isAutoUnexecEnabled()) {
             LOGGER.info("Order {}, the customer requested the automatic not execution.");
-            executionStrategyServiceCallback.onUnexecutionResult(ExecutionStrategyService.Result.CustomerAutoNotExecution, Messages.getString("WaitingPrices.0"));
+//            executionStrategyServiceCallback.onUnexecutionResult(ExecutionStrategyService.Result.CustomerAutoNotExecution, Messages.getString("WaitingPrices.0"));
             return;
         }
 
@@ -132,15 +132,15 @@ public class CSNormalExecutionStrategyService extends CSExecutionStrategyService
 
         if (customerAttr == null) {
             LOGGER.error("Error while loading customer attributes, none found!");
-            executionStrategyServiceCallback.onUnexecutionResult(ExecutionStrategyService.Result.Failure, Messages.getString("WaitingPrices.1", customer.getName()));
+//            executionStrategyServiceCallback.onUnexecutionResult(ExecutionStrategyService.Result.Failure, Messages.getString("WaitingPrices.1", customer.getName()));
             return;
         }
         
         if (priceResult != null) {
             if (PriceController.INSTANCE.isMaxDeviationEnabled(customer) && PriceController.INSTANCE.isDeviationFromLimitOverTheMax(priceResult.getSortedBook(), order)) {
                 LOGGER.info("Order {}, maximum deviation limit not respected, going into automatic not execution.", order.getFixOrderId());
-                executionStrategyServiceCallback.onUnexecutionResult(ExecutionStrategyService.Result.MaxDeviationLimitViolated,
-                                Messages.getString("LimitPriceTooFarFromBest.0", customer.getName(), customerAttr.getLimitPriceOffMarket()));
+//                executionStrategyServiceCallback.onUnexecutionResult(ExecutionStrategyService.Result.MaxDeviationLimitViolated,
+//                                Messages.getString("LimitPriceTooFarFromBest.0", customer.getName(), customerAttr.getLimitPriceOffMarket()));
                 return;
             }
         } else {
@@ -149,6 +149,6 @@ public class CSNormalExecutionStrategyService extends CSExecutionStrategyService
 
         LOGGER.info("Order {}, normal order flow.", order.getFixOrderId());
         // Success, null parameter because there is no need to choose a market to execute on
-        executionStrategyServiceCallback.onUnexecutionResult(ExecutionStrategyService.Result.CustomerAutoNotExecution, Messages.getString("WaitingPrices.0"));
+//        executionStrategyServiceCallback.onUnexecutionResult(ExecutionStrategyService.Result.CustomerAutoNotExecution, Messages.getString("WaitingPrices.0"));
     }
 }
