@@ -60,6 +60,8 @@ public class OnExecutionReportRunnable implements Runnable {
     private BigDecimal accruedInterestAmount;
     private BigDecimal accruedInterestRate;
     private Integer numDaysInterest;
+    //BESTX-385: SP-20190116 manage factor (228) field
+    private BigDecimal factor;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OnExecutionReportRunnable.class);
 
@@ -97,7 +99,7 @@ public class OnExecutionReportRunnable implements Runnable {
      */
     public OnExecutionReportRunnable(Operation operation, TradewebMarket market, Market counterMarket, String clOrdID, ExecType execType, OrdStatus ordStatus, BigDecimal accruedInterestAmount, 
                    BigDecimal accruedInterestRate, BigDecimal lastPrice, String contractNo, Date futSettDate,
-                   Date transactTime, String text, MarketMarketMaker executionBroker, String micCode, Integer numDaysInterest) {
+                   Date transactTime, String text, MarketMarketMaker executionBroker, String micCode, Integer numDaysInterest, BigDecimal factor) {
         this.operation = operation;
         this.counterMarket = counterMarket;
         this.lastPrice = lastPrice;
@@ -114,6 +116,7 @@ public class OnExecutionReportRunnable implements Runnable {
         this.accruedInterestAmount = accruedInterestAmount;
         this.accruedInterestRate = accruedInterestRate;
         this.numDaysInterest = numDaysInterest;
+        this.factor = factor;
     }
 
     @Override
@@ -196,6 +199,9 @@ public class OnExecutionReportRunnable implements Runnable {
         //BESTX-348: SP-20180905 added numDaysInterest field
         if (numDaysInterest != null) {
            marketExecutionReport.setAccruedInterestDays(numDaysInterest);
+        }
+        if (factor != null) {
+           marketExecutionReport.setFactor(factor);
         }
         
         operation.onMarketExecutionReport(market, order, marketExecutionReport);

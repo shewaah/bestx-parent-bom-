@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.connections.tradestac.AbstractTradeStacConnection;
 import it.softsolutions.bestx.model.Instrument;
+import it.softsolutions.bestx.model.MarketMarketMakerSpec;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.tradestac.api.TradeStacException;
@@ -46,13 +47,14 @@ import it.softsolutions.tradestac.fix50.TSOrderCancelRequest;
 import it.softsolutions.tradestac.fix50.component.TSInstrument;
 import it.softsolutions.tradestac.fix50.component.TSOrderQtyData;
 import it.softsolutions.tradestac.fix50.component.TSParties;
+import it.softsolutions.tradestac.tw.fix.component.BlockedDealersGrpComponent;
+import it.softsolutions.tradestac.tw.fix.component.BlockedDealersGrpComponent.NoBlockedDealers;
 import quickfix.ConfigError;
 import quickfix.Field;
-import quickfix.Group;
 import quickfix.MessageComponent;
 import quickfix.SessionID;
-import quickfix.StringField;
 import quickfix.field.ExecType;
+import tw.quickfix.field.BlockedDealer;
 import tw.quickfix.field.ClientTradingCapacity;
 import tw.quickfix.field.ShortSellingIndicator;
 import tw.quickfix.field.TradingMode;
@@ -276,15 +278,31 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
         
         tsNewOrderSingle.setTSParties(tsParties);
         
-        int noBlockedDealer = 0;
-        int fields[] = {10001};
-        // add here the blocked dealers group (BlockedDealerNo=10000, BlockedDealer=10001
-//        MessageComponent tsBlockedDealersComp = new MessageComponent(fields);
-//        Group tsBlockedDealers = new Group(10000, 10001);
-//        marketOrder.getExcludeDealers().forEach(marketMakerSpec -> {
-//        	StringField dealerField = new StringField(10001, marketMakerSpec.getMarketMakerMarketSpecificCode());
-//        });
-//        tsNewOrderSingle.addCustomComponent(tsBlockedDealers);
+        
+        /** Get Custom Components */
+        List<MessageComponent> customComponents = new ArrayList<MessageComponent>();
+
+        //BESTX-375: SP-20190122 add blocked dealers custom group to new order single message
+        BlockedDealersGrpComponent blockedDealersGrpCmp = new BlockedDealersGrpComponent();
+        tw.quickfix.field.NoBlockedDealers noBlockedDealers = new tw.quickfix.field.NoBlockedDealers();
+        
+        if (marketOrder.getExcludeDealers().size() > 0) {
+           noBlockedDealers.setValue(marketOrder.getExcludeDealers().size());
+           blockedDealersGrpCmp.set(noBlockedDealers);
+           
+           for (MarketMarketMakerSpec blockedDealer : marketOrder.getExcludeDealers()) {
+              NoBlockedDealers blockedDealersGrp = new NoBlockedDealers();
+              
+              BlockedDealer blckDealer = new BlockedDealer();
+              blockedDealersGrp.set(blckDealer);
+              blockedDealersGrpCmp.addGroup(blockedDealersGrp);
+           }
+           customComponents.add(blockedDealersGrpCmp);
+        }
+        
+        if(!customComponents.isEmpty()){
+           tsNewOrderSingle.setCustomComponents(customComponents);
+        }
 
         LOGGER.info("{}", tsNewOrderSingle);
 

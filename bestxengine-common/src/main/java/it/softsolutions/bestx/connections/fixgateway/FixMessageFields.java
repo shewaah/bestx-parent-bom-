@@ -122,6 +122,8 @@ public class FixMessageFields {
     public static final String FIX_TicketOwner = "TicketOwner";
     //BESTX-348: SP-20180905 added numDaysInterest field
     public static final String FIX_NumDaysInterest = "NumDaysInterest";
+    //BESTX-385: SP-20190116 - Tag factor 228    
+    public static final String FIX_Factor = "Factor";
     
     
     // REVOKE

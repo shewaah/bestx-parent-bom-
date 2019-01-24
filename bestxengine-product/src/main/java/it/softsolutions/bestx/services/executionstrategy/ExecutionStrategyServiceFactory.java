@@ -48,7 +48,10 @@ public abstract class ExecutionStrategyServiceFactory implements ApplicationCont
 
     public abstract ExecutionStrategyService getExecutionStrategyService(PriceDiscoveryType priceDiscoveryType, Operation ooperation,
             PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest);
-	
+
+    public abstract ExecutionStrategyService getExecutionStrategyService(PriceDiscoveryType priceDiscoveryType, Operation operation ,
+          PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest);
+
 	protected static ExecutionStrategyServiceFactory instance;
 	
 	public static ExecutionStrategyServiceFactory getInstance(){

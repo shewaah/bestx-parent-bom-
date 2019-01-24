@@ -53,9 +53,38 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
     public CSExecutionStrategyServiceFactory() {
     	instance = this;
     }
+
+	/* (non-Javadoc)
+	 * @see it.softsolutions.bestx.services.executionstrategy.ExecutionServiceFactory#getExecutionService(it.softsolutions.bestx.Operation)
+	 */
+   @Deprecated
+	@Override
+    public ExecutionStrategyService getExecutionStrategyService(PriceDiscoveryType priceDiscoveryType, ExecutionStrategyServiceCallback executionStrategyServiceCallback,
+            PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest) {
+		switch (priceDiscoveryType) {
+		case LIMIT_FILE_PRICEDISCOVERY: {
+			CSLimitFileExecutionStrategyService execService = new CSLimitFileExecutionStrategyService(executionStrategyServiceCallback, priceResult, rejectOrderWhenBloombergIsBest);
+			execService.setAllMarketsToTry(this.getAllMarketsToTry());
+			return execService;
+		}
+		case NORMAL_PRICEDISCOVERY: {
+			CSNormalExecutionStrategyService execService = new CSNormalExecutionStrategyService(executionStrategyServiceCallback, priceResult, rejectOrderWhenBloombergIsBest);
+			execService.setAllMarketsToTry(this.getAllMarketsToTry());
+			return execService;
+		}
+		    // AMC 20160801 probably not needed
+		case ONLY_PRICEDISCOVERY: {
+			CSNormalExecutionStrategyService execService = new CSNormalExecutionStrategyService(executionStrategyServiceCallback, priceResult, rejectOrderWhenBloombergIsBest);
+			execService.setAllMarketsToTry(this.getAllMarketsToTry());
+			return execService;
+		}
+		default:
+		    return null;
+		}
+	}
     
-    @Override
-    public ExecutionStrategyService getExecutionStrategyService(PriceDiscoveryType priceDiscoveryType, Operation operation,
+//   @Override
+   public ExecutionStrategyService getExecutionStrategyService(PriceDiscoveryType priceDiscoveryType, Operation operation,
             PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest) {
 		switch (priceDiscoveryType) {
 		case LIMIT_FILE_PRICEDISCOVERY: {
@@ -90,9 +119,6 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
 	public void setAllMarketsToTry(List<MarketCode> allMarketsToTry) {
 		this.allMarketsToTry = allMarketsToTry;
 	}
- public void aaa (){
-	 this.allMarketsToTry = new ArrayList<MarketCode>();
-   this.allMarketsToTry.add(MarketCode.TW);
- this.allMarketsToTry.add(MarketCode.MARKETAXESS);
- }
- }
+
+
+}

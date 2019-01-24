@@ -84,6 +84,10 @@ public class FixExecutionReportOutputLazyBean extends FixOutputLazyBean {
     protected String internalizationIndicator = null;
     private Integer bestExecutionVenueFlag;
     private Integer priceType;
+    
+    // BESTX-385: SP send the Factor (228) field
+    private BigDecimal factor;
+    
 
     protected XT2Msg msg;
     protected Integer btdsCommissionIndicator;
@@ -182,6 +186,7 @@ public class FixExecutionReportOutputLazyBean extends FixOutputLazyBean {
         commission = BigDecimal.ZERO;
         commissionType = CommissionType.AMOUNT.getValue();
         ticketOwner = order.getTicketOwner();
+        factor = executionReport.getFactor();
         
         /*
          * Save the transactTime date in order to write it later in the audit DB for the Akros' BackOffice If it is a "resend" of the exec.
@@ -241,6 +246,7 @@ public class FixExecutionReportOutputLazyBean extends FixOutputLazyBean {
         lastPx = executionReport.getPrice().getAmount();
         price = lastPx;
         avgPx = lastPx;
+        factor = executionReport.getFactor();
 
         commission = (executionReport.getCommission() != null) ? executionReport.getCommission() : BigDecimal.ZERO;
         commissionType = (executionReport.getCommissionType() != null) ? executionReport.getCommissionType().getValue() : CommissionType.AMOUNT.getValue();
@@ -346,6 +352,7 @@ public class FixExecutionReportOutputLazyBean extends FixOutputLazyBean {
         execType = state.getValue(); // execType = state == ExecutionReport.ExecutionReportState.FILLED ? "2" : "8";
         currency = order.getCurrency();
         ticketOwner = order.getTicketOwner();
+        factor = executionReport.getFactor();
         
         buildMessage();
     }
@@ -492,6 +499,10 @@ public class FixExecutionReportOutputLazyBean extends FixOutputLazyBean {
         if (accruedDays != null) {
            msg.setValue(FixMessageFields.FIX_NumDaysInterest, accruedDays);
         }
+        // BESTX-385: SP-20190116
+        if (factor != null) {
+           msg.setValue(FixMessageFields.FIX_Factor, factor.doubleValue());
+       }
     }
 
     @Override

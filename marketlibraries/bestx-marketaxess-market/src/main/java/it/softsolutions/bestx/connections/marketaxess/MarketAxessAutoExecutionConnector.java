@@ -261,7 +261,7 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 
 	@Override
 	public void sendOrder(MarketOrder marketOrder) throws BestXException {
-		MarketAxessOrder maOrder = (MarketAxessOrder) marketOrder;
+		MarketAxessOrder maOrder = new MarketAxessOrder(marketOrder);
 		String clOrdID = marketOrder.getMarketSessionId();
 		Instrument instrument = marketOrder.getInstrument();
 		String securityID = instrument.getIsin();

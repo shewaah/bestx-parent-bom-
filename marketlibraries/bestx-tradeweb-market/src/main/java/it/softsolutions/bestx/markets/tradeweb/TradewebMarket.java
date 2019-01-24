@@ -824,6 +824,8 @@ public class TradewebMarket extends MarketCommon
       //BESTX-348: SP-20180905 added numDaysInterest field
       Integer numDaysInterest = tsExecutionReport.getNumDaysInterest();
 
+      //BESTX-385: SP-20190116 manage factor (228) field
+      BigDecimal factor = tsExecutionReport.getFactor() != null ? BigDecimal.valueOf(tsExecutionReport.getFactor()) : BigDecimal.ZERO;
       
       
       LOGGER.debug(
@@ -986,7 +988,7 @@ public class TradewebMarket extends MarketCommon
          }
          
          executor.execute(new OnExecutionReportRunnable(operation, this, market, cleanClOrdId, execType, ordStatus, accruedInterestAmount, accruedInterestRate, lastPrice, contractNo, futSettDate,
-               transactTime, cleanText, mmm, micCode, numDaysInterest));
+               transactTime, cleanText, mmm, micCode, numDaysInterest, factor));
 
       }
       catch (OperationNotExistingException e) {

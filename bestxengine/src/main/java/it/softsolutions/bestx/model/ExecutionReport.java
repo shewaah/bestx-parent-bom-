@@ -113,6 +113,10 @@ public class ExecutionReport implements Cloneable {
     private Character lastCapacity;
     private Character orderCapacity;
     
+    // BESTX-385: SP manage the Factor (228) field
+    private BigDecimal factor;
+
+    
 
     public BigDecimal getRemainingQty() {
         return remainingQty;
@@ -444,6 +448,8 @@ public class ExecutionReport implements Cloneable {
         builder.append(text);
         builder.append(", lastPx=");
         builder.append(lastPx != null ? lastPx.toPlainString() : null);
+        builder.append(", factor=");
+        builder.append(factor != null ? factor.toPlainString() : null);
         builder.append(", averagePrice=");
         builder.append(averagePrice != null ? averagePrice.toPlainString() : null);
         builder.append(", commission=");
@@ -582,4 +588,12 @@ public String getExecTransType() {
 public void setExecTransType(String execTransType) {
 	this.execTransType = execTransType;
 }
+   public BigDecimal getFactor() {
+      return factor;
+   }
+   
+   public void setFactor(BigDecimal factor) {
+      this.factor = factor;
+   }
+
 }

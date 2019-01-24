@@ -3,17 +3,17 @@
  */
 package it.softsolutions.bestx.services.ordervalidation;
 
-import it.softsolutions.bestx.Messages;
-import it.softsolutions.bestx.Operation;
-import it.softsolutions.bestx.dao.ExchangeRateDao;
-import it.softsolutions.bestx.model.ExchangeRate;
-import it.softsolutions.bestx.model.Order;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.softsolutions.bestx.Messages;
+import it.softsolutions.bestx.Operation;
+import it.softsolutions.bestx.dao.ExchangeRateDao;
+import it.softsolutions.bestx.model.ExchangeRate;
+import it.softsolutions.bestx.model.Order;
 
 /**
  * @author Stefano
@@ -36,9 +36,10 @@ public class MaxSizeFilter implements OrderValidator {
 		this.mainCurrency = mainCurrency;
 	}
 
-	public MaxSizeFilter (ExchangeRateDao exchangeRateDao, BigDecimal internalAuthThreshold) {
+	public MaxSizeFilter (ExchangeRateDao exchangeRateDao, BigDecimal internalAuthThreshold, String mainCurrency) {
 		this.exchangeRateDao = exchangeRateDao;
 		this.internalAuthThreshold = internalAuthThreshold;
+		this.mainCurrency = mainCurrency;
 	}
 	
 	// @Override

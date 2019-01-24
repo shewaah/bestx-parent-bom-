@@ -40,11 +40,11 @@ public class StopAutoExecOnQuantity implements OrderValidator {
 		} catch (BestXException e) {
 			result.setReason(Messages.getString("StopAutoExecOnQuantity.0", order.getCurrency()));
 			return result;
-			}
+		}
+      result.setValid(true);
 		if(normalizedOrderSize.compareTo(noAutoExecSize) > 0) { //size is too high, return valid
-			result.setValid(true);
 			result.setReason(CURANDO_VAL);
-            operation.setNotAutoExecute(true); // AMC this is needed to avoid the order being automatically executed
+         operation.setNotAutoExecute(true); // AMC this is needed to avoid the order being automatically executed
 		}
 
 		return result;

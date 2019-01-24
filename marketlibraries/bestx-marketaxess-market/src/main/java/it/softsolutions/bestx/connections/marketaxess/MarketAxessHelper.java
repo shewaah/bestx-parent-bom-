@@ -63,6 +63,7 @@ import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.DealerQuo
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.ExecID;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.ExecRefID;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.ExecType;
+import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.Factor;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.LastCapacity;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.LastMkt;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.LastParPx;
@@ -478,6 +479,14 @@ public class MarketAxessHelper extends MarketPriceDiscoveryHelper {
 			} catch (FieldNotFound e) {
 				throw new BestXException("Currency not defined", e);
 			}
+         // BESTX-385: SP mange the Factor (228) field
+         // get Factor
+         try {
+            executionReport
+                  .setFactor(new BigDecimal(Double.toString(tsExecutionReport.getDouble(Factor.FIELD))));
+         } catch (@SuppressWarnings("unused") FieldNotFound e) {
+         }
+			
 			// get Qty
 			try {
 				executionReport

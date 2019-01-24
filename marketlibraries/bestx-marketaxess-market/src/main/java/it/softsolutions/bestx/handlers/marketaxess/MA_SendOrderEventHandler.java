@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
-import it.softsolutions.bestx.Operation.RevocationState;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.connections.CustomerConnection;
 import it.softsolutions.bestx.connections.MarketBuySideConnection;
