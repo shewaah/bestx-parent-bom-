@@ -967,6 +967,7 @@
 				<value>MARKETAXESS</value>
     		</list>
     	</property>
+        <property name="marketFinder"><ref bean="dbBasedMarketFinder"></ref></property>
     </bean>
 
 

@@ -46,9 +46,6 @@ public abstract class ExecutionStrategyServiceFactory implements ApplicationCont
     	this.applicationContext = applicationContext;
 	}
 
-    public abstract ExecutionStrategyService getExecutionStrategyService(PriceDiscoveryType priceDiscoveryType, Operation ooperation,
-            PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest);
-
     public abstract ExecutionStrategyService getExecutionStrategyService(PriceDiscoveryType priceDiscoveryType, Operation operation ,
           PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest);
 

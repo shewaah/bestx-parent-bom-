@@ -188,7 +188,6 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
             throw new IllegalArgumentException("operation is null");
         }
 
-        this.executionStrategyServiceCallback = operation;
         this.operation = operation;
         this.priceResult = priceResult;
         this.rejectOrderWhenBloombergIsBest = rejectOrderWhenBloombergIsBest;

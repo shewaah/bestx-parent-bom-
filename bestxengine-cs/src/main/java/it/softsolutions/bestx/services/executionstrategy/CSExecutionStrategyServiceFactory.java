@@ -15,7 +15,6 @@
  
 package it.softsolutions.bestx.services.executionstrategy;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import it.softsolutions.bestx.Operation;
@@ -54,62 +53,33 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
     	instance = this;
     }
 
-	/* (non-Javadoc)
-	 * @see it.softsolutions.bestx.services.executionstrategy.ExecutionServiceFactory#getExecutionService(it.softsolutions.bestx.Operation)
-	 */
-   @Deprecated
-	@Override
-    public ExecutionStrategyService getExecutionStrategyService(PriceDiscoveryType priceDiscoveryType, ExecutionStrategyServiceCallback executionStrategyServiceCallback,
+    @Override
+    public ExecutionStrategyService getExecutionStrategyService(PriceDiscoveryType priceDiscoveryType, Operation operation,
             PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest) {
-		switch (priceDiscoveryType) {
-		case LIMIT_FILE_PRICEDISCOVERY: {
-			CSLimitFileExecutionStrategyService execService = new CSLimitFileExecutionStrategyService(executionStrategyServiceCallback, priceResult, rejectOrderWhenBloombergIsBest);
-			execService.setAllMarketsToTry(this.getAllMarketsToTry());
-			return execService;
-		}
-		case NORMAL_PRICEDISCOVERY: {
-			CSNormalExecutionStrategyService execService = new CSNormalExecutionStrategyService(executionStrategyServiceCallback, priceResult, rejectOrderWhenBloombergIsBest);
-			execService.setAllMarketsToTry(this.getAllMarketsToTry());
-			return execService;
-		}
-		    // AMC 20160801 probably not needed
-		case ONLY_PRICEDISCOVERY: {
-			CSNormalExecutionStrategyService execService = new CSNormalExecutionStrategyService(executionStrategyServiceCallback, priceResult, rejectOrderWhenBloombergIsBest);
-			execService.setAllMarketsToTry(this.getAllMarketsToTry());
-			return execService;
-		}
-		default:
-		    return null;
-		}
-	}
-    
-//   @Override
-   public ExecutionStrategyService getExecutionStrategyService(PriceDiscoveryType priceDiscoveryType, Operation operation,
-            PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest) {
-		switch (priceDiscoveryType) {
-		case LIMIT_FILE_PRICEDISCOVERY: {
-			CSLimitFileExecutionStrategyService execService = new CSLimitFileExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest);
-			execService.setMarketFinder(marketFinder);
-			execService.setAllMarketsToTry(this.getAllMarketsToTry());
-			return execService;
-		}
-		case NORMAL_PRICEDISCOVERY: {
-			CSNormalExecutionStrategyService execService = new CSNormalExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest);
-			execService.setMarketFinder(marketFinder);
-			execService.setAllMarketsToTry(this.getAllMarketsToTry());
-			return execService;
-		}
-		    // AMC 20160801 probably not needed
-		case ONLY_PRICEDISCOVERY: {
-			CSNormalExecutionStrategyService execService = new CSNormalExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest);
-			execService.setMarketFinder(marketFinder);
-			execService.setAllMarketsToTry(this.getAllMarketsToTry());
-			return execService;
-		}
-		default:
-		    return null;
-		}
-	}
+      switch (priceDiscoveryType) {
+      case LIMIT_FILE_PRICEDISCOVERY: {
+         CSLimitFileExecutionStrategyService execService = new CSLimitFileExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest);
+         execService.setMarketFinder(marketFinder);
+         execService.setAllMarketsToTry(this.getAllMarketsToTry());
+         return execService;
+      }
+      case NORMAL_PRICEDISCOVERY: {
+         CSNormalExecutionStrategyService execService = new CSNormalExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest);
+         execService.setMarketFinder(marketFinder);
+         execService.setAllMarketsToTry(this.getAllMarketsToTry());
+         return execService;
+      }
+          // AMC 20160801 probably not needed
+      case ONLY_PRICEDISCOVERY: {
+         CSNormalExecutionStrategyService execService = new CSNormalExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest);
+         execService.setMarketFinder(marketFinder);
+         execService.setAllMarketsToTry(this.getAllMarketsToTry());
+         return execService;
+      }
+      default:
+          return null;
+      }
+   }
     protected List<MarketCode> allMarketsToTry;
 
 	public List<MarketCode> getAllMarketsToTry() {

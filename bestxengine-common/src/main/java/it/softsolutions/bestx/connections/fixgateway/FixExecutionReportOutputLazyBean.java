@@ -186,7 +186,9 @@ public class FixExecutionReportOutputLazyBean extends FixOutputLazyBean {
         commission = BigDecimal.ZERO;
         commissionType = CommissionType.AMOUNT.getValue();
         ticketOwner = order.getTicketOwner();
-        factor = executionReport.getFactor();
+        if (executionReport.getFactor() != null && executionReport.getFactor().compareTo(BigDecimal.ZERO) != 0) {
+           factor = executionReport.getFactor();
+        }
         
         /*
          * Save the transactTime date in order to write it later in the audit DB for the Akros' BackOffice If it is a "resend" of the exec.
@@ -246,7 +248,9 @@ public class FixExecutionReportOutputLazyBean extends FixOutputLazyBean {
         lastPx = executionReport.getPrice().getAmount();
         price = lastPx;
         avgPx = lastPx;
-        factor = executionReport.getFactor();
+        if (executionReport.getFactor() != null && executionReport.getFactor().compareTo(BigDecimal.ZERO) != 0) {
+           factor = executionReport.getFactor();
+        }
 
         commission = (executionReport.getCommission() != null) ? executionReport.getCommission() : BigDecimal.ZERO;
         commissionType = (executionReport.getCommissionType() != null) ? executionReport.getCommissionType().getValue() : CommissionType.AMOUNT.getValue();
@@ -352,7 +356,9 @@ public class FixExecutionReportOutputLazyBean extends FixOutputLazyBean {
         execType = state.getValue(); // execType = state == ExecutionReport.ExecutionReportState.FILLED ? "2" : "8";
         currency = order.getCurrency();
         ticketOwner = order.getTicketOwner();
-        factor = executionReport.getFactor();
+        if (executionReport.getFactor() != null && executionReport.getFactor().compareTo(BigDecimal.ZERO) != 0) {
+           factor = executionReport.getFactor();
+        }
         
         buildMessage();
     }
