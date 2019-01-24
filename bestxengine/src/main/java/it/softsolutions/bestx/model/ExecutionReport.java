@@ -72,7 +72,6 @@ public class ExecutionReport implements Cloneable {
 
     private Long id;
     private Long attemptId;
-    private Long internalAttemptId;
     private Instrument instrument;
     private Rfq.OrderSide side;
     private Market market;
@@ -516,20 +515,6 @@ public class ExecutionReport implements Cloneable {
      */
     public void setAttemptId(Long attemptId) {
         this.attemptId = attemptId;
-    }
-
-    /**
-     * @return the internalAttemptId
-     */
-    public Long getInternalAttemptId() {
-        return internalAttemptId;
-    }
-
-    /**
-     * @param internalAttemptId the internalAttemptId to set
-     */
-    public void setInternalAttemptId(Long internalAttemptId) {
-        this.internalAttemptId = internalAttemptId;
     }
 
 	public String getExecType() {
