@@ -123,7 +123,7 @@ public class SendExecutionReportEventHandler extends BaseOperationEventHandler {
 
         if (comm == null) {
             comm = new Commission(BigDecimal.ZERO, Commission.CommissionType.AMOUNT);
-            LOGGER.error("No commission has been set for customer {} for the ordered amount: {}", customer.getFixId(), quantity.getAmount());
+            LOGGER.info("No commission has been set for customer {} for the ordered amount: {}", customer.getFixId(), quantity.getAmount());
         }
 
         // controls for a safe logging

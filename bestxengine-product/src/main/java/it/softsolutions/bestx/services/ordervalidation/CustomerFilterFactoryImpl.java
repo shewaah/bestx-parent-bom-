@@ -42,7 +42,16 @@ public class CustomerFilterFactoryImpl implements CustomerFilterFactory {
     private BigDecimal internalAuthThreshold;
     private List<String> portfolioList;
     private String portfolioListStr;
-    private String mainCurrency;
+	private String mainCurrency;
+	
+    public String getMainCurrency() {
+		return mainCurrency;
+	}
+
+
+	public void setMainCurrency(String mainCurrency) {
+		this.mainCurrency = mainCurrency;
+	}
 
 
     /**
@@ -228,20 +237,4 @@ public class CustomerFilterFactoryImpl implements CustomerFilterFactory {
     {
         this.regulatedMarketIsinsLoader = regulatedMarketIsinsLoader;
     }
-
-   
-   /**
-    * @return the mainCurrency
-    */
-   public String getMainCurrency() {
-      return mainCurrency;
-   }
-
-   
-   /**
-    * @param mainCurrency the mainCurrency to set
-    */
-   public void setMainCurrency(String mainCurrency) {
-      this.mainCurrency = mainCurrency;
-   }
 }

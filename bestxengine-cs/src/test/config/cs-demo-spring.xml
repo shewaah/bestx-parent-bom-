@@ -80,7 +80,7 @@
  -->
                 <entry key="it.softsolutions.bestx.cs:name=BloombergMarketConnection" value-ref="bloombergMarket" />
 				<entry key="it.softsolutions.bestx.cs:name=TradewebMarketConnection" value-ref="tradewebMarket" />
-        <entry key="it.softsolutions.bestx.cs:name=MarketAxessMarketConnection" value-ref="marketAxessMarket" />
+        		<entry key="it.softsolutions.bestx.cs:name=MarketAxessMarketConnection" value-ref="marketAxessMarket" />
 				<entry key="it.softsolutions.bestx.cs:name=MarketAxessConnectionImpl" value-ref="autoExecutionTradeConnector" />
                 <entry key="it.softsolutions.bestx.cs:name=NormalPriceService" value-ref="normalPriceService" />
                 <entry key="it.softsolutions.bestx.cs:name=LimitFilePriceService" value-ref="limitFilePriceService" />
@@ -93,6 +93,7 @@
                 <entry key="it.softsolutions.bestx.cs:name=InstrumentFinder" value-ref="dbBasedInstrumentFinder" />
 				<entry key="it.softsolutions.bestx.cs:name=OrdersEndOfDayService" value-ref="ordersEndOfDayService" />
 				<entry key="it.softsolutions.bestx.cs:name=BusinessValuesMonitor" value-ref="businessValuesMonitor" />
+				<entry key="it.softsolutions.bestx.cs:name=ExecutionStrategyService" value-ref="executionStrategyServiceFactory" />
 				<!-- entry key="bean:name=hibernateStatsMBean"><ref local="hibernateStats"></ref></entry -->
 				<entry key="it.softsolutions.bestx.cs:name=CSStrategy" value-ref="csStrategy" />
 			</map>
@@ -410,6 +411,7 @@
         <property name="internalAuthThreshold"><value>${Internal_authorization.size}</value></property>
         <property name="portfolioListStr"><value>${InternalCustomers.PortfolioList}</value></property>
         <property name="regulatedMarketIsinsLoader"><ref bean="regulatedMktIsinsLoader"></ref></property>
+        <property name="mainCurrency"><value>"EUR"</value></property>
 	</bean>
 
 	<!-- THREAD MANAGEMENT -->

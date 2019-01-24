@@ -20,7 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import it.softsolutions.bestx.model.MarketExecutionReport;
+import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.DealerID;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.messages.component.Dealers;
+import quickfix.FieldNotFound;
 
 /**
  *
@@ -61,7 +63,17 @@ public class MarketAxessExecutionReport extends MarketExecutionReport {
 		StringBuilder str = new StringBuilder(super.toString());
 		str.append(" notes = ");
 		str.append(notes);
-		str.append("dealers = ");
+		str.append(" dealers = ");
+		getDealers().forEach( dealer -> {
+			DealerID dealerval = new DealerID();
+			try {
+				dealer.get(dealerval);
+				str.append("[");
+				str.append(dealerval.getValue());
+				str.append("] ");
+			} catch (FieldNotFound e) {
+				;
+			}});
 		str.append(getDealers());
 		return str.toString();
 	}

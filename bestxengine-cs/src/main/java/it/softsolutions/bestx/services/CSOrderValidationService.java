@@ -45,7 +45,8 @@ public class CSOrderValidationService implements OrderValidationService {
     private List<OrderValidator> businessValidatorList = null;
     private List<OrderValidator> punctualValidatorList = null;
 
-    /* (non-Javadoc)
+
+	/* (non-Javadoc)
      * @see it.softsolutions.bestx.services.OrderValidationService#validateOrderByCustomer(it.softsolutions.bestx.Operation, it.softsolutions.bestx.model.Order, it.softsolutions.bestx.model.Customer)
      */
     public OrderResult validateOrderByCustomer(Operation operation, Order order, Customer customer) {
@@ -135,7 +136,7 @@ public class CSOrderValidationService implements OrderValidationService {
             LOGGER.error(Messages.getString("CSOrderValidationService.1"));
             return false;
         }
-
+        
         // [DR20120530] skip check on punctualValidatorList, it can be undefined
         // ...
 

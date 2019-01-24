@@ -18,7 +18,6 @@ public class ExistInstrumentControl implements OrderValidator {
 	 * @see it.softsolutions.bestx.services.ordervalidation.OrderValidator#validateOrder(it.softsolutions.bestx.Operation, it.softsolutions.bestx.model.Order)
 	 */
 	public OrderResult validateOrder(Operation operation, Order order) {
-		String isin = "NOT DEFINED";
 		OrderResultBean result = new OrderResultBean();
 		result.setOrder(order);
 		result.setReason("");		

@@ -300,26 +300,26 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 				LOGGER.info("Can't Be!");
 				quote.setOriginatorID(quotingDealer);
 			}
-				try {  //BESTX-314 get dealer quote from alternative tag ReferencePrice (5691) if original was not in percentage of par
-					if(PriceType.PRICE == convertPriceType(dealer.getDealerQuotePriceType())) {
-						try {
-							quote.setPrice(new Money(maExecutionReport.getInstrument().getCurrency(), new BigDecimal(Double.toString(dealer.getDealerQuotePrice().getValue()))));
-							quote.setPriceType(convertPriceType(dealer.getDealerQuotePriceType()));
-							quote.setQty(new BigDecimal(Double.toString(dealer.getDealerQuoteOrdQty().getValue())));
-						} catch (@SuppressWarnings("unused") FieldNotFound e) {
-							quote.setPrice(new Money(currentAttempt.getMarketOrder().getCurrency(), new BigDecimal("0")));
-							quote.setQty(currentAttempt.getMarketOrder().getQty());
-						}
-					} else { //let's hope tag 7761 equals 1 
-						try {
-							quote.setPrice(new Money(maExecutionReport.getInstrument().getCurrency(), new BigDecimal(Double.toString(dealer.getReferencePrice().getValue()))));
-							quote.setPriceType(convertPriceType(dealer.getDealerQuotePriceType()));
-							quote.setQty(new BigDecimal(Double.toString(dealer.getDealerQuoteOrdQty().getValue())));
-						} catch (@SuppressWarnings("unused") FieldNotFound e) {
-							quote.setPrice(new Money(currentAttempt.getMarketOrder().getCurrency(), new BigDecimal("0")));
-							quote.setQty(currentAttempt.getMarketOrder().getQty());
-						}
+			try {  //BESTX-314 get dealer quote from alternative tag ReferencePrice (5691) if original was not in percentage of par
+				if(PriceType.PRICE == convertPriceType(dealer.getDealerQuotePriceType())) {
+					try {
+						quote.setPrice(new Money(maExecutionReport.getInstrument().getCurrency(), new BigDecimal(Double.toString(dealer.getDealerQuotePrice().getValue()))));
+						quote.setPriceType(convertPriceType(dealer.getDealerQuotePriceType()));
+						quote.setQty(new BigDecimal(Double.toString(dealer.getDealerQuoteOrdQty().getValue())));
+					} catch (@SuppressWarnings("unused") FieldNotFound e) {
+						quote.setPrice(new Money(currentAttempt.getMarketOrder().getCurrency(), new BigDecimal("0")));
+						quote.setQty(currentAttempt.getMarketOrder().getQty());
 					}
+				} else { //let's hope tag 7761 equals 1 
+					try {
+						quote.setPrice(new Money(maExecutionReport.getInstrument().getCurrency(), new BigDecimal(Double.toString(dealer.getReferencePrice().getValue()))));
+						quote.setPriceType(convertPriceType(dealer.getDealerQuotePriceType()));
+						quote.setQty(new BigDecimal(Double.toString(dealer.getDealerQuoteOrdQty().getValue())));
+					} catch (@SuppressWarnings("unused") FieldNotFound e) {
+						quote.setPrice(new Money(currentAttempt.getMarketOrder().getCurrency(), new BigDecimal("0")));
+						quote.setQty(currentAttempt.getMarketOrder().getQty());
+					}
+				}
 					quote.setSide(maExecutionReport.getSide() == OrderSide.BUY ? ProposalSide.ASK : ProposalSide.BID);
 					quote.setTimestamp(DateService.convertUTCToLocal(currentAttempt.getMarketOrder().getTransactTime())); // there is no timestamp in MA returned values - MarketOrder TransactTime is in UTC
 					quote.setQuoteReqId(currentAttempt.getMarketOrder().getFixOrderId());

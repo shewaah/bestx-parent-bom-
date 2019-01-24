@@ -13,11 +13,13 @@ import it.softsolutions.bestx.services.serial.SerialNumberService;
 public class CSExecutionReportHelper extends ExecutionReportHelper {
 
 	public static boolean isPOBex(Operation operation) {
-		if(operation.getOrder() != null) {
+		// AMC 20190124 LF orders are managed as POBEX too
+		return true;
+/*		if(operation.getOrder() != null) {
 			return operation.getOrder().getPriceDiscoveryType() == PriceDiscoveryType.NORMAL_PRICEDISCOVERY;
 		}
 		return false;
-	}
+*/	}
 
 	public static boolean isPOBex(Order order) {
 		return order.getPriceDiscoveryType() == PriceDiscoveryType.NORMAL_PRICEDISCOVERY;
