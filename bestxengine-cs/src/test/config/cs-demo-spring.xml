@@ -445,13 +445,13 @@
 		<property name="maxPoolSize" value="8"/>
 		<property name="threadNamePrefix" value="ThreadPool-Bloomberg"/>
 	</bean>
-	<bean id="threadPoolTradeweb" class="it.softsolutions.bestx.ThreadPoolExecutor" init-method="initialize">
+	<bean id="threadPoolTradeweb" class="it.softsolutions.bestx.ThreadPoolSortedQueueExecutor" init-method="initialize">
 		<property name="corePoolSize" value="16"/>
 		<property name="maxPoolSize" value="16"/>
 		<property name="threadNamePrefix" value="ThreadPool-Tradeweb"/>
 	</bean>	
 	
-	<bean id="threadPoolMarketAxess" class="it.softsolutions.bestx.ThreadPoolExecutor" init-method="initialize">
+	<bean id="threadPoolMarketAxess" class="it.softsolutions.bestx.ThreadPoolSortedQueueExecutor" init-method="initialize">
 		<property name="corePoolSize" value="16"/>
 		<property name="maxPoolSize" value="16"/>
 		<property name="threadNamePrefix" value="ThreadPool-Tradeweb"/>

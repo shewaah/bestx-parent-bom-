@@ -192,7 +192,7 @@ public class BookHelper {
      * Get the best proposal for the given market in the sorted book
      * @param book the source sorted book
      * @param marketCode the code of the market to get the be best proposal for
-     * @param side the order side, relevant toget the ask or bid side of the sorted book
+     * @param side the order side, relevant to get the ask or bid side of the sorted book
      * @return
      */
     public static ClassifiedProposal getBestPrice(SortedBook book, MarketCode marketCode, Rfq.OrderSide side) {
@@ -203,6 +203,31 @@ public class BookHelper {
 				return prop;
 		}
 		// there are no valid proposals for that market
+		return null;
+    }
+
+    /**
+     * Get the best proposal for the given market in the sorted book
+     * @param book the source sorted book
+     * @param lastMarketCode the code of the market currently used. If null there is no such thing
+     * @param side the order side, relevant to get the ask or bid side of the sorted book
+     * @return null if no such proposal is available, next proposal to be used otherwise
+     */
+    public static ClassifiedProposal getNextProposalAfterMarket(SortedBook book, MarketCode lastMarketCode, Rfq.OrderSide side) {
+		if(book == null || side == null) throw new IllegalArgumentException();
+		List<ClassifiedProposal> sideProposals = (side == Rfq.OrderSide.BUY) ? book.getAskProposals() : book.getBidProposals();
+		int index = -1;
+		for(ClassifiedProposal prop : sideProposals) {
+			if(lastMarketCode == null && ProposalState.VALID == prop.getProposalState()) return prop;
+			index++; // contains the index of the current proposal in the list sideProposals
+			if(lastMarketCode.compareTo(prop.getMarket().getMarketCode()) == 0 && ProposalState.VALID == prop.getProposalState())
+				// now I am ready to look for next MarketCode from now on
+				for(ClassifiedProposal newProp : sideProposals.subList(index, sideProposals.size() -1 )) {
+					if(lastMarketCode.compareTo(newProp.getMarket().getMarketCode()) != 0 && ProposalState.VALID == newProp.getProposalState())
+						return newProp;
+				}
+		}
+		// there are no more valid proposals
 		return null;
     }
 

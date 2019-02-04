@@ -30,7 +30,6 @@ import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import akka.actor.FSM.CurrentState;
 import it.softsolutions.bestx.connections.CustomerConnection;
 import it.softsolutions.bestx.connections.OperatorConsoleConnection;
 import it.softsolutions.bestx.dao.BestXConfigurationDao;
@@ -51,7 +50,6 @@ import it.softsolutions.bestx.handlers.CSRejectedEventHandler;
 import it.softsolutions.bestx.handlers.CSSendExecutionReportEventHandler;
 import it.softsolutions.bestx.handlers.CSSendPOBExEventHandler;
 import it.softsolutions.bestx.handlers.CSCurandoEventHandler;
-import it.softsolutions.bestx.handlers.CurandoRetryEventHandler;
 import it.softsolutions.bestx.handlers.FormalValidationKOEventHandler;
 import it.softsolutions.bestx.handlers.FormalValidationOkEventHandler;
 import it.softsolutions.bestx.handlers.LimitFileHelper;
@@ -80,7 +78,6 @@ import it.softsolutions.bestx.handlers.bloomberg.BBG_RejectedEventHandler;
 import it.softsolutions.bestx.handlers.bloomberg.BBG_SendRfqEventHandler;
 import it.softsolutions.bestx.handlers.bloomberg.BBG_StartExecutionEventHandler;
 import it.softsolutions.bestx.handlers.internal.INT_ExecutedEventHandler;
-import it.softsolutions.bestx.handlers.internal.INT_InternalInCurandoEventHandler;
 import it.softsolutions.bestx.handlers.internal.INT_ManageCounterEventHandler;
 import it.softsolutions.bestx.handlers.internal.INT_RejectedEventHandler;
 import it.softsolutions.bestx.handlers.internal.INT_StartExecutionEventHandler;
@@ -715,7 +712,7 @@ public void setTargetPriceMaxLevel(int targetPriceMaxLevel) {
                   regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout, marketSecurityStatusService, executionDestinationService,
                   rejectWhenBloombergIsBest, doNotExecuteWP, bookDepthValidator, internalMMcodesList, operationStateAuditDao, targetPriceMaxLevel);
             
-            if (CSExecutionReportHelper.isPOBex(operation) || operation.getOrder().isLimitFile()) {
+            if (CSExecutionReportHelper.isPOBex(operation)) {
                CSSendPOBExEventHandler customerHandler = new CSSendPOBExEventHandler(operation, orderBookDepth, priceDecimals, priceDiscoveryConnection, serialNumberService, pobExMaxSize);
                customerHandler.setCustomerConnection(customerConnection);
                customerHandler.setOperatorConsoleConnection(operatorConsoleConnection);
