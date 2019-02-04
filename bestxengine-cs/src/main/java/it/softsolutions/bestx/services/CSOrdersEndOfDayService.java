@@ -282,7 +282,7 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
 
     		if((ordersList != null) && (ordersList.size() != 0)){
     			List<Operation> operationsList = getOperations(ordersList, jobName, groupName);
-    			if((operationsList != null) && (operationsList.size() != 0)){
+    			if((operationsList != null) && (operationsList.size() > 0)){
     				onTimerExpired(operationsList, jobName, groupName);
     			}
     		}
@@ -320,7 +320,7 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
     			continue;
     		}
     	}
-    	LOGGER.error("EndOfDay getOperation: retrieved {} operations for job {}", operationsList.size(), jobName);
+    	LOGGER.info("EndOfDay getOperation: retrieved {} operations for job {}", operationsList.size(), jobName);
     	return operationsList;
     }
 
