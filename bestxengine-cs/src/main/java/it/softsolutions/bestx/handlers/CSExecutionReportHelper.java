@@ -22,7 +22,9 @@ public class CSExecutionReportHelper extends ExecutionReportHelper {
 */	}
 
 	public static boolean isPOBex(Order order) {
-		return order.getPriceDiscoveryType() == PriceDiscoveryType.NORMAL_PRICEDISCOVERY;
+		// AMC 20190124 LF orders are managed as POBEX too
+		return true;
+		//return order.getPriceDiscoveryType() == PriceDiscoveryType.NORMAL_PRICEDISCOVERY;
 	}
 
 	public static CSPOBexExecutionReport createCSPOBexExecutionReport(Instrument instrument,
