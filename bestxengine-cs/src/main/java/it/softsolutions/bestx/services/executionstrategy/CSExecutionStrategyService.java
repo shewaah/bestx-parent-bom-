@@ -42,6 +42,7 @@ import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Rfq;
 import it.softsolutions.bestx.model.SortedBook;
 import it.softsolutions.bestx.services.DateService;
+import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.bestx.services.price.PriceResult;
 import it.softsolutions.bestx.services.serial.SerialNumberService;
 import it.softsolutions.bestx.states.ErrorState;
@@ -51,6 +52,7 @@ import it.softsolutions.bestx.states.WarningState;
 import it.softsolutions.bestx.states.bloomberg.BBG_StartExecutionState;
 import it.softsolutions.bestx.states.marketaxess.MA_StartExecutionState;
 import it.softsolutions.bestx.states.tradeweb.TW_StartExecutionState;
+import it.softsolutions.jsscommon.Money;
 
 /**  
  *
@@ -127,6 +129,26 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	 */
 	@Override
 	public void startExecution(Operation operation, Attempt currentAttempt, SerialNumberService serialNumberService) {
+		if(currentAttempt.getExecutionProposal() == null && BondTypesService.isUST(operation.getOrder().getInstrument())) { // BESTX-382
+            MarketOrder marketOrder = new MarketOrder();
+            if (currentAttempt.getExecutionProposal() != null) {
+                currentAttempt.setMarketOrder(marketOrder);
+                marketOrder.setValues(operation.getOrder());
+                marketOrder.setTransactTime(DateService.newUTCDate());
+                marketOrder.setMarket(marketFinder.getMarketByCode(MarketCode.TW, null));
+        		marketOrder.setMarketMarketMaker(currentAttempt.getExecutionProposal().getMarketMarketMaker());
+                marketOrder.setLimit(null);
+                LOGGER.info("Order={}, Selecting for execution market market maker: {} and price {}", operation.getOrder().getFixOrderId(), marketOrder.getMarketMarketMaker(), limitPrice == null? "null":limitPrice.getAmount().toString());
+                marketOrder.setVenue(currentAttempt.getExecutionProposal().getVenue());
+    			String twSessionId = operation.getIdentifier(OperationIdType.TW_SESSION_ID);
+    			if (twSessionId != null) {
+    				operation.removeIdentifier(OperationIdType.TW_SESSION_ID);
+    			}
+    			currentAttempt.getMarketOrder().setVenue(null);
+    			operation.setStateResilient(new TW_StartExecutionState(), ErrorState.class);
+           }
+            
+		}
 		//we must always preserve the existing comment, because it could be the one sent to us through OTEX
 		switch (currentAttempt.getMarketOrder().getMarket().getMarketCode()) {
 		case BLOOMBERG:

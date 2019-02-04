@@ -19,6 +19,7 @@ import java.util.List;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Order;
+import it.softsolutions.bestx.services.instrument.BondTypesService;
 
 /**
  *
@@ -38,10 +39,12 @@ public class BookDepthValidator {
 		this.minimumRequiredBookDepth = minimumRequiredDepth;
 	}
 
-	@SuppressWarnings("unused")
+
 	public boolean isBookDepthValid(Attempt currentAttempt, Order order) {
 		if (currentAttempt.getSortedBook() == null)
 			return false;
+		if(BondTypesService.isUST(order.getInstrument()))
+			return true; // BESTX-382
 
 		List<ClassifiedProposal> proposals = currentAttempt.getSortedBook().getValidSideProposals(order.getSide());
 		return proposals.size() >= minimumRequiredBookDepth;

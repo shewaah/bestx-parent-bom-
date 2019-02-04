@@ -339,22 +339,9 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 
         if (priceResult.getState() == PriceResult.PriceResultState.COMPLETE || mktCode == MarketCode.MATCHING) {
 
-            // Fill Attempt and Build MarketOrder
+            // Fill Attempt
             currentAttempt.setExecutionProposal(currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide()));
-            MarketOrder marketOrder = new MarketOrder();
-            currentAttempt.setMarketOrder(marketOrder);
-            marketOrder.setValues(operation.getOrder());
-            // ///////////////////////////////////////////////////////////////////
-            // BXCRESUI-45 //////////////////////////////////////////////////////
-            // Order order = operation.getOrder();
-            // marketOrder.setFutSettDate(currentAttempt.getSortedBook().getBestProposalBySide(order.getSide()).getFutSettDate());
-            // ///////////////////////////////////////////////////////////////////
-            marketOrder.setTransactTime(DateService.newUTCDate());
-            if (currentAttempt.getExecutionProposal() != null) {
-                marketOrder.setMarket(currentAttempt.getExecutionProposal().getMarket());
-            }
-
-            if (operation.hasPassedMaxAttempt(maxAttemptNo) && !operation.getOrder().isLimitFile()) {  //  market order action +++
+            if (operation.hasPassedMaxAttempt(maxAttemptNo)/*&& !operation.getOrder().isLimitFile() AMC 20181210 removed because maxAttemptNo is in current lifecycle BESTX-380 */) {
                 LOGGER.info("Order={}, Max number of attempts reached.", operation.getOrder().getFixOrderId());
                 currentAttempt.setByPassableForVenueAlreadyTried(true);
                 
@@ -369,12 +356,19 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
                     return;
                 }
             }
-
+            // Build MarketOrder
+            MarketOrder marketOrder = new MarketOrder();
+            Money limitPrice = calculateTargetPrice(order, currentAttempt);
             if (currentAttempt.getExecutionProposal() != null) {
+                currentAttempt.setMarketOrder(marketOrder);
+                marketOrder.setValues(order);
+                marketOrder.setTransactTime(DateService.newUTCDate());
+                marketOrder.setMarket(currentAttempt.getExecutionProposal().getMarket());
+
         		marketOrder.setMarketMarketMaker(currentAttempt.getExecutionProposal().getMarketMarketMaker());
-                Money limitPrice = calculateTargetPrice(order, currentAttempt);
                 marketOrder.setLimit(limitPrice);
                 LOGGER.info("Order={}, Selecting for execution market market maker: {} and price {}", operation.getOrder().getFixOrderId(), marketOrder.getMarketMarketMaker(), limitPrice == null? "null":limitPrice.getAmount().toString());
+                marketOrder.setVenue(currentAttempt.getExecutionProposal().getVenue());
             }
 
                         
@@ -384,7 +378,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
         	// executable limit file with autoexecution disabled
             if (order.isLimitFile() && doNotExecute) {  // limit file order action +++
                 LOGGER.info("Order {} could be executed, but BestX is configured to not execute limit file orders.", order.getFixOrderId());
-                marketOrder.setVenue(currentAttempt.getExecutionProposal().getVenue());
                 operation.setStateResilient(new OrderNotExecutableState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
             } else { 
             	// limit file order action +++
@@ -392,7 +385,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
                 //for limit file which are not found executable (no prices available or out of market) BestX doesn't send any price discovery result  
                 if (customerSpecificHandler!=null && order.isLimitFile()) customerSpecificHandler.onPricesResult(source, priceResult);
 				if(!operation.isNotAutoExecute())
-					csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
+					csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService, limitPrice);
 					// last row in this method for executable operation
 				else
 					operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
@@ -421,7 +414,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 	 * @param currentAttempt for which the target price needs to be calculated. Contains the sorted book, the execution proposal, the market order.
 	 * @return
 	 */
-	protected Money calculateTargetPrice(Order order, Attempt currentAttempt) {
+	public Money calculateTargetPrice(Order order, Attempt currentAttempt) {
 		Money limitPrice = null;
 		Money ithBest = null;
 		ClassifiedProposal ithBestProp = null;
