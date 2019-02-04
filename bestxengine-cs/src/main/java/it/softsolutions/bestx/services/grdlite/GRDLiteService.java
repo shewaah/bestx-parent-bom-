@@ -168,7 +168,7 @@ public class GRDLiteService extends BaseOperatorConsoleAdapter implements MQCall
                    Operation operation = operationRegistry.getExistingOperationById(OperationIdType.ORDER_ID, operationId);
                    operation.onCustomServiceResponse((loadResponse.getStatus() == LoadResponse.Status.Error), loadResponse.getSecurityId());
                 } catch (OperationNotExistingException e) {
-                   LOGGER.error("Cannot find the operation with the id {}", operationId, e);
+                   LOGGER.info("Cannot find the operation with id {}. This is normal if this answer has been triggered by a Price Discovery Request on MQ.", operationId);
                    continue;
                 } catch (BestXException e) {
                    LOGGER.error("Error while loading the operation with id {}", operationId, e);
