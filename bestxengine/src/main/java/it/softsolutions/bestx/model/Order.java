@@ -164,6 +164,8 @@ public class Order extends Rfq {
    private int tryAfterMinutes;
    private Date effectiveTime;
 
+   protected String handlInst;
+
    public TradingCapacity getTradingCapacity() {
       return this.tradingCapacity;
    }
@@ -225,6 +227,7 @@ public class Order extends Rfq {
       this.setMiFIDRestricted(source.isMiFIDRestricted());
 
       this.setCustOrderHandlingInstr(source.getCustOrderHandlingInstr());
+      this.setHandlInst(source.getHandlInst());
       this.setEffectiveTime(source.getEffectiveTime());
       this.setTryAfterMinutes(source.getTryAfterMinutes());
       
@@ -456,7 +459,7 @@ public class Order extends Rfq {
                   ? (getVenue().getMarketMaker().getCode() + "-" + getVenue().getMarket().getMarketCode().name()) : "")
             + "- TimeInForce: " + (getTimeInForce() == null ? "" : getTimeInForce().toString()) + "- TimeInForce Date: " + (getTimeInForceDate() == null ? "" : getTimeInForceDate().toString())
             + "- Price: " + (getLimit() == null ? "market price" : getLimit().getAmount().toPlainString()) + "- Currency: " + (getCurrency() == null ? "" : getCurrency()) + "- Quantity: "
-            + (getQty() == null ? "" : getQty() + "- ExecutionDestination: " + (getExecutionDestination() == null ? "" : getExecutionDestination()) + "- Side: " + getSide());
+            + (getQty() == null ? "" : getQty() + "- ExecutionDestination: " + (getExecutionDestination() == null ? "" : getExecutionDestination()) + "- Side: " + getSide()) + " - HandlInst: " + getHandlInst();
    }
 
    /**
@@ -913,6 +916,20 @@ public class Order extends Rfq {
     */
    public void setCustOrderHandlingInstr(String custOrderHandlingInstr) {
       this.custOrderHandlingInstr = custOrderHandlingInstr;
+   }
+
+   /**
+    * @return the handlInst
+    */
+   public String getHandlInst() {
+      return handlInst;
+   }
+
+   /**
+    * @param handlInst the handlInst to set
+    */
+   public void setHandlInst(String handlInst) {
+      this.handlInst = handlInst;
    }
 
    /**

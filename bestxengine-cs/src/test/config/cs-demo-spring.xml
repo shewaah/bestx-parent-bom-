@@ -739,6 +739,8 @@
                    <property name="noAutoExecSize"><value>${StopAutoExecOnQuantity.NoAutoExecSize}</value></property>               	
                    <property name="exchangeRateFinder" ref="dbBasedExchangeRateFinder" />            	
 				</bean>               
+               <bean class="it.softsolutions.bestx.services.ordervalidation.StopAutoExecHandlInst">
+				</bean>               
  			</list>
 		</property>
 		<property name="punctualValidatorList">

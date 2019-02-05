@@ -730,9 +730,7 @@
                 <bean class="it.softsolutions.bestx.services.ordervalidation.LimitFileParkTagFilter">
 					<property name="custOrderHandlingInstrValue"><value>TMO</value></property>
 				</bean>
-               <bean class="it.softsolutions.bestx.services.ordervalidation.StopAutoExecOnQuantity">
-                   <property name="noAutoExecSize"><value>${StopAutoExecOnQuantity.NoAutoExecSize}</value></property>               	
-                   <property name="exchangeRateFinder" ref="dbBasedExchangeRateFinder" />            	
+               <bean class="it.softsolutions.bestx.services.ordervalidation.StopAutoExecHandlInst">
 				</bean>               
 			</list>
 		</property>
