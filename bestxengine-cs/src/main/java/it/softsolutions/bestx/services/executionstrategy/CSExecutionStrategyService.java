@@ -130,65 +130,69 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	@Override
 	public void startExecution(Operation operation, Attempt currentAttempt, SerialNumberService serialNumberService) {
 		if(currentAttempt.getExecutionProposal() == null && BondTypesService.isUST(operation.getOrder().getInstrument())) { // BESTX-382
-            MarketOrder marketOrder = new MarketOrder();
-            if (currentAttempt.getExecutionProposal() != null) {
-                currentAttempt.setMarketOrder(marketOrder);
-                marketOrder.setValues(operation.getOrder());
-                marketOrder.setTransactTime(DateService.newUTCDate());
-                marketOrder.setMarket(marketFinder.getMarketByCode(MarketCode.TW, null));
-        		marketOrder.setMarketMarketMaker(currentAttempt.getExecutionProposal().getMarketMarketMaker());
-                marketOrder.setLimit(null);
-                LOGGER.info("Order={}, Selecting for execution market market maker: {} and price {}", operation.getOrder().getFixOrderId(), marketOrder.getMarketMarketMaker(), limitPrice == null? "null":limitPrice.getAmount().toString());
-                marketOrder.setVenue(currentAttempt.getExecutionProposal().getVenue());
-    			String twSessionId = operation.getIdentifier(OperationIdType.TW_SESSION_ID);
-    			if (twSessionId != null) {
-    				operation.removeIdentifier(OperationIdType.TW_SESSION_ID);
-    			}
-    			currentAttempt.getMarketOrder().setVenue(null);
-    			operation.setStateResilient(new TW_StartExecutionState(), ErrorState.class);
-           }
-            
-		}
-		//we must always preserve the existing comment, because it could be the one sent to us through OTEX
-		switch (currentAttempt.getMarketOrder().getMarket().getMarketCode()) {
-		case BLOOMBERG:
-			if (rejectOrderWhenBloombergIsBest) {
-				// send not execution report
+			MarketOrder marketOrder = new MarketOrder();
+			if (currentAttempt.getExecutionProposal() != null) {
+				currentAttempt.setMarketOrder(marketOrder);
+				marketOrder.setValues(operation.getOrder());
+				marketOrder.setTransactTime(DateService.newUTCDate());
 				try {
-					ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
-					operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("RejectWhenBloombergBest.0")), ErrorState.class);
+					marketOrder.setMarket(marketFinder.getMarketByCode(MarketCode.TW, null));
 				} catch (BestXException e) {
-					LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
-					String errorMessage = e.getMessage();
-					operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
+					LOGGER.info("Error when trying to send an order to Tradeweb: unable to find market with code {}", MarketCode.TW.name());
 				}
-			} else {
+				marketOrder.setMarketMarketMaker(currentAttempt.getExecutionProposal().getMarketMarketMaker());
+				marketOrder.setLimit(null);
+				LOGGER.info("Order={}, Selecting for execution market market maker: {} and price {}", operation.getOrder().getFixOrderId(), marketOrder.getMarketMarketMaker(), "null");
+				marketOrder.setVenue(currentAttempt.getExecutionProposal().getVenue());
+				String twSessionId = operation.getIdentifier(OperationIdType.TW_SESSION_ID);
+				if (twSessionId != null) {
+					operation.removeIdentifier(OperationIdType.TW_SESSION_ID);
+				}
+				currentAttempt.getMarketOrder().setVenue(null);
+				operation.setStateResilient(new TW_StartExecutionState(), ErrorState.class);
+			}
+		} else {
+			//we must always preserve the existing comment, because it could be the one sent to us through OTEX
+			switch (currentAttempt.getMarketOrder().getMarket().getMarketCode()) {
+			case BLOOMBERG:
+				if (rejectOrderWhenBloombergIsBest) {
+					// send not execution report
+					try {
+						ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
+						operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("RejectWhenBloombergBest.0")), ErrorState.class);
+					} catch (BestXException e) {
+						LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
+						String errorMessage = e.getMessage();
+						operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
+					}
+				} else {
+					currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
+					operation.setStateResilient(new BBG_StartExecutionState(), ErrorState.class);
+				}
+				break;
+			case TW:
+				String twSessionId = operation.getIdentifier(OperationIdType.TW_SESSION_ID);
+				if (twSessionId != null) {
+					operation.removeIdentifier(OperationIdType.TW_SESSION_ID);
+				}
+
 				currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
-				operation.setStateResilient(new BBG_StartExecutionState(), ErrorState.class);
-			}
-			break;
-		case TW:
-			String twSessionId = operation.getIdentifier(OperationIdType.TW_SESSION_ID);
-			if (twSessionId != null) {
-				operation.removeIdentifier(OperationIdType.TW_SESSION_ID);
-			}
+				operation.setStateResilient(new TW_StartExecutionState(), ErrorState.class);
+				break;
+			case MARKETAXESS:
+				String maSessionId = operation.getIdentifier(OperationIdType.MARKETAXESS_SESSION_ID);
+				if (maSessionId != null) {
+					operation.removeIdentifier(OperationIdType.MARKETAXESS_SESSION_ID);
+				}
 
-			currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
-			operation.setStateResilient(new TW_StartExecutionState(), ErrorState.class);
-			break;
-		case MARKETAXESS:
-			String maSessionId = operation.getIdentifier(OperationIdType.MARKETAXESS_SESSION_ID);
-			if (maSessionId != null) {
-				operation.removeIdentifier(OperationIdType.MARKETAXESS_SESSION_ID);
+				currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
+				operation.setStateResilient(new MA_StartExecutionState(), ErrorState.class);
+				break;            
+			default:
+				operation.removeLastAttempt();
+				operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("MARKET_UNKNOWN",
+						currentAttempt.getMarketOrder().getMarket().getMarketCode().name())), ErrorState.class);
 			}
-
-			currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
-			operation.setStateResilient(new MA_StartExecutionState(), ErrorState.class);
-			break;            
-		default:
-			operation.removeLastAttempt();
-			operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("MARKET_UNKNOWN",
-					currentAttempt.getMarketOrder().getMarket().getMarketCode().name())), ErrorState.class);
 		}
 	}
 

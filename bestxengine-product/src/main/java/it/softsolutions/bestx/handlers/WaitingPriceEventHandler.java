@@ -385,7 +385,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
                 //for limit file which are not found executable (no prices available or out of market) BestX doesn't send any price discovery result  
                 if (customerSpecificHandler!=null && order.isLimitFile()) customerSpecificHandler.onPricesResult(source, priceResult);
 				if(!operation.isNotAutoExecute())
-					csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService, limitPrice);
+					csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
 					// last row in this method for executable operation
 				else
 					operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
