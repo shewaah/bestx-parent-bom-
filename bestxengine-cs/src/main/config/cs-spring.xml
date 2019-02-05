@@ -39,7 +39,6 @@
 			</list>
 		</property>
 	</bean>
-
 	<!-- APPLICATION MANAGEMENT -->
 	<bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
 		<property name="locateExistingServerIfPossible" value="true" />
@@ -85,14 +84,15 @@
                 <entry key="it.softsolutions.bestx.cs:name=PDOnlyPriceService" value-ref="pDOnlyPriceService" />
                 <entry key="it.softsolutions.bestx.cs:name=IB4JOperatorConsoleAdapter" value-ref="ib4jOperatorConsoleAdapter" />
                 <entry key="it.softsolutions.bestx.cs:name=MQPriceDiscoveryOperatorConsoleAdapter" value-ref="mqPriceDiscoveryOperatorConsoleAdapter" />
+                <entry key="it.softsolutions.bestx.cs:name=GRDLiteService" value-ref="grdLiteService" />
                 <entry key="it.softsolutions.bestx.cs:name=OperationRestore" value-ref="operationRestore" />
                 <entry key="it.softsolutions.bestx.cs:name=DealerRankingService" value-ref="rankingLoaderManager" />
                 <entry key="it.softsolutions.bestx.cs:name=OperationRegistry" value-ref="defaultOperationRegistry" />
                 <entry key="it.softsolutions.bestx.cs:name=InstrumentFinder" value-ref="dbBasedInstrumentFinder" />
 				<entry key="it.softsolutions.bestx.cs:name=OrdersEndOfDayService" value-ref="ordersEndOfDayService" />
 				<entry key="it.softsolutions.bestx.cs:name=BusinessValuesMonitor" value-ref="businessValuesMonitor" />
-				<!-- entry key="bean:name=hibernateStatsMBean"><ref local="hibernateStats"></ref></entry -->
 				<entry key="it.softsolutions.bestx.cs:name=CSStrategy" value-ref="csStrategy" />
+				<!-- entry key="bean:name=hibernateStatsMBean"><ref local="hibernateStats"></ref></entry -->
 			</map>
 		</property>
 		<property name="server" ref="mbeanServer" />
@@ -916,7 +916,6 @@
 				<!--
                         <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardInsufficientQuantityProposalClassifier"></bean>
                 -->
-
                         <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardInadequateOrderedQuantityProposalClassifier">
                             <property name="marketSecurityStatusService"><ref bean="marketSecurityStatusService"></ref></property>
                             <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
@@ -929,11 +928,13 @@
                             <!--  Flag per abilitare o disabilitare il controllo che un ordine sia o meno un matching tramite query -->
                             <property name="matchByQueryEnabled"><value>false</value></property>
 						</bean>
+				<!-- <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTooWideQuoteSpread"></bean> -->
 			</list>
 		</property>
 		<property name="bookClassifierList">
 			<list>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardDuplicatedMM"></bean>
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTooWideQuoteSpread"></bean>
 			</list>
 		</property>
 	</bean>
@@ -949,6 +950,7 @@
                     <property name="configValue"><value>12</value></property>
 				</bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.TagInsufficientQtyProposalClassifier"></bean>
+				<!-- <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTooWideQuoteSpread"></bean> -->
 			</list>
 		</property>
 		<property name="bookClassifierList">
@@ -1162,7 +1164,7 @@
 		<property name="investmentDecisorID"><value>${MarketAxess.InvestmentDecisionMakerID}</value></property>
 		<property name="executionDecisionID"><value>${MarketAxess.ExecutionDecisionMakerID}</value></property>
 		<property name="defaultTradingCapacity"><value>${MarketAxess.defaultCapacity}</value></property>
-		<property name="defaultShortSelling"><value>${MarketAxess.DefaultShortSell}</value></property>
+		<property name="defaultShortSelling"><value>${MarketAxess.defaultShortSell}</value></property>
         <property name="fixConfigFileName"><value>fix-tradestac-marketaxess-buyside-trade.properties</value></property>
  	</bean>
 	
@@ -1253,7 +1255,7 @@
     <bean id="operationStateAuditDAOProvider" class="it.softsolutions.bestx.services.OperationStateAuditDAOProvider">
         <property name="operationStateAuditDao"><ref bean="sqlOperationStateAuditDao"></ref></property>
 	</bean>
-    <bean id="grdLiteService" class="it.softsolutions.bestx.services.grdlite.GRDLiteService">
+    <bean id="grdLiteService" class="it.softsolutions.bestx.services.grdlite.GRDLiteService" init-method="init">
 		<constructor-arg ref="defaultOperationRegistry" />
 		<!-- the service, as default, is activated -->
         <property name="active"><value>true</value></property>
@@ -1261,13 +1263,13 @@
             is also the default value -->
         <property name="reconnectionMaxTries"><value>-1</value></property>
         <property name="encryptor"><ref bean="configurationEncryptor"></ref></property>
+        <property name="serviceName"><value>GRDLite</value></property>
 	</bean>
 
     <bean id="configurationPropertyLoader" class="it.softsolutions.bestx.services.CSConfigurationPropertyLoader">
         <property name="jdbcTemplate"><ref bean="jdbcTemplate"></ref></property>
         <property name="configurationTable"><value>BestXConfiguration</value></property>
-   </bean>	
-   
+   </bean>	  
     <bean id="businessValuesMonitor" class="it.softsolutions.bestx.services.BusinessValuesMonitor" init-method="init">
         <property name="statsIntervalTimeInSecs"><value>60</value></property>
     	<property name="marketList">
