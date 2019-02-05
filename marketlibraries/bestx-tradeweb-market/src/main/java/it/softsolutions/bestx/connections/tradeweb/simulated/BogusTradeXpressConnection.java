@@ -161,7 +161,7 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 		execReport.setExecType(ExecType.New);
 		execReport.setOrdStatus(OrdStatus.New);
 		execReport.setAccruedInterestAmt(null);
-		execReport.setLastPx(marketOrder.getLimit().getAmount().doubleValue());
+		execReport.setLastPx(0.0);
 		execReport.setExecID("C#" + System.currentTimeMillis());
 		execReport.setSettlDate(DateUtils.addDays(new Date(), 3));
 		execReport.setTransactTime(new Date());
@@ -183,7 +183,10 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 		TSExecutionReport execReport = new TSExecutionReport();
 		execReport.setExecType(ExecType.Trade);
 		execReport.setOrdStatus(OrdStatus.Filled);
-		execReport.setLastPx(marketOrder.getLimit().getAmount().doubleValue());
+		if(marketOrder.getLimit() != null)
+			execReport.setLastPx(marketOrder.getLimit().getAmount().doubleValue());
+		else 
+			execReport.setLastPx(100.0);
 		execReport.setExecID("C#" + System.currentTimeMillis());
 		execReport.setSettlDate(DateUtils.addDays(new Date(), 3));
 		execReport.setTransactTime(new Date());
@@ -198,7 +201,10 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 		
 		TSParties tsp = new TSParties();
 		ArrayList<TSNoPartyID> tsNoPartyIDsList = new ArrayList<TSNoPartyID>();
-		tsNoPartyIDsList.add(new TSNoPartyID(marketOrder.getMarketMarketMaker().getMarketSpecificCode(), PartyIDSource.BIC, PartyRole.ExecutingFirm));
+		if(marketOrder.getMarketMarketMaker() != null)
+			tsNoPartyIDsList.add(new TSNoPartyID(marketOrder.getMarketMarketMaker().getMarketSpecificCode(), PartyIDSource.BIC, PartyRole.ExecutingFirm));
+		else
+			tsNoPartyIDsList.add(new TSNoPartyID("DLRW", PartyIDSource.BIC, PartyRole.ExecutingFirm));
 		tsp.setTSNoPartyIDsList(tsNoPartyIDsList);
 		execReport.setTSParties(tsp);
 		//FIXME add MiFID II fields

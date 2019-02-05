@@ -100,9 +100,19 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
    private Character defaultTradingCapacity = null;
    private Character defaultShortSelling = '0';
    private Integer investmentDecisionQualifier = null;
+   static final Logger LOGGER = LoggerFactory.getLogger(MarketAxessMarket.class);
+   private boolean addBlockedDealers = false;
+	
+   public boolean isAddBlockedDealers() {
+	   return addBlockedDealers;
+   }
+
+   public void setAddBlockedDealers(boolean addBlockedDealers) {
+	   this.addBlockedDealers = addBlockedDealers;
+   }
+
    
    
-	static final Logger LOGGER = LoggerFactory.getLogger(MarketAxessMarket.class);
 
 	TradeStacTradeConnectionListener tradeStacTradeConnectionListener;  // the market bean
 
@@ -131,7 +141,6 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 			throw new ObjectNotInitializedException("MarketFinder not set");
 		}
 		this.marketAxessHelper = new MarketAxessHelper(instrumentFinder, marketMakerFinder, venueFinder, marketFinder);
-
 	}
 
 
@@ -281,14 +290,18 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 
 		newOrderSingle.set(side);
 		newOrderSingle.set(new TransactTime(DateService.newUTCDate()));
-		newOrderSingle.set(new OrdType(OrdType.LIMIT));
 
 		newOrderSingle.set(new OrderQty(orderQty));
 		newOrderSingle.set(new QtyType(QtyType.UNITS));
 
-		newOrderSingle.set(new Price(price));
-		newOrderSingle.set(new PriceType(PriceType.PERCENTAGE));
-		newOrderSingle.setField(new MKTXTargetLevel(price.toString()));
+		if(price != null) {
+			newOrderSingle.set(new Price(price));
+			newOrderSingle.set(new PriceType(PriceType.PERCENTAGE));
+			newOrderSingle.setField(new MKTXTargetLevel(price.toString()));
+			newOrderSingle.set(new OrdType(OrdType.LIMIT));
+		} else
+			newOrderSingle.set(new OrdType(OrdType.MARKET));
+
 		// MaxTimeDelay required if MinTimeDelay is specified
 		if(this.minTimeDelay > 0) {
 			newOrderSingle.setField(new MinTimeDelay(this.minTimeDelay));
@@ -354,21 +367,21 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 			if(maDealerCode != null) {
 				dealer.set(new DealerID(maDealerCode.marketMakerCode));
 				dealer.set(new DealerIDSource(maDealerCode.marketMakerCodeSource));
-// 				dealer.setField(new CharField(7762 /*Exclude */, false));  //omitted because it is the default
 				newOrderSingle.addGroup(dealer);
 			}
 		}
 
 		// add dealers that must be excluded
-		for(MarketMarketMakerSpec maDealerCode : maOrder.getExcludeDealers()) {
-			NewOrderSingle.NoDealers dealer = new NewOrderSingle.NoDealers();
-			if(maDealerCode != null) {
-				dealer.set(new DealerID(maDealerCode.marketMakerCode));
-				dealer.set(new DealerIDSource(maDealerCode.marketMakerCodeSource));
-				dealer.setField(new BooleanField(7762 /*Exclude */, true));
-				newOrderSingle.addGroup(dealer);
+		if(addBlockedDealers) {
+			for(MarketMarketMakerSpec maDealerCode : maOrder.getExcludeDealers()) {
+				NewOrderSingle.NoDealers dealer = new NewOrderSingle.NoDealers();
+				if(maDealerCode != null) {
+					dealer.set(new DealerID(maDealerCode.marketMakerCode));
+					dealer.set(new DealerIDSource(maDealerCode.marketMakerCodeSource));
+					dealer.setField(new BooleanField(7762 /*Exclude */, true));
+					newOrderSingle.addGroup(dealer);
+				}
 			}
-			
 		}
 		try {
 			tradeStacClientSession.manageNewOrderSingle(newOrderSingle);

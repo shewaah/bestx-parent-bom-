@@ -82,7 +82,16 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
 	private Character defaultTradingCapacity = null;
 	private String investmentDecisorID = null;
 	private String investmentDecisorRoleQualifier = null;
+	private boolean addBlockedDealers = false;
 	
+	public boolean isAddBlockedDealers() {
+		return addBlockedDealers;
+	}
+
+	public void setAddBlockedDealers(boolean addBlockedDealers) {
+		this.addBlockedDealers = addBlockedDealers;
+	}
+
 	public String getTraderCode() {
 		return traderCode;
 	}
@@ -214,6 +223,8 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
         	Double price = marketOrder.getLimit().getAmount().doubleValue();
             tsNewOrderSingle.setPrice(price);
             tsNewOrderSingle.setPriceType(PriceType.Percentage);
+       } else {
+    	   ordType = OrdType.Market;
        }
         String dealerCode = marketOrder.getMarketMarketMaker() != null ? marketOrder.getMarketMarketMaker().getMarketSpecificCode() : null;
         TSInstrument tsInstrument = new TSInstrument();
@@ -242,35 +253,38 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
        	tsNoPartyTrader.setPartyID(this.traderCode); // increments
         tsNoPartyTrader.setPartyIDSource(PartyIDSource.GenerallyAcceptedMarketPartecipantIdentifier);
         tsNoPartyTrader.setPartyRole(PartyRole.OrderOriginationTrader);
-        
-        // ## Dealer with best price
-        String partID = dealerCode; 
-        TSNoPartyID tsNoPartyBestDealer = new TSNoPartyID();
-        tsNoPartyBestDealer.setPartyID(partID);
-        tsNoPartyBestDealer.setPartyIDSource(PartyIDSource.BIC);
-        tsNoPartyBestDealer.setPartyRole(PartyRole.ExecutingFirm);
 
-        // ## Execution within firm #### is BESTX
-        TSNoPartyID tsNoPartyExecutionWithinFirm = new TSNoPartyID();
-       	tsNoPartyExecutionWithinFirm.setPartyID(this.bestxAlgoID ); // increments
-       	tsNoPartyExecutionWithinFirm.setPartyIDSource(PartyIDSource.ProprietaryCustomCode);
-        tsNoPartyExecutionWithinFirm.setPartyRole(PartyRole.ExecutingTrader);
-        tsNoPartyExecutionWithinFirm.setPartyRoleQualifier(PartyRoleQualifier.Algorithm);
-
-        // ## TraderCode ####  
-        TSNoPartyID tsNoPartyInvestmentDecisor = new TSNoPartyID();
-       	tsNoPartyInvestmentDecisor.setPartyID(this.getInvestmentDecisorID()); // increments
-     	tsNoPartyInvestmentDecisor.setPartyIDSource(PartyIDSource.ShortCodeIdentifier);
-     	tsNoPartyInvestmentDecisor.setPartyRole(PartyRole.InvestmentDecisionMaker);
-     	tsNoPartyInvestmentDecisor.setPartyRoleQualifier(PartyRoleQualifier.getInstanceForFIXValue(Integer.parseInt(getInvestmentDecisorRoleQualifier())));
-     	//tsNoPartyExecutionWithinFirm.setPartyRoleQualifier(PartyRoleQualifier.NaturalPerson);
         
+        // ## Dealer with best price. Where there is none, no dealer and no limit price are specified and order type is Market
+        TSNoPartyID tsNoPartyBestDealer = null;
+        if(dealerCode != null) {
+	        String partID = dealerCode; 
+	        tsNoPartyBestDealer = new TSNoPartyID();
+	        tsNoPartyBestDealer.setPartyID(partID);
+	        tsNoPartyBestDealer.setPartyIDSource(PartyIDSource.BIC);
+	        tsNoPartyBestDealer.setPartyRole(PartyRole.ExecutingFirm);
+        }
         List<TSNoPartyID> tsNoPartyIDsList = new ArrayList<TSNoPartyID>();
         if(tradingMode == TradingMode.ON_MTF) {
+            // ## Execution within firm #### is BESTX
+            TSNoPartyID tsNoPartyExecutionWithinFirm = new TSNoPartyID();
+           	tsNoPartyExecutionWithinFirm.setPartyID(this.bestxAlgoID ); // increments
+           	tsNoPartyExecutionWithinFirm.setPartyIDSource(PartyIDSource.ProprietaryCustomCode);
+            tsNoPartyExecutionWithinFirm.setPartyRole(PartyRole.ExecutingTrader);
+            tsNoPartyExecutionWithinFirm.setPartyRoleQualifier(PartyRoleQualifier.Algorithm);
+
+            // ## TraderCode ####  
+            TSNoPartyID tsNoPartyInvestmentDecisor = new TSNoPartyID();
+           	tsNoPartyInvestmentDecisor.setPartyID(this.getInvestmentDecisorID()); // increments
+         	tsNoPartyInvestmentDecisor.setPartyIDSource(PartyIDSource.ShortCodeIdentifier);
+         	tsNoPartyInvestmentDecisor.setPartyRole(PartyRole.InvestmentDecisionMaker);
+         	tsNoPartyInvestmentDecisor.setPartyRoleQualifier(PartyRoleQualifier.getInstanceForFIXValue(Integer.parseInt(getInvestmentDecisorRoleQualifier())));
+            
             tsNoPartyIDsList.add(tsNoPartyExecutionWithinFirm);
             tsNoPartyIDsList.add(tsNoPartyInvestmentDecisor);      	
         }
-        tsNoPartyIDsList.add(tsNoPartyBestDealer);
+        if(tsNoPartyBestDealer != null)
+        	tsNoPartyIDsList.add(tsNoPartyBestDealer);
         tsNoPartyIDsList.add(tsNoPartyTrader);
 
         TSParties tsParties = new TSParties();
@@ -281,25 +295,25 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
         
         /** Get Custom Components */
         List<MessageComponent> customComponents = new ArrayList<MessageComponent>();
-
         //BESTX-375: SP-20190122 add blocked dealers custom group to new order single message
-        BlockedDealersGrpComponent blockedDealersGrpCmp = new BlockedDealersGrpComponent();
-        tw.quickfix.field.NoBlockedDealers noBlockedDealers = new tw.quickfix.field.NoBlockedDealers();
-        
-        if (marketOrder.getExcludeDealers().size() > 0) {
-           noBlockedDealers.setValue(marketOrder.getExcludeDealers().size());
-           blockedDealersGrpCmp.set(noBlockedDealers);
-           
-           for (MarketMarketMakerSpec blockedDealer : marketOrder.getExcludeDealers()) {
-              NoBlockedDealers blockedDealersGrp = new NoBlockedDealers();
-              
-              BlockedDealer blckDealer = new BlockedDealer();
-              blockedDealersGrp.set(blckDealer);
-              blockedDealersGrpCmp.addGroup(blockedDealersGrp);
-           }
-           customComponents.add(blockedDealersGrpCmp);
-        }
-        
+        if(addBlockedDealers ) {
+	        BlockedDealersGrpComponent blockedDealersGrpCmp = new BlockedDealersGrpComponent();
+	        tw.quickfix.field.NoBlockedDealers noBlockedDealers = new tw.quickfix.field.NoBlockedDealers();
+	        
+	        if (marketOrder.getExcludeDealers().size() > 0) {
+	           noBlockedDealers.setValue(marketOrder.getExcludeDealers().size());
+	           blockedDealersGrpCmp.set(noBlockedDealers);
+	           
+	           for (MarketMarketMakerSpec blockedDealer : marketOrder.getExcludeDealers()) {
+	              NoBlockedDealers blockedDealersGrp = new NoBlockedDealers();
+	              
+	              BlockedDealer blckDealer = new BlockedDealer();
+	              blockedDealersGrp.set(blckDealer);
+	              blockedDealersGrpCmp.addGroup(blockedDealersGrp);
+	           }
+	           customComponents.add(blockedDealersGrpCmp);
+	        }
+        }        
         if(!customComponents.isEmpty()){
            tsNewOrderSingle.setCustomComponents(customComponents);
         }
