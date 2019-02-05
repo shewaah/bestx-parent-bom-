@@ -14,6 +14,7 @@
 
 package it.softsolutions.bestx.services;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -258,8 +259,8 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
     @Override
     public void timerExpired(final String jobName, final String groupName) {
     	LOGGER.info("End of day for: {}-{}", jobName, groupName);
-
     	List<String> ordersList = null;
+    	try {
     	if (jobName != null) {
     		if (jobName.equals(ORDERS_END_OF_DAY_ID)) {
     			long begin = DateService.currentTimeMillis();
@@ -287,7 +288,10 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
     			}
     		}
     	} else {
-    		LOGGER.error("A job with a null name has been triggered!");
+    		LOGGER.warn("A job with a null name has been triggered!");
+    	}
+    	} catch (Exception e) {
+    		LOGGER.warn("Exception was raised when trying to get orders for {} End Of Day ", jobName, e);
     	}
     }
 
