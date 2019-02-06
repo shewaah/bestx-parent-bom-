@@ -67,9 +67,9 @@ public class CSCurandoEventHandler extends CSBaseOperationEventHandler {
     protected long getTimerInterval(Order order, Customer customer) {
     	long priceDiscoveryInterval = curandoRetrySec;
     	Double deviation = order.getBestPriceDeviationFromLimit();
-    	priceDiscoveryInterval = curandoTimerProfile.getTimeForDeviation(deviation) * 1000;
-    	LOGGER.info("Order {}, LimitFile timer will fire in {} milliseconds.", order.getFixOrderId(), priceDiscoveryInterval);
-    	return priceDiscoveryInterval;
+    	priceDiscoveryInterval = curandoTimerProfile.getTimeForDeviation(deviation);
+    	LOGGER.info("Order {}, LimitFile timer will fire in {} seconds.", order.getFixOrderId(), priceDiscoveryInterval);
+    	return priceDiscoveryInterval * 1000;
     }
 
 

@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Order;
+import it.softsolutions.bestx.services.instrument.BondTypesService;
 
 /**
  * 
@@ -55,6 +56,9 @@ public class CSBookDepthController extends BookDepthValidator {
             return true;
         }
         
+		if(BondTypesService.isUST(order.getInstrument()))
+			return true; // BESTX-382
+
         if (this.minimumRequiredBookDepth > 0) {//this.minimumRequiredBookDepth = 0
             if (currentAttempt.getSortedBook() != null) {
                 List<ClassifiedProposal> bookDepth = currentAttempt.getSortedBook().getValidSideProposals(order.getSide());

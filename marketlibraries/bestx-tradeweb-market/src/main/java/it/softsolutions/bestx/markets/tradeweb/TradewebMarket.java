@@ -812,12 +812,13 @@ public class TradewebMarket extends MarketCommon
       Date transactTime = tsExecutionReport.getTransactTime();
       String text = tsExecutionReport.getText();
       String executionBroker = null;
-      for (TSNoPartyID party : tsExecutionReport.getTSParties().getTSNoPartyIDsList()) {
-         if (party.getPartyRole() == PartyRole.ExecutingFirm) {
-            executionBroker = party.getPartyID();
-            break;
-         }
-      }
+      if(tsExecutionReport.getTSParties() != null)
+    	  for (TSNoPartyID party : tsExecutionReport.getTSParties().getTSNoPartyIDsList()) {
+	         if (party.getPartyRole() == PartyRole.ExecutingFirm) {
+	            executionBroker = party.getPartyID();
+	            break;
+	         }
+	      }
       String micCode = null;
       micCode = tsExecutionReport.getCustomFieldString(MiFIDMIC.FIELD);
 

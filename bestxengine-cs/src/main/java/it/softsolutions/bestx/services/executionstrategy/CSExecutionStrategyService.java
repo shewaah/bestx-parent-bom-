@@ -131,26 +131,23 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	public void startExecution(Operation operation, Attempt currentAttempt, SerialNumberService serialNumberService) {
 		if(currentAttempt.getExecutionProposal() == null && BondTypesService.isUST(operation.getOrder().getInstrument())) { // BESTX-382
 			MarketOrder marketOrder = new MarketOrder();
-			if (currentAttempt.getExecutionProposal() != null) {
-				currentAttempt.setMarketOrder(marketOrder);
-				marketOrder.setValues(operation.getOrder());
-				marketOrder.setTransactTime(DateService.newUTCDate());
-				try {
-					marketOrder.setMarket(marketFinder.getMarketByCode(MarketCode.TW, null));
-				} catch (BestXException e) {
-					LOGGER.info("Error when trying to send an order to Tradeweb: unable to find market with code {}", MarketCode.TW.name());
-				}
-				marketOrder.setMarketMarketMaker(currentAttempt.getExecutionProposal().getMarketMarketMaker());
-				marketOrder.setLimit(null);
-				LOGGER.info("Order={}, Selecting for execution market market maker: {} and price {}", operation.getOrder().getFixOrderId(), marketOrder.getMarketMarketMaker(), "null");
-				marketOrder.setVenue(currentAttempt.getExecutionProposal().getVenue());
-				String twSessionId = operation.getIdentifier(OperationIdType.TW_SESSION_ID);
-				if (twSessionId != null) {
-					operation.removeIdentifier(OperationIdType.TW_SESSION_ID);
-				}
-				currentAttempt.getMarketOrder().setVenue(null);
-				operation.setStateResilient(new TW_StartExecutionState(), ErrorState.class);
+			currentAttempt.setMarketOrder(marketOrder);
+			marketOrder.setValues(operation.getOrder());
+			marketOrder.setTransactTime(DateService.newUTCDate());
+			try {
+				marketOrder.setMarket(marketFinder.getMarketByCode(MarketCode.TW, null));
+			} catch (BestXException e) {
+				LOGGER.info("Error when trying to send an order to Tradeweb: unable to find market with code {}", MarketCode.TW.name());
 			}
+			marketOrder.setMarketMarketMaker(null);
+			marketOrder.setLimit(null);
+			LOGGER.info("Order={}, Selecting for execution market market maker: null and price null", operation.getOrder().getFixOrderId());
+			marketOrder.setVenue(null);
+			String twSessionId = operation.getIdentifier(OperationIdType.TW_SESSION_ID);
+			if (twSessionId != null) {
+				operation.removeIdentifier(OperationIdType.TW_SESSION_ID);
+			}
+			operation.setStateResilient(new TW_StartExecutionState(), ErrorState.class);
 		} else {
 			//we must always preserve the existing comment, because it could be the one sent to us through OTEX
 			switch (currentAttempt.getMarketOrder().getMarket().getMarketCode()) {

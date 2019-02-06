@@ -155,6 +155,17 @@ public class FixOrderInputLazyBean extends Order {
 	public String getQuoteId() {
 		return getStringField(FixMessageFields.FIX_QuoteID);
 	}
+	
+	/**
+	 * Gets the HandlInst.
+	 * 
+	 * @return the HandlInst
+	 * 
+	 */
+	// BESTX-387
+	public String getHandlInst() {
+		return getStringField(FixMessageFields.FIX_HandlInst);
+	}
 
 	@Override
 	public String getCurrency() {

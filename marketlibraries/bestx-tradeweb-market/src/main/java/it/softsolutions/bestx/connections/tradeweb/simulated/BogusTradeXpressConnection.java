@@ -167,11 +167,6 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 		execReport.setTransactTime(new Date());
 		execReport.setText(null);
 
-		TSParties tsp = new TSParties();
-		ArrayList<TSNoPartyID> tsNoPartyIDsList = new ArrayList<TSNoPartyID>();
-		tsNoPartyIDsList.add(new TSNoPartyID(marketOrder.getMarketMarketMaker().getMarketSpecificCode(), PartyIDSource.BIC, PartyRole.ExecutingFirm));
-		tsp.setTSNoPartyIDsList(tsNoPartyIDsList);
-		execReport.setTSParties(tsp);
 		//FIXME add MiFID II fields
 		
 		tradeXpressConnectionListener.onExecutionReport(sessionId, clOrdId, execReport);
