@@ -230,6 +230,13 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		if(operation.isCustomerRevokeReceived()) {
 			this.acceptOrderRevoke(operation, currentAttempt, serialNumberService);
 		}
+		if(BondTypesService.isUST(operation.getOrder().getInstrument()) 
+						&& currentAttempt.getMarketOrder().getLimit() == null 
+							&& currentAttempt.getMarketOrder().getMarket().getMarketCode() == MarketCode.TW) { // have got a rejection on the single attempt on TW
+			Order order= operation.getOrder();
+			manageAutomaticUnexecution(order, order.getCustomer());
+			return;
+		}
 		List<MarketMaker> doNotIncludeMM = new ArrayList<MarketMaker>();
 		// move book to a new attempt
 		operation.addAttempt();
@@ -255,7 +262,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		ClassifiedProposal executionProposal = BookHelper.getNextProposalAfterMarket(currentAttempt.getSortedBook(), 
 				usedMarketCodes, customerOrder.getSide());
 		if(executionProposal == null) {
-			operation.removeLastAttempt();  // ### is it needed?
+			operation.removeLastAttempt();
 			this.manageAutomaticUnexecution(customerOrder, customerOrder.getCustomer());
 			return;
 		} else {

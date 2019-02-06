@@ -478,17 +478,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
     
     protected ClassifiedProposal getInternalProposal(List<ClassifiedProposal> proposals)
     {
-        //
-        // must internalize if:
-        //
-        // best is RTFI and
-        //  - best is not from internal RTFI MM
-        //  - internal RTFI MM(s) is quoting
-        //
-        // best is BLOOM and
-        //  - internal RTFI MM(s) is quoting
-        // 
-
         LOGGER.debug("[INT-TRACE] Order {} : Internal brokers list is: {}", operation.getOrder().getFixOrderId(), internalMMcodes );
 
         ClassifiedProposal internalProposal = null;

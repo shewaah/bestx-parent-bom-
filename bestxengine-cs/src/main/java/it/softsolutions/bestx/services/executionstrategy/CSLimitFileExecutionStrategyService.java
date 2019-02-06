@@ -28,12 +28,14 @@ import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
+import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal.ProposalSubState;
 import it.softsolutions.bestx.model.SortedBook;
 import it.softsolutions.bestx.services.OperationStateAuditDAOProvider;
 import it.softsolutions.bestx.services.PriceController;
 import it.softsolutions.bestx.services.SerialNumberServiceProvider;
+import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.bestx.services.price.PriceResult;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.LimitFileNoPriceState;
@@ -70,6 +72,13 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
             throw new IllegalArgumentException("customer is null");
         }
 
+        if(BondTypesService.isUST(operation.getOrder().getInstrument()) 
+        		&& operation.getLastAttempt().getMarketOrder() != null
+				&& operation.getLastAttempt().getMarketOrder().getLimit() == null 
+				&& operation.getLastAttempt().getMarketOrder().getMarket().getMarketCode() == MarketCode.TW) { // have got a rejection on the single attempt on TW
+        	onUnexecutionResult(Result.USSingleAttemptNotExecuted, Messages.getString("UnexecutionReason.0"));
+        	return;
+        }
         //when there are no markets available, the execution service is called with a null price result, thus
         //we can go in the LimitPriceNoFileState
         if (priceResult == null) {
@@ -81,8 +90,7 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
             //is null
             List<ProposalSubState> wantedSubStates = new ArrayList<ProposalSubState>(1);
             wantedSubStates.add(ProposalSubState.NONE);
-            
-            SortedBook sortedBook = priceResult.getSortedBook();
+           SortedBook sortedBook = priceResult.getSortedBook();
             boolean emptyBook =  sortedBook == null || sortedBook.getProposalBySubState(wantedSubStates, order.getSide()).isEmpty();
             
             if (emptyBook) {
@@ -103,6 +111,7 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
     
     public void onUnexecutionResult(Result result, String message) {
         switch (result) {
+        case USSingleAttemptNotExecuted:
         case CustomerAutoNotExecution:
         case MaxDeviationLimitViolated:
             try {

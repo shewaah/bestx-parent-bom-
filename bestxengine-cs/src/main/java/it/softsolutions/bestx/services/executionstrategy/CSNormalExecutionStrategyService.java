@@ -23,10 +23,13 @@ import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.handlers.ExecutionReportHelper;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
+import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.services.OperationStateAuditDAOProvider;
 import it.softsolutions.bestx.services.PriceController;
 import it.softsolutions.bestx.services.SerialNumberServiceProvider;
+import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyService.Result;
+import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.bestx.services.price.PriceResult;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.LimitFileNoPriceState;
@@ -65,6 +68,7 @@ public class CSNormalExecutionStrategyService extends CSExecutionStrategyService
 
     public void onUnexecutionResult(Result result, String message) {
         switch (result) {
+        case USSingleAttemptNotExecuted:
         case CustomerAutoNotExecution:
         case MaxDeviationLimitViolated:
             try {
@@ -126,6 +130,13 @@ public class CSNormalExecutionStrategyService extends CSExecutionStrategyService
             return;
         }
 
+        if(BondTypesService.isUST(operation.getOrder().getInstrument()) 
+        		&& operation.getLastAttempt().getMarketOrder() != null
+				&& operation.getLastAttempt().getMarketOrder().getLimit() == null 
+				&& operation.getLastAttempt().getMarketOrder().getMarket().getMarketCode() == MarketCode.TW) { // have got a rejection on the single attempt on TW
+        	onUnexecutionResult(Result.USSingleAttemptNotExecuted, Messages.getString("UnexecutionReason.0"));
+        	return;
+        }
         CustomerAttributes customerAttr = (CustomerAttributes) customer.getCustomerAttributes();
 
         if (customerAttr == null) {

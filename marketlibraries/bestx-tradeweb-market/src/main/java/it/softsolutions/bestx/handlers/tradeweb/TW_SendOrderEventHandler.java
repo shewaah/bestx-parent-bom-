@@ -178,10 +178,12 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
 		        // case 1: order is sent to dealer, who answers with a worse price: we receive ExecutionReport/Canceled/Canceled [Target price not met/Quoted: <DLRList with dealer>]: attempt fails with reject
 		        // case 2: order is sent to dealer, and in the Dealers list the dealer is not present: we receive ExecutionReport/Canceled/Canceled [Target price not met/Quoted: <DLRList without dealer>]: retry if less than maxRetries
 		        // case 3: order is sent to dealer, who does not answer at all : we receive ExecutionReport/Canceled/Canceled [Trading session ended]: retry if less than maxRetries
+				// case 4: order is sent with no dealer and the order is not filled: we receive ExecutionReport/Canceled/Canceled: retry if less than maxRetries
 				
 				//AMC case 1-reject --> quotedDealers != null && marketOrderTarget != null && quotedDealers.toLowerCase().contains(marketOrderTarget.toLowerCase())
-				//AMC case 2-retry ---> quotedDealers != null && !quotedDealers.toLowerCase().contains(marketOrderTarget.toLowerCase())
+				//AMC case 2-retry ---> quotedDealers != null && marketOrderTarget != null && !quotedDealers.toLowerCase().contains(marketOrderTarget.toLowerCase())
 				//AMC case 3-retry ---> text.toLowerCase().contains((Messages.getString("TWMarketRfqNoAnswerMessage")).toLowerCase())
+				//AMC case 4-retry ---> marketOrderTarget == null
 				
 				String text = marketExecutionReport.getText();
 				String quotedDealers = null;
@@ -190,9 +192,11 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
 					quotedDealers = text.substring(quotedIndex + "Quoted:".length());
 				}
 				MarketOrder marketOrder = operation.getLastAttempt().getMarketOrder();
-				String marketOrderTarget = marketOrder.getMarketMarketMaker().getMarketSpecificCode();
+				String marketOrderTarget = null;
+				if(marketOrder.getMarketMarketMaker() != null) {
+					marketOrderTarget = marketOrder.getMarketMarketMaker().getMarketSpecificCode();
+				}
 				LOGGER.debug("Order {}, target mm {}, quoted on {}", order.getFixOrderId(), marketOrderTarget, quotedDealers);
-				
                 String noAnswerMsg = (Messages.getString("TWMarketRfqNoAnswerMessage")).toLowerCase();
                 //AMC boolean convenient to trigger message returned to audit in setStateResilient
 				boolean isNoDealerReply = text.toLowerCase().contains(noAnswerMsg);
@@ -206,7 +210,7 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
 						    marketExecutionReport.setState(ExecutionReportState.REJECTED);
 						    marketExecutionReport.setReason(RejectReason.TRADER_REJECTED);
 			                operation.setStateResilient(new TW_RejectedState(text), ErrorState.class);
-		        	 } else if (quotedDealers != null && !quotedDealers.toLowerCase().contains(marketOrderTarget.toLowerCase()) || isNoDealerReply) {
+		        	 } else if (quotedDealers != null && marketOrderTarget != null && !quotedDealers.toLowerCase().contains(marketOrderTarget.toLowerCase()) || isNoDealerReply) {
 		        		 //[RR20150408] CRSBXTWIGR-9 if the QuotedDealers list sent by the market does not contain the dealer with whom we tried to execute,
 		        		 // retry to execute the order for a configured number of times
 		        		 
@@ -233,7 +237,6 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
 		        					LOGGER.info ("Order {}, received a CANCEL exec report with reason [{}], maximum resends {} reached", order.getFixOrderId(), quotedDealers, maxRetries);
 									marketExecutionReport.setState(ExecutionReportState.REJECTED);
 									marketExecutionReport.setReason(RejectReason.TRADER_REJECTED);
-									//currentAttempt.resetConsecutiveRetries();
 									operation.setStateResilient(new TW_RejectedState(isNoDealerReply ? Messages.getString("TWNoReply.Rejected", maxRetries) : Messages.getString("TWDealerNotInQuotedList.Rejected",  marketOrderTarget, quotedDealers, maxRetries)), ErrorState.class);
 		        				 }
 		        			 } catch (NumberFormatException nfe) {
@@ -242,20 +245,17 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
 		        				 operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
 		        			 }
 		        		 } 
-		        	 } else {
+		        	 }else { // this is also case if(marketOrderTarget == null)
 							marketExecutionReport.setState(ExecutionReportState.REJECTED);
 							marketExecutionReport.setReason(RejectReason.TRADER_REJECTED);
-							//currentAttempt.resetConsecutiveRetries();
 							operation.setStateResilient(new TW_RejectedState(Messages.getString("TWRejectPrefix", marketExecutionReport.getText())), ErrorState.class);
 		        	 }
 		        } else {
-		        	//currentAttempt.resetConsecutiveRetries();
 					operation.setStateResilient(new TW_CancelledState(), ErrorState.class);
 				}
 				break;
             case REJECTED:
                 stopDefaultTimer();
-                //currentAttempt.resetConsecutiveRetries();               
                 operation.setStateResilient(new TW_RejectedState(marketExecutionReport.getText()), ErrorState.class);
                 break;
 			case FILLED:

@@ -99,14 +99,12 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 
 	@Override
     public void connect() throws BestXException {
-	    // TODO Auto-generated method stub
-	    
+	    ;
     }
 
 	@Override
     public void disconnect() throws BestXException {
-	    // TODO Auto-generated method stub
-	    
+	    ;
     }
 
 	@Override
@@ -116,8 +114,7 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 
 	@Override
     public void setConnectionListener(ConnectionListener listener) {
-	    // TODO Auto-generated method stub
-	    
+	    ;
     }
 
 	@Override
@@ -136,7 +133,7 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 			Thread.sleep(2000);
 		} catch (InterruptedException e) {}
 
-		if(cancelIsins.size() <= 0) cancelIsins.add("XS0365323608");
+		if(cancelIsins.size() <= 0) cancelIsins.add("US912803AU74");
 		if (cancelIsins.contains(marketOrder.getInstrument().getIsin())) {
 			sendCancelledExecutionReport(marketOrder);
 		} else if (rejectIsins.contains(marketOrder.getInstrument().getIsin())){  //rejectIsins.add("XS0365323608");
@@ -150,9 +147,7 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 	@Override
     public void cancelOrder(MarketOrder marketOrder) throws BestXException {
 		LOGGER.debug("marketOrder = {}", marketOrder);
-        
-
-    }
+	}
 	
 	private void sendNewExecutionReport(MarketOrder marketOrder) {
 		String sessionId = "sessionID";
@@ -167,8 +162,6 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 		execReport.setTransactTime(new Date());
 		execReport.setText(null);
 
-		//FIXME add MiFID II fields
-		
 		tradeXpressConnectionListener.onExecutionReport(sessionId, clOrdId, execReport);
 	}
 
@@ -230,8 +223,7 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 
 		execReport.addCustomComponent(compdealersComp);
 		
-		tradeXpressConnectionListener.onExecutionReport(sessionId, clOrdId, execReport);
-		
+		tradeXpressConnectionListener.onExecutionReport(sessionId, clOrdId, execReport);	
 	}
 
 	private void sendCancelledExecutionReport(MarketOrder marketOrder) {
@@ -242,21 +234,22 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 		execReport.setExecType(ExecType.Canceled);
 		execReport.setOrdStatus(OrdStatus.Canceled);
 		execReport.setAccruedInterestAmt(null);
-		execReport.setLastPx(marketOrder.getLimit().getAmount().doubleValue());
+		execReport.setLastPx(marketOrder.getLimit() == null ? 0.0: marketOrder.getLimit().getAmount().doubleValue());
 		execReport.setExecID("C#" + System.currentTimeMillis());
 		execReport.setSettlDate(DateUtils.addDays(new Date(), 3));
 		execReport.setTransactTime(new Date());
 		execReport.setText("Target price not met/Quoted:DLRX,DLRY");
 		
-		TSParties tsp = new TSParties();
-		ArrayList<TSNoPartyID> tsNoPartyIDsList = new ArrayList<TSNoPartyID>();
-		tsNoPartyIDsList.add(new TSNoPartyID(marketOrder.getMarketMarketMaker().getMarketSpecificCode(), PartyIDSource.BIC, PartyRole.ExecutingFirm));
-		tsp.setTSNoPartyIDsList(tsNoPartyIDsList);
-		execReport.setTSParties(tsp);
+		if(marketOrder.getMarketMarketMaker() != null) {
+			TSParties tsp = new TSParties();
+			ArrayList<TSNoPartyID> tsNoPartyIDsList = new ArrayList<TSNoPartyID>();
+			tsNoPartyIDsList.add(new TSNoPartyID(marketOrder.getMarketMarketMaker().getMarketSpecificCode(), PartyIDSource.BIC, PartyRole.ExecutingFirm));
+			tsp.setTSNoPartyIDsList(tsNoPartyIDsList);
+			execReport.setTSParties(tsp);
+		}
 		//FIXME add MiFID II fields
 				
 		tradeXpressConnectionListener.onExecutionReport(sessionId, clOrdId, execReport);
-		
 	}
 
 	private void sendOrderReject(MarketOrder marketOrder) {
@@ -265,7 +258,6 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 		String reason = "Don't like your manners";
 		
 		tradeXpressConnectionListener.onOrderReject(sessionId, clOrdId, reason);
-		
 	}
 
 	private void sendOrderCancelReject(MarketOrder marketOrder) {
