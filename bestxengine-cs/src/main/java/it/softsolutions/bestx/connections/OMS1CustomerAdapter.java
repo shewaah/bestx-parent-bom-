@@ -122,7 +122,7 @@ public class OMS1CustomerAdapter extends CustomerAdapterStatistics implements Cu
     private Date statLastStartup;
     private MICCodeService micCodeService;
     private SqlInstrumentDao sqlInstrumentDao;
-    
+        
     private void checkPreRequisites() throws ObjectNotInitializedException {
         if (operationRegistry == null) {
             throw new ObjectNotInitializedException("Operation registry not set");
@@ -186,6 +186,7 @@ public class OMS1CustomerAdapter extends CustomerAdapterStatistics implements Cu
 
     public void init() throws BestXException {
         checkPreRequisites();
+    	resetStats();
         connectionHelper.setConnection(fixGatewayConnection);
         connectionHelper.setConnectionListener(this);
         setChannelName("OMS1");

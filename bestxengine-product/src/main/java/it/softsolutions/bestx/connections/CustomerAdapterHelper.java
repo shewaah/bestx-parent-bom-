@@ -67,7 +67,9 @@ public class CustomerAdapterHelper implements CustomerConnection{
 		String fixSessionId = source.getIdentifier(OperationIdType.FIX_SESSION);
 		LOGGER.debug("Session ID : {}", fixSessionId);
 		customerConnection = adaptersMap.get(fixSessionId);
-		customerConnection.sendOrderReject(source, order, orderId, executionReport, errorCode, rejectReason);    
+		if(customerConnection != null)
+			customerConnection.sendOrderReject(source, order, orderId, executionReport, errorCode, rejectReason);
+		else LOGGER.warn("Unable to send order rejection of order {}, because the customerconnection is not available", orderId);
 	}
 	
 
