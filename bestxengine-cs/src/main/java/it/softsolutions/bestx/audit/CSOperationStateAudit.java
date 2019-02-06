@@ -48,7 +48,6 @@ import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.CustomerAttributesIFC;
 import it.softsolutions.bestx.model.ExecutionReport;
-import it.softsolutions.bestx.model.InternalAttempt;
 import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.MarketExecutionReport;
@@ -499,8 +498,12 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         }
         break;
         case OrderRevocated: {
-            if (oldState.getType() == OperationState.Type.WaitingPrice) {
+            if (oldState.getType() == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry) {
                 operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);
+                
+                if (operation.getLastAttempt().getSortedBook() != null) {
+                   operationStateAuditDao.saveNewBook(order.getFixOrderId(), attemptNo, operation.getLastAttempt().getSortedBook());
+                }
             }
         }
         break;
