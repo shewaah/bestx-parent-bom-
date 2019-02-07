@@ -1331,6 +1331,7 @@
             is also the default value -->
         <property name="reconnectionMaxTries"><value>-1</value></property>
         <property name="encryptor"><ref bean="configurationEncryptor"></ref></property>
+        <property name="serviceName"><value>GRDLiteService</value></property>
 	</bean>
 
     <bean id="configurationPropertyLoader" class="it.softsolutions.bestx.services.CSConfigurationPropertyLoader">
