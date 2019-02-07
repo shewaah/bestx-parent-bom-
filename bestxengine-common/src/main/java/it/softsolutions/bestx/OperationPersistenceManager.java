@@ -183,7 +183,9 @@ public class OperationPersistenceManager implements OperationStateListener, Init
 			SortedBook sortedBook = operation.getLastAttempt() != null ? operation.getLastAttempt().getSortedBook() : null;
 			if (newState.mustSaveBook() && sortedBook != null) {
 				for (ClassifiedProposal prop : sortedBook.getAskProposals()) {
+//					LOGGER.error("{}", prop);
 					session.saveOrUpdate(prop);
+//					LOGGER.error("done");
 				}
 				for (ClassifiedProposal prop : sortedBook.getBidProposals()) {
 					session.saveOrUpdate(prop);

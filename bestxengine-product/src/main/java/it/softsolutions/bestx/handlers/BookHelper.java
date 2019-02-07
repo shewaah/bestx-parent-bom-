@@ -215,17 +215,19 @@ public class BookHelper {
      */
     public static ClassifiedProposal getNextProposalAfterMarket(SortedBook book, List<MarketCode> lastMarketCodes, Rfq.OrderSide side) {
 		if(book == null || side == null) throw new IllegalArgumentException();
-		List<ClassifiedProposal> sideProposals = (side == Rfq.OrderSide.BUY) ? book.getAskProposals() : book.getBidProposals();
+		List<ClassifiedProposal> sideProposals =  book.getValidSideProposals(side);
 		int index = -1;
 		for(ClassifiedProposal prop : sideProposals) {
 			if(lastMarketCodes == null && ProposalState.VALID == prop.getProposalState()) return prop;
 			index++; // contains the index of the current proposal in the list sideProposals
-			if(lastMarketCodes.contains(prop.getMarket().getMarketCode()) && ProposalState.VALID == prop.getProposalState())
+			if(lastMarketCodes.contains(prop.getMarket().getMarketCode()) && ProposalState.VALID == prop.getProposalState()) {
 				// now I am ready to look for next MarketCode from now on
 				for(ClassifiedProposal newProp : sideProposals.subList(index, sideProposals.size() -1 )) {
 					if(!lastMarketCodes.contains(newProp.getMarket().getMarketCode()) && ProposalState.VALID == newProp.getProposalState())
 						return newProp;
 				}
+			break;
+			}
 		}
 		// there are no more valid proposals
 		return null;

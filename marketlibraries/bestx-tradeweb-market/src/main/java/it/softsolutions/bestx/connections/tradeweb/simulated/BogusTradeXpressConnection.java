@@ -133,7 +133,7 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 			Thread.sleep(2000);
 		} catch (InterruptedException e) {}
 
-		if(cancelIsins.size() <= 0) cancelIsins.add("US912803AU74");
+		if(cancelIsins.isEmpty() || !cancelIsins.contains("XS1897488091")) cancelIsins.add("XS1897488091");
 		if (cancelIsins.contains(marketOrder.getInstrument().getIsin())) {
 			sendCancelledExecutionReport(marketOrder);
 		} else if (rejectIsins.contains(marketOrder.getInstrument().getIsin())){  //rejectIsins.add("XS0365323608");

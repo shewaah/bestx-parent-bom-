@@ -189,7 +189,7 @@
     <logger name="quickfixj" additivity="false" level="INFO">
         <appender-ref ref="QuickfixLogger" />
     </logger>
-    <logger name="org.hibernate" additivity="false" level="INFO">
+    <logger name="org.hibernate" additivity="false" level="TRACE">
         <appender-ref ref="HibernateLogger" />
     </logger>
     <logger name="net.sf" additivity="false" level="INFO">
