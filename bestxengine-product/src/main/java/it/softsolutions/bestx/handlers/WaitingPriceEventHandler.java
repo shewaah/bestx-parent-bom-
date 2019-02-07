@@ -53,6 +53,7 @@ import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyServic
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyService.Result;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyServiceCallback;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyServiceFactory;
+import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.bestx.services.logutils.ApplicationMonitor;
 import it.softsolutions.bestx.services.logutils.ApplicationStatisticsHelper;
 import it.softsolutions.bestx.services.price.PriceResult;
@@ -411,7 +412,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
             operation.removeLastAttempt();
             operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("EventPriceTimeout.0", priceResult.getReason())), ErrorState.class);
         } else if (priceResult.getState() == PriceResult.PriceResultState.NULL || priceResult.getState() == PriceResult.PriceResultState.ERROR) {
-			if(!operation.isNotAutoExecute() /*|| bestOnBloomberg*/) // uncomment if best on bloomberg requires to be managed with auto unexecution
+			if(!operation.isNotAutoExecute() && BondTypesService.isUST(operation.getOrder().getInstrument())  /*|| bestOnBloomberg*/) // uncomment if best on bloomberg requires to be managed with auto unexecution
 				csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
 			else {
 	            Customer customer = order.getCustomer();

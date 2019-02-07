@@ -312,7 +312,6 @@
 			<property name="instrumentCode" column="InstrumentCode"/>
 			<property name="text" column="Text"/>
 			<property name="bestPriceDeviationFromLimit" column="BestAndLimitDelta" />
-			<property name="notExecute" column="NotExecute"/>
 			<property name="ticketOwner" column="TicketOwner"/>
 			<property name="custOrderHandlingInstr" column="CustOrderHandlingInstr"/>
 			<property name="effectiveTime" column="EffectiveTime"/>

@@ -39,8 +39,6 @@ import it.softsolutions.bestx.model.MarketMarketMaker;
 import it.softsolutions.bestx.model.MarketMarketMakerSpec;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
-import it.softsolutions.bestx.model.Rfq;
-import it.softsolutions.bestx.model.SortedBook;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.bestx.services.price.PriceResult;
@@ -52,7 +50,6 @@ import it.softsolutions.bestx.states.WarningState;
 import it.softsolutions.bestx.states.bloomberg.BBG_StartExecutionState;
 import it.softsolutions.bestx.states.marketaxess.MA_StartExecutionState;
 import it.softsolutions.bestx.states.tradeweb.TW_StartExecutionState;
-import it.softsolutions.jsscommon.Money;
 
 /**  
  *
