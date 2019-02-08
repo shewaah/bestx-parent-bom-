@@ -48,7 +48,9 @@ public class ExecutablePrice implements Comparable<ExecutablePrice> {
 	private long AttemptId;
 	
 	public MarketMaker getMarketMaker() {
-		return getMarketMarketMaker().getMarketMaker();
+		if(getMarketMarketMaker() != null)
+			return getMarketMarketMaker().getMarketMaker();
+		else return null;
 	}
 
 	public Integer getRank() {

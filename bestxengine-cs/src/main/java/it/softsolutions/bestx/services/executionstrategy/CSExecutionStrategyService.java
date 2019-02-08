@@ -246,19 +246,21 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 
 		currentAttempts.forEach(attempt->{ 
 			currentAttempt.getExecutablePrices().forEach(execPx->{
-				doNotIncludeMM.add(execPx.getMarketMaker());
+				if(execPx.getMarketMaker() != null) {
+					doNotIncludeMM.add(execPx.getMarketMaker());
+				}
 			});
 		});
 
 		//Market market = this.getNextMarketToTry(operation, currentAttempt.getExecutionProposal().getMarket());
 		ArrayList<MarketCode> usedMarketCodes = new ArrayList<MarketCode>();
 		for(Attempt attempt: operation.getAttempts()) {
-			if(attempt.getMarketOrder() != null)
+			if(attempt.getMarketOrder() != null && !usedMarketCodes.contains(attempt.getMarketOrder().getMarket().getMarketCode()))
 				usedMarketCodes.add(attempt.getMarketOrder().getMarket().getMarketCode());
 		}
 		ClassifiedProposal executionProposal = BookHelper.getNextProposalAfterMarket(currentAttempt.getSortedBook(), 
 				usedMarketCodes, customerOrder.getSide());
-		if(executionProposal == null) {
+		if(executionProposal == null) { //###
 			operation.removeLastAttempt();
 			this.manageAutomaticUnexecution(customerOrder, customerOrder.getCustomer());
 			return;
