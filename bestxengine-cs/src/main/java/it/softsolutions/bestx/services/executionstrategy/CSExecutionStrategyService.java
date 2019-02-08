@@ -238,14 +238,14 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		// move book to a new attempt
 		operation.addAttempt();
 		Order customerOrder = operation.getOrder();
-		Attempt newAttempt = operation.getLastAttempt();
-		newAttempt.setSortedBook(currentAttempt.getSortedBook());
+		Attempt newAttempt = operation.getLastAttempt();  //operation.getAttempts()
+		newAttempt.setSortedBook(currentAttempt.getSortedBook().clone());
 		// remove dealers that were included in the preceding RFQ/Orders
 		List<Attempt> currentAttempts = 
 				operation.getAttempts().subList(operation.getFirstAttemptInCurrentCycle(), operation.getAttempts().size() - 1);
 
 		currentAttempts.forEach(attempt->{ 
-			currentAttempt.getExecutablePrices().forEach(execPx->{
+			currentAttempt.getExecutablePrices().forEach(execPx->{ //FIXME verificare cosa ci mette. Devono essere solo dei MM dello stesso mercato
 				if(execPx.getMarketMaker() != null) {
 					doNotIncludeMM.add(execPx.getMarketMaker());
 				}
@@ -271,7 +271,6 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		MarketOrder marketOrder = new MarketOrder();	
 		// maintain price
 		marketOrder.setValues(currentAttempt.getMarketOrder());
-		marketOrder.setTransactTime(DateService.newUTCDate());
 		// generate the list of dealers to be excluded because they have been contacted in one preceding attempt
 		List<MarketMarketMakerSpec> excludeDealers = new ArrayList<MarketMarketMakerSpec>();
 		if (currentAttempt.getExecutionProposal() != null) {
@@ -287,11 +286,15 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 			marketOrder.setExcludeDealers(excludeDealers);
 		}
 		// create the list of dealers to be included in the order dealers list, which shall not contain any of the excluded dealers
-		List<MarketMarketMakerSpec> dealers = newAttempt.getSortedBook().getValidProposalDealersByMarket(marketOrder.getMarket().getMarketCode(), marketOrder.getSide());
+		List<MarketMarketMakerSpec> dealers = newAttempt.getSortedBook().getValidProposalDealersByMarket(executionProposal.getMarket().getMarketCode(), marketOrder.getSide());
 		dealers.removeAll(excludeDealers);
 		marketOrder.setDealers(dealers);
+		marketOrder.setVenue(null);
+		marketOrder.setMarketSessionId(null);
+		marketOrder.setMarket(executionProposal.getMarket());
+		marketOrder.setTransactTime(DateService.newUTCDate());
 		newAttempt.setMarketOrder(marketOrder);
-		this.startExecution(operation, currentAttempt, serialNumberService);
+		this.startExecution(operation, newAttempt, serialNumberService);
 	}
 
 
