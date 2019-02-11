@@ -121,6 +121,7 @@ public class OnExecutionReportRunnable implements Runnable {
 
     @Override
 	public void run() {
+        LOGGER.debug("Running into executor message with status {} for order {} for management", ordStatus, clOrdID);
         Order order = this.operation.getOrder();
         Rfq rfq = this.operation.getRfq();
         Thread.currentThread().setName("OnExecutionReportRunnable-" + this.operation.toString() + "-ISIN:" + ((order != null && order.getInstrument() != null) ? order.getInstrument().getIsin() : (rfq != null && rfq.getInstrument() != null) ? rfq.getInstrument().getIsin() : "XXXX"));
