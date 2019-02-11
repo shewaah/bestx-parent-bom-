@@ -245,7 +245,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 				operation.getAttempts().subList(operation.getFirstAttemptInCurrentCycle(), operation.getAttempts().size() - 1);
 
 		currentAttempts.forEach(attempt->{ 
-			currentAttempt.getExecutablePrices().forEach(execPx->{ //FIXME verificare cosa ci mette. Devono essere solo dei MM dello stesso mercato
+			currentAttempt.getExecutablePrices().forEach(execPx->{
 				if(execPx.getMarketMaker() != null) {
 					doNotIncludeMM.add(execPx.getMarketMaker());
 				}
@@ -278,7 +278,8 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 			marketOrder.setMarketMarketMaker(executionProposal.getMarketMarketMaker());
 			List<MarketMarketMaker> doNotIncludeMMM = new ArrayList<MarketMarketMaker>();
 			doNotIncludeMM.forEach(marketMaker->{
-				doNotIncludeMMM.addAll(marketMaker.getMarketMarketMakerForMarket(marketOrder.getMarket().getMarketCode()));
+				if(marketMaker.getMarketMarketMakerForMarket(marketOrder.getMarket().getMarketCode()) != null)
+					doNotIncludeMMM.addAll(marketMaker.getMarketMarketMakerForMarket(marketOrder.getMarket().getMarketCode()));
 			});
 			doNotIncludeMMM.forEach(mmm -> {
 				excludeDealers.add(new MarketMarketMakerSpec(mmm.getMarketSpecificCode(), mmm.getMarketSpecificCodeSource()));

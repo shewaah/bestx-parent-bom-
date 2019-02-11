@@ -48,7 +48,7 @@ import it.softsolutions.tradestac.fix.field.OrdStatus;
  *
  * Purpose: this class is mainly for ...  
  *
- * Project Name : bestx-tradeweb-market
+ * Project Name : bestx-tsox-market
  * First created by: davide.rossoni
  * Creation date: 30/gen/2015
  * 

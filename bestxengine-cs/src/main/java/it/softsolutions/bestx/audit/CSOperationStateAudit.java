@@ -523,7 +523,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             case MARKETAXESS: {
                 operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);
                 auditMarketStatus(order.getFixOrderId(), attemptNo);
-                if (oldStateType == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry) {
+                if (oldStateType == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry || newState.mustSaveBook()) {
                 	operationStateAuditDao.saveNewBook(order.getFixOrderId(), attemptNo, operation.getLastAttempt().getSortedBook());
                 }
             }
@@ -532,7 +532,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
                 if (oldState.getType() == OperationState.Type.WaitingPrice) {
                     operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);
                     auditMarketStatus(order.getFixOrderId(), attemptNo);
-                    if (oldStateType == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry) {
+                    if (oldStateType == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry || newState.mustSaveBook()) {
                     	operationStateAuditDao.saveNewBook(order.getFixOrderId(), attemptNo, operation.getLastAttempt().getSortedBook());
                     }
                 }
@@ -567,7 +567,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             		operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);	
                 	auditMarketStatus(order.getFixOrderId(), attemptNo);
             	} 
-            	if (oldStateType == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry) {
+            	if (oldStateType == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry || newState.mustSaveBook()) {
             		operationStateAuditDao.saveNewBook(order.getFixOrderId(), attemptNo, operation.getLastAttempt().getSortedBook());
             	}
             } catch (Exception e) {

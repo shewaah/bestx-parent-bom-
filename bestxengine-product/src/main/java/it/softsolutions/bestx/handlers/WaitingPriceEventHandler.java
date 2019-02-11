@@ -349,7 +349,10 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
         }
 
         ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, priceResult, rejectOrderWhenBloombergIsBest);
-
+      	// AMC 20190208 BESTX-385 best on bloomberg requires to be managed with auto unexecution when best on bloomberg is configured for auto unexecution
+        ClassifiedProposal executionProposal = currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide());
+    	boolean rejectBestOnBloomberg = executionProposal != null && executionProposal.getMarket().getMarketCode() == Market.MarketCode.BLOOMBERG && rejectOrderWhenBloombergIsBest;
+                   
         if (priceResult.getState() == PriceResult.PriceResultState.COMPLETE || mktCode == MarketCode.MATCHING) {
 
             // Fill Attempt
@@ -384,22 +387,18 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
                 marketOrder.setVenue(currentAttempt.getExecutionProposal().getVenue());
             }
 
-                        
             ApplicationStatisticsHelper.logStringAndUpdateOrderIds(operation.getOrder(), "Order.Execution_" + source.getPriceServiceName() + "." + operation.getOrder().getInstrument().getIsin(), this
                             .getClass().getName());
-
         	// executable limit file with autoexecution disabled
             if (order.isLimitFile() && doNotExecute) {  // limit file order action +++
                 LOGGER.info("Order {} could be executed, but BestX is configured to not execute limit file orders.", order.getFixOrderId());
                 operation.setStateResilient(new OrderNotExecutableState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
             } else {
-            	// uncomment next row if best on bloomberg requires to be managed with auto unexecution
-            	//boolean bestOnBloomberg = currentAttempt.getExecutionProposal() != null && currentAttempt.getExecutionProposal().getMarket().getMarketCode() == Market.MarketCode.BLOOMBERG;
             	// limit file order action +++
             	//2018-07-25 BESTX-334 SP: this call allows BestX to send the price discovery result to OTEX for limit file before sending it to automatic execution
                 //for limit file which are not found executable (no prices available or out of market) BestX doesn't send any price discovery result  
                 if (customerSpecificHandler!=null && order.isLimitFile()) customerSpecificHandler.onPricesResult(source, priceResult);
-				if(!operation.isNotAutoExecute() /*|| bestOnBloomberg*/) // uncomment if best on bloomberg requires to be managed with auto unexecution
+				if(!operation.isNotAutoExecute() || rejectBestOnBloomberg) // uncomment if best on bloomberg requires to be managed with auto unexecution
 					csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
 					// last row in this method for executable operation
 				else
@@ -412,7 +411,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
             operation.removeLastAttempt();
             operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("EventPriceTimeout.0", priceResult.getReason())), ErrorState.class);
         } else if (priceResult.getState() == PriceResult.PriceResultState.NULL || priceResult.getState() == PriceResult.PriceResultState.ERROR) {
-			if(!operation.isNotAutoExecute() && BondTypesService.isUST(operation.getOrder().getInstrument())  /*|| bestOnBloomberg*/) // uncomment if best on bloomberg requires to be managed with auto unexecution
+			if(!operation.isNotAutoExecute() && BondTypesService.isUST(operation.getOrder().getInstrument()) || rejectBestOnBloomberg) // uncomment if best on bloomberg requires to be managed with auto unexecution
 				csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
 			else {
 	            Customer customer = order.getCustomer();

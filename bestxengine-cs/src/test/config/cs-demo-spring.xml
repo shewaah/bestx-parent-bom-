@@ -447,13 +447,13 @@
 	</bean>
 	<bean id="threadPoolTradeweb" class="it.softsolutions.bestx.ThreadPoolSortedQueueExecutor" init-method="initialize">
 		<property name="corePoolSize" value="16"/>
-		<property name="maxPoolSize" value="16"/>
+		<property name="maxPoolSize" value="64"/>
 		<property name="threadNamePrefix" value="ThreadPool-Tradeweb"/>
 	</bean>	
 	
 	<bean id="threadPoolMarketAxess" class="it.softsolutions.bestx.ThreadPoolSortedQueueExecutor" init-method="initialize">
 		<property name="corePoolSize" value="16"/>
-		<property name="maxPoolSize" value="16"/>
+		<property name="maxPoolSize" value="64"/>
 		<property name="threadNamePrefix" value="ThreadPool-Tradeweb"/>
 	</bean>	
 	
@@ -622,7 +622,7 @@
         <property name="serialNumberService"><ref bean="serialNumberService"></ref></property>
         <property name="orderValidationService"><ref bean="csOrderValidationService"></ref></property>
         <property name="priceDiscoveryValidationService"><ref bean="csPDValidationService"></ref></property>
-        <property name="titoliIncrociabiliService"><ref bean="titoliIncrociabiliServer"></ref></property>
+<!--         <property name="titoliIncrociabiliService"><ref bean="titoliIncrociabiliServer"></ref></property>  -->
         <property name="marketConnectionRegistry"><ref bean="configurableMarketConnectionRegistry"></ref></property>
         <property name="marketSecurityStatusService"><ref bean="marketSecurityStatusService"></ref></property>
 		<property name="customerFinder" ref="dbBasedCustomerFinder" />
