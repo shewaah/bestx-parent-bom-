@@ -127,7 +127,7 @@ public class CSStrategy implements Strategy, SystemStateSelector {
 
    private static final Logger LOGGER = LoggerFactory.getLogger(CSStrategy.class);
    private static final long LIMIT_FILE_MINIMUM_PD_INTERVAL = 15;
-   private TitoliIncrociabiliService titoliIncrociabiliService;
+   private TitoliIncrociabiliService titoliIncrociabiliService = null;
    private MarketConnectionRegistry marketConnectionRegistry;
    private int marketCommunicationTimeout;
    private long waitPriceTimeoutMSec;
@@ -552,10 +552,10 @@ public void setTargetPriceMaxLevel(int targetPriceMaxLevel) {
          case ManualWaitingFill:
             handler = new ManualWaitingFillEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BLOOMBERG), marketMakerFinder, manualWaitFillMSec, manualFillPollingMSec);
          break;
-         case MatchFound:
-            handler = new MATCH_MatchFoundEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.MATCHING).getBuySideConnection(), serialNumberService,
-                  titoliIncrociabiliService, matchingMMcode);
-         break;
+//         case MatchFound:
+//            handler = new MATCH_MatchFoundEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.MATCHING).getBuySideConnection(), serialNumberService,
+//                  titoliIncrociabiliService, matchingMMcode);
+//         break;
          case OrderReceived:
             handler = new OrderReceivedEventHandler(operation, grdLiteLoadResponseTimeout, grdLiteService, instrumentFinder, orderValidationService);
          break;
@@ -667,9 +667,9 @@ public void setTargetPriceMaxLevel(int targetPriceMaxLevel) {
                case INTERNALIZZAZIONE:
                   handler = new INT_StartExecutionEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.INTERNALIZZAZIONE).getBuySideConnection(), waitingCMFTimeout);
                break;
-               case MATCHING:
-                  handler = new MATCH_StartExecutionEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.MATCHING).getBuySideConnection(), titoliIncrociabiliService);
-               break;
+//               case MATCHING:
+//                  handler = new MATCH_StartExecutionEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.MATCHING).getBuySideConnection(), titoliIncrociabiliService);
+//               break;
                case BLOOMBERG:
                   handler = new BBG_StartExecutionEventHandler(operation);
                break;
@@ -780,8 +780,8 @@ public void setTargetPriceMaxLevel(int targetPriceMaxLevel) {
          throw new ObjectNotInitializedException("Market connection registry not set");
       }
       if (titoliIncrociabiliService == null) {
-         throw new ObjectNotInitializedException("Titoli Incrociabili service not set");
-      }
+		; // do nothing, it's OK not to have this service
+	  }
       if (customerConnection == null) {
          throw new ObjectNotInitializedException("Customer connection not set");
       }
