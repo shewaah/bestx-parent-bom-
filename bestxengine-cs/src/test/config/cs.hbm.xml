@@ -154,19 +154,19 @@
 		<subclass
 			name="it.softsolutions.bestx.states.SendAutoNotExecutionReportState"
 			discriminator-value="it.softsolutions.bestx.states.SendAutoNotExecutionReportState" />
-		<subclass name="it.softsolutions.bestx.states.internal.INT_ExecutedState"
-			discriminator-value="it.softsolutions.bestx.states.internal.INT_ExecutedState" />
+		<subclass name="it.softsolutions.bestx.states.internal.deprecated.INT_ExecutedState"
+			discriminator-value="it.softsolutions.bestx.states.internal.deprecated.INT_ExecutedState" />
 		<subclass
-			name="it.softsolutions.bestx.states.internal.INT_ManageCounterState"
-			discriminator-value="it.softsolutions.bestx.states.internal.INT_ManageCounterState" />
-		<subclass name="it.softsolutions.bestx.states.internal.INT_RejectedState"
-			discriminator-value="it.softsolutions.bestx.states.internal.INT_RejectedState" />
+			name="it.softsolutions.bestx.states.internal.deprecated.INT_ManageCounterState"
+			discriminator-value="it.softsolutions.bestx.states.internal.deprecated.INT_ManageCounterState" />
+		<subclass name="it.softsolutions.bestx.states.internal.deprecated.INT_RejectedState"
+			discriminator-value="it.softsolutions.bestx.states.internal.deprecated.INT_RejectedState" />
 		<subclass
-			name="it.softsolutions.bestx.states.internal.INT_StartExecutionState"
-			discriminator-value="it.softsolutions.bestx.states.internal.INT_StartExecutionState" />
+			name="it.softsolutions.bestx.states.internal.deprecated.INT_StartExecutionState"
+			discriminator-value="it.softsolutions.bestx.states.internal.deprecated.INT_StartExecutionState" />
 		<subclass
-			name="it.softsolutions.bestx.states.internal.INT_InternalInCurandoState"
-			discriminator-value="it.softsolutions.bestx.states.internal.INT_InternalInCurandoState" />
+			name="it.softsolutions.bestx.states.internal.deprecated.INT_InternalInCurandoState"
+			discriminator-value="it.softsolutions.bestx.states.internal.deprecated.INT_InternalInCurandoState" />
 		<subclass name="it.softsolutions.bestx.states.matching.MATCH_ExecutedState"
 			discriminator-value="it.softsolutions.bestx.states.matching.MATCH_ExecutedState" />
 		<subclass
@@ -230,7 +230,8 @@
         <subclass
             name="it.softsolutions.bestx.states.marketaxess.MA_CancelledState"
             discriminator-value="it.softsolutions.bestx.states.marketaxess.MA_CancelledState" />      
-            
+        <subclass name="it.softsolutions.bestx.states.ParkedOrderState"
+			discriminator-value="it.softsolutions.bestx.states.ParkedOrderState" />
                   
 	</class>
 
@@ -315,6 +316,9 @@
 			<property name="text" column="Text"/>
 			<property name="bestPriceDeviationFromLimit" column="BestAndLimitDelta" />
 			<property name="ticketOwner" column="TicketOwner"/>
+			<property name="custOrderHandlingInstr" column="CustOrderHandlingInstr"/>
+			<property name="effectiveTime" column="EffectiveTime"/>
+			<property name="tryAfterMinutes" column="TryAfterMinutes"/>
 		</subclass>
 	</class>
 
@@ -599,6 +603,7 @@
 			<generator class="native" />
 		</id>
 		<property name="byPassableForVenueAlreadyTried" column="ByPass"/>
+
 		<many-to-one name="executionProposal" column="ExecutionProposalId"
 			class="it.softsolutions.bestx.model.ClassifiedProposal" cascade="all"
 			lazy="false" not-null="false" />

@@ -54,6 +54,7 @@
 		</id>
 		<!-- BESTX-286 -->
 		<many-to-one name="owner" column="Owner" class="it.softsolutions.bestx.model.UserModel" lazy="false" cascade="none" not-null="false" />
+		
 		<many-to-one name="rfq" column="RfqId"
 			class="it.softsolutions.bestx.model.Rfq" lazy="false" cascade="all" />
 		<many-to-one name="order" column="OrderId"
@@ -91,6 +92,8 @@
 			access="field" />
 		<property name="customerRevokeReceived" column="CustomerRevokeReceived"
 			access="field" />
+			<!-- BESTX-356 -->
+ 		<property name="notAutoExecute" column="NotAutoExecute"/>
 	</class>
 
 	<!-- OPERATION STATE -->
@@ -151,19 +154,19 @@
 		<subclass
 			name="it.softsolutions.bestx.states.SendAutoNotExecutionReportState"
 			discriminator-value="it.softsolutions.bestx.states.SendAutoNotExecutionReportState" />
-		<subclass name="it.softsolutions.bestx.states.internal.INT_ExecutedState"
-			discriminator-value="it.softsolutions.bestx.states.internal.INT_ExecutedState" />
+		<subclass name="it.softsolutions.bestx.states.internal.deprecated.INT_ExecutedState"
+			discriminator-value="it.softsolutions.bestx.states.internal.deprecated.INT_ExecutedState" />
 		<subclass
-			name="it.softsolutions.bestx.states.internal.INT_ManageCounterState"
-			discriminator-value="it.softsolutions.bestx.states.internal.INT_ManageCounterState" />
-		<subclass name="it.softsolutions.bestx.states.internal.INT_RejectedState"
-			discriminator-value="it.softsolutions.bestx.states.internal.INT_RejectedState" />
+			name="it.softsolutions.bestx.states.internal.deprecated.INT_ManageCounterState"
+			discriminator-value="it.softsolutions.bestx.states.internal.deprecated.INT_ManageCounterState" />
+		<subclass name="it.softsolutions.bestx.states.internal.deprecated.INT_RejectedState"
+			discriminator-value="it.softsolutions.bestx.states.internal.deprecated.INT_RejectedState" />
 		<subclass
-			name="it.softsolutions.bestx.states.internal.INT_StartExecutionState"
-			discriminator-value="it.softsolutions.bestx.states.internal.INT_StartExecutionState" />
+			name="it.softsolutions.bestx.states.internal.deprecated.INT_StartExecutionState"
+			discriminator-value="it.softsolutions.bestx.states.internal.deprecated.INT_StartExecutionState" />
 		<subclass
-			name="it.softsolutions.bestx.states.internal.INT_InternalInCurandoState"
-			discriminator-value="it.softsolutions.bestx.states.internal.INT_InternalInCurandoState" />
+			name="it.softsolutions.bestx.states.internal.deprecated.INT_InternalInCurandoState"
+			discriminator-value="it.softsolutions.bestx.states.internal.deprecated.INT_InternalInCurandoState" />
 		<subclass name="it.softsolutions.bestx.states.matching.MATCH_ExecutedState"
 			discriminator-value="it.softsolutions.bestx.states.matching.MATCH_ExecutedState" />
 		<subclass
@@ -600,9 +603,6 @@
 			<generator class="native" />
 		</id>
 		<property name="byPassableForVenueAlreadyTried" column="ByPass" />
-		<many-to-one name="internalAttempt"
-			class="it.softsolutions.bestx.model.InternalAttempt" column="InternalAttemptId"
-			cascade="all" />
 		<many-to-one name="executionProposal" column="ExecutionProposalId"
 			class="it.softsolutions.bestx.model.ClassifiedProposal" cascade="all"
 			lazy="false" not-null="false" />
@@ -666,7 +666,8 @@
 		<property name="updateDate" column="UpdateDate" />
 		<property name="offeringType" column="OfferingType" />
 		<property name="BBSettlementDate" column="BBSettlementDate" />
-		<property name="bondType" column="MarketOfIssue" />
+		<property name="marketOfIssue" column="MarketOfIssue" />
+		<property name="bondType" column="BondType" />
 		<property name="issuerIndustry" column="IssuerIndustry" />
 		<property name="industrySubSector" column="IndustrySubSector" />
 		<property name="assetType" column="AssetType" />
@@ -813,7 +814,7 @@
 		<composite-id>
 			<key-property name="clientCode" type="string" column="ClientCode" />
 			<key-property name="isinType" type="boolean" column="IsinType" />
-			<key-property name="marketId" type="int" column="MarketId" />
+	<!-- 		<key-property name="marketId" type="int" column="MarketId"  -->
 			<key-property name="portfolioId" type="int" column="PortfolioId" />
 		</composite-id>
 		<property name="firstQtyThreshold" column="FirstQtyThreshold" />
