@@ -173,6 +173,19 @@
             </timeBasedFileNamingAndTriggeringPolicy>
         </rollingPolicy>
     </appender>
+	<appender name="EntitlementLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+	    <prudent>false</prudent>
+	    <encoder>
+	       <pattern>%date{ISO8601} %-5level %35.35logger{0}-&gt; %-35.35method:%-3line - %message%n</pattern>
+	    </encoder>
+	    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+	       <fileNamePattern>./log/EntitlementLogger.%d.%i.log.gz</fileNamePattern>
+	       <maxHistory>30</maxHistory>
+	       <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+	           <maxFileSize>20MB</maxFileSize>
+	       </timeBasedFileNamingAndTriggeringPolicy>
+	    </rollingPolicy>
+	</appender>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -189,7 +202,7 @@
     <logger name="quickfixj" additivity="false" level="INFO">
         <appender-ref ref="QuickfixLogger" />
     </logger>
-    <logger name="org.hibernate" additivity="false" level="TRACE">
+    <logger name="org.hibernate" additivity="false" level="INFO">
         <appender-ref ref="HibernateLogger" />
     </logger>
     <logger name="net.sf" additivity="false" level="INFO">
@@ -222,6 +235,9 @@
     <logger name="it.softsolutions.bestx.CommonMetricRegistry" additivity="false" level="INFO">
         <appender-ref ref="MetricsLogger" />
     </logger>
+	<logger name="entitlementLogger" additivity="false" level="INFO">
+	    <appender-ref ref="EntitlementLogger" />
+	</logger>    
     <root level="INFO">
         <appender-ref ref="BestXLogger" />
     </root>

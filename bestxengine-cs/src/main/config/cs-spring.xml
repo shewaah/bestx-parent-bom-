@@ -403,6 +403,7 @@
 
     <bean id="defaultCustomerFilterFactory" class="it.softsolutions.bestx.services.ordervalidation.CustomerFilterFactoryImpl" lazy-init="false" init-method="init">
         <property name="exchangeRateDao"><ref bean="hibernateExchangeRateDao"></ref></property>
+        <property name="mainCurrency"><value>"EUR"</value></property>
         <property name="retailMaxSize"><value>${Retail.max.size}</value></property>
         <property name="commissionService"><ref bean="commissionService"/></property>
         <property name="internalAuthThreshold"><value>${Internal_authorization.size}</value></property>
@@ -441,15 +442,15 @@
 		<property name="maxPoolSize" value="8"/>
 		<property name="threadNamePrefix" value="ThreadPool-Bloomberg"/>
 	</bean>
-	<bean id="threadPoolTradeweb" class="it.softsolutions.bestx.ThreadPoolExecutor" init-method="initialize">
+	<bean id="threadPoolTradeweb" class="it.softsolutions.bestx.ThreadPoolSortedQueueExecutor" init-method="initialize">
 		<property name="corePoolSize" value="16"/>
-		<property name="maxPoolSize" value="16"/>
+		<property name="maxPoolSize" value="64"/>
 		<property name="threadNamePrefix" value="ThreadPool-Tradeweb"/>
 	</bean>	
 	
-	<bean id="threadPoolMarketAxess" class="it.softsolutions.bestx.ThreadPoolExecutor" init-method="initialize">
+	<bean id="threadPoolMarketAxess" class="it.softsolutions.bestx.ThreadPoolSortedQueueExecutor" init-method="initialize">
 		<property name="corePoolSize" value="16"/>
-		<property name="maxPoolSize" value="16"/>
+		<property name="maxPoolSize" value="64"/>
 		<property name="threadNamePrefix" value="ThreadPool-Tradeweb"/>
 	</bean>	
 	
