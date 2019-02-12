@@ -40,10 +40,15 @@ import it.softsolutions.bestx.model.MarketMarketMakerSpec;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.services.DateService;
+import it.softsolutions.bestx.services.OperationStateAuditDAOProvider;
+import it.softsolutions.bestx.services.SerialNumberServiceProvider;
 import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.bestx.services.price.PriceResult;
 import it.softsolutions.bestx.services.serial.SerialNumberService;
+import it.softsolutions.bestx.states.CurandoState;
 import it.softsolutions.bestx.states.ErrorState;
+import it.softsolutions.bestx.states.LimitFileNoPriceState;
+import it.softsolutions.bestx.states.OrderNotExecutableState;
 import it.softsolutions.bestx.states.SendAutoNotExecutionReportState;
 import it.softsolutions.bestx.states.SendNotExecutionReportState;
 import it.softsolutions.bestx.states.WarningState;
@@ -336,6 +341,49 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	@Override
 	public void resetMarketsToTry() {
 		setAllMarketsToTry(this.allMarketsToTry);
+	}
+
+    /** 
+     * Validates the options available when the order cannot be further executed.
+     */
+	public void onUnexecutionResult(Result result, String message) {
+	    switch (result) {
+	    case USSingleAttemptNotExecuted:
+	    case CustomerAutoNotExecution:
+	    case MaxDeviationLimitViolated:
+	        try {
+	        	ExecutionReportHelper.prepareForAutoNotExecution(this.operation, SerialNumberServiceProvider.getSerialNumberService(), ExecutionReportState.REJECTED);
+	        	this.operation.setStateResilient(new SendAutoNotExecutionReportState(message), ErrorState.class);
+	        } catch (BestXException e) {
+	            LOGGER.error("Order {}, error while starting automatic not execution.", this.operation.getOrder().getFixOrderId(), e);
+	            String errorMessage = e.getMessage();
+	            this.operation.setStateResilient(new WarningState(this.operation.getState(), null, errorMessage), ErrorState.class);
+	        }
+	        break;
+	    case Failure:
+	        LOGGER.error("Order {} : ", operation.getOrder().getFixOrderId(), message);
+	        this.operation.setStateResilient(new WarningState(operation.getState(), null, message), ErrorState.class);
+	        break;
+	    case LimitFileNoPrice:
+	    	if(this.operation.isNotAutoExecute())
+	    		this.operation.setStateResilient(new CurandoState(message), ErrorState.class);
+	        else
+	    		this.operation.setStateResilient(new LimitFileNoPriceState(message), ErrorState.class);
+	        break;
+	    case LimitFile:
+	        //Update the BestANdLimitDelta field on the TabHistoryOrdini table
+	        Order order = this.operation.getOrder();
+	        OperationStateAuditDAOProvider.getOperationStateAuditDao().updateOrderBestAndLimitDelta(order, order.getBestPriceDeviationFromLimit());
+	    	if(operation.isNotAutoExecute())
+	    		this.operation.setStateResilient(new CurandoState(message), ErrorState.class);
+	    	else
+	    		this.operation.setStateResilient(new OrderNotExecutableState(message), ErrorState.class);
+	        break;
+	    default:
+	        LOGGER.error("Order {}, unexpected behaviour while checking for automatic not execution or magnet.", this.operation.getOrder().getFixOrderId());
+	        this.operation.setStateResilient(new WarningState(this.operation.getState(), null, message), ErrorState.class);
+	        break;
+	    }
 	}
 
 }

@@ -20,22 +20,12 @@ import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.CustomerAttributes;
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
-import it.softsolutions.bestx.handlers.ExecutionReportHelper;
 import it.softsolutions.bestx.model.Customer;
-import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Order;
-import it.softsolutions.bestx.services.OperationStateAuditDAOProvider;
 import it.softsolutions.bestx.services.PriceController;
-import it.softsolutions.bestx.services.SerialNumberServiceProvider;
-import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyService.Result;
 import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.bestx.services.price.PriceResult;
-import it.softsolutions.bestx.states.ErrorState;
-import it.softsolutions.bestx.states.LimitFileNoPriceState;
-import it.softsolutions.bestx.states.OrderNotExecutableState;
-import it.softsolutions.bestx.states.SendAutoNotExecutionReportState;
-import it.softsolutions.bestx.states.WarningState;
 
 /**
  * 
@@ -46,7 +36,7 @@ import it.softsolutions.bestx.states.WarningState;
  **/
 public class CSNormalExecutionStrategyService extends CSExecutionStrategyService{
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CSNormalExecutionStrategyService.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(CSNormalExecutionStrategyService.class);
     /**
      * Instantiate the Credit Suisse execution strategy service.
      * 
@@ -64,51 +54,6 @@ public class CSNormalExecutionStrategyService extends CSExecutionStrategyService
 
     public CSNormalExecutionStrategyService(Operation operation, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest) {
     	super(operation, priceResult, rejectOrderWhenBloombergIsBest);  
-    }
-
-    public void onUnexecutionResult(Result result, String message) {
-        switch (result) {
-        case USSingleAttemptNotExecuted:
-        case CustomerAutoNotExecution:
-        case MaxDeviationLimitViolated:
-            try {
-            	ExecutionReportHelper.prepareForAutoNotExecution(this.operation, SerialNumberServiceProvider.getSerialNumberService(), ExecutionReportState.REJECTED);
-
-                // [RR20120910] The MaxDeviationLimitViolated case in the old implementation
-                // required the following lines :
-                //
-                // Attempt currentAttempt = operation.getLastAttempt();
-                // currentAttempt.setSortedBook(priceResult.getSortedBook());
-                //
-                // this operation has already been performed in the onPricesResult method
-                // in a piece of code shared by all the callers, we can avoid to reput it
-                // here.
-
-            	this.operation.setStateResilient(new SendAutoNotExecutionReportState(message), ErrorState.class);
-            } catch (BestXException e) {
-                LOGGER.error("Order {}, error while starting automatic not execution.", this.operation.getOrder().getFixOrderId(), e);
-                String errorMessage = e.getMessage();
-                this.operation.setStateResilient(new WarningState(this.operation.getState(), null, errorMessage), ErrorState.class);
-            }
-            break;
-        case Failure:
-            LOGGER.error("Order {} : ", operation.getOrder().getFixOrderId(), message);
-            operation.setStateResilient(new WarningState(operation.getState(), null, message), ErrorState.class);
-            break;
-        case LimitFileNoPrice:
-            operation.setStateResilient(new LimitFileNoPriceState(message), ErrorState.class);
-            break;
-        case LimitFile:
-            //Update the BestANdLimitDelta field on the TabHistoryOrdini table
-            Order order = this.operation.getOrder();
-            OperationStateAuditDAOProvider.getOperationStateAuditDao().updateOrderBestAndLimitDelta(order, order.getBestPriceDeviationFromLimit());
-            this.operation.setStateResilient(new OrderNotExecutableState(message), ErrorState.class);
-            break;
-        default:
-            LOGGER.error("Order {}, unexpected behaviour while checking for automatic not execution or magnet.", this.operation.getOrder().getFixOrderId());
-            this.operation.setStateResilient(new WarningState(this.operation.getState(), null, message), ErrorState.class);
-            break;
-        }
     }
 
     /** 

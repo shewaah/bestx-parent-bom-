@@ -37,6 +37,7 @@ import it.softsolutions.bestx.services.PriceController;
 import it.softsolutions.bestx.services.SerialNumberServiceProvider;
 import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.bestx.services.price.PriceResult;
+import it.softsolutions.bestx.states.CurandoState;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.LimitFileNoPriceState;
 import it.softsolutions.bestx.states.OrderNotExecutableState;
@@ -106,40 +107,6 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
                 onUnexecutionResult(Result.LimitFile, Messages.getString("LimitFile"));
             }
             
-        }
-    }
-    
-    public void onUnexecutionResult(Result result, String message) {
-        switch (result) {
-        case USSingleAttemptNotExecuted:
-        case CustomerAutoNotExecution:
-        case MaxDeviationLimitViolated:
-            try {
-            	ExecutionReportHelper.prepareForAutoNotExecution(this.operation, SerialNumberServiceProvider.getSerialNumberService(), ExecutionReportState.REJECTED);
-            	this.operation.setStateResilient(new SendAutoNotExecutionReportState(message), ErrorState.class);
-            } catch (BestXException e) {
-                LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
-                String errorMessage = e.getMessage();
-                this.operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
-            }
-            break;
-        case Failure:
-            LOGGER.error(message);
-            this.operation.setStateResilient(new WarningState(this.operation.getState(), null, message), ErrorState.class);
-            break;
-        case LimitFileNoPrice:
-        	this.operation.setStateResilient(new LimitFileNoPriceState(message), ErrorState.class);
-            break;
-        case LimitFile:
-            //Update the BestANdLimitDelta field on the TabHistoryOrdini table
-            Order order = operation.getOrder();
-            OperationStateAuditDAOProvider.getOperationStateAuditDao().updateOrderBestAndLimitDelta(order, order.getBestPriceDeviationFromLimit());
-            this.operation.setStateResilient(new OrderNotExecutableState(message), ErrorState.class);
-            break;            
-        default:
-            LOGGER.error("Order {}, unexpected behaviour while checking for automatic not execution or magnet.", operation.getOrder().getFixOrderId());
-            operation.setStateResilient(new WarningState(operation.getState(), null, message), ErrorState.class);
-            break;
         }
     }
 }
