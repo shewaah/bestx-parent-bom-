@@ -154,19 +154,6 @@
 		<subclass
 			name="it.softsolutions.bestx.states.SendAutoNotExecutionReportState"
 			discriminator-value="it.softsolutions.bestx.states.SendAutoNotExecutionReportState" />
-		<subclass name="it.softsolutions.bestx.states.internal.deprecated.INT_ExecutedState"
-			discriminator-value="it.softsolutions.bestx.states.internal.deprecated.INT_ExecutedState" />
-		<subclass
-			name="it.softsolutions.bestx.states.internal.deprecated.INT_ManageCounterState"
-			discriminator-value="it.softsolutions.bestx.states.internal.deprecated.INT_ManageCounterState" />
-		<subclass name="it.softsolutions.bestx.states.internal.deprecated.INT_RejectedState"
-			discriminator-value="it.softsolutions.bestx.states.internal.deprecated.INT_RejectedState" />
-		<subclass
-			name="it.softsolutions.bestx.states.internal.deprecated.INT_StartExecutionState"
-			discriminator-value="it.softsolutions.bestx.states.internal.deprecated.INT_StartExecutionState" />
-		<subclass
-			name="it.softsolutions.bestx.states.internal.deprecated.INT_InternalInCurandoState"
-			discriminator-value="it.softsolutions.bestx.states.internal.deprecated.INT_InternalInCurandoState" />
 		<subclass name="it.softsolutions.bestx.states.matching.MATCH_ExecutedState"
 			discriminator-value="it.softsolutions.bestx.states.matching.MATCH_ExecutedState" />
 		<subclass
@@ -603,6 +590,9 @@
 			<generator class="native" />
 		</id>
 		<property name="byPassableForVenueAlreadyTried" column="ByPass" />
+		<many-to-one name="internalAttempt"
+			class="it.softsolutions.bestx.model.InternalAttempt" column="InternalAttemptId"
+			cascade="all" />
 		<many-to-one name="executionProposal" column="ExecutionProposalId"
 			class="it.softsolutions.bestx.model.ClassifiedProposal" cascade="all"
 			lazy="false" not-null="false" />
