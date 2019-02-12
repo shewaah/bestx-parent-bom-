@@ -457,6 +457,12 @@
 		<many-to-one name="instrument" column="ISIN" class="it.softsolutions.bestx.model.Instrument"
 			cascade="none" lazy="false" not-null="false" />
 		<property name="priceType" column="PriceType" />
+		<property name="execType" column="ExecType" />
+		<property name="execTransType" column="ExecTransType" />
+		<property name="executionReportId" column="ExecId" />
+		<property name="lastCapacity" column="LastCapacity" />
+		<property name="orderCapacity" column="OrderCapacity" />
+		<property name="factor" column="Factor" />
 	</class>
 
 	<class name="it.softsolutions.bestx.model.MarketExecutionReport" table="MarketExecutionReport" discriminator-value="MarketExecutionReport">
@@ -870,6 +876,4 @@
 		<property name="description" column="description" />
 		<property name="locked" column="isLocked" />
 	</class>
-	
-	
 </hibernate-mapping>
