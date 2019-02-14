@@ -400,8 +400,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
                   //2018-07-25 BESTX-334 SP: this call allows BestX to send the price discovery result to OTEX for limit file before sending it to automatic execution
                   //for limit file which are not found executable (no prices available or out of market) BestX doesn't send any price discovery result  
                   if (customerSpecificHandler!=null && order.isLimitFile()) customerSpecificHandler.onPricesResult(source, priceResult);
-                  if(rejectBestOnBloomberg) // uncomment if best on bloomberg requires to be managed with auto unexecution
-                     csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
+                  csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
                   // last row in this method for executable operation
                }
             } else {

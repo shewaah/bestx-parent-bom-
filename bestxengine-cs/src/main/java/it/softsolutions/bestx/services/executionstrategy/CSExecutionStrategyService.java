@@ -15,7 +15,6 @@ package it.softsolutions.bestx.services.executionstrategy;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import org.slf4j.Logger;
@@ -41,7 +40,6 @@ import it.softsolutions.bestx.model.MarketMarketMaker;
 import it.softsolutions.bestx.model.MarketMarketMakerSpec;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
-import it.softsolutions.bestx.model.Venue;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.OperationStateAuditDAOProvider;
 import it.softsolutions.bestx.services.SerialNumberServiceProvider;

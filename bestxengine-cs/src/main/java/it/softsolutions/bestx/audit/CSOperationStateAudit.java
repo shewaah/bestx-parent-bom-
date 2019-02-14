@@ -32,7 +32,6 @@ import it.softsolutions.bestx.MifidConfig;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationIdType;
 import it.softsolutions.bestx.OperationState;
-import it.softsolutions.bestx.OperationState.Type;
 import it.softsolutions.bestx.OperationStateListener;
 import it.softsolutions.bestx.RegulatedMktIsinsLoader;
 import it.softsolutions.bestx.connections.MarketBuySideConnection;
@@ -546,7 +545,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             try {
             	operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);
                 auditMarketStatus(order.getFixOrderId(), attemptNo);
-                if ((oldStateType == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry) && (operation.getLastAttempt().getSortedBook() != null)) {
+                if ((oldStateType == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry || oldStateType == OperationState.Type.Rejected) && (operation.getLastAttempt().getSortedBook() != null)) {
                 	operationStateAuditDao.saveNewBook(order.getFixOrderId(), attemptNo, operation.getLastAttempt().getSortedBook());
                 }
             } catch (Exception e) {

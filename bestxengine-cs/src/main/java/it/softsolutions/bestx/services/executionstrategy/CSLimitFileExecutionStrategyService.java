@@ -23,26 +23,15 @@ import org.slf4j.LoggerFactory;
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
-import it.softsolutions.bestx.handlers.ExecutionReportHelper;
-import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Customer;
-import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal.ProposalSubState;
 import it.softsolutions.bestx.model.SortedBook;
-import it.softsolutions.bestx.services.OperationStateAuditDAOProvider;
 import it.softsolutions.bestx.services.PriceController;
-import it.softsolutions.bestx.services.SerialNumberServiceProvider;
 import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.bestx.services.price.PriceResult;
-import it.softsolutions.bestx.states.CurandoState;
-import it.softsolutions.bestx.states.ErrorState;
-import it.softsolutions.bestx.states.LimitFileNoPriceState;
-import it.softsolutions.bestx.states.OrderNotExecutableState;
-import it.softsolutions.bestx.states.SendAutoNotExecutionReportState;
-import it.softsolutions.bestx.states.WarningState;
 
 /**
  * 
@@ -52,18 +41,19 @@ import it.softsolutions.bestx.states.WarningState;
  * 
  **/
 public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyService {
-    static final Logger LOGGER = LoggerFactory.getLogger(CSLimitFileExecutionStrategyService.class);
 
-    @Deprecated
-    public CSLimitFileExecutionStrategyService(ExecutionStrategyServiceCallback executionStrategyServiceCallback, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest) {
-    	super(executionStrategyServiceCallback, priceResult, rejectOrderWhenBloombergIsBest);  
-    }
-    
-    public CSLimitFileExecutionStrategyService(Operation operation, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest) {
-    	super(operation, priceResult, rejectOrderWhenBloombergIsBest);  
-    }
+   static final Logger LOGGER = LoggerFactory.getLogger(CSLimitFileExecutionStrategyService.class);
 
-    @Override
+   @Deprecated
+   public CSLimitFileExecutionStrategyService(ExecutionStrategyServiceCallback executionStrategyServiceCallback, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest){
+      super(executionStrategyServiceCallback, priceResult, rejectOrderWhenBloombergIsBest);
+   }
+
+   public CSLimitFileExecutionStrategyService(Operation operation, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest){
+      super(operation, priceResult, rejectOrderWhenBloombergIsBest);
+   }
+
+   @Override
     public void manageAutomaticUnexecution(Order order, Customer customer) throws BestXException {
         if (order == null) {
             throw new IllegalArgumentException("order is null");
@@ -95,7 +85,8 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
             boolean emptyBook =  sortedBook == null || sortedBook.getProposalBySubState(wantedSubStates, order.getSide()).isEmpty();
             
             if (emptyBook) {
-                onUnexecutionResult(Result.LimitFileNoPrice, Messages.getString("LimitFile.NoPrices"));
+               this.operation.getLastAttempt().setSortedBook(sortedBook);
+               onUnexecutionResult(Result.LimitFileNoPrice, Messages.getString("LimitFile.NoPrices"));
             } else {
                 //time to update the delta between the order limit price and the best proposal one
                 if (order.getLimit() != null) {
