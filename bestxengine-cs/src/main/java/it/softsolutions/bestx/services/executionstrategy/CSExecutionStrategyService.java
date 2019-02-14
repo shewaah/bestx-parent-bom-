@@ -15,6 +15,7 @@ package it.softsolutions.bestx.services.executionstrategy;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import org.slf4j.Logger;
@@ -24,6 +25,7 @@ import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationIdType;
+import it.softsolutions.bestx.bestexec.BookClassifier;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.handlers.BookHelper;
 import it.softsolutions.bestx.handlers.ExecutionReportHelper;
@@ -39,9 +41,11 @@ import it.softsolutions.bestx.model.MarketMarketMaker;
 import it.softsolutions.bestx.model.MarketMarketMakerSpec;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
+import it.softsolutions.bestx.model.Venue;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.OperationStateAuditDAOProvider;
 import it.softsolutions.bestx.services.SerialNumberServiceProvider;
+import it.softsolutions.bestx.services.booksorter.BookSorterImpl;
 import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.bestx.services.price.PriceResult;
 import it.softsolutions.bestx.services.serial.SerialNumberService;
@@ -75,7 +79,25 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	protected Operation operation;
 	protected MarketFinder marketFinder;
 	protected ArrayList<Market> marketsToTry;
+	protected BookClassifier bookClassifier;
+	protected BookSorterImpl bookSorter;
 
+
+	public BookClassifier getBookClassifier() {
+		return bookClassifier;
+	}
+
+	public void setBookClassifier(BookClassifier bookClassifier) {
+		this.bookClassifier = bookClassifier;
+	}
+
+	public BookSorterImpl getBookSorter() {
+		return bookSorter;
+	}
+
+	public void setBookSorter(BookSorterImpl bookSorter) {
+		this.bookSorter = bookSorter;
+	}
 
 	public List<Market> getMarketsToTry() {
 		return marketsToTry;
@@ -108,7 +130,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 			}});
 		marketsToTry.sort(new MarketComparator());
 		for(int i = 0; i < marketsToTry.size(); i++)
-			this.allMarketsToTry.add(i++, marketsToTry.get(i).getMarketCode()); 
+			this.allMarketsToTry.add(i, marketsToTry.get(i).getMarketCode()); 
 	}
 
 
@@ -131,7 +153,8 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	 */
 	@Override
 	public void startExecution(Operation operation, Attempt currentAttempt, SerialNumberService serialNumberService) {
-		if(currentAttempt.getExecutionProposal() == null && BondTypesService.isUST(operation.getOrder().getInstrument())) { // BESTX-382
+		if(/*currentAttempt.getExecutionProposal() == null && */BondTypesService.isUST(operation.getOrder().getInstrument())) { // BESTX-382  
+			// override execution proposal every time
 			MarketOrder marketOrder = new MarketOrder();
 			currentAttempt.setMarketOrder(marketOrder);
 			marketOrder.setValues(operation.getOrder());
@@ -142,7 +165,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 				LOGGER.info("Error when trying to send an order to Tradeweb: unable to find market with code {}", MarketCode.TW.name());
 			}
 			marketOrder.setMarketMarketMaker(null);
-			marketOrder.setLimit(null);
+			marketOrder.setLimit(operation.getOrder().getLimit());  // if order limit is null, send a market order to TW
 			LOGGER.info("Order={}, Selecting for execution market market maker: null and price null", operation.getOrder().getFixOrderId());
 			marketOrder.setVenue(null);
 			String twSessionId = operation.getIdentifier(OperationIdType.TW_SESSION_ID);
@@ -245,6 +268,11 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		Order customerOrder = operation.getOrder();
 		Attempt newAttempt = operation.getLastAttempt();  //operation.getAttempts()
 		newAttempt.setSortedBook(currentAttempt.getSortedBook().clone());
+		// FIXME AMC 20190213 verify if needed to reclassify the book from one attempt to another.
+		// In case it is, use the following 3 rows instead of the previous one
+//		newAttempt.setSortedBook(bookSorter.getSortedBook(
+//				bookClassifier.getClassifiedBook(
+//						currentAttempt.getSortedBook().clone(), operation.getOrder(), operation.getAttempts(), null)));
 		// remove dealers that were included in the preceding RFQ/Orders
 		List<Attempt> currentAttempts = 
 				operation.getAttempts().subList(operation.getFirstAttemptInCurrentCycle(), operation.getAttempts().size() - 1);
@@ -266,7 +294,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		ClassifiedProposal executionProposal = BookHelper.getNextProposalAfterMarket(currentAttempt.getSortedBook(), 
 				usedMarketCodes, customerOrder.getSide());
 		if(executionProposal == null) { //###
-			operation.removeLastAttempt();
+//			operation.removeLastAttempt();
 			this.manageAutomaticUnexecution(customerOrder, customerOrder.getCustomer());
 			return;
 		} else {

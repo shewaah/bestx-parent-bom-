@@ -18,8 +18,10 @@ package it.softsolutions.bestx.services.executionstrategy;
 import java.util.List;
 
 import it.softsolutions.bestx.Operation;
+import it.softsolutions.bestx.bestexec.BookClassifier;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.model.Market.MarketCode;
+import it.softsolutions.bestx.services.booksorter.BookSorterImpl;
 import it.softsolutions.bestx.services.price.PriceResult;
 import it.softsolutions.bestx.services.price.PriceService.PriceDiscoveryType;
   
@@ -37,6 +39,26 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
 //    private static final Logger LOGGER = LoggerFactory.getLogger(CSExecutionStrategyServiceFactory.class);
 
 	private MarketFinder marketFinder;
+	private BookClassifier bookClassifier;
+	private BookSorterImpl bookSorter;
+
+
+	public BookClassifier getBookClassifier() {
+		return bookClassifier;
+	}
+
+	public void setBookClassifier(BookClassifier bookClassifier) {
+		this.bookClassifier = bookClassifier;
+	}
+
+	public BookSorterImpl getBookSorter() {
+		return bookSorter;
+	}
+
+	public void setBookSorter(BookSorterImpl bookSorter) {
+		this.bookSorter = bookSorter;
+	}
+
 
 	public MarketFinder getMarketFinder()
 	{
@@ -61,12 +83,16 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
          CSLimitFileExecutionStrategyService execService = new CSLimitFileExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest);
          execService.setMarketFinder(marketFinder);
          execService.setAllMarketsToTry(this.getAllMarketsToTry());
+         execService.setBookClassifier(bookClassifier);
+         execService.setBookSorter(bookSorter);
          return execService;
       }
       case NORMAL_PRICEDISCOVERY: {
          CSNormalExecutionStrategyService execService = new CSNormalExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest);
          execService.setMarketFinder(marketFinder);
          execService.setAllMarketsToTry(this.getAllMarketsToTry());
+         execService.setBookClassifier(bookClassifier);
+         execService.setBookSorter(bookSorter);
          return execService;
       }
           // AMC 20160801 probably not needed
@@ -74,6 +100,8 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
          CSNormalExecutionStrategyService execService = new CSNormalExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest);
          execService.setMarketFinder(marketFinder);
          execService.setAllMarketsToTry(this.getAllMarketsToTry());
+         execService.setBookClassifier(bookClassifier);
+         execService.setBookSorter(bookSorter);
          return execService;
       }
       default:

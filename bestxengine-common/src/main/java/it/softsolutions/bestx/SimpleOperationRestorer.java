@@ -55,15 +55,17 @@ public class SimpleOperationRestorer implements SimpleOperationRestorerMBean {
    }
 
    public void restoreActiveOperations() throws BestXException {
-       activeOperationsCompleted = false;
-       List<Operation> activeOperations = initializer.getSystemState();
-        
-        LOGGER.debug("Restore {} active operations from persistent layer", (activeOperations != null ? activeOperations.size() : 0));
-        operationRegistry.insertActiveOperations(activeOperations);
-        
-        LOGGER.debug("Initialize {} operations restored from persistent layer", (activeOperations != null ? activeOperations.size() : 0));
-        operationRegistry.processOperations(new OperationInitAgent(operationFactory));
-        activeOperationsCompleted = true;
+	   activeOperationsCompleted = false;
+	   LOGGER.info("Find active operations from persistent layer...");
+	   
+	   List<Operation> activeOperations = initializer.getSystemState();
+
+	   LOGGER.info("Restore {} active operations", (activeOperations != null ? activeOperations.size() : 0));
+	   operationRegistry.insertActiveOperations(activeOperations);
+
+	   LOGGER.info("Initialize {} operations", (activeOperations != null ? activeOperations.size() : 0));
+	   operationRegistry.processOperations(new OperationInitAgent(operationFactory));
+	   activeOperationsCompleted = true;
     }
 
    public void restoreOperationStates() throws BestXException {

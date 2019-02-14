@@ -43,6 +43,7 @@ import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.MarketMaker;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
+import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.Venue;
 import it.softsolutions.bestx.services.BookDepthValidator;
 import it.softsolutions.bestx.services.DateService;
@@ -446,7 +447,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		Money best = null;
 		try {
 			best = currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide()).getPrice();
-			ithBestProp = BookHelper.getIthProposal(currentAttempt.getSortedBook().getValidSideProposals(operation.getOrder().getSide()), this.targetPriceMaxLevel);
+			ithBestProp = BookHelper.getIthProposal(currentAttempt.getSortedBook().getAcceptableSideProposals(operation.getOrder().getSide()), this.targetPriceMaxLevel);
 			ithBest = ithBestProp.getPrice();
 		} catch(NullPointerException e) {
 			LOGGER.debug("NullPointerException trying to manage widen best or get the {}-th best for order {}", this.targetPriceMaxLevel, order.getFixOrderId());
@@ -454,7 +455,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		try {
 			double spread = BookHelper.getQuoteSpread(currentAttempt.getSortedBook().getValidSideProposals(operation.getOrder().getSide()), this.targetPriceMaxLevel);
 		    CustomerAttributes custAttr = (CustomerAttributes) order.getCustomer().getCustomerAttributes();
-		    BigDecimal customerMaxWideSpread = custAttr.getWideQuoteSpread();
+		    BigDecimal customerMaxWideSpread = custAttr.getWideQuoteSpread().movePointLeft(2); // note that the wide quote spread is defined as percentage, so we need to divide by 100 before usage here
 		    if(customerMaxWideSpread != null && customerMaxWideSpread.doubleValue() < spread) { // must use the spread, not the i-th best
 		    	limitPrice = BookHelper.widen(best, customerMaxWideSpread, operation.getOrder().getSide(), order.getLimit() == null ? null : order.getLimit().getAmount());
 		    	LOGGER.info("Order {}: widening market order limit price {}. Max wide spread is {} and spread between best {} and i-th best {} has been calculated as {}",
@@ -476,11 +477,23 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			        limitPrice = currentAttempt.getExecutionProposal() == null ? null : currentAttempt.getExecutionProposal().getPrice();
 			        LOGGER.debug("No i-th best - Use proposal as market order limit price: {}", limitPrice == null? "null":limitPrice.getAmount().toString());
 			    }                	
-			} else LOGGER.debug("Use less wide between i-th best proposal and best widened by {} as market order limit price: {}", customerMaxWideSpread, limitPrice == null? "null":limitPrice.getAmount().toString());
+			} else {
+				if(order.getLimit() != null && isWorseThan(limitPrice, order.getLimit(), order.getSide())) {
+					LOGGER.debug("Found price is {}, which is worse than client order limit price: {}. Will use client order limit price", limitPrice.toString(), order.getLimit().getAmount().toString());					
+					limitPrice = order.getLimit();
+				} else
+				LOGGER.debug("Use less wide between i-th best proposal and best widened by {} as market order limit price: {}", customerMaxWideSpread, limitPrice == null? "null":limitPrice.getAmount().toString());
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return limitPrice;
+	}
+	
+	protected boolean isWorseThan(Money p1, Money p2, OrderSide side) {
+		if(side == null) return false;
+		if(side == OrderSide.BUY) return p1.compareTo(p2) > 0;
+		else return p1.compareTo(p2) < 0;
 	}
     
     protected ClassifiedProposal getInternalProposal(List<ClassifiedProposal> proposals)

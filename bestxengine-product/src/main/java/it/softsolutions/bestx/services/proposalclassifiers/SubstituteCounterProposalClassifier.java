@@ -20,6 +20,7 @@ import it.softsolutions.bestx.model.Commission.CommissionType;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Proposal.ProposalState;
+import it.softsolutions.bestx.model.Proposal.ProposalSubState;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.Venue;
 import it.softsolutions.jsscommon.Money;
@@ -74,6 +75,7 @@ public class SubstituteCounterProposalClassifier implements ProposalClassifier {
 							&& (order.getSide().equals(OrderSide.BUY) && result.getPrice().getAmount().compareTo(order.getLimit().getAmount()) > 0 || order.getSide().equals(OrderSide.SELL)
 									&& result.getPrice().getAmount().compareTo(order.getLimit().getAmount()) < 0)) {
 						result.setProposalState(Proposal.ProposalState.REJECTED);
+						result.setProposalSubState(ProposalSubState.PRICE_WORST_THAN_LIMIT);
 						result.setReason(Messages.getString("BestBook.19"));
 					}
 				return result;

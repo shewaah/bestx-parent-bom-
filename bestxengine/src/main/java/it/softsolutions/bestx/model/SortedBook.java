@@ -163,6 +163,20 @@ public class SortedBook implements Book, Cloneable {
 		return result;
 	}
 
+	public List<ClassifiedProposal> getAcceptableSideProposals(Rfq.OrderSide side) {
+		List<ClassifiedProposal> sideProposals = getSideProposals(side);
+
+		List<ClassifiedProposal> result = new ArrayList<ClassifiedProposal>();
+		for (ClassifiedProposal prop : sideProposals) {
+			if (prop.getProposalState() == ProposalState.VALID ||
+					(prop.getProposalState() == ProposalState.REJECTED &&
+						prop.getProposalSubState() != null && prop.getProposalSubState() == ProposalSubState.PRICE_WORST_THAN_LIMIT)) {
+				result.add(prop);
+			}
+		}
+		return result;
+	}
+
 	/**
 	 * Look for proposals in one of the substates passed as arguments.
 	 * Remembering that, as default, the substate is NONE.

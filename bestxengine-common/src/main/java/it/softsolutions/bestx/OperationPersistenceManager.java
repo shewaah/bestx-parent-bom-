@@ -322,7 +322,11 @@ public class OperationPersistenceManager implements OperationStateListener, Init
 
             if (operations != null && operations.size() > 0) {
                 for (Operation operation : operations) {
-                    operationFactory.initOperation(operation);
+                	try {
+                		operationFactory.initOperation(operation);
+                	} catch(org.hibernate.HibernateException hibex) {
+                		LOGGER.warn("Unable to retrieve operation for order {}, due to exception", operation.getOrder().getFixOrderId(), hibex);
+                	}
                 }
             } else {
                 LOGGER.warn("No operations retrieved");

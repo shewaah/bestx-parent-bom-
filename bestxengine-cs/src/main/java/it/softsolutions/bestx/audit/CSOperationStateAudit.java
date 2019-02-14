@@ -481,9 +481,10 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         }
         break;
         case OrderNotExecuted: {
-            List<Attempt> attemptList = operation.getAttempts();
-            Attempt attempt = attemptList.get(attemptList.size() - 1);
-            if (operation.getExecutionReports().size() > 0) {
+//            List<Attempt> attemptList = operation.getAttempts();
+//            Attempt attempt = attemptList.get(attemptList.size() - 1);
+        	Attempt attempt = operation.getLastAttempt();
+        	if (operation.getExecutionReports().size() > 0) {
                 ExecutionReport executionReport = operation.getExecutionReports().get(operation.getExecutionReports().size() - 1);
                  operationStateAuditDao.updateAttempt(order.getFixOrderId(), attempt, tsn, attemptNo, executionReport.getTicket(), executionReport);
             }
@@ -523,19 +524,14 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             case MARKETAXESS: {
                 operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);
                 auditMarketStatus(order.getFixOrderId(), attemptNo);
-                if (oldStateType == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry || newState.mustSaveBook()) {
+//                if (oldStateType == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry || newState.mustSaveBook()) {
+                  if(operation.getLastAttempt().getSortedBook() != null) {
                 	operationStateAuditDao.saveNewBook(order.getFixOrderId(), attemptNo, operation.getLastAttempt().getSortedBook());
                 }
             }
             break;
             case MATCHING: {
-                if (oldState.getType() == OperationState.Type.WaitingPrice) {
-                    operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);
-                    auditMarketStatus(order.getFixOrderId(), attemptNo);
-                    if (oldStateType == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry || newState.mustSaveBook()) {
-                    	operationStateAuditDao.saveNewBook(order.getFixOrderId(), attemptNo, operation.getLastAttempt().getSortedBook());
-                    }
-                }
+            	;
             }
             break;
             default:
@@ -562,11 +558,11 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             break;
         case SendAutoNotExecutionReport: {
             try {
-            	if(oldStateType != Type.Rejected) {  // When state is rejected the attempt has been saved already 
+            	//if(oldStateType != Type.Rejected) {   When state is rejected the attempt has no more been saved already 
             		// typical scenario where the save must not be attempted is when the market rejected handler detect a wide spread condition
-            		operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);	
-                	auditMarketStatus(order.getFixOrderId(), attemptNo);
-            	} 
+        		operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);	
+            	auditMarketStatus(order.getFixOrderId(), attemptNo);
+            	//} 
             	if (oldStateType == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry || newState.mustSaveBook()) {
             		operationStateAuditDao.saveNewBook(order.getFixOrderId(), attemptNo, operation.getLastAttempt().getSortedBook());
             	}
@@ -590,17 +586,6 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
                 }
                 LOGGER.debug("property set to BEST for order {}", order.getFixOrderId());
             }
-
-            /*
-             * 25-03-2009 Ruggero MANUAL EXECUTION : only if the execution report has been classified as CONTO PROPRIO we've to check if the
-             * property might be BEST instead of SPREAD
-             * 
-             * The SPREAD property prevails over the BEST one, so if the market maker is one of the internal ones the property must remains
-             * SPREAD even if the prices are different
-             * 
-             * 16-04-2009 Akros decided that the last requirement is not needed anymore so i've commented the condition in the if clause :
-             * !internalMMcodesList.contains(marketMaker)
-             */
             String marketMaker = (executionReport != null) ? executionReport.getExecBroker() : null;
             if (marketMaker == null) {
                 marketMaker = "";
