@@ -264,16 +264,14 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		// move book to a new attempt
 		operation.addAttempt();
 		Order customerOrder = operation.getOrder();
-		Attempt newAttempt = operation.getLastAttempt();  //operation.getAttempts()
-		newAttempt.setSortedBook(currentAttempt.getSortedBook().clone());
-		// FIXME AMC 20190213 verify if needed to reclassify the book from one attempt to another.
-		// In case it is, use the following 3 rows instead of the previous one
-//		newAttempt.setSortedBook(bookSorter.getSortedBook(
-//				bookClassifier.getClassifiedBook(
-//						currentAttempt.getSortedBook().clone(), operation.getOrder(), operation.getAttempts(), null)));
+		Attempt newAttempt = operation.getLastAttempt();
+		// discard all proposals in book which have been used before
+		newAttempt.setSortedBook(bookSorter.getSortedBook(
+				bookClassifier.getClassifiedBook(
+						currentAttempt.getSortedBook().clone(), operation.getOrder(), operation.getAttemptsInCurrentCycle(), null)));
 		// remove dealers that were included in the preceding RFQ/Orders
 		List<Attempt> currentAttempts = 
-				operation.getAttempts().subList(operation.getFirstAttemptInCurrentCycle(), operation.getAttempts().size() - 1);
+				operation.getAttemptsInCurrentCycle();
 
 		currentAttempts.forEach(attempt->{ 
 			currentAttempt.getExecutablePrices().forEach(execPx->{
@@ -283,16 +281,8 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 			});
 		});
 
-		//Market market = this.getNextMarketToTry(operation, currentAttempt.getExecutionProposal().getMarket());
-		ArrayList<MarketCode> usedMarketCodes = new ArrayList<MarketCode>();
-		for(Attempt attempt: operation.getAttempts()) {
-			if(attempt.getMarketOrder() != null && !usedMarketCodes.contains(attempt.getMarketOrder().getMarket().getMarketCode()))
-				usedMarketCodes.add(attempt.getMarketOrder().getMarket().getMarketCode());
-		}
-		ClassifiedProposal executionProposal = BookHelper.getNextProposalAfterMarket(currentAttempt.getSortedBook(), 
-				usedMarketCodes, customerOrder.getSide());
-		if(executionProposal == null) { //###
-//			operation.removeLastAttempt();
+		ClassifiedProposal executionProposal = newAttempt.getSortedBook().getBestProposalBySide(customerOrder.getSide());
+		if(executionProposal == null) {
 			this.manageAutomaticUnexecution(customerOrder, customerOrder.getCustomer());
 			return;
 		} else {

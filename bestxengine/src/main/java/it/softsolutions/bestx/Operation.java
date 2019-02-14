@@ -2362,4 +2362,8 @@ public final class Operation implements OperationEventListener {
 		this.notAutoExecute = notExecuteOrder;
 	}
 
+	public List<Attempt> getAttemptsInCurrentCycle() {
+		return attempts.subList(firstAttemptInCurrentCycle, attempts.size() - 1);
+	}
+
 }

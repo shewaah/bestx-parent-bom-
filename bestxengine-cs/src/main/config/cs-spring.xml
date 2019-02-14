@@ -920,7 +920,7 @@
                             <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
 						</bean>
 
-                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTriedInEarlierAttemptProposalClassifier"></bean>
+                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardMarketTriedInEarlierAttemptProposalClassifier"></bean>
 
                         <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardWorstPriceProposalClassifier">
                             <property name="titoliIncrociabiliService"><ref bean="titoliIncrociabiliServer"></ref></property>

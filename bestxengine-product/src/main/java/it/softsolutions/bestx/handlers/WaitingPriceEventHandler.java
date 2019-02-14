@@ -392,7 +392,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
                   .getClass().getName());
             // executable limit file with autoexecution disabled
             if(!operation.isNotAutoExecute()) {
-               if ( (order.isLimitFile() && doNotExecute)) {  // limit file order action +++
+               if(order.isLimitFile() && doNotExecute) {  // limit file order action +++
                   LOGGER.info("Order {} could be executed, but BestX is configured to not execute limit file orders.", order.getFixOrderId());
                   operation.setStateResilient(new OrderNotExecutableState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
                } else {
