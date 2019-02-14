@@ -735,11 +735,12 @@
                 <bean class="it.softsolutions.bestx.services.ordervalidation.LimitFileParkTagFilter">
 					<property name="custOrderHandlingInstrValue"><value>TMO</value></property>
 				</bean>
-               <bean class="it.softsolutions.bestx.services.ordervalidation.StopAutoExecOnQuantity">
+<!--                <bean class="it.softsolutions.bestx.services.ordervalidation.StopAutoExecOnQuantity">
                    <property name="noAutoExecSize"><value>${StopAutoExecOnQuantity.NoAutoExecSize}</value></property>               	
                    <property name="exchangeRateFinder" ref="dbBasedExchangeRateFinder" />            	
 				</bean>               
-               <bean class="it.softsolutions.bestx.services.ordervalidation.StopAutoExecHandlInst">
+ -->
+                <bean class="it.softsolutions.bestx.services.ordervalidation.StopAutoExecHandlInst">
 				</bean>               
  			</list>
 		</property>
@@ -970,10 +971,13 @@
 <!-- Execution strategy -->
     <bean id="executionStrategyServiceFactory" class="it.softsolutions.bestx.services.executionstrategy.CSExecutionStrategyServiceFactory">
         <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
+        <property name="bookClassifier"><ref bean="bookClassifierBean"/></property>
+ 		<property name="bookSorter"><bean class="it.softsolutions.bestx.services.booksorter.BookSorterImpl"></bean></property>
     	<property name="allMarketsToTry">
     		<list>
 				<value>TW</value>
 				<value>MARKETAXESS</value>
+				<value>BLOOMBERG</value>
     		</list>
     	</property>
     </bean>
@@ -1232,7 +1236,7 @@
 		<property name="investmentDecisorID"><value>${MarketAxess.InvestmentDecisionMakerID}</value></property>
 		<property name="executionDecisionID"><value>${MarketAxess.ExecutionDecisionMakerID}</value></property>
 		<property name="defaultTradingCapacity"><value>${MarketAxess.defaultCapacity}</value></property>
-		<property name="defaultShortSelling"><value>${MarketAxess.DefaultShortSell}</value></property>
+		<property name="defaultShortSelling"><value>${MarketAxess.defaultShortSell}</value></property>
         <property name="fixConfigFileName"><value>fix-tradestac-marketaxess-buyside-trade.properties</value></property>
         <property name="addBlockedDealers"><value>${MarketAxess.AddBlockedDealers}</value></property>
  	</bean>
