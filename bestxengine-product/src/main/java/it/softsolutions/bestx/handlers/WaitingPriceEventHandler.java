@@ -388,42 +388,49 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
             }
 
             ApplicationStatisticsHelper.logStringAndUpdateOrderIds(operation.getOrder(), "Order.Execution_" + source.getPriceServiceName() + "." + operation.getOrder().getInstrument().getIsin(), this
-                            .getClass().getName());
-        	// executable limit file with autoexecution disabled
-            if (order.isLimitFile() && doNotExecute) {  // limit file order action +++
-                LOGGER.info("Order {} could be executed, but BestX is configured to not execute limit file orders.", order.getFixOrderId());
-                operation.setStateResilient(new OrderNotExecutableState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
+                  .getClass().getName());
+            // executable limit file with autoexecution disabled
+            if(!operation.isNotAutoExecute()) {
+               if ( (order.isLimitFile() && doNotExecute)) {  // limit file order action +++
+                  LOGGER.info("Order {} could be executed, but BestX is configured to not execute limit file orders.", order.getFixOrderId());
+                  operation.setStateResilient(new OrderNotExecutableState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
+               } else {
+                  // limit file order action +++
+                  //2018-07-25 BESTX-334 SP: this call allows BestX to send the price discovery result to OTEX for limit file before sending it to automatic execution
+                  //for limit file which are not found executable (no prices available or out of market) BestX doesn't send any price discovery result  
+                  if (customerSpecificHandler!=null && order.isLimitFile()) customerSpecificHandler.onPricesResult(source, priceResult);
+                  if(rejectBestOnBloomberg) // uncomment if best on bloomberg requires to be managed with auto unexecution
+                     csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
+                  // last row in this method for executable operation
+               }
             } else {
-            	// limit file order action +++
-            	//2018-07-25 BESTX-334 SP: this call allows BestX to send the price discovery result to OTEX for limit file before sending it to automatic execution
-                //for limit file which are not found executable (no prices available or out of market) BestX doesn't send any price discovery result  
-                if (customerSpecificHandler!=null && order.isLimitFile()) customerSpecificHandler.onPricesResult(source, priceResult);
-				if(!operation.isNotAutoExecute() || rejectBestOnBloomberg) // uncomment if best on bloomberg requires to be managed with auto unexecution
-					csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
-					// last row in this method for executable operation
-				else
-					operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
-					// last row in this method for non autexecutable operation
+               if(rejectBestOnBloomberg) { // uncomment if best on bloomberg requires to be managed with auto unexecution
+                  if (customerSpecificHandler!=null && order.isLimitFile()) customerSpecificHandler.onPricesResult(source, priceResult);
+                  csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
+               } else {
+                  operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
+                  // last row in this method for non autexecutable operation
+               }
             }
         } else if (priceResult.getState() == PriceResult.PriceResultState.INCOMPLETE) {
-            LOGGER.warn("Order {} , Price result is INCOMPLETE, setting to Warning state", operation.getOrder().getFixOrderId());
-            checkOrderAndsetNotAutoExecuteOrder(operation, doNotExecute);
-            operation.removeLastAttempt();
-            operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("EventPriceTimeout.0", priceResult.getReason())), ErrorState.class);
+           LOGGER.warn("Order {} , Price result is INCOMPLETE, setting to Warning state", operation.getOrder().getFixOrderId());
+           checkOrderAndsetNotAutoExecuteOrder(operation, doNotExecute);
+           operation.removeLastAttempt();
+           operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("EventPriceTimeout.0", priceResult.getReason())), ErrorState.class);
         } else if (priceResult.getState() == PriceResult.PriceResultState.NULL || priceResult.getState() == PriceResult.PriceResultState.ERROR) {
-			if(!operation.isNotAutoExecute() && BondTypesService.isUST(operation.getOrder().getInstrument()) || rejectBestOnBloomberg) // uncomment if best on bloomberg requires to be managed with auto unexecution
-				csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
-			else {
-	            Customer customer = order.getCustomer();
-	            checkOrderAndsetNotAutoExecuteOrder(operation, doNotExecute);
-	            try {
-	                csExecutionStrategyService.manageAutomaticUnexecution(order, customer);
-	            } catch (BestXException e) {
-	                LOGGER.error("Order {}, error while managing {} price result state {}", order.getFixOrderId(), priceResult.getState().name(), e.getMessage(), e);
-	                operation.removeLastAttempt();
-	                operation.setStateResilient(new WarningState(operation.getState(), e, Messages.getString("PriceService.16")), ErrorState.class);
-	            }
-			}
+           if(!operation.isNotAutoExecute() && BondTypesService.isUST(operation.getOrder().getInstrument()) || rejectBestOnBloomberg) // uncomment if best on bloomberg requires to be managed with auto unexecution
+              csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
+           else {
+              Customer customer = order.getCustomer();
+              checkOrderAndsetNotAutoExecuteOrder(operation, doNotExecute);
+              try {
+                 csExecutionStrategyService.manageAutomaticUnexecution(order, customer);
+              } catch (BestXException e) {
+                 LOGGER.error("Order {}, error while managing {} price result state {}", order.getFixOrderId(), priceResult.getState().name(), e.getMessage(), e);
+                 operation.removeLastAttempt();
+                 operation.setStateResilient(new WarningState(operation.getState(), e, Messages.getString("PriceService.16")), ErrorState.class);
+              }
+           }
         }
     }
 
