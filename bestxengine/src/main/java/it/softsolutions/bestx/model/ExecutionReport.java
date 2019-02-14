@@ -526,6 +526,10 @@ public class ExecutionReport implements Cloneable {
 	public String getExecType() {
 		return execType;
 	}
+	
+   public void setExecType(String execType) {
+      this.execType = execType;
+   }
 
 	public void setExecType(char execType) {
 		this.execType = execType+"";

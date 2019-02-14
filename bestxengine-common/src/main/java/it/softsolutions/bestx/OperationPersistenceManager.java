@@ -303,7 +303,7 @@ public class OperationPersistenceManager implements OperationStateListener, Init
                             + "it.softsolutions.bestx.states.CurandoRetryState, "
                             + "it.softsolutions.bestx.states.CurandoState, "
                             + "it.softsolutions.bestx.states.WarningState, "
-                            + "it.softsolutions.bestx.states.ParkedOrderState, "
+//                            + "it.softsolutions.bestx.states.ParkedOrderState, "
                             + "it.softsolutions.bestx.states.ErrorState"
                             ;
 
