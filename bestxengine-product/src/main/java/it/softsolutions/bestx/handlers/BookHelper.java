@@ -180,8 +180,8 @@ public class BookHelper {
     	if(wideSpread == null || wideSpread.compareTo(BigDecimal.ZERO) <= 0)
     		return quote;
     	BigDecimal price = quote.getAmount();
-    	if(maxPrice == null) maxPrice = price;
     	BigDecimal spread = wideSpread.multiply(price).divide(ONE_HUNDRED);
+    	if(maxPrice == null) maxPrice = price.add(spread);
     	if(side == OrderSide.BUY) price = price.add(spread).min(maxPrice);
     	else
     	if(side == OrderSide.SELL) price = price.subtract(spread).max(maxPrice);

@@ -454,7 +454,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		try {
 			double spread = BookHelper.getQuoteSpread(currentAttempt.getSortedBook().getValidSideProposals(operation.getOrder().getSide()), this.targetPriceMaxLevel);
 		    CustomerAttributes custAttr = (CustomerAttributes) order.getCustomer().getCustomerAttributes();
-		    BigDecimal customerMaxWideSpread = custAttr.getWideQuoteSpread().movePointLeft(2); // note that the wide quote spread is defined as percentage, so we need to divide by 100 before usage here
+		    BigDecimal customerMaxWideSpread = custAttr.getWideQuoteSpread();
 		    if(customerMaxWideSpread != null && customerMaxWideSpread.doubleValue() < spread) { // must use the spread, not the i-th best
 		    	limitPrice = BookHelper.widen(best, customerMaxWideSpread, operation.getOrder().getSide(), order.getLimit() == null ? null : order.getLimit().getAmount());
 		    	LOGGER.info("Order {}: widening market order limit price {}. Max wide spread is {} and spread between best {} and i-th best {} has been calculated as {}",
