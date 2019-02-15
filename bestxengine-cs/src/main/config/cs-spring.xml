@@ -962,13 +962,16 @@
 
 <!-- Execution strategy -->
     <bean id="executionStrategyServiceFactory" class="it.softsolutions.bestx.services.executionstrategy.CSExecutionStrategyServiceFactory">
+        <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
+        <property name="bookClassifier"><ref bean="bookClassifierBean"/></property>
+ 		<property name="bookSorter"><bean class="it.softsolutions.bestx.services.booksorter.BookSorterImpl"></bean></property>
     	<property name="allMarketsToTry">
     		<list>
 				<value>TW</value>
 				<value>MARKETAXESS</value>
+				<value>BLOOMBERG</value>
     		</list>
     	</property>
-        <property name="marketFinder"><ref bean="dbBasedMarketFinder"></ref></property>
     </bean>
 
 
