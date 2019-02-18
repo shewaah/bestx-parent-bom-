@@ -14,7 +14,7 @@
 				<dependency>
 					<groupId>it.softsolutions.bestx</groupId>
 					<artifactId>bestxengine</artifactId>
-					<version>${parent.version}</version>
+					<version>${project.parent.version}</version>
 				</dependency>
 				<dependency>
 						<groupId>org.slf4j</groupId>
