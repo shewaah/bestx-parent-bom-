@@ -345,7 +345,7 @@ public class SimpleTimerManager implements TimerManager {
 
 	private void stopJob(Scheduler scheduler, JobKey jobKey) throws UnableToInterruptJobException, SchedulerException {
 		scheduler.interrupt(jobKey);
-		LOGGER.debug("job {} interrupped", jobKey);
+		LOGGER.debug("job {} stopped", jobKey);
 		boolean deleted = scheduler.deleteJob(jobKey);
 		LOGGER.debug("job {} deleted = {}", jobKey, deleted);
 		if (!deleted) {

@@ -162,10 +162,10 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 			} catch (BestXException e) {
 				LOGGER.info("Error when trying to send an order to Tradeweb: unable to find market with code {}", MarketCode.TW.name());
 			}
+			marketOrder.setVenue(null);
 			marketOrder.setMarketMarketMaker(null);
 			marketOrder.setLimit(operation.getOrder().getLimit());  // if order limit is null, send a market order to TW
 			LOGGER.info("Order={}, Selecting for execution market market maker: null and price null", operation.getOrder().getFixOrderId());
-			marketOrder.setVenue(null);
 			String twSessionId = operation.getIdentifier(OperationIdType.TW_SESSION_ID);
 			if (twSessionId != null) {
 				operation.removeIdentifier(OperationIdType.TW_SESSION_ID);

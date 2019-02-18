@@ -53,6 +53,7 @@ import it.softsolutions.bestx.model.MarketExecutionReport;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.financecalc.SettlementDateCalculator;
+import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.bestx.states.ManualManageState;
 import it.softsolutions.bestx.states.matching.MATCH_ExecutedState;
 import it.softsolutions.manageability.sl.monitoring.NumericValueMonitor;
@@ -562,8 +563,10 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         		operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);	
             	auditMarketStatus(order.getFixOrderId(), attemptNo);
             	//} 
-            	if (oldStateType == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry || newState.mustSaveBook()) {
-            		operationStateAuditDao.saveNewBook(order.getFixOrderId(), attemptNo, operation.getLastAttempt().getSortedBook());
+            	if(oldStateType != OperationState.Type.Rejected && !BondTypesService.isUST(operation.getOrder().getInstrument())) { ### VERIFICA!
+	            	if (oldStateType == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry) {
+	            		operationStateAuditDao.saveNewBook(order.getFixOrderId(), attemptNo, operation.getLastAttempt().getSortedBook());
+	            	}
             	}
             } catch (Exception e) {
             	LOGGER.error("Unable to save the attempt, probably already present on DB: {}", e.getMessage());
@@ -669,7 +672,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         return getComment(true, marketCode, type, comment, params);
     }
 
-    private String getMarketMakerCode(Attempt lastAttempt) {
+    private String getProposalMarketMakerCode(Attempt lastAttempt) {
 
         String res = null;
         if (lastAttempt == null
@@ -681,8 +684,18 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         }
         try {
             res = lastAttempt.getExecutionProposal().getMarketMarketMaker().getMarketMaker().getCode();
-            // overwrite with internal if available
         } catch (NullPointerException e) {
+        }
+        return res;
+    }
+
+    private String getMarketOrderMarketMakerCode(Attempt lastAttempt) {
+
+        String res = null;
+        try {
+            res = lastAttempt.getMarketOrder().getMarketMarketMaker().getMarketMaker().getCode();
+        } catch (NullPointerException e) {
+        	; // leave res to null value
         }
         return res;
     }
@@ -728,7 +741,8 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             operationStateAuditDao.updateOrder(order, operation.getState(), false, order.isLaw262Passed(), comment, null, orderText);
         }
         // In queste 2 chiamate potrebbe non esserci sempre tutta la catena (potremmo avere NullPointerException)
-        String proposalMarketMaker = getMarketMakerCode(operation.getLastAttempt());
+        String proposalMarketMaker = getProposalMarketMakerCode(operation.getLastAttempt());
+        String orderMarketMaker = getMarketOrderMarketMakerCode(operation.getLastAttempt());
         String executionMarketMaker = getExecutionReportMarketMaker(operation.getExecutionReports());
         String executionReportPrice = getExecutionReportPrice(operation.getExecutionReports());
         String executionProposalAmount = getLimitAttemptPrice(operation.getLastAttempt());
@@ -770,7 +784,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             comment = getComment(false, marketCode, type, comment);
             break;
         case Rejected:
-            comment = getComment(false, marketCode, type, comment, proposalMarketMaker);
+            comment = getComment(false, marketCode, type, comment, orderMarketMaker);
             break;
         case ManageCounter: {
             String counterOfferAmount = df.format(operation.getLastAttempt().getExecutablePrice(0).getClassifiedProposal().getPrice().getAmount());
@@ -862,9 +876,9 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             }
             break;
             case BLOOMBERG:
-            case TW: 
+            case TW:
             case MARKETAXESS: {
-                Object[] params = { proposalMarketMaker, executionProposalAmount, executionProposalFutSettDate };
+                Object[] params = { orderMarketMaker, executionProposalAmount, executionProposalFutSettDate };
                 comment = getComment(marketCode, type, comment, params);
             }
             break;
@@ -886,7 +900,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         case InternalSendRfqToBest:
             break;
         case WaitingFill: {
-            Object[] params = { proposalMarketMaker, executionReportPrice };
+            Object[] params = { orderMarketMaker, executionReportPrice };
             comment = getComment(false, marketCode, type, comment, params);
         }
         break;
