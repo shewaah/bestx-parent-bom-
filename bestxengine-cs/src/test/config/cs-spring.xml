@@ -617,7 +617,7 @@
         <property name="serialNumberService"><ref bean="serialNumberService"></ref></property>
         <property name="orderValidationService"><ref bean="csOrderValidationService"></ref></property>
         <property name="priceDiscoveryValidationService"><ref bean="csPDValidationService"></ref></property>
-        <property name="titoliIncrociabiliService"><ref bean="titoliIncrociabiliServer"></ref></property>
+<!--         <property name="titoliIncrociabiliService"><ref bean="titoliIncrociabiliServer"></ref></property>  -->
         <property name="marketConnectionRegistry"><ref bean="configurableMarketConnectionRegistry"></ref></property>
         <property name="marketSecurityStatusService"><ref bean="marketSecurityStatusService"></ref></property>
 		<property name="customerFinder" ref="dbBasedCustomerFinder" />
@@ -649,7 +649,7 @@
         <property name="tsoxTechnicalRejectReasons"><value>${Bloomberg.Tsox.technical_reject_reasons}</value></property>
         <property name="orderCancelDelay"><value>${orderCancel.timeout}</value></property>
         <property name="bestXConfigurationDao"><ref bean="sqlBestXConfigurationDao"></ref></property>
-        <property name="priceDiscoveryConnection"><ref bean="ib4jOperatorConsoleAdapter"></ref></property>
+        <property name="priceDiscoveryConnection"><ref bean="mqPriceDiscoveryOperatorConsoleAdapter"></ref></property>
         <property name="priceDiscoveryCustomerId"><value>${PriceDiscovery.Customer}</value></property>
         <property name="bookDepth"><value>${PriceDiscovery.BookDepth}</value></property>
         <property name="orderBookDepth"><value>${PriceDiscovery.OrderBookDepth}</value></property>
@@ -916,7 +916,8 @@
                     <property name="marketSecurityStatusService"><ref bean="marketSecurityStatusService"></ref></property>
                     <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
 				</bean>
-                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTriedInEarlierAttemptProposalClassifier"></bean>
+
+                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardMarketTriedInEarlierAttemptProposalClassifier"></bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardWorstPriceProposalClassifier">
                     <property name="titoliIncrociabiliService"><ref bean="titoliIncrociabiliServer"></ref></property>
                     <!--  Flag per abilitare o disabilitare il controllo che un ordine sia o meno un matching tramite query -->
@@ -927,7 +928,6 @@
 		<property name="bookClassifierList">
 			<list>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardDuplicatedMM"></bean>
-				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTooWideQuoteSpread"></bean>
 			</list>
 		</property>
 	</bean>
@@ -955,13 +955,15 @@
 
 <!-- Execution strategy -->
     <bean id="executionStrategyServiceFactory" class="it.softsolutions.bestx.services.executionstrategy.CSExecutionStrategyServiceFactory">
+        <property name="bookClassifier"><ref bean="bookClassifierBean"/></property>
+ 		<property name="bookSorter"><bean class="it.softsolutions.bestx.services.booksorter.BookSorterImpl"></bean></property>
     	<property name="allMarketsToTry">
     		<list>
 				<value>TW</value>
 				<value>MARKETAXESS</value>
+				<value>BLOOMBERG</value>
     		</list>
     	</property>
-        <property name="marketFinder"><ref bean="dbBasedMarketFinder"></ref></property>
     </bean>
 
 
@@ -1219,6 +1221,7 @@
 		<property name="defaultTradingCapacity"><value>${MarketAxess.defaultCapacity}</value></property>
 		<property name="defaultShortSelling"><value>${MarketAxess.DefaultShortSell}</value></property>
         <property name="fixConfigFileName"><value>fix-tradestac-marketaxess-buyside-trade.properties</value></property>
+        <property name="addBlockedDealers"><value>${MarketAxess.AddBlockedDealers}</value></property>
  	</bean>
 	
 
@@ -1316,12 +1319,14 @@
             is also the default value -->
         <property name="reconnectionMaxTries"><value>-1</value></property>
         <property name="encryptor"><ref bean="configurationEncryptor"></ref></property>
+        <property name="serviceName"><value>GRDLiteService</value></property>
 	</bean>
 
     <bean id="configurationPropertyLoader" class="it.softsolutions.bestx.services.CSConfigurationPropertyLoader">
         <property name="jdbcTemplate"><ref bean="jdbcTemplate"></ref></property>
         <property name="configurationTable"><value>BestXConfiguration</value></property>
    </bean>	
+   
     <bean id="businessValuesMonitor" class="it.softsolutions.bestx.services.BusinessValuesMonitor" init-method="init">
         <property name="statsIntervalTimeInSecs"><value>60</value></property>
     	<property name="marketList">
