@@ -563,7 +563,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         		operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);	
             	auditMarketStatus(order.getFixOrderId(), attemptNo);
             	//} 
-            	if(oldStateType != OperationState.Type.Rejected && !BondTypesService.isUST(operation.getOrder().getInstrument())) { ### VERIFICA!
+            	if(oldStateType != OperationState.Type.Rejected && !BondTypesService.isUST(operation.getOrder().getInstrument())) { //### VERIFICA!
 	            	if (oldStateType == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry) {
 	            		operationStateAuditDao.saveNewBook(order.getFixOrderId(), attemptNo, operation.getLastAttempt().getSortedBook());
 	            	}
