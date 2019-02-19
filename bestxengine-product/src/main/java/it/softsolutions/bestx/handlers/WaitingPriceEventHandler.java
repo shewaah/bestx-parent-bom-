@@ -352,7 +352,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
         ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, priceResult, rejectOrderWhenBloombergIsBest);
       	// AMC 20190208 BESTX-385 best on bloomberg requires to be managed with auto unexecution when best on bloomberg is configured for auto unexecution
         ClassifiedProposal executionProposal = currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide());
-    	boolean rejectBestOnBloomberg = executionProposal != null && executionProposal.getMarket().getMarketCode() == Market.MarketCode.BLOOMBERG && rejectOrderWhenBloombergIsBest;
+    	boolean doRejectThisBestOnBloomberg = executionProposal != null && executionProposal.getMarket().getMarketCode() == Market.MarketCode.BLOOMBERG && rejectOrderWhenBloombergIsBest;
                    
         if (priceResult.getState() == PriceResult.PriceResultState.COMPLETE || mktCode == MarketCode.MATCHING) {
 
@@ -404,7 +404,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
                   // last row in this method for executable operation
                }
             } else {
-               if(rejectBestOnBloomberg) { // uncomment if best on bloomberg requires to be managed with auto unexecution
+               if(doRejectThisBestOnBloomberg) { // uncomment if best on bloomberg requires to be managed with auto unexecution
                   if (customerSpecificHandler!=null && order.isLimitFile()) customerSpecificHandler.onPricesResult(source, priceResult);
                   csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
                } else {
@@ -418,7 +418,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
            operation.removeLastAttempt();
            operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("EventPriceTimeout.0", priceResult.getReason())), ErrorState.class);
         } else if (priceResult.getState() == PriceResult.PriceResultState.NULL || priceResult.getState() == PriceResult.PriceResultState.ERROR) {
-           if(!operation.isNotAutoExecute() && BondTypesService.isUST(operation.getOrder().getInstrument()) || rejectBestOnBloomberg) // uncomment if best on bloomberg requires to be managed with auto unexecution
+           if(!operation.isNotAutoExecute() && BondTypesService.isUST(operation.getOrder().getInstrument()) || doRejectThisBestOnBloomberg) 
               csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
            else {
               Customer customer = order.getCustomer();
