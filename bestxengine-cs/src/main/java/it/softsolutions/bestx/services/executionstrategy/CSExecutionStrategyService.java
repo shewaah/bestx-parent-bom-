@@ -316,7 +316,12 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		marketOrder.setMarket(executionProposal.getMarket());
 		marketOrder.setTransactTime(DateService.newUTCDate());
 		newAttempt.setMarketOrder(marketOrder);
-		this.startExecution(operation, newAttempt, serialNumberService);
+		if(!operation.isNotAutoExecute()) {
+			this.startExecution(operation, newAttempt, serialNumberService);
+		} else {
+			LOGGER.info("Order {} is not autoexecutable, go to Curando State", customerOrder.getFixOrderId());
+			operation.setStateResilient(new CurandoState(), ErrorState.class);
+		}
 	}
 
 

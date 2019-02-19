@@ -47,33 +47,26 @@ public class DiscardMarketTriedInEarlierAttemptProposalClassifier implements Pro
 	@Override
 	public ClassifiedProposal getClassifiedProposal(ClassifiedProposal proposal, Order order, List<Attempt> previousAttempts, Set<Venue> venues, ClassifiedBook book) {
 		if (proposal.getVenue() != null && previousAttempts != null && !previousAttempts.isEmpty()) {
-			LOGGER.debug("Order {}, check proposal used in previous attempt : {}", order.getFixOrderId(), proposal);
-
+			LOGGER.debug("Order {}, check markets used in previous attempts : {}", order.getFixOrderId(), proposal);
 			for (Attempt a : previousAttempts) {
-				if (!a.isByPassableForVenueAlreadyTried()) {
-					// Venue used in an earlier attempt
-					if (a.getMarketOrder() != null && a.getMarketOrder().getMarket().equals(proposal.getMarket())) {
-						LOGGER.debug("Order {}, proposal Market {}, already tried market {}", order.getFixOrderId(), proposal.getMarket(), proposal.getMarket());
-						List<MarketExecutionReport> execReports = a.getMarketExecutionReports();
-						// The earlier attempt has a market execution report stating that a technical or business failure prevented
-						// fill
-						if (execReports != null && execReports.size() != 0) {
-							LOGGER.debug("Order {}, check the execution reports", order.getFixOrderId());
+				// Market used in an earlier attempt
+				if (a.getMarketOrder() != null && a.getMarketOrder().getMarket().equals(proposal.getMarket())) {
+					LOGGER.debug("Order {}, proposal {}, already tried market {}", order.getFixOrderId(), proposal.getMarket(), proposal.getMarket());
+					List<MarketExecutionReport> execReports = a.getMarketExecutionReports();
+					// The earlier attempt has a market execution report stating that a technical or business failure prevented
+					// fill
+					if (execReports != null && execReports.size() != 0) {
+						LOGGER.debug("Order {}, check the execution reports", order.getFixOrderId());
+						proposal.setProposalState(Proposal.ProposalState.REJECTED);
+						proposal.setReason(Messages.getString("DiscardMarketTriedInEarlierAttemptProposalClassifier.0"));
+					} else {
+						// there are no market execution reports at all
+						LOGGER.debug("Order {}, no execution reports, check the if the market allows to reuse prices.", order.getFixOrderId());
+						if (proposal.getMarket() != null && a.getMarketOrder().getMarket().equals(proposal.getMarket()) && !proposal.getMarket().isReusePrices()) {
 							proposal.setProposalState(Proposal.ProposalState.REJECTED);
 							proposal.setReason(Messages.getString("DiscardMarketTriedInEarlierAttemptProposalClassifier.0"));
-						} else
-						// there are no market execution reports at all
-						{
-							LOGGER.debug("Order {}, no execution reports, check the if the market allows to reuse prices.", order.getFixOrderId());
-
-							if (proposal.getMarket() == null) {
-								proposal.setProposalState(Proposal.ProposalState.REJECTED);
-								proposal.setReason(Messages.getString("DiscardMarketTriedInEarlierAttemptProposalClassifier.0"));
-							}
 						}
 					}
-				} else {
-					LOGGER.debug("Attempt marked as bypassable for this classifier : bypassed.");
 				}
 			}
 		}
