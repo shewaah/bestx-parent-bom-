@@ -50,13 +50,16 @@ public class MA_CancelledEventHandler extends BaseOperationEventHandler {
     @Override
     public void onNewState(OperationState currentState) {
 //		try {
-			int size = operation.getLastAttempt().getMarketExecutionReports().size();
-			String rejReason = "";
-			if(size > 0) {
-				rejReason = operation.getLastAttempt().getMarketExecutionReports().get(size -1).getText();
-			}
-        	operation.getLastAttempt().setAttemptState(AttemptState.EXPIRED);
-            operation.setStateResilient(new RejectedState(rejReason), ErrorState.class);
+			
+	      if (!checkCustomerRevoke(operation.getOrder())) {
+	         int size = operation.getLastAttempt().getMarketExecutionReports().size();
+	         String rejReason = "";
+	         if(size > 0) {
+	            rejReason = operation.getLastAttempt().getMarketExecutionReports().get(size -1).getText();
+	         }
+           	operation.getLastAttempt().setAttemptState(AttemptState.EXPIRED);
+           	operation.setStateResilient(new RejectedState(rejReason), ErrorState.class);
+	      }
 //			ExecutionReportHelper.prepareForAutoNotExecution(operation,serialNumberService, ExecutionReportState.CANCELLED);
 //			operation.setStateResilient(new SendNotExecutionReportState(rejReason == null? currentState.getComment() : rejReason), ErrorState.class);
 //		} catch (BestXException e) {

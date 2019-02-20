@@ -3,6 +3,11 @@
  */
 package it.softsolutions.bestx.handlers;
 
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
@@ -18,11 +23,6 @@ import it.softsolutions.bestx.services.serial.SerialNumberService;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.OrderNotExecutedState;
 import it.softsolutions.bestx.states.WarningState;
-
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Stefano
@@ -55,8 +55,8 @@ public class SendNotExecutionReportEventHandler extends BaseOperationEventHandle
 				executionReports.add(newExecution);
 				operation.setExecutionReports(executionReports);
 			}
-			operation.getExecutionReports().get(operation.getExecutionReports().size()-1).setExecBroker("");
-			operation.getExecutionReports().get(operation.getExecutionReports().size()-1).setMarket(null);
+		   operation.getExecutionReports().get(operation.getExecutionReports().size()-1).setExecBroker("");
+		   operation.getExecutionReports().get(operation.getExecutionReports().size()-1).setMarket(null);
 			customerConnection.sendOrderReject(operation, 
 					operation.getOrder(), 
 					operation.getIdentifier(OperationIdType.ORDER_ID), 
