@@ -143,8 +143,7 @@ public class ConfigurableBookClassifier implements BookClassifier {
             for (ProposalClassifier classifier : classifiersList) {
                 classifiedProposal = classifier.getClassifiedProposal(classifiedProposal, order, previousAttempts, venues, book);
                 if (classifiedProposal.getProposalState() == Proposal.ProposalState.DROPPED || 
-                    classifiedProposal.getProposalState() == Proposal.ProposalState.REJECTED ||
-                    classifiedProposal.getType() == Proposal.ProposalType.COUNTER) {
+                    classifiedProposal.getProposalState() == Proposal.ProposalState.REJECTED) {
                     break;
                 }
             }
