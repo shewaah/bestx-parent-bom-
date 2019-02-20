@@ -4,6 +4,7 @@
 package it.softsolutions.bestx.services.ordervalidation;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Messages;
@@ -29,22 +30,17 @@ public class StopAutoExecOnQuantity implements OrderValidator {
 		result.setOrder(order);
 		result.setValid(false);
 		result.setReason("");
-		// comment following 3 rows if this filter applies to all orders
-//		if(!operation.getOrder().isLimitFile()) {  // if this filter applies only to LimitFile orders
-//			result.setValid(true);
-//			return result;
-//		}
 		BigDecimal normalizedOrderSize;
 		try {
-			normalizedOrderSize = order.getQty().multiply(exchangeRateFinder.getExchangeRateByCurrency(order.getCurrency()).getExchangeRateAmount());
+			normalizedOrderSize = order.getQty().divide(exchangeRateFinder.getExchangeRateByCurrency(order.getCurrency()).getExchangeRateAmount(), 5, RoundingMode.HALF_UP);
 		} catch (BestXException e) {
 			result.setReason(Messages.getString("StopAutoExecOnQuantity.0", order.getCurrency()));
 			return result;
 		}
-      result.setValid(true);
+		result.setValid(true);
 		if(normalizedOrderSize.compareTo(noAutoExecSize) > 0) { //size is too high, return valid
 			result.setReason(CURANDO_VAL);
-         operation.setNotAutoExecute(true); // AMC this is needed to avoid the order being automatically executed
+			operation.setNotAutoExecute(true); // AMC this is needed to avoid the order being automatically executed
 		}
 
 		return result;

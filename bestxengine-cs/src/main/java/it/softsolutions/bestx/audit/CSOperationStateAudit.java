@@ -54,7 +54,9 @@ import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.financecalc.SettlementDateCalculator;
 import it.softsolutions.bestx.services.instrument.BondTypesService;
+import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.ManualManageState;
+import it.softsolutions.bestx.states.WarningState;
 import it.softsolutions.bestx.states.matching.MATCH_ExecutedState;
 import it.softsolutions.manageability.sl.monitoring.NumericValueMonitor;
 
@@ -433,17 +435,22 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         }
         break;
         case Executed: {
-            List<Attempt> attemptList = operation.getAttempts();
-            Attempt attempt = attemptList.get(attemptList.size() - 1);
-            if (operation.getExecutionReports().size() > 0) {
-                try {
-                    ExecutionReport executionReport = operation.getExecutionReports().get(operation.getExecutionReports().size() - 1);
-                    operationStateAuditDao.finalizeOrder(order, operation.getLastAttempt(), operation.getExecutionReports().get(executionReportNo), executionReport.getTransactTime());
-                    operationStateAuditDao.updateAttempt(order.getFixOrderId(), attempt, tsn, attemptNo, executionReport.getTicket(), executionReport);
-                } catch (Exception e) {
-                    LOGGER.info("Unable to update order: {}", e.getMessage(), e);
-                }
-            }
+        	List<Attempt> attemptList = operation.getAttempts();
+        	if(attemptList.size() > 0 ) {
+        		Attempt attempt = attemptList.get(attemptList.size() - 1);
+        		if (operation.getExecutionReports().size() > 0) {
+        			try {
+        				ExecutionReport executionReport = operation.getExecutionReports().get(operation.getExecutionReports().size() - 1);
+        				operationStateAuditDao.finalizeOrder(order, operation.getLastAttempt(), operation.getExecutionReports().get(executionReportNo), executionReport.getTransactTime());
+        				operationStateAuditDao.updateAttempt(order.getFixOrderId(), attempt, tsn, attemptNo, executionReport.getTicket(), executionReport);
+        			} catch (Exception e) {
+        				LOGGER.info("Unable to update order: {}", e.getMessage(), e);
+        			}
+        		}
+        	} else {
+        		LOGGER.info("No previous execution reports received for order {} - Going to Warning State", order.getFixOrderId());
+        		operation.setStateResilient(new WarningState(operation.getState(), new Exception("Created by chance"), "No previous execution reports received for order"), ErrorState.class);
+        	}
         }
         break;
         case FormalValidationOK: {
