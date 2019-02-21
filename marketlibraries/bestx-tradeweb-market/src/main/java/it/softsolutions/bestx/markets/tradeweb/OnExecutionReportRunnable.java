@@ -167,7 +167,7 @@ public class OnExecutionReportRunnable implements Runnable {
 			break;
         }
         
-        LOGGER.info("orderID={}, mapped execType={} - ordStatus={} to executionRepostState={}", order.getFixOrderId(), execType, ordStatus, executionReportState);
+        LOGGER.info("orderID={}, mapped execType={} - ordStatus={} to executionReportState={}", order.getFixOrderId(), execType, ordStatus, executionReportState);
         marketExecutionReport.setState(executionReportState);
         marketExecutionReport.setTransactTime(this.transactTime);
         marketExecutionReport.setSequenceId(null); // ID only

@@ -97,7 +97,7 @@ public class OnExecutionReportRunnable implements Runnable {
 			break;
         }
         
-        LOGGER.info("orderID={}, mapped execType={} - ordStatus={} to executionRepostState={}", order.getFixOrderId(), execType, ordStatus, executionReportState);
+        LOGGER.info("orderID={}, mapped execType={} - ordStatus={} to executionReportState={}", order.getFixOrderId(), execType, ordStatus, executionReportState);
         executionReport.setState(executionReportState);
         executionReport.setSequenceId(null); // ID only
         if (order.getInstrument().getBBSettlementDate() != null && order.getInstrument().getCurrency() != null && order.getInstrument().getRateo() != null && order.getFutSettDate().equals(order.getInstrument().getBBSettlementDate()) && order.getCurrency().equals(order.getInstrument().getCurrency())) {

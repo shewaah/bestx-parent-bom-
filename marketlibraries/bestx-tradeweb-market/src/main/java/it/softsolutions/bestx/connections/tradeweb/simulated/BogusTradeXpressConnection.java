@@ -125,14 +125,14 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 	@Override
 	public void sendOrder(MarketOrder marketOrder) throws BestXException {
 		LOGGER.debug("marketOrder = {}", marketOrder);
-		try {
-			Thread.currentThread().sleep(2000);
-		} catch (InterruptedException e1) {}
-		//FIXME add MiFID II fields management
+//		try {
+//			Thread.currentThread().sleep(1000);
+//		} catch (InterruptedException e1) {}
+//		//FIXME add MiFID II fields management
 		sendNewExecutionReport(marketOrder);
 
 		try {
-			Thread.currentThread().sleep(15000);
+			Thread.currentThread().sleep(5000);
 		} catch (InterruptedException e) {}
 
 		if(cancelIsins.isEmpty() || !cancelIsins.contains("XS1897488091")) cancelIsins.add("XS1897488091");
