@@ -151,7 +151,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	 */
 	@Override
 	public void startExecution(Operation operation, Attempt currentAttempt, SerialNumberService serialNumberService) {
-		if(/*currentAttempt.getExecutionProposal() == null && */BondTypesService.isUST(operation.getOrder().getInstrument())) { // BESTX-382  
+		if(!rejectOrderWhenBloombergIsBest && BondTypesService.isUST(operation.getOrder().getInstrument())) { // BESTX-382
 			// override execution proposal every time
 			MarketOrder marketOrder = new MarketOrder();
 			currentAttempt.setMarketOrder(marketOrder);
