@@ -69,9 +69,9 @@ public class ThreadPoolSortedQueueExecutor extends ThreadPoolExecutor implements
                 workerPool.execute(runnableQueue.take());
                 LOGGER.debug("Queue size: {}", runnableQueue.size());
             } catch (InterruptedException e) {
-                LOGGER.debug("BloombergConnector - Forced queue wait interruption.");
+                LOGGER.debug("ThreadPoolSortedQueueExecutor - Forced queue wait interruption.");
             } catch (Exception ex) {
-                LOGGER.error("BloombergConnector - Error: ", ex);
+                LOGGER.error("ThreadPoolSortedQueueExecutor - Error: ", ex);
             }
         }
     }

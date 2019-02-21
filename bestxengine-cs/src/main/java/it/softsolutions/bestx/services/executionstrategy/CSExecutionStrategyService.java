@@ -151,6 +151,19 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	 */
 	@Override
 	public void startExecution(Operation operation, Attempt currentAttempt, SerialNumberService serialNumberService) {
+		// manage UST automatic rejection when best is on Bloomberg
+		if(rejectOrderWhenBloombergIsBest && BondTypesService.isUST(operation.getOrder().getInstrument())) { 
+			try {
+				ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
+				operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("RejectWhenBloombergBest.0")), ErrorState.class);
+				// last command in method for this case
+			} catch (BestXException e) {
+				LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
+				String errorMessage = e.getMessage();
+				operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
+			}
+		} else
+			// manage custom strategy to execute UST on Tradeweb with no MMM specified and limit price as specified in client order
 		if(!rejectOrderWhenBloombergIsBest && BondTypesService.isUST(operation.getOrder().getInstrument())) { // BESTX-382
 			// override execution proposal every time
 			MarketOrder marketOrder = new MarketOrder();
@@ -171,8 +184,14 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 				operation.removeIdentifier(OperationIdType.TW_SESSION_ID);
 			}
 			operation.setStateResilient(new TW_StartExecutionState(), ErrorState.class);
+			// last command in method for this case
 		} else {
-			//we must always preserve the existing comment, because it could be the one sent to us through OTEX
+			//we must always preserve the existing comment, because it could be the one sent to us through OMS
+			if(currentAttempt == null || currentAttempt.getMarketOrder() == null || currentAttempt.getMarketOrder().getMarket() == null) {
+				LOGGER.warn("Order {},  invalid market order when trying to start execution. currentAttempt.MarketOrder = {}", currentAttempt == null ? "null.null" : currentAttempt.getMarketOrder());
+				operation.setStateResilient(new WarningState(operation.getState(), null, 
+						"invalid market order when trying to start execution. currentAttempt.MarketOrder =" + (currentAttempt == null ? "null.null" : currentAttempt.getMarketOrder())), ErrorState.class);				
+			}
 			switch (currentAttempt.getMarketOrder().getMarket().getMarketCode()) {
 			case BLOOMBERG:
 				if (rejectOrderWhenBloombergIsBest) {

@@ -128,7 +128,6 @@ public class PriceDiscoveryHelper {
 		PriceDiscoveryPerformanceMonitor.logEvent(order.getCustomerOrderId(), "Book arrived");
 		JSONObject jsonBook;
 		if(book != null) {
-			LOGGER.info("Book is null. No message will be published.");
 			if(publishAttempt) {
 				jsonBook = PriceDiscoveryHelper.createPriceDiscoveryMessage(book, order, bookDepth, priceDecimals, operation.getAttemptNo());
 			} else {
@@ -144,7 +143,10 @@ public class PriceDiscoveryHelper {
 			operatorConsoleConnection.publishPriceDiscoveryResult(operation, jsonBook.toString());
 			PriceDiscoveryPerformanceMonitor.finalize(order.getCustomerOrderId(), "Price discovery sent\n\n\n");
 			LOGGER.info(jsonBook.toString());
-		}	
+		}	else {
+			LOGGER.info("Book is null. No message will be published.");
+		}
+
 	}
 	
 	private static boolean areAllMarketsDisabled(Operation operation) {
