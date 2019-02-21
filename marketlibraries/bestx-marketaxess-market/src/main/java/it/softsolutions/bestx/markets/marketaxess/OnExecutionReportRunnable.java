@@ -129,4 +129,14 @@ public class OnExecutionReportRunnable implements Runnable {
 		}
         operation.onMarketExecutionReport(market, order, executionReport);
     }
+    
+	@Override
+	public String toString() {
+		StringBuilder str = new StringBuilder(this.getClass().getName());
+		str.append(" for Order ");
+		str.append(operation.getOrder().getFixOrderId());
+		str.append(" and MarketOrder ");
+		str.append(operation.getLastAttempt().getMarketOrder().getMarketSessionId());
+		return super.toString();
+	}
 }
