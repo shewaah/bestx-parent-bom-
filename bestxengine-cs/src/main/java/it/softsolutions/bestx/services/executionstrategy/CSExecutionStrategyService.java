@@ -152,7 +152,10 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	@Override
 	public void startExecution(Operation operation, Attempt currentAttempt, SerialNumberService serialNumberService) {
 		// manage UST automatic rejection when best is on Bloomberg
-		if(rejectOrderWhenBloombergIsBest && BondTypesService.isUST(operation.getOrder().getInstrument())) { 
+		if(rejectOrderWhenBloombergIsBest 
+				&& operation.getLastAttempt().getSortedBook().getBestProposalBySide(
+						operation.getOrder().getSide()).getMarket().getMarketCode() == MarketCode.BLOOMBERG
+				&& BondTypesService.isUST(operation.getOrder().getInstrument())) { 
 			try {
 				ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
 				operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("RejectWhenBloombergBest.0")), ErrorState.class);
@@ -164,7 +167,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 			}
 		} else
 			// manage custom strategy to execute UST on Tradeweb with no MMM specified and limit price as specified in client order
-		if(!rejectOrderWhenBloombergIsBest && BondTypesService.isUST(operation.getOrder().getInstrument())) { // BESTX-382
+		if(BondTypesService.isUST(operation.getOrder().getInstrument())) { // BESTX-382
 			// override execution proposal every time
 			MarketOrder marketOrder = new MarketOrder();
 			currentAttempt.setMarketOrder(marketOrder);

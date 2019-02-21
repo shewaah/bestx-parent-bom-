@@ -55,14 +55,19 @@ public class SendNotExecutionReportEventHandler extends BaseOperationEventHandle
 				executionReports.add(newExecution);
 				operation.setExecutionReports(executionReports);
 			}
-		   operation.getExecutionReports().get(operation.getExecutionReports().size()-1).setExecBroker("");
-		   operation.getExecutionReports().get(operation.getExecutionReports().size()-1).setMarket(null);
-			customerConnection.sendOrderReject(operation, 
-					operation.getOrder(), 
-					operation.getIdentifier(OperationIdType.ORDER_ID), 
-					operation.getExecutionReports().get(operation.getExecutionReports().size()-1),
-					ErrorCode.UNKNOWN_ORDER,
-					currentState.getComment());
+			if(operation.getExecutionReports().size() > 0) {
+				operation.getExecutionReports().get(operation.getExecutionReports().size()-1).setExecBroker("");
+				operation.getExecutionReports().get(operation.getExecutionReports().size()-1).setMarket(null);
+				customerConnection.sendOrderReject(operation, 
+						operation.getOrder(), 
+						operation.getIdentifier(OperationIdType.ORDER_ID), 
+						operation.getExecutionReports().get(operation.getExecutionReports().size()-1),
+						ErrorCode.UNKNOWN_ORDER,
+						currentState.getComment());
+			} else {
+				LOGGER.info("Order {} has no execution Reports, cannot send unexecution report!", operation.getOrder().getFixOrderId());
+				operation.setStateResilient(new WarningState(currentState, null, Messages.getString("Order has no execution Reports, cannot send unexecution report!", operation.getIdentifier(OperationIdType.CUSTOMER_CHANNEL))), ErrorState.class);
+			}
 		} catch (BestXException exc) {
 			operation.setStateResilient(new WarningState(currentState, null, Messages.getString("EventTasReportError.0", operation.getIdentifier(OperationIdType.CUSTOMER_CHANNEL))), ErrorState.class);
 		}

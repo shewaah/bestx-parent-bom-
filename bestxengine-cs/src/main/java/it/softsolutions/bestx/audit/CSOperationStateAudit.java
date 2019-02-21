@@ -437,6 +437,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         case Executed: {
         	List<Attempt> attemptList = operation.getAttempts();
         	if(attemptList.size() > 0 ) {
+
         		Attempt attempt = attemptList.get(attemptList.size() - 1);
         		if (operation.getExecutionReports().size() > 0) {
         			try {

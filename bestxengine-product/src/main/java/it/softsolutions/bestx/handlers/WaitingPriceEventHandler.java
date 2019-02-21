@@ -426,7 +426,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("EventPriceTimeout.0", priceResult.getReason())), ErrorState.class);
 		} else if (priceResult.getState() == PriceResult.PriceResultState.NULL || priceResult.getState() == PriceResult.PriceResultState.ERROR) {
 			if(!operation.isNotAutoExecute() && BondTypesService.isUST(operation.getOrder().getInstrument()) && doRejectThisBestOnBloomberg)  {
-				// it is an executable UST order and/or best is on BBG and needs to be rejected
+				// it is an executable UST order and best is on BBG and needs to be rejected
 				csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
 			}
 			else {
