@@ -53,7 +53,6 @@ import it.softsolutions.bestx.model.MarketExecutionReport;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.financecalc.SettlementDateCalculator;
-import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.ManualManageState;
 import it.softsolutions.bestx.states.WarningState;
@@ -571,7 +570,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         		operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);	
             	auditMarketStatus(order.getFixOrderId(), attemptNo);
             	//} 
-            	if(oldStateType != OperationState.Type.Rejected && !BondTypesService.isUST(operation.getOrder().getInstrument())) { 
+               if(oldStateType != OperationState.Type.Rejected) { 
 	            	if (oldStateType == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry) {
 	            		operationStateAuditDao.saveNewBook(order.getFixOrderId(), attemptNo, operation.getLastAttempt().getSortedBook());
 	            	}
