@@ -865,7 +865,7 @@ public class TradewebMarket extends MarketCommon
          if (OrdStatus.Canceled.equals(tsExecutionReport.getOrdStatus())) {
             String notes = tsExecutionReport.getText();
             
-            if (notes.indexOf("[") >= 0 && notes.indexOf("]") >= 0) {
+            if (notes != null && notes.indexOf("[") >= 0 && notes.indexOf("]") >= 0) {
                String prices[] = notes.substring(notes.indexOf("[") + 1, notes.indexOf("]")).split(";");
                for (int i = 0; i < prices.length; i++) {
                   String data[] = prices[i].split(":");

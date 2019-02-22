@@ -131,24 +131,47 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 //		//FIXME add MiFID II fields management
 		sendNewExecutionReport(marketOrder);
 
-		try {
-			Thread.currentThread().sleep(5000);
-		} catch (InterruptedException e) {}
-
-		if(cancelIsins.isEmpty() || !cancelIsins.contains("XS1897488091")) cancelIsins.add("XS1897488091");
-		if (cancelIsins.contains(marketOrder.getInstrument().getIsin())) {
-			sendCancelledExecutionReport(marketOrder);
-		} else if (rejectIsins.contains(marketOrder.getInstrument().getIsin())){  //rejectIsins.add("XS0365323608");
-			sendOrderReject(marketOrder);										//rejectIsins.remove("XS0365323608");
-		} else {
-			sendFilledExecutionReport(marketOrder);
-		}
+//		try {
+//			Thread.currentThread().sleep(300000);
+//		} catch (InterruptedException e) {}
+//
+//		if(cancelIsins.isEmpty() || !cancelIsins.contains("XS1897488091")) cancelIsins.add("XS1897488091");
+//		if (cancelIsins.contains(marketOrder.getInstrument().getIsin())) {
+//			sendCancelledExecutionReport(marketOrder);
+//		} else if (rejectIsins.contains(marketOrder.getInstrument().getIsin())){  //rejectIsins.add("XS0365323608");
+//			sendOrderReject(marketOrder);										//rejectIsins.remove("XS0365323608");
+//		} else {
+//			sendFilledExecutionReport(marketOrder);
+//		}
 	}
 
 
 	@Override
     public void cancelOrder(MarketOrder marketOrder) throws BestXException {
 		LOGGER.debug("marketOrder = {}", marketOrder);
+		
+		sendOrderCancelReject(marketOrder);
+		
+	    try {
+          Thread.currentThread().sleep(300000);
+       } catch (InterruptedException e) {}
+		
+		sendFilledExecutionReport(marketOrder);
+		
+		//Response to Order Cancel with CANCEL status
+//      String sessionId = "sessionID";
+//      String clOrdId = marketOrder.getMarketSessionId();
+//      TSExecutionReport execReport = new TSExecutionReport();
+//      execReport.setExecType(ExecType.Canceled);
+//      execReport.setOrdStatus(OrdStatus.Canceled);
+//      execReport.setAccruedInterestAmt(null);
+//      execReport.setLastPx(0.0);
+//      execReport.setExecID("C#" + System.currentTimeMillis());
+//      execReport.setSettlDate(DateUtils.addDays(new Date(), 3));
+//      execReport.setTransactTime(new Date());
+//      execReport.setText(null);
+//		
+//      tradeXpressConnectionListener.onExecutionReport(sessionId, clOrdId, execReport);
 	}
 	
 	private void sendNewExecutionReport(MarketOrder marketOrder) {

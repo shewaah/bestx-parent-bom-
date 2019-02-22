@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
-import it.softsolutions.bestx.Operation.RevocationState;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.connections.CustomerConnection;
 import it.softsolutions.bestx.connections.MarketBuySideConnection;
@@ -310,8 +309,13 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
 		try {
 			stopTimer(handlerJobName);
 			LOGGER.info("Order {} cancel rejected, waiting for the order execution or cancellation", order.getFixOrderId());
-			//recreate the timer with a longer timeout (the same used for the execution)
-			setupTimer(handlerJobName, waitingExecutionDelay, false);
+			
+			if ("Order already canceled".equalsIgnoreCase(reason)) {
+			   operation.setStateResilient(new TW_RejectedState(Messages.getString("TWRejectPrefix", reason)), ErrorState.class);
+			} else {
+	         //recreate the timer with a longer timeout (the same used for the execution)
+	         setupTimer(handlerJobName, waitingExecutionDelay, false);
+			}
 		} catch (SchedulerException e) {
 			LOGGER.error("Cannot stop timer {}", handlerJobName, e);
 		}
