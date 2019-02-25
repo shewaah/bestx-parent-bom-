@@ -131,18 +131,19 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 //		//FIXME add MiFID II fields management
 		sendNewExecutionReport(marketOrder);
 
-//		try {
-//			Thread.currentThread().sleep(300000);
-//		} catch (InterruptedException e) {}
-//
-//		if(cancelIsins.isEmpty() || !cancelIsins.contains("XS1897488091")) cancelIsins.add("XS1897488091");
-//		if (cancelIsins.contains(marketOrder.getInstrument().getIsin())) {
-//			sendCancelledExecutionReport(marketOrder);
-//		} else if (rejectIsins.contains(marketOrder.getInstrument().getIsin())){  //rejectIsins.add("XS0365323608");
-//			sendOrderReject(marketOrder);										//rejectIsins.remove("XS0365323608");
-//		} else {
-//			sendFilledExecutionReport(marketOrder);
-//		}
+		try {
+			Thread.currentThread().sleep(3000);
+		} catch (InterruptedException e) {}
+
+		if(cancelIsins.isEmpty() || !cancelIsins.contains("US912810QX90")) cancelIsins.add("US912810QX90");
+		cancelIsins.add("XS1897488091");
+		if (cancelIsins.contains(marketOrder.getInstrument().getIsin())) {
+			sendCancelledExecutionReport(marketOrder);
+		} else if (rejectIsins.contains(marketOrder.getInstrument().getIsin())){  //rejectIsins.add("XS0365323608");
+			sendOrderReject(marketOrder);										//rejectIsins.remove("XS0365323608");
+		} else {
+			sendFilledExecutionReport(marketOrder);
+		}
 	}
 
 

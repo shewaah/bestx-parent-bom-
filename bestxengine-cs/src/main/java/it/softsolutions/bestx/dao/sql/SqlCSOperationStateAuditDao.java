@@ -185,7 +185,7 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
         	 jdbcCallSaveMarketAttemptStatus.execute(parameters);
         	 this.transactionManager.commit(status);
         } catch(Exception e) {
-        	 LOGGER.info("Exception got when trying to saveMarketAttemptStatus - If status is Curando this could be OK", e);
+        	 LOGGER.info("Exception {} got when trying to saveMarketAttemptStatus - If status is Curando or SendNotExecutionReportState this could be OK", e.getMessage());
         	 this.transactionManager.rollback(status);
         }
         LOGGER.info("[AUDIT],StoreTime={},Stop saveMarketAttemptStatus", (DateService.currentTimeMillis() - t0));

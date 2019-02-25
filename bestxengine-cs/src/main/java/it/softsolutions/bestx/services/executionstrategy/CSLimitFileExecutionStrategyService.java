@@ -65,7 +65,6 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 
         if(BondTypesService.isUST(operation.getOrder().getInstrument()) 
         		&& operation.getLastAttempt().getMarketOrder() != null
-				&& operation.getLastAttempt().getMarketOrder().getLimit() == null 
 				&& operation.getLastAttempt().getMarketOrder().getMarket().getMarketCode() == MarketCode.TW) { // have got a rejection on the single attempt on TW
         	onUnexecutionResult(Result.USSingleAttemptNotExecuted, Messages.getString("UnexecutionReason.0"));
         	return;

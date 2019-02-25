@@ -152,7 +152,8 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	@Override
 	public void startExecution(Operation operation, Attempt currentAttempt, SerialNumberService serialNumberService) {
 		// manage UST automatic rejection when best is on Bloomberg
-		if(rejectOrderWhenBloombergIsBest 
+		if(rejectOrderWhenBloombergIsBest && operation.getLastAttempt().getSortedBook() != null 
+				&& operation.getLastAttempt().getSortedBook().getBestProposalBySide(operation.getOrder().getSide()) != null
 				&& operation.getLastAttempt().getSortedBook().getBestProposalBySide(
 						operation.getOrder().getSide()).getMarket().getMarketCode() == MarketCode.BLOOMBERG
 				&& BondTypesService.isUST(operation.getOrder().getInstrument())) { 
@@ -276,8 +277,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 			this.acceptOrderRevoke(operation, currentAttempt, serialNumberService);
 		}
 		if(BondTypesService.isUST(operation.getOrder().getInstrument()) 
-						&& currentAttempt.getMarketOrder().getLimit() == null 
-							&& currentAttempt.getMarketOrder().getMarket().getMarketCode() == MarketCode.TW) { // have got a rejection on the single attempt on TW
+						&& currentAttempt.getMarketOrder().getMarket().getMarketCode() == MarketCode.TW) { // have got a rejection on the single attempt on TW
 			Order order= operation.getOrder();
 			manageAutomaticUnexecution(order, order.getCustomer());
 			return;
