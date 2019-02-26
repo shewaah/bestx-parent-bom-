@@ -9,7 +9,7 @@
             <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>./log/TradeStac.%d.%i.log.gz</fileNamePattern>
+            <fileNamePattern>../log/TradeStac.%d.%i.log.gz</fileNamePattern>
             <maxHistory>30</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>20MB</maxFileSize>
@@ -22,7 +22,7 @@
             <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>./log/Metrics.%d.%i.log.gz</fileNamePattern>
+            <fileNamePattern>../log/Metrics.%d.%i.log.gz</fileNamePattern>
             <maxHistory>30</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>20MB</maxFileSize>
@@ -35,7 +35,7 @@
             <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>./log/BestX.%d.%i.log.gz</fileNamePattern>
+            <fileNamePattern>../log/BestX.%d.%i.log.gz</fileNamePattern>
             <maxHistory>30</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>20MB</maxFileSize>
@@ -48,7 +48,7 @@
             <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>./log/BestX-Commons.%d.%i.log.gz</fileNamePattern>
+            <fileNamePattern>../log/BestX-Commons.%d.%i.log.gz</fileNamePattern>
             <maxHistory>30</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>20MB</maxFileSize>
@@ -61,7 +61,7 @@
             <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>./log/Quickfix.%d.%i.log.gz</fileNamePattern>
+            <fileNamePattern>../log/Quickfix.%d.%i.log.gz</fileNamePattern>
             <maxHistory>30</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>20MB</maxFileSize>
@@ -74,7 +74,7 @@
             <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>./log/Quartz.%d.%i.log.gz</fileNamePattern>
+            <fileNamePattern>../log/Quartz.%d.%i.log.gz</fileNamePattern>
             <maxHistory>30</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>20MB</maxFileSize>
@@ -87,7 +87,7 @@
             <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>./log/Hibernate.%d.%i.log.gz</fileNamePattern>
+            <fileNamePattern>../log/Hibernate.%d.%i.log.gz</fileNamePattern>
             <maxHistory>30</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>20MB</maxFileSize>
@@ -100,7 +100,7 @@
             <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>./log/EhCache.%d.%i.log.gz</fileNamePattern>
+            <fileNamePattern>../log/EhCache.%d.%i.log.gz</fileNamePattern>
             <maxHistory>30</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>20MB</maxFileSize>
@@ -113,7 +113,7 @@
             <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>./log/Spring.%d.%i.log.gz</fileNamePattern>
+            <fileNamePattern>../log/Spring.%d.%i.log.gz</fileNamePattern>
             <maxHistory>30</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>20MB</maxFileSize>
@@ -126,7 +126,7 @@
             <pattern>%date{ISO8601} [%-5level] [%thread] | %message | %logger{0}.%method\(%line\)%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>./log/stats/BestX-Statistics.%d.%i.log.gz</fileNamePattern>
+            <fileNamePattern>../log/stats/BestX-Statistics.%d.%i.log.gz</fileNamePattern>
             <maxHistory>30</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>20MB</maxFileSize>
@@ -139,7 +139,7 @@
             <pattern>%date{ISO8601} %message | %logger{0}.%method\(%line\)%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>./log/BestX-Monitor.%d.%i.log.gz</fileNamePattern>
+            <fileNamePattern>../log/BestX-Monitor.%d.%i.log.gz</fileNamePattern>
             <maxHistory>30</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>20MB</maxFileSize>
@@ -152,7 +152,7 @@
             <pattern>%date{ISO8601} [%-5level] [%thread] | %message | %logger{0}.%method\(%line\)%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>./log/stats/BestX-OrdersQueueStatistics.%d.%i.log.gz</fileNamePattern>
+            <fileNamePattern>../log/stats/BestX-OrdersQueueStatistics.%d.%i.log.gz</fileNamePattern>
             <maxHistory>30</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>20MB</maxFileSize>
@@ -166,7 +166,7 @@
             <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>./log/BestX-SaveBookStatistics.%d.%i.log.gz</fileNamePattern>
+            <fileNamePattern>../log/BestX-SaveBookStatistics.%d.%i.log.gz</fileNamePattern>
             <maxHistory>30</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>40MB</maxFileSize>
@@ -179,7 +179,7 @@
 	       <pattern>%date{ISO8601} %-5level %35.35logger{0}-&gt; %-35.35method:%-3line - %message%n</pattern>
 	    </encoder>
 	    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-	       <fileNamePattern>./log/EntitlementLogger.%d.%i.log.gz</fileNamePattern>
+	       <fileNamePattern>../log/EntitlementLogger.%d.%i.log.gz</fileNamePattern>
 	       <maxHistory>30</maxHistory>
 	       <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
 	           <maxFileSize>20MB</maxFileSize>
