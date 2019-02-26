@@ -13,12 +13,6 @@
  */
 package it.softsolutions.bestx.grdlite.bogus;
 
-import it.softsolutions.bestx.grdlite.LoadRequest;
-import it.softsolutions.bestx.grdlite.LoadResponse;
-import it.softsolutions.bestx.grdlite.SecurityType;
-import it.softsolutions.bestx.mq.MQConfig;
-import it.softsolutions.bestx.mq.MQMessageListener;
-
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
@@ -46,6 +40,12 @@ import com.ibm.mq.jms.MQQueue;
 import com.ibm.mq.jms.MQQueueConnectionFactory;
 import com.ibm.mq.jms.MQQueueReceiver;
 import com.ibm.mq.jms.MQQueueSender;
+
+import it.softsolutions.bestx.grdlite.LoadRequest;
+import it.softsolutions.bestx.grdlite.LoadResponse;
+import it.softsolutions.bestx.grdlite.SecurityType;
+import it.softsolutions.bestx.mq.MQConfig;
+import it.softsolutions.bestx.mq.MQMessageListener;
 
 /**
  * 
@@ -101,6 +101,22 @@ public class BogusGRDLite implements MQMessageListener {
         mqQueueConnectionFactory.setTransportType(grdLiteConfig.getTransportType());
         mqQueueConnectionFactory.setQueueManager(grdLiteConfig.getQueueManager());
         mqQueueConnectionFactory.setChannel(grdLiteConfig.getChannel());
+        
+        if (grdLiteConfig.getSslEnabled()) {
+           System.setProperty("javax.net.ssl.trustStore", grdLiteConfig.getSslTrustStore());
+           System.setProperty("javax.net.ssl.trustStoreType", grdLiteConfig.getSslTrustStoreType());
+           System.setProperty("javax.net.ssl.trustStorePassword", grdLiteConfig.getSslTrustStorePassword());
+
+           System.setProperty("javax.net.ssl.keyStore", grdLiteConfig.getSslKeyStore());
+           System.setProperty("javax.net.ssl.keyStoreType", grdLiteConfig.getSslKeyStoreType());
+           System.setProperty("javax.net.ssl.keyStorePassword", grdLiteConfig.getSslKeyStorePassword());
+
+           if (grdLiteConfig.getSslDebug() != null) {
+              System.setProperty("javax.net.debug", grdLiteConfig.getSslDebug());
+           }
+
+           mqQueueConnectionFactory.setSSLCipherSuite(grdLiteConfig.getSslCipherSuite());
+        }
         
         queueConnection = mqQueueConnectionFactory.createQueueConnection(grdLiteConfig.getUsername(), grdLiteConfig.getPassword());
         publisherQueueSession = queueConnection.createQueueSession(grdLiteConfig.getTransacted(), grdLiteConfig.getAcknowledge());
@@ -322,7 +338,6 @@ public class BogusGRDLite implements MQMessageListener {
         LOGGER.debug("{}", message);
         
     }
-
 
     public static void main(String[] args) throws ConfigurationException, SQLException, ClassNotFoundException, JMSException, InterruptedException {
         BogusGRDLite bogusGRDLite = new BogusGRDLite();
