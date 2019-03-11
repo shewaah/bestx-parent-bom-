@@ -13,10 +13,18 @@
  */
 package it.softsolutions.bestx.handlers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
+import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyService;
+import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyServiceFactory;
+import it.softsolutions.bestx.services.price.PriceResult;
+import it.softsolutions.bestx.services.serial.SerialNumberService;
 import it.softsolutions.bestx.states.ErrorState;
-import it.softsolutions.bestx.states.WaitingPriceState;
+import it.softsolutions.bestx.states.WarningState;
 
 /**
  * 
@@ -33,7 +41,10 @@ public class RejectedEventHandler extends BaseOperationEventHandler {
 	 * 
 	 */
 	private static final long serialVersionUID = -828153138571045312L;
-//	private static final Logger LOGGER = LoggerFactory.getLogger(RejectedEventHandler.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(RejectedEventHandler.class);
+	protected SerialNumberService serialNumberService;
+	protected PriceResult priceResult;
+	protected boolean rejectWhenBloombergIsBest;
 
     /**
      * Instantiates a new rejected event handler.
@@ -41,13 +52,21 @@ public class RejectedEventHandler extends BaseOperationEventHandler {
      * @param operation the operation
      * @param serialNumberService the serial number service
      */
-    public RejectedEventHandler(Operation operation) {
+    public RejectedEventHandler(Operation operation, SerialNumberService serialNumberService) {
         super(operation);
+		this.serialNumberService = serialNumberService;
     }
 
     @Override
     public void onNewState(OperationState currentState) {
-        // new price discovery
-        operation.setStateResilient(new WaitingPriceState(), ErrorState.class);
+       	/* ask to the CSExecutionStrategy for the next steps */
+    	ExecutionStrategyService executionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, priceResult, rejectWhenBloombergIsBest);
+    	try {
+            if (operation.isStopped()) return;
+    		executionStrategyService.manageMarketReject(operation, operation.getLastAttempt(), serialNumberService);
+    	} catch (BestXException e) {
+    		LOGGER.info("Exception when trying to manage rejection from market. Going to default state WarningState");
+    		operation.setStateResilient(new WarningState(currentState, e, "Exception when trying to manage rejection from market"), ErrorState.class);
+    	}
     }
 }

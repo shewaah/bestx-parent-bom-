@@ -30,6 +30,7 @@ import it.softsolutions.bestx.dao.BestXConfigurationDao;
 import it.softsolutions.bestx.handlers.BaseOperationEventHandler;
 import it.softsolutions.bestx.markets.tradeweb.TradewebMarket;
 import it.softsolutions.bestx.model.Attempt;
+import it.softsolutions.bestx.model.Attempt.AttemptState;
 import it.softsolutions.bestx.model.ExecutionReport;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.model.Market.MarketCode;
@@ -119,8 +120,7 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
             operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("TWMarketAttemptNotFoundError.0")), ErrorState.class);
             return;
         }
-        
-        List<MarketExecutionReport> marketExecutionReports = currentAttempt.getMarketExecutionReports();
+         List<MarketExecutionReport> marketExecutionReports = currentAttempt.getMarketExecutionReports();
         if (marketExecutionReports == null) {
             marketExecutionReports = new ArrayList<MarketExecutionReport>();
             currentAttempt.setMarketExecutionReports(marketExecutionReports);
@@ -166,6 +166,7 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
 				break;
 			case CANCELLED:
 				stopDefaultTimer();
+			       currentAttempt.setAttemptState(AttemptState.EXPIRED);
 				LOGGER.info("Order {}, received exec report in CANCELLED state with message {}", operation.getOrder().getFixOrderId(), marketExecutionReport.getText());
 				try {
 					//this timer could not exist, in this case nothing will happen with this call
@@ -255,10 +256,12 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
 				break;
             case REJECTED:
                 stopDefaultTimer();
+                currentAttempt.setAttemptState(AttemptState.REJECTED);
                 operation.setStateResilient(new TW_RejectedState(marketExecutionReport.getText()), ErrorState.class);
                 break;
 			case FILLED:
 				stopDefaultTimer();
+		        currentAttempt.setAttemptState(AttemptState.EXECUTED);
 				try {
 					//this timer could not exist, in this case nothing will happen with this call
 					stopTimer(ordCancelRejTimer);

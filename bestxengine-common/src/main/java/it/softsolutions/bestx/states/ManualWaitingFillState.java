@@ -44,4 +44,9 @@ public class ManualWaitingFillState extends BaseState implements Cloneable {
     @Override
     public void validate() throws BestXException {
     }
+	
+    @Override
+    public boolean isExpirable() {
+        return false;
+    }
 }

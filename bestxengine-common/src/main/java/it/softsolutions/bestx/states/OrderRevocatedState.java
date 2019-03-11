@@ -53,4 +53,9 @@ public class OrderRevocatedState extends BaseState implements Cloneable {
     public boolean mustSaveBook() {
         return true;
     }
+	
+    @Override
+    public boolean isExpirable() {
+        return false;
+    }
 }

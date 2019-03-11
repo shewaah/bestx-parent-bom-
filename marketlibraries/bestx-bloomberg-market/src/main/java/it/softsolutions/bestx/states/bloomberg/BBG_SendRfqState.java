@@ -47,5 +47,5 @@ public class BBG_SendRfqState extends BaseState implements Cloneable {
     public boolean areMultipleQuotesAllowed() {
         return true;
     }
-	
+
 }

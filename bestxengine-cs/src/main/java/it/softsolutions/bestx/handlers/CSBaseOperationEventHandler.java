@@ -29,6 +29,7 @@ import it.softsolutions.bestx.connections.CustomerConnection;
 import it.softsolutions.bestx.connections.MarketBuySideConnection;
 import it.softsolutions.bestx.markets.bloomberg.BloombergMarket;
 import it.softsolutions.bestx.model.Attempt;
+import it.softsolutions.bestx.model.Attempt.AttemptState;
 import it.softsolutions.bestx.model.ExecutionReport;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.model.MarketExecutionReport;
@@ -198,10 +199,24 @@ public class CSBaseOperationEventHandler extends BaseOperationEventHandler {
 				operation.setStateResilient(new WarningState(operation.getState(), null, "Received an execution report from market " + marketExecutionReport.getMarket().getMarketCode() +", price = " + marketExecutionReport.getLastPx() + ", MM: " + marketExecutionReport.getExecBroker() + "  while not expecting"), ErrorState.class);
 		}
 	}
+	
 
+	static boolean isEOD(String jobName) {
+		return 
+				CSOrdersEndOfDayService.ORDERS_END_OF_DAY_ID.equalsIgnoreCase(jobName) ||
+				CSOrdersEndOfDayService.ORDERS_END_OF_DAY_ID.equalsIgnoreCase(jobName)||
+				CSOrdersEndOfDayService.LIMIT_FILE_NON_US_AND_GLOBAL_END_OF_DAY_ID.equalsIgnoreCase(jobName);
+	}
+	
+	
+	
 	@Override
 	public void onTimerExpired(String jobName, String groupName) {
 		Order order = operation.getOrder();
+		if(!operation.getState().isExpirable() && isEOD(jobName)) {
+			// Must ignore End Of Day because the order has been accepted
+			return;
+		}
 		if (jobName.equals(CSOrdersEndOfDayService.ORDERS_END_OF_DAY_ID) && !order.isLimitFile()) {
 			addNotExecutionReportToOperation(ExecutionReportState.EXPIRED);
 			operation.setStateResilient(new SendNotExecutionReportState(operation.getState().getComment()), ErrorState.class);		

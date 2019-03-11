@@ -46,4 +46,10 @@ public class TW_SendOrderState extends BaseState implements OperationState {
 	public OperationState clone() throws CloneNotSupportedException {
 		return new TW_SendOrderState(this.getComment());
 	}
+
+    @Override
+    public boolean isExpirable() {
+        return false;
+    }
+
 }

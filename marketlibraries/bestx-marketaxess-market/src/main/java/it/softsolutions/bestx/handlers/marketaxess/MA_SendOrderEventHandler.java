@@ -53,6 +53,7 @@ import it.softsolutions.bestx.model.Proposal.ProposalSubState;
 import it.softsolutions.bestx.model.Proposal.ProposalType;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.Venue;
+import it.softsolutions.bestx.model.Attempt.AttemptState;
 import it.softsolutions.bestx.model.Venue.VenueType;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.serial.SerialNumberService;
@@ -184,6 +185,7 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 				break;
 			case CANCELLED:
 				stopDefaultTimer();
+		        currentAttempt.setAttemptState(AttemptState.EXPIRED);
 				LOGGER.info("Order {}, received exec report in CANCELLED state with message {}", operation.getOrder().getFixOrderId(), marketExecutionReport.getText());
 				try {
 					//this timer could not exist, in this case nothing will happen with this call
@@ -207,7 +209,8 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 				operation.setStateResilient(new MA_CancelledState(), ErrorState.class);
 				break;
 			case REJECTED:
-				stopDefaultTimer();             
+				stopDefaultTimer();    
+		        currentAttempt.setAttemptState(AttemptState.REJECTED);
 				if(marketExecutionReport.getMarketMaker() != null){
 					executionReport.setExecBroker(marketExecutionReport.getMarketMaker().getCode());
 					executionReport.setCounterPart(marketExecutionReport.getMarketMaker().getCode());
@@ -224,6 +227,7 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 				break;
 			case FILLED:
 				stopDefaultTimer();
+				currentAttempt.setAttemptState(AttemptState.EXECUTED);
 				try {
 					//this timer could not exist, in this case nothing will happen with this call
 					stopTimer(ordCancelRejTimer);

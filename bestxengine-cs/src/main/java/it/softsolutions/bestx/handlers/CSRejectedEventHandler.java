@@ -22,10 +22,6 @@ import it.softsolutions.bestx.states.WarningState;
  */
 public class CSRejectedEventHandler extends RejectedEventHandler {
 	
-	private PriceResult priceResult;
-	private boolean rejectWhenBloombergIsBest;
-	private SerialNumberService serialNumberService;
-
 	/**
 	 * 
 	 */
@@ -36,9 +32,8 @@ public class CSRejectedEventHandler extends RejectedEventHandler {
 	 * @param operation
 	 */
 	public CSRejectedEventHandler(Operation operation, boolean rejectWhenBloombergIsBest, SerialNumberService serialNumberService) {
-		super(operation);
+		super(operation, serialNumberService);
 		this.rejectWhenBloombergIsBest = rejectWhenBloombergIsBest;
-		this.serialNumberService = serialNumberService;
 	}
 
     @Override

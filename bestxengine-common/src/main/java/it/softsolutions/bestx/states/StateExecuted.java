@@ -49,4 +49,9 @@ public class StateExecuted extends BaseState implements Cloneable {
     public boolean isTerminal() {
         return true;
     }
+	
+    @Override
+    public boolean isExpirable() {
+        return false;
+    }
 }

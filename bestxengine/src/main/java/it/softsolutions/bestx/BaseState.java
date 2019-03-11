@@ -105,6 +105,11 @@ public abstract class BaseState implements OperationState, Cloneable {
         return false;
     }
 
+    @Override
+    public boolean isExpirable() {
+        return true;
+    }
+
     /**
      * Are quote updates allowed.
      * Some markets can send quote unsolicited updates to rfqs. 

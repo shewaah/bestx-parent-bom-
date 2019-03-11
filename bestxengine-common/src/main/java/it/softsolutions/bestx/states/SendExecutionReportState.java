@@ -48,4 +48,9 @@ public class SendExecutionReportState extends BaseState implements Cloneable {
     public boolean isRevocable() {
         return false;
     }
+	
+    @Override
+    public boolean isExpirable() {
+        return false;
+    }
 }

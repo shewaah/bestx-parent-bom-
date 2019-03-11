@@ -50,4 +50,9 @@ public class TW_StartExecutionState extends BaseState implements OperationState 
 	public OperationState clone() throws CloneNotSupportedException {
 		return new TW_StartExecutionState(this.getComment());
 	}
+	
+    @Override
+    public boolean isExpirable() {
+        return false;
+    }
 }

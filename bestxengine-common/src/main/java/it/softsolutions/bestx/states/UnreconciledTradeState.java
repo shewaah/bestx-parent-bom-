@@ -39,4 +39,9 @@ public class UnreconciledTradeState extends BaseState implements Cloneable {
     public OperationState clone() throws CloneNotSupportedException {
         return new UnreconciledTradeState();
     }
+	
+    @Override
+    public boolean isExpirable() {
+        return false;
+    }
 }

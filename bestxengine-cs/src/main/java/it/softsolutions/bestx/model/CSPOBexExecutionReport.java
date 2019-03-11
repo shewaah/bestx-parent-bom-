@@ -143,7 +143,7 @@ public class CSPOBexExecutionReport extends ExecutionReport {
 			case EXPIRED:
 				return DealerQuoteStatus.Rejected;
 			case ACCEPTED_COUNTER:
-			case ACCEPTED_EXECUTION_PROPOSAL:
+			case EXECUTED:
 				return DealerQuoteStatus.Accepted;
 			case PASSED_COUNTER:
 				return DealerQuoteStatus.Passed;

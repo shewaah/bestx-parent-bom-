@@ -51,4 +51,9 @@ public class MA_StartExecutionState extends BaseState implements OperationState 
 	public OperationState clone() throws CloneNotSupportedException {
 		return new MA_StartExecutionState(this.getComment());
 	}
+	
+    @Override
+    public boolean isExpirable() {
+        return false;
+    }
 }

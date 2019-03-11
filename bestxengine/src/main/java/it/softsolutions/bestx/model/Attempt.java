@@ -27,7 +27,7 @@ import java.util.List;
 **/
 public class Attempt {
     public static enum AttemptState { 
-        COUNTER_RECEIVED, ACCEPTED_COUNTER, PASSED_COUNTER, ACCEPTED_EXECUTION_PROPOSAL, REJECTED, EXPIRED
+        COUNTER_RECEIVED, ACCEPTED_COUNTER, PASSED_COUNTER, EXECUTED, REJECTED, EXPIRED
     }
     
     public static int maxAttemptNo = 10;

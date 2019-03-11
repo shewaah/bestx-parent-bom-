@@ -37,6 +37,13 @@ public interface OperationState extends Cloneable {
      * @return true or false
      */
     boolean isTerminal();
+    
+    /**
+     * Check if an operation in this state can expire
+     * 
+     * @return true or false
+     */    
+    boolean isExpirable();
 
     /**
      * Get the time when the operation entered in this state

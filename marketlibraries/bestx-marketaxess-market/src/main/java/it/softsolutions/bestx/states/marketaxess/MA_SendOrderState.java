@@ -52,4 +52,9 @@ public class MA_SendOrderState extends BaseState implements OperationState {
     public boolean isRevocable() {
         return true;
     }
+	
+    @Override
+    public boolean isExpirable() {
+        return false;
+    }
 }
