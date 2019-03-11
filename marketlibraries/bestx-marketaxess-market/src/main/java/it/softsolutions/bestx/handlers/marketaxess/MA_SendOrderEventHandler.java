@@ -325,7 +325,7 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 					quote.setQuoteReqId(currentAttempt.getMarketOrder().getFixOrderId());
 					int rank = Integer.parseInt(dealer.getQuoteRank().getValue());
 					currentAttempt.addExecutablePrice(quote, rank);
-//					if(mmm != null && mmm.getMarketMaker() != null)
+					if(mmm != null && mmm.getMarketMaker() != null)
 					quote.setVenue(venueFinder.getMarketMakerVenue(mmm.getMarketMaker()));
 				} catch (@SuppressWarnings("unused") FieldNotFound e) {
 					LOGGER.info("Quote not valid for dealer {}", quotingDealer);

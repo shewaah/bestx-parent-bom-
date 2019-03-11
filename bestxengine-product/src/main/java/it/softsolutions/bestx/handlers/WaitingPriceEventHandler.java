@@ -408,25 +408,20 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 					// last row in this method for executable operation
 				}
 			} else { // flow for not auto executable orders, limit file and market
-				if(doRejectThisBestOnBloomberg) { // start execution only if best is on bloomberg and must reject back to otex
-					if (customerSpecificHandler!=null && customerOrder.isLimitFile())
-						customerSpecificHandler.onPricesResult(source, priceResult);
-					LOGGER.debug("Order {} identified as not auto executable and best is on bloomberg: must reject back", customerOrder.getFixOrderId());
-					csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
-				} else {  // general case, go to CurandoState
-					LOGGER.debug("Order {} identified as not auto executable and best is not on bloomberg: must go to CurandoState", customerOrder.getFixOrderId());
-					operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
-					// last row in this method for non autexecutable operation
-				}
+				if (customerSpecificHandler!=null && customerOrder.isLimitFile())
+					customerSpecificHandler.onPricesResult(source, priceResult);
+				LOGGER.debug("Order {} identified as not auto executable. Go to CurandoState", customerOrder.getFixOrderId());
+				operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
 			}
 		} else if (priceResult.getState() == PriceResult.PriceResultState.INCOMPLETE) {
 			LOGGER.warn("Order {} , Price result is INCOMPLETE, setting to Warning state", operation.getOrder().getFixOrderId());
 			checkOrderAndsetNotAutoExecuteOrder(operation, doNotExecute);
 			operation.removeLastAttempt();
 			operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("EventPriceTimeout.0", priceResult.getReason())), ErrorState.class);
-		} else if (priceResult.getState() == PriceResult.PriceResultState.NULL || priceResult.getState() == PriceResult.PriceResultState.ERROR) {
-			if(!operation.isNotAutoExecute() && (BondTypesService.isUST(operation.getOrder().getInstrument()) || doRejectThisBestOnBloomberg))  {
-				// it is an executable UST order and best is on BBG and needs to be rejected
+		} else if (priceResult.getState() == PriceResult.PriceResultState.NULL 
+				|| priceResult.getState() == PriceResult.PriceResultState.ERROR) {
+			if(!operation.isNotAutoExecute() && (BondTypesService.isUST(operation.getOrder().getInstrument()) || doRejectThisBestOnBloomberg)) { 
+				// it is an executable UST order and there are no prices on consolidated book
 				csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
 			}
 			else {

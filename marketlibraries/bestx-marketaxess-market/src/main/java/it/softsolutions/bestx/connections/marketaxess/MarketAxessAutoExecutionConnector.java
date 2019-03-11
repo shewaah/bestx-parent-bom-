@@ -358,19 +358,19 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 
 
 		// da usare se si preferisce usare il solo dealer best
-		//		String dealerCode = marketOrder.getMarketMarketMaker() != null ? marketOrder.getMarketMarketMaker().getMarketSpecificCode() : null;
+		String dealerCode = marketOrder.getMarketMarketMaker() != null ? marketOrder.getMarketMarketMaker().getMarketSpecificCode() : null;
 
 		// da usare se si vogliono aggiungere tutti i dealer che hanno fornito un prezzo alla PD
 		// group
-		for(MarketMarketMakerSpec maDealerCode : maOrder.getDealers()) {
-			NewOrderSingle.NoDealers dealer = new NewOrderSingle.NoDealers();
-			if(maDealerCode != null) {
-				dealer.set(new DealerID(maDealerCode.marketMakerCode));
-				dealer.set(new DealerIDSource(maDealerCode.marketMakerCodeSource));
-				newOrderSingle.addGroup(dealer);
-			}
-		}
-
+//		for(MarketMarketMakerSpec maDealerCode : maOrder.getDealers()) {
+//			NewOrderSingle.NoDealers dealer = new NewOrderSingle.NoDealers();
+//			if(maDealerCode != null) {
+//				dealer.set(new DealerID(maDealerCode.marketMakerCode));
+//				dealer.set(new DealerIDSource(maDealerCode.marketMakerCodeSource));
+//				newOrderSingle.addGroup(dealer);
+//			}
+//		}
+//
 		// add dealers that must be excluded
 		if(addBlockedDealers) {
 			for(MarketMarketMakerSpec maDealerCode : maOrder.getExcludeDealers()) {

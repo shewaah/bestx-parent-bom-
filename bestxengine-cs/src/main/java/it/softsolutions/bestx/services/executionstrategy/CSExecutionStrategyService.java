@@ -209,7 +209,8 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 						operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
 					}
 				} else {
-					currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
+					// requested on March 2019 rendez vous un Zurich currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
+					currentAttempt.getMarketOrder().setMarketMarketMaker(null);
 					operation.setStateResilient(new BBG_StartExecutionState(), ErrorState.class);
 				}
 				break;
@@ -219,7 +220,8 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 					operation.removeIdentifier(OperationIdType.TW_SESSION_ID);
 				}
 
-				currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
+				// requested on March 2019 rendez vous un Zurich currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
+				currentAttempt.getMarketOrder().setMarketMarketMaker(null);
 				operation.setStateResilient(new TW_StartExecutionState(), ErrorState.class);
 				break;
 			case MARKETAXESS:
@@ -228,7 +230,8 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 					operation.removeIdentifier(OperationIdType.MARKETAXESS_SESSION_ID);
 				}
 
-				currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
+				// requested on March 2019 rendez vous un Zurich currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
+				currentAttempt.getMarketOrder().setMarketMarketMaker(null);
 				operation.setStateResilient(new MA_StartExecutionState(), ErrorState.class);
 				break;            
 			default:

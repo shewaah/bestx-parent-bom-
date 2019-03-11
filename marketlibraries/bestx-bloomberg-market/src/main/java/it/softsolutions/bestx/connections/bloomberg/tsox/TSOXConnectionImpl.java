@@ -453,7 +453,7 @@ public class TSOXConnectionImpl extends AbstractTradeStacConnection implements T
         // PriceType priceType = (ordType == OrdType.Market ? null : PriceType.Percentage);
         // Double price = (ordType == OrdType.Market ? null : marketOrder.getLimit().getAmount().doubleValue());
         
-        String dealerCode = marketOrder.getMarketMarketMaker().getMarketSpecificCode();
+        String dealerCode = marketOrder.getMarketMarketMaker()  == null ? null : marketOrder.getMarketMarketMaker().getMarketSpecificCode();
         // TODO [DR20131126] Remove this!!! Workaround for TSOX Test environment
 //        dealerCode = "D1";
 //        LOGGER.warn("WARNING!!! DealerCode [{}] replaced with [{}] in order to permit TSOX testing", marketOrder.getMarketMarketMaker().getMarketSpecificCode(), dealerCode);
