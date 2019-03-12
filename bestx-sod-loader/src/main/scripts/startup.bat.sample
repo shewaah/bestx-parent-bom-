@@ -1,6 +1,6 @@
 @ECHO OFF
 
 set JDK_HOME=C:\Program Files\Java\jre1.8.0_191
-set SERVER_CONFIG=-XX:+UseParallelGC -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -Xms128m -Xmx256m -XX:PermSize=32m -XX:MaxPermSize=64m
+set SERVER_CONFIG=-XX:+UseParallelGC -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -Xms128m -Xmx256m -XX:PermSize=32m -XX:MaxPermSize=64m -Dcom.ibm.mq.cfg.useIBMCipherMappings=false
 
 "%JDK_HOME%\bin\java" -Dss.app.name=BestX-SOD-Loader %SERVER_CONFIG% -Djava.ext.dirs="./cfg;./lib;." -jar ./lib/bestx-sod-loader-2.0.0-SNAPSHOT.jar

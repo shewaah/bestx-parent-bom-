@@ -246,14 +246,13 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
         tsNewOrderSingle.setTSOrderQtyData(tsOrderQtyData);
 
         tsNewOrderSingle.setTimeInForce(TimeInForce.GoodTillDate);
-        tsNewOrderSingle.setCurrency(Currency.EUR);      
+        tsNewOrderSingle.setCurrency(Currency.EUR);
         
         // ## TraderCode ####
         TSNoPartyID tsNoPartyTrader = new TSNoPartyID();
        	tsNoPartyTrader.setPartyID(this.traderCode); // increments
         tsNoPartyTrader.setPartyIDSource(PartyIDSource.GenerallyAcceptedMarketPartecipantIdentifier);
         tsNoPartyTrader.setPartyRole(PartyRole.OrderOriginationTrader);
-
         
         // ## Dealer with best price. Where there is none, no dealer and no limit price are specified and order type is Market
         TSNoPartyID tsNoPartyBestDealer = null;
@@ -308,12 +307,14 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
 	              NoBlockedDealers blockedDealersGrp = new NoBlockedDealers();
 	              
 	              BlockedDealer blckDealer = new BlockedDealer();
+	              blckDealer.setValue(blockedDealer.getMarketMakerMarketSpecificCode());
 	              blockedDealersGrp.set(blckDealer);
 	              blockedDealersGrpCmp.addGroup(blockedDealersGrp);
 	           }
 	           customComponents.add(blockedDealersGrpCmp);
 	        }
         }        
+        
         if(!customComponents.isEmpty()){
            tsNewOrderSingle.setCustomComponents(customComponents);
         }

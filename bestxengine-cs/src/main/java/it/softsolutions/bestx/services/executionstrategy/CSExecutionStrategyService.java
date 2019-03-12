@@ -26,7 +26,6 @@ import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationIdType;
 import it.softsolutions.bestx.bestexec.BookClassifier;
 import it.softsolutions.bestx.finders.MarketFinder;
-import it.softsolutions.bestx.handlers.BookHelper;
 import it.softsolutions.bestx.handlers.ExecutionReportHelper;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;

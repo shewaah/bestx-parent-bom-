@@ -17,6 +17,6 @@ REM which may be part of this software package.
 REM
 REM @ECHO OFF
 SET JVM_HOME=<%=@jpath%>
-set OPT_1=-server -Dss.app.name=<%=@servicename-%> -XX:+UseParallelGC -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -Xms128m -Xmx256m -XX:PermSize=32m -XX:MaxPermSize=64m -XX:HeapDumpPath==../log/dump -XX:+HeapDumpOnOutOfMemoryError
+set OPT_1=-server -Dss.app.name=<%=@servicename-%> -XX:+UseParallelGC -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -Xms128m -Xmx256m -XX:HeapDumpPath==../log/dump -XX:+HeapDumpOnOutOfMemoryError -Dcom.ibm.mq.cfg.useIBMCipherMappings=false
 set OPT_2=-cp ../cfg;../lib/* it.softsolutions.bestx.sod.SODLoader
 "%JVM_HOME%\bin\java" %OPT_1% %OPT_2%
