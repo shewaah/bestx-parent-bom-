@@ -204,7 +204,7 @@ public class CSBaseOperationEventHandler extends BaseOperationEventHandler {
 	static boolean isEOD(String jobName) {
 		return 
 				CSOrdersEndOfDayService.ORDERS_END_OF_DAY_ID.equalsIgnoreCase(jobName) ||
-				CSOrdersEndOfDayService.ORDERS_END_OF_DAY_ID.equalsIgnoreCase(jobName)||
+				CSOrdersEndOfDayService.LIMIT_FILE_US_AND_GLOBAL_END_OF_DAY_ID.equalsIgnoreCase(jobName)||
 				CSOrdersEndOfDayService.LIMIT_FILE_NON_US_AND_GLOBAL_END_OF_DAY_ID.equalsIgnoreCase(jobName);
 	}
 	
@@ -213,8 +213,10 @@ public class CSBaseOperationEventHandler extends BaseOperationEventHandler {
 	@Override
 	public void onTimerExpired(String jobName, String groupName) {
 		Order order = operation.getOrder();
+		// manage EOD expiration
 		if(!operation.getState().isExpirable() && isEOD(jobName)) {
 			// Must ignore End Of Day because the order has been accepted
+			LOGGER.info("EOD timerExpired in not expirable state {}, skip processing [{}.{}]", operation.getState(), groupName, jobName);
 			return;
 		}
 		if (jobName.equals(CSOrdersEndOfDayService.ORDERS_END_OF_DAY_ID) && !order.isLimitFile()) {

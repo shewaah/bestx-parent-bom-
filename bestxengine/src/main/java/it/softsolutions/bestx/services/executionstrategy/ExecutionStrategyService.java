@@ -41,7 +41,7 @@ public interface ExecutionStrategyService
    {
       CustomerAutoNotExecution, CustomerPolicyNotAvailable, InstrumentNotQuotedOnMagnetMarkets, 
       WrongPolicyOrNotQuotedOnRegulatedMarkets, MagnetNotRequired, MagnetMarketNotFound, QuantityNotValid,
-      Failure, Success, InstrumentNotNegotiableOnMarket, MaxDeviationLimitViolated, LimitFileNoPrice, LimitFile, USSingleAttemptNotExecuted
+      Failure, Success, InstrumentNotNegotiableOnMarket, MaxDeviationLimitViolated, LimitFileNoPrice, LimitFile, USSingleAttemptNotExecuted, EODCalled
    }
    
    /**

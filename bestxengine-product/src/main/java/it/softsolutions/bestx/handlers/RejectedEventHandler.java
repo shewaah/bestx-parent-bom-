@@ -62,7 +62,7 @@ public class RejectedEventHandler extends BaseOperationEventHandler {
        	/* ask to the CSExecutionStrategy for the next steps */
     	ExecutionStrategyService executionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, priceResult, rejectWhenBloombergIsBest);
     	try {
-            if (operation.isStopped()) return;
+//            if (operation.isStopped()) return;
     		executionStrategyService.manageMarketReject(operation, operation.getLastAttempt(), serialNumberService);
     	} catch (BestXException e) {
     		LOGGER.info("Exception when trying to manage rejection from market. Going to default state WarningState");

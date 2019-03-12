@@ -279,6 +279,10 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		if(operation.isCustomerRevokeReceived()) {
 			this.acceptOrderRevoke(operation, currentAttempt, serialNumberService);
 		}
+		// manage EOD
+		if(operation.isStopped())
+			this.onUnexecutionResult(Result.EODCalled, "End Of Day");
+		
 		if(BondTypesService.isUST(operation.getOrder().getInstrument()) 
 						&& currentAttempt.getMarketOrder().getMarket().getMarketCode() == MarketCode.TW) { // have got a rejection on the single attempt on TW
 			Order order= operation.getOrder();
@@ -397,6 +401,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	    case USSingleAttemptNotExecuted:
 	    case CustomerAutoNotExecution:
 	    case MaxDeviationLimitViolated:
+	    case EODCalled:
 	        try {
 	        	ExecutionReportHelper.prepareForAutoNotExecution(this.operation, SerialNumberServiceProvider.getSerialNumberService(), ExecutionReportState.REJECTED);
 	        	this.operation.setStateResilient(new SendAutoNotExecutionReportState(message), ErrorState.class);

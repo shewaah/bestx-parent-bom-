@@ -125,18 +125,19 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 	@Override
 	public void sendOrder(MarketOrder marketOrder) throws BestXException {
 		LOGGER.debug("marketOrder = {}", marketOrder);
-//		try {
-//			Thread.currentThread().sleep(1000);
-//		} catch (InterruptedException e1) {}
-//		//FIXME add MiFID II fields management
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e1) {}
+
 		sendNewExecutionReport(marketOrder);
 
 		try {
-			Thread.currentThread().sleep(3000);
+			Thread.sleep(3000);
 		} catch (InterruptedException e) {}
 
 		if(cancelIsins.isEmpty() || !cancelIsins.contains("US912810QX90")) cancelIsins.add("US912810QX90");
-		cancelIsins.add("XS1897488091");
+		if(cancelIsins.isEmpty() || !cancelIsins.contains("XS1897488091"))cancelIsins.add("XS1897488091");
+		if(cancelIsins.isEmpty() || !cancelIsins.contains("US912810EC81"))cancelIsins.add("US912810EC81");
 		if (cancelIsins.contains(marketOrder.getInstrument().getIsin())) {
 			sendCancelledExecutionReport(marketOrder);
 		} else if (rejectIsins.contains(marketOrder.getInstrument().getIsin())){  //rejectIsins.add("XS0365323608");
@@ -154,7 +155,7 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 		sendOrderCancelReject(marketOrder);
 		
 	    try {
-          Thread.currentThread().sleep(300000);
+          Thread.sleep(30000);
        } catch (InterruptedException e) {}
 		
 		sendFilledExecutionReport(marketOrder);
