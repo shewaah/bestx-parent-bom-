@@ -119,18 +119,18 @@ public class Order extends Rfq {
    }
 
    private IsMatchingFromQueryStates isMatchingFromQuery;
-   private String customerOrderId = null; //clOrdId
-   private Order.OrderType type = OrderType.NOT_RECOGNIZED;
-   private Money limit = null;
-   private String currency = null;
+   protected String customerOrderId = null; //clOrdId
+   protected Order.OrderType type = OrderType.NOT_RECOGNIZED;
+   protected Money limit = null;
+   protected String currency = null;
    private String fIXOrderId = null;
-   private Venue venue = null;
-   private TimeInForce timeInForce = null;
-   private Date timeInForceDate = null;
+   protected Venue venue = null;
+   protected TimeInForce timeInForce = null;
+   protected Date timeInForceDate = null;
    private boolean matchingOrder = false;
    private boolean law262Passed = true;
    private boolean addCommissionToCustomerPrice;
-   private String executionDestination;
+   protected String executionDestination;
 
    /* AMC 20170822 MiFID II Related fields */
    protected Boolean miFIDRestricted = null;
@@ -144,25 +144,25 @@ public class Order extends Rfq {
    protected OrderCapacity orderCapacity = null;
 
    // [RR20110328] Maps where we save market/mmm not quoting the order instrument
-   private Map<MarketCode, String> marketNotQuotingInstr = new TreeMap<MarketCode, String>();
-   private Map<MarketCode, String> marketNotNegotiatingInstr = new TreeMap<MarketCode, String>(); // instrument quoted on market, but currently non negotiated (QuotingStatus!= NEG)
-   private Map<MarketMarketMaker, String> mmmNotQuotingInstr = new ConcurrentHashMap<MarketMarketMaker, String>(64);
+   protected Map<MarketCode, String> marketNotQuotingInstr = new TreeMap<MarketCode, String>();
+   protected Map<MarketCode, String> marketNotNegotiatingInstr = new TreeMap<MarketCode, String>(); // instrument quoted on market, but currently non negotiated (QuotingStatus!= NEG)
+   protected Map<MarketMarketMaker, String> mmmNotQuotingInstr = new ConcurrentHashMap<MarketMarketMaker, String>(64);
    private PriceDiscoveryType priceDiscoveryType;
    private int logIdCounter = 0;
    private int bestExecutionVenueFlag;
-   private int priceType;
+   protected int priceType;
    private String orderSource = null;
    //[RR20130916]BXMNT-300: field used to store the ISIN or whatever is used as a code for the order instrument
-   private String instrumentCode;
+   protected String instrumentCode;
    //[RR20131205] Store the comment sent by the customer, it will be used if the order is a limit file
    protected String text;
    private Double bestPriceDeviationFromLimit;
    protected String ticketOwner;
 
    //[SP20180712]BESTX-335 Limit file orders TMO manage
-   private String custOrderHandlingInstr;
+   protected String custOrderHandlingInstr;
    private int tryAfterMinutes;
-   private Date effectiveTime;
+   protected Date effectiveTime;
 
    protected String handlInst;
 

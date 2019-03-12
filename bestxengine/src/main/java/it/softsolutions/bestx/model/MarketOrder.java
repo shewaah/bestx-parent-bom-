@@ -25,12 +25,10 @@ import java.util.List;
  **/
 public class MarketOrder extends Order {
 
-    private Market market;
-    private Venue venue;
-    private String text;
-    private MarketMarketMaker marketMarketMaker;
+	protected Market market;
+    protected MarketMarketMaker marketMarketMaker;
     private boolean isInternal = false;
-    private String marketSessionId;
+    protected String marketSessionId;
 
 	protected List<MarketMarketMakerSpec> dealers = new ArrayList<MarketMarketMakerSpec>();
 	protected List<MarketMarketMakerSpec> excludeDealers = new ArrayList<MarketMarketMakerSpec>();
