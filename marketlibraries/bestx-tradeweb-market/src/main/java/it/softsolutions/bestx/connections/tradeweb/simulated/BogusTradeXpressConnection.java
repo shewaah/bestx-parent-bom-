@@ -138,6 +138,7 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 		if(cancelIsins.isEmpty() || !cancelIsins.contains("US912810QX90")) cancelIsins.add("US912810QX90");
 		if(cancelIsins.isEmpty() || !cancelIsins.contains("XS1897488091"))cancelIsins.add("XS1897488091");
 		if(cancelIsins.isEmpty() || !cancelIsins.contains("US912810EC81"))cancelIsins.add("US912810EC81");
+		if(cancelIsins.isEmpty() || !cancelIsins.contains("TRFAKBK11926"))cancelIsins.add("TRFAKBK11926");
 		if (cancelIsins.contains(marketOrder.getInstrument().getIsin())) {
 			sendCancelledExecutionReport(marketOrder);
 		} else if (rejectIsins.contains(marketOrder.getInstrument().getIsin())){  //rejectIsins.add("XS0365323608");

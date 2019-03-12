@@ -105,8 +105,7 @@ public class BaseOperationEventHandler extends DefaultOperationEventHandler {
 		if(this.customerSpecificHandler != null) 
 			this.customerSpecificHandler.onTimerExpired(jobName, groupName);
 		if (!operation.getState().isTerminal())
-			throw new UnsupportedOperationException("Operation: '" + operation + "' - Timer Expired event not handled in state: " + operation.getState().getClass().getSimpleName() + " Timer ID: "
-			        + jobName + '-' + groupName);
+			LOGGER.info("Order: '{}' - Timer Expired event not handled in state: {} Timer ID: {}-{}", operation.getOrder().getFixOrderId(), operation.getState().getClass().getSimpleName(), jobName, groupName);
 	}
 
 	public BaseOperationEventHandler(Operation operation) {
@@ -120,8 +119,8 @@ public class BaseOperationEventHandler extends DefaultOperationEventHandler {
 	}
 
 	protected void setupDefaultTimer(long mSecDelay, boolean repeating) {
-			String jobName = getDefaultTimerJobName();
-			setupTimer(jobName, mSecDelay, repeating);
+		String jobName = getDefaultTimerJobName();
+		setupTimer(jobName, mSecDelay, repeating);
 	}
 
 	/** 
@@ -129,8 +128,8 @@ public class BaseOperationEventHandler extends DefaultOperationEventHandler {
 	 * @param time the date and time for the timer expiration
 	 */
 	protected void setupTimedTimer(Date time) {
-			String jobName = getDefaultTimerJobName();
-			setupTimer(jobName, time.getTime() - DateService.currentTimeMillis(), false);
+		String jobName = getDefaultTimerJobName();
+		setupTimer(jobName, time.getTime() - DateService.currentTimeMillis(), false);
 	}
 
 	protected void setupTimer(String jobName,long mSecDelay, boolean repeating) {

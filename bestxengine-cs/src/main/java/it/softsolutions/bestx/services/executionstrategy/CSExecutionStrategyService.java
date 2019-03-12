@@ -275,20 +275,24 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	 */
 	@Override
 	public void manageMarketReject(Operation operation, Attempt currentAttempt, SerialNumberService serialNumberService) throws BestXException {
+		// ### First of all, manage all cases where a new execution attempt is not required
 		// manage customer revoke
 		if(operation.isCustomerRevokeReceived()) {
 			this.acceptOrderRevoke(operation, currentAttempt, serialNumberService);
+			return;
 		}
 		// manage EOD
-		if(operation.isStopped())
+		if(operation.isStopped()) {
 			this.onUnexecutionResult(Result.EODCalled, "End Of Day");
-		
+			return;
+		}
 		if(BondTypesService.isUST(operation.getOrder().getInstrument()) 
 						&& currentAttempt.getMarketOrder().getMarket().getMarketCode() == MarketCode.TW) { // have got a rejection on the single attempt on TW
 			Order order= operation.getOrder();
 			manageAutomaticUnexecution(order, order.getCustomer());
 			return;
 		}
+		// ###  End
 		List<MarketMaker> doNotIncludeMM = new ArrayList<MarketMaker>();
 		// move book to a new attempt
 		operation.addAttempt();
