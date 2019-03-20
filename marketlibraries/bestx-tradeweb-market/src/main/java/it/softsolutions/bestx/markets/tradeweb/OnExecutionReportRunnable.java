@@ -56,6 +56,7 @@ public class OnExecutionReportRunnable implements Runnable {
     private final Date transactTime;
     private final String text;
     private final MarketMarketMaker executionBroker;
+    private final String executionDealerCode;
     private String micCode;
     private BigDecimal accruedInterestAmount;
     private BigDecimal accruedInterestRate;
@@ -66,6 +67,8 @@ public class OnExecutionReportRunnable implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(OnExecutionReportRunnable.class);
 
     /**
+     * @param marketMakerFinder
+     * 			needed to find the market maker from the dealer
      * @param operation
      *            the state macchine of the Bestx engine.
      * @param market
@@ -95,11 +98,19 @@ public class OnExecutionReportRunnable implements Runnable {
      * @param text
      *            the text. Can contain additional informations.
      * @param executionBroker
-     * 				the execution firm code
+     * 				the execution firm code. May be null if executionDealerCode is not among the recognised market codes
+     * @param executionDealerCode
+     * 				the execution firm code as sent by the market
+     * @param micCode
+     * 				the MIC code of the execution MTF
+     * @param numDaysInterest
+     * 				the days of interest for the accrual calculation
+     * @param factor
+     * 				the factor (may be null since it is sent for inflation linked bonds only)
      */
     public OnExecutionReportRunnable(Operation operation, TradewebMarket market, Market counterMarket, String clOrdID, ExecType execType, OrdStatus ordStatus, BigDecimal accruedInterestAmount, 
                    BigDecimal accruedInterestRate, BigDecimal lastPrice, String contractNo, Date futSettDate,
-                   Date transactTime, String text, MarketMarketMaker executionBroker, String micCode, Integer numDaysInterest, BigDecimal factor) {
+                   Date transactTime, String text, MarketMarketMaker executionBroker, String executionDealerCode, String micCode, Integer numDaysInterest, BigDecimal factor) {
         this.operation = operation;
         this.counterMarket = counterMarket;
         this.lastPrice = lastPrice;
@@ -111,6 +122,7 @@ public class OnExecutionReportRunnable implements Runnable {
         this.futSettDate = futSettDate;
         this.transactTime = transactTime;
         this.text = text;
+        this.executionDealerCode = executionDealerCode;
         this.executionBroker = executionBroker;
         this.micCode = micCode;
         this.accruedInterestAmount = accruedInterestAmount;
@@ -196,6 +208,10 @@ public class OnExecutionReportRunnable implements Runnable {
         if(executionBroker != null) {
 	        marketExecutionReport.setMarketMaker(executionBroker.getMarketMaker());
 	        marketExecutionReport.setExecBroker(executionBroker.getMarketSpecificCode());
+        }
+        else {
+        	// use executionDealerCode
+	        marketExecutionReport.setExecBroker(executionDealerCode);
         }
         //BESTX-348: SP-20180905 added numDaysInterest field
         if (numDaysInterest != null) {

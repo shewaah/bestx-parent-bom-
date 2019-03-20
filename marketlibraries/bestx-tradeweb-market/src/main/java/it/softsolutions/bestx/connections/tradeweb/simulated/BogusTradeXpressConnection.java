@@ -220,7 +220,8 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 		if(marketOrder.getMarketMarketMaker() != null)
 			tsNoPartyIDsList.add(new TSNoPartyID(marketOrder.getMarketMarketMaker().getMarketSpecificCode(), PartyIDSource.BIC, PartyRole.ExecutingFirm));
 		else
-			tsNoPartyIDsList.add(new TSNoPartyID("DLRW", PartyIDSource.BIC, PartyRole.ExecutingFirm));
+			tsNoPartyIDsList.add(new TSNoPartyID("NoKnownDealer", PartyIDSource.BIC, PartyRole.ExecutingFirm));
+			//tsNoPartyIDsList.add(new TSNoPartyID("DLRW", PartyIDSource.BIC, PartyRole.ExecutingFirm));
 		tsp.setTSNoPartyIDsList(tsNoPartyIDsList);
 		execReport.setTSParties(tsp);
 		//FIXME add MiFID II fields

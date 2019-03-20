@@ -148,6 +148,9 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
         if(marketExecutionReport.getMarketMaker() != null){
         	executionReport.setExecBroker(marketExecutionReport.getMarketMaker().getCode());
         	executionReport.setCounterPart(marketExecutionReport.getMarketMaker().getCode());
+        } else if (marketExecutionReport.getExecBroker() != null) {
+        	executionReport.setExecBroker(marketExecutionReport.getExecBroker());
+        	executionReport.setCounterPart(marketExecutionReport.getExecBroker());
         }
         executionReport.setMarketOrderID(marketExecutionReport.getMarketOrderID());
             
