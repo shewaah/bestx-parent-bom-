@@ -356,9 +356,6 @@ public class BXNewOrderSingle extends BXMessage<quickfix.fix41.NewOrderSingle, q
         if (symbol != null) {
             res.set(new Symbol(symbol));
         }
-        if (side != null) {
-            res.set(new quickfix.field.Side(side.getFIXValue()));
-        }
         if (idSource != null) {
             res.set(new quickfix.field.IDSource(idSource.getFIXValue()));
         }
@@ -374,9 +371,10 @@ public class BXNewOrderSingle extends BXMessage<quickfix.fix41.NewOrderSingle, q
         if (priceType != null) {
             res.setField(new IntField(423, priceType.getFIXValue()));
         }
-        if (transactTime != null) {
-            res.set(new TransactTime(transactTime));
-        }
+//        if (transactTime != null) {
+        // force transact time to always be now
+        res.set(new TransactTime(new Date()));
+//        }
         if (orderSource != null) {
             res.setField(new CharField(OrderSource.FIELD, orderSource.getFIXValue()));
         }
