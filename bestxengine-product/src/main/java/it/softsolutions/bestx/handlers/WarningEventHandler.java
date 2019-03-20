@@ -91,13 +91,13 @@ public class WarningEventHandler extends BaseOperationEventHandler {
 		operation.setStateResilient(new SendNotExecutionReportState(comment), ErrorState.class);
 	}
 
-	@Override
-	public void onMarketExecutionReport(MarketBuySideConnection source, Order order,
-			MarketExecutionReport marketExecutionReport)
-	{
-		super.onMarketExecutionReport(source, order, marketExecutionReport);
-		operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("WARNINGExecutionReportArrived.0", source.getMarketCode().name())), ErrorState.class);
-	}
+//	@Override
+//	public void onMarketExecutionReport(MarketBuySideConnection source, Order order,
+//			MarketExecutionReport marketExecutionReport)
+//	{
+//		super.onMarketExecutionReport(source, order, marketExecutionReport);
+//		operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("WARNINGExecutionReportArrived.0", source.getMarketCode().name())), ErrorState.class);
+//	}
 
 	@Override
 	public void onStateRestore(OperationState currentState) {

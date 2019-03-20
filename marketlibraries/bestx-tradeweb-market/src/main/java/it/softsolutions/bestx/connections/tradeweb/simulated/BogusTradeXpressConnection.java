@@ -131,19 +131,19 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 
 		sendNewExecutionReport(marketOrder);
 
-		try {
-			Thread.sleep(3000);
-		} catch (InterruptedException e) {}
-
 		if(cancelIsins.isEmpty() || !cancelIsins.contains("US912810QX90")) cancelIsins.add("US912810QX90");
 		if(cancelIsins.isEmpty() || !cancelIsins.contains("XS1897488091"))cancelIsins.add("XS1897488091");
-		if(cancelIsins.isEmpty() || !cancelIsins.contains("US912810EC81"))cancelIsins.add("US912810EC81");
+//		if(cancelIsins.isEmpty() || !cancelIsins.contains("US912810EC81"))cancelIsins.add("US912810EC81");
 		if(cancelIsins.isEmpty() || !cancelIsins.contains("TRFAKBK11926"))cancelIsins.add("TRFAKBK11926");
+		cancelIsins.remove("US912810EC81");
 		if (cancelIsins.contains(marketOrder.getInstrument().getIsin())) {
 			sendCancelledExecutionReport(marketOrder);
 		} else if (rejectIsins.contains(marketOrder.getInstrument().getIsin())){  //rejectIsins.add("XS0365323608");
 			sendOrderReject(marketOrder);										//rejectIsins.remove("XS0365323608");
 		} else {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {}
 			sendFilledExecutionReport(marketOrder);
 		}
 	}

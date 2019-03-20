@@ -150,6 +150,10 @@ public class CSBaseOperationEventHandler extends BaseOperationEventHandler {
 			return;
 		}
 		List<MarketExecutionReport> marketExecutionReports = currentAttempt.getMarketExecutionReports();
+		if(marketExecutionReports == null ) {
+			marketExecutionReports = new ArrayList<MarketExecutionReport>();
+			currentAttempt.setMarketExecutionReports(marketExecutionReports);
+		}
 //		if (marketExecutionReports == null) {
 //			marketExecutionReports = new ArrayList<MarketExecutionReport>();
 //			currentAttempt.setMarketExecutionReports(marketExecutionReports);
@@ -163,41 +167,49 @@ public class CSBaseOperationEventHandler extends BaseOperationEventHandler {
 //			}
 //		}
 //		if(isNewFill) {
-		if(FillManagerService.alreadySavedFill(marketExecutionReport, operation.getOrder())){
+		if(!FillManagerService.alreadySavedFill(marketExecutionReport, operation.getOrder())){
 			marketExecutionReports.add(marketExecutionReport);
-			// Create Customer Execution Report from Market Execution Report
-			ExecutionReport executionReport;
-			try {
-				executionReport = marketExecutionReport.clone();
+			if(marketExecutionReport.getState() != ExecutionReportState.NEW) {
+				// Create Customer Execution Report from Market Execution Report
+				ExecutionReport executionReport;
+				try {
+					executionReport = marketExecutionReport.clone();
+				}
+				catch (CloneNotSupportedException e1) {
+					LOGGER.error("Error while trying to create Execution Report from Market Execution Report");
+					operation.setStateResilient(new WarningState(operation.getState(), e1, Messages.getString("BaseCreateExecutionReportError.0")), ErrorState.class);
+					return;
+				}
+				long executionReportId = SerialNumberServiceProvider.getSerialNumberService().getSerialNumber("EXEC_REP");
+				executionReport.setLastPx(executionReport.getPrice().getAmount());
+				marketExecutionReport.setLastPx(executionReport.getPrice().getAmount());
+				executionReport.setSequenceId(Long.toString(executionReportId));
+				// if marketExecutionReport has a broker inside use it, else use the one in lastAttempt execution proposal
+		        if(marketExecutionReport.getMarketMaker() != null) {
+		        	executionReport.setExecBroker(marketExecutionReport.getMarketMaker().getCode());
+		        	executionReport.setCounterPart(marketExecutionReport.getMarketMaker().getCode());
+		        } else if(currentAttempt.getExecutionProposal() != null && currentAttempt.getExecutionProposal().getMarketMarketMaker() != null) {
+					marketExecutionReport.setExecBroker(operation.getLastAttempt().getExecutionProposal().getMarketMarketMaker().getMarketMaker().getCode());              
+					executionReport.setExecBroker(marketExecutionReport.getExecBroker());
+					executionReport.setCounterPart(marketExecutionReport.getExecBroker());
+		        } else {
+		        	LOGGER.error("Error while trying to generate Execution Report ID: unable to determine the execution broker");
+					operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("BaseMarketSendOrderError.0")), ErrorState.class);
+					return;
+		        }
+				executionReport.setMarketOrderID(marketExecutionReport.getMarketOrderID());
+	
+				LOGGER.info("{} market - new exec report added : {}", marketExecutionReport.getMarket().getMarketCode() , executionReport.toString());
+				operation.getExecutionReports().add(executionReport);
+					operation.setStateResilient(new WarningState(operation.getState(), null, 
+							Messages.getString("CSBaseOperationEventHandlerOnMarketExecutionReport.0",  
+									marketExecutionReport.getMarket().getMarketCode(), 
+									marketExecutionReport.getLastPx(), 
+									marketExecutionReport.getExecBroker())), 
+								ErrorState.class);
 			}
-			catch (CloneNotSupportedException e1) {
-				LOGGER.error("Error while trying to create Execution Report from Market Execution Report");
-				operation.setStateResilient(new WarningState(operation.getState(), e1, Messages.getString("BaseCreateExecutionReportError.0")), ErrorState.class);
-				return;
-			}
-			long executionReportId = SerialNumberServiceProvider.getSerialNumberService().getSerialNumber("EXEC_REP");
-			executionReport.setLastPx(executionReport.getPrice().getAmount());
-			marketExecutionReport.setLastPx(executionReport.getPrice().getAmount());
-			executionReport.setSequenceId(Long.toString(executionReportId));
-			// if marketExecutionReport has a broker inside use it, else use the one in lastAttempt execution proposal
-	        if(marketExecutionReport.getMarketMaker() != null) {
-	        	executionReport.setExecBroker(marketExecutionReport.getMarketMaker().getCode());
-	        	executionReport.setCounterPart(marketExecutionReport.getMarketMaker().getCode());
-	        } else if(currentAttempt.getExecutionProposal() != null && currentAttempt.getExecutionProposal().getMarketMarketMaker() != null) {
-				marketExecutionReport.setExecBroker(operation.getLastAttempt().getExecutionProposal().getMarketMarketMaker().getMarketMaker().getCode());              
-				executionReport.setExecBroker(marketExecutionReport.getExecBroker());
-				executionReport.setCounterPart(marketExecutionReport.getExecBroker());
-	        } else {
-	        	LOGGER.error("Error while trying to generate Execution Report ID: unable to determine the execution broker");
-				operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("BaseMarketSendOrderError.0")), ErrorState.class);
-				return;
-	        }
-			executionReport.setMarketOrderID(marketExecutionReport.getMarketOrderID());
-
-			LOGGER.info("{} market - new exec report added : {}", marketExecutionReport.getMarket().getMarketCode() , executionReport.toString());
-			operation.getExecutionReports().add(executionReport);
-				operation.setStateResilient(new WarningState(operation.getState(), null, "Received an execution report from market " + marketExecutionReport.getMarket().getMarketCode() +", price = " + marketExecutionReport.getLastPx() + ", MM: " + marketExecutionReport.getExecBroker() + "  while not expecting"), ErrorState.class);
-		}
+		} else LOGGER.info("{} market - received execution report in state NEW : {}", 
+					marketExecutionReport.getMarket().getMarketCode() , marketExecutionReport.toString());
 	}
 	
 
@@ -208,18 +220,16 @@ public class CSBaseOperationEventHandler extends BaseOperationEventHandler {
 				CSOrdersEndOfDayService.LIMIT_FILE_NON_US_AND_GLOBAL_END_OF_DAY_ID.equalsIgnoreCase(jobName);
 	}
 	
-	
-	
 	@Override
 	public void onTimerExpired(String jobName, String groupName) {
 		Order order = operation.getOrder();
 		// manage EOD expiration
 		if(!operation.getState().isExpirable() && isEOD(jobName)) {
-			// Must ignore End Of Day because the order has been accepted
+			// Must ignore End Of Day because the order has been executed
 			LOGGER.info("EOD timerExpired in not expirable state {}, skip processing [{}.{}]", operation.getState(), groupName, jobName);
 			return;
 		}
-		if (jobName.equals(CSOrdersEndOfDayService.ORDERS_END_OF_DAY_ID) && !order.isLimitFile()) {
+ 		if (jobName.equals(CSOrdersEndOfDayService.ORDERS_END_OF_DAY_ID) && !order.isLimitFile()) {
 			addNotExecutionReportToOperation(ExecutionReportState.EXPIRED);
 			operation.setStateResilient(new SendNotExecutionReportState(operation.getState().getComment()), ErrorState.class);		
 		}
