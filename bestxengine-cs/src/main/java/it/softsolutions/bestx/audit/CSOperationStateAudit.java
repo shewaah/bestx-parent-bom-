@@ -490,10 +490,14 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         case OrderNotExecuted: {
 //            List<Attempt> attemptList = operation.getAttempts();
 //            Attempt attempt = attemptList.get(attemptList.size() - 1);
-        	Attempt attempt = operation.getLastAttempt();
-        	if (operation.getExecutionReports().size() > 0) {
-                ExecutionReport executionReport = operation.getExecutionReports().get(operation.getExecutionReports().size() - 1);
-                 operationStateAuditDao.updateAttempt(order.getFixOrderId(), attempt, tsn, attemptNo, executionReport.getTicket(), executionReport);
+           	Attempt attempt = operation.getLastAttempt();
+           	if (operation.getExecutionReports().size() > 0) {
+           	   ExecutionReport executionReport = operation.getExecutionReports().get(operation.getExecutionReports().size() - 1);
+               if (operation.lastSavedAttempt == attemptNo) {
+                  operationStateAuditDao.updateAttempt(order.getFixOrderId(), attempt, tsn, attemptNo, executionReport.getTicket(), executionReport);
+               } else {
+                  operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), attempt, tsn, attemptNo, executionReport.getTicket(), operation.lastSavedAttempt);
+               }
             }
         }
         break;
