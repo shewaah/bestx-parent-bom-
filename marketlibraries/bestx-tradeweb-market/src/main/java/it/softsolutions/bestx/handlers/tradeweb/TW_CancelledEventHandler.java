@@ -24,6 +24,7 @@ import it.softsolutions.bestx.handlers.ExecutionReportHelper;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.services.serial.SerialNumberService;
 import it.softsolutions.bestx.states.ErrorState;
+import it.softsolutions.bestx.states.RejectedState;
 import it.softsolutions.bestx.states.SendNotExecutionReportState;
 import it.softsolutions.bestx.states.WarningState;
 
@@ -54,7 +55,10 @@ public class TW_CancelledEventHandler extends BaseOperationEventHandler {
 		try {
 			String rejReason = operation.getExecutionReports().get(operation.getExecutionReports().size()-1).getText();
 			ExecutionReportHelper.prepareForAutoNotExecution(operation,serialNumberService, ExecutionReportState.CANCELLED);
-			operation.setStateResilient(new SendNotExecutionReportState(rejReason == null? currentState.getComment() : rejReason), ErrorState.class);
+			// AMC 20190325 if has been cancelled, go to cancelled status
+		      if (!checkCustomerRevoke(operation.getOrder())) {
+		    	  operation.setStateResilient(new RejectedState(rejReason), ErrorState.class);
+		      }
 		} catch (BestXException e) {
             LOGGER.error("Order {}, error while starting not execution sending", operation.getOrder().getFixOrderId(), e);
             String errorMessage = e.getMessage();
