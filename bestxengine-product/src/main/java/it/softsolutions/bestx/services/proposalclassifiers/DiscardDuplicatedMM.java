@@ -124,12 +124,12 @@ public class DiscardDuplicatedMM implements ProposalClassifier {
                     proposal.setReason(Messages.getString("ProposalMarketSameRanking", proposalMarket.getMarketCode(), loopProposalMarket.getMarketCode(), proposalMarketRanking));
                 } else if (isFirstBetterThanSecond(classProp.getPrice().getAmount(), proposal.getPrice().getAmount(), proposal.getSide())){
                 	//[RR20150409] BXMNT-370 reject only if the better ranking proposal has also a better or equal price
-                    LOGGER.info("Rejecting proposal: {} versus other proposal {}", proposal, classProp);
+                    LOGGER.info("Rejecting proposal: \n{}\nversus other proposal:\n {}", proposal, classProp);
                     proposal.setProposalState(Proposal.ProposalState.REJECTED);
                     proposal.setReason(Messages.getString("BestBook.23"));
                     break;
                 } else if(proposalMarketRanking > loopProposalMarketRanking) {
-                    LOGGER.info("Rejecting proposal: {} versus other proposal {}", proposal, classProp);
+                    LOGGER.info("Rejecting proposal: \n{}\nversus other proposal:\n {}", proposal, classProp);
                     proposal.setProposalState(Proposal.ProposalState.REJECTED);
                     proposal.setReason(Messages.getString("BestBook.16"));
                     break;
