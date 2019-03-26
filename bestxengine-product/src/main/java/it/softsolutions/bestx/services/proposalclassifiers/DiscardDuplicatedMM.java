@@ -128,12 +128,15 @@ public class DiscardDuplicatedMM implements ProposalClassifier {
                     proposal.setProposalState(Proposal.ProposalState.REJECTED);
                     proposal.setReason(Messages.getString("BestBook.23"));
                     break;
-                } else if(proposalMarketRanking > loopProposalMarketRanking) {
+                } else if(proposal.getPrice().getAmount().compareTo(proposal.getPrice().getAmount()) == 0 &&
+                		proposalMarketRanking > loopProposalMarketRanking) {
                     LOGGER.info("Rejecting proposal: \n{}\nversus other proposal:\n {}", proposal, classProp);
                     proposal.setProposalState(Proposal.ProposalState.REJECTED);
                     proposal.setReason(Messages.getString("BestBook.16"));
                     break;
-                	
+                }
+                else {
+                    LOGGER.info("Do not reject proposal {}", proposal);                	
                 }
             }
         }
@@ -143,10 +146,10 @@ public class DiscardDuplicatedMM implements ProposalClassifier {
 
     private boolean isFirstBetterThanSecond(BigDecimal firstAmount, BigDecimal secondAmount, ProposalSide side) {
     	if(ProposalSide.ASK == side) {
-    		return firstAmount.compareTo(secondAmount) <= 0;
+    		return firstAmount.compareTo(secondAmount) < 0;
     	} 
     	if(ProposalSide.BID == side) {
-    		return firstAmount.compareTo(secondAmount) >= 0;
+    		return firstAmount.compareTo(secondAmount) > 0;
     	} 
 		return false;
 	}
