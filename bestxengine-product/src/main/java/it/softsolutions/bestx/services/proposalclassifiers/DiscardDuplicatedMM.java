@@ -119,19 +119,17 @@ public class DiscardDuplicatedMM implements ProposalClassifier {
                     && !loopProposalMarket.getMarketCode().equals(proposalMarket.getMarketCode())) {
                 //[RR20121030] BXMNT-193 : sometimes happens that two markets have the same ranking and both proposals for the same market maker
                 // will be accepted. Add a reason to show the cause.
-                if (proposalMarketRanking == loopProposalMarketRanking && isFirstBetterThanSecond(proposal.getPrice().getAmount(), classProp.getPrice().getAmount(), proposal.getSide())){
-                    LOGGER.warn("Markets {} and {} have the same ranking: {}=={}", proposalMarket, loopProposalMarket, proposalMarketRanking, loopProposalMarketRanking);
+                if (proposalMarketRanking == loopProposalMarketRanking && isFirstBetterThanSecond(classProp.getPrice().getAmount(), proposal.getPrice().getAmount(), proposal.getSide())){
+                    LOGGER.info("Markets {} and {} have the same ranking: {}=={}", proposalMarket, loopProposalMarket, proposalMarketRanking, loopProposalMarketRanking);
                     proposal.setReason(Messages.getString("ProposalMarketSameRanking", proposalMarket.getMarketCode(), loopProposalMarket.getMarketCode(), proposalMarketRanking));
-                } else if (isFirstBetterThanSecond(proposal.getPrice().getAmount(), classProp.getPrice().getAmount(), proposal.getSide())){
+                } else if (isFirstBetterThanSecond(classProp.getPrice().getAmount(), proposal.getPrice().getAmount(), proposal.getSide())){
                 	//[RR20150409] BXMNT-370 reject only if the better ranking proposal has also a better or equal price
-                    LOGGER.debug("Venue " + classProp.getVenue() + " MM has price better than " + proposal.getVenue() + " rejecting...");
-                    LOGGER.info("Rejecting proposal: {}", proposal);
+                    LOGGER.info("Rejecting proposal: {} versus other proposal {}", proposal, classProp);
                     proposal.setProposalState(Proposal.ProposalState.REJECTED);
                     proposal.setReason(Messages.getString("BestBook.23"));
                     break;
                 } else if(proposalMarketRanking > loopProposalMarketRanking) {
-                    LOGGER.debug("Venue " + classProp.getVenue() + " is duplicated of " + proposal.getVenue() + " rejecting...");
-                    LOGGER.info("Rejecting proposal: {}", proposal);
+                    LOGGER.info("Rejecting proposal: {} versus other proposal {}", proposal, classProp);
                     proposal.setProposalState(Proposal.ProposalState.REJECTED);
                     proposal.setReason(Messages.getString("BestBook.16"));
                     break;
