@@ -24,6 +24,7 @@ import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationIdType;
+import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.bestexec.BookClassifier;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.handlers.ExecutionReportHelper;
@@ -360,7 +361,12 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	@Override
 	public void acceptOrderRevoke(Operation operation, Attempt currentAttempt,
 			SerialNumberService serialNumberService) {
-		operation.setStateResilient(new SendNotExecutionReportState("Revoke accepted"), ErrorState.class);	
+		try {
+			ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.CANCELLED);
+		} catch (BestXException e) {
+			operation.setStateResilient(new WarningState(operation.getState(), e, "Unable to create unexecution report"), ErrorState.class);	
+		}
+		operation.setStateResilient(new SendNotExecutionReportState("Cancellation accepted"), ErrorState.class);	
 	}
 
 	/** get from the market codes in the getAllMarketsToTry which is the first one not used in the current attempt cycle

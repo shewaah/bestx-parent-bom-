@@ -108,7 +108,7 @@ public class SendExecutionReportEventHandler extends BaseOperationEventHandler {
         // Currency extracted from the order, we are coherent with the negotiation source avoiding
         // problems when the instrument has the wrong currency in the database.
         String ordCurrency = operation.getOrder().getCurrency();
-        Money quantity = new Money(ordCurrency, lastExecutionReport.getActualQty());
+        Money quantity = new Money(ordCurrency, lastExecutionReport.getActualQty() == null? BigDecimal.ZERO : lastExecutionReport.getActualQty());
 
         Commission comm = null;
 
