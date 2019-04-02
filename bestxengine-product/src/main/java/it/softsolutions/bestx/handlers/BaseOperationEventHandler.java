@@ -371,7 +371,7 @@ public class BaseOperationEventHandler extends DefaultOperationEventHandler {
 				if (operation.getState().isRevocable()) {
 					// stop default timer, if any
 					stopDefaultTimer();
-					String comment = Messages.getString("REVOKE_ACKNOWLEDGED");
+					String comment = Messages.getString("AutomaticRevokeDefaultMessage.0");
 					updateOperationToRevocated(comment);
 					LOGGER.info("Order {}: revoke received, it will be managed automatically. Sending automatic revoke accepted to customer", order.getFixOrderId());
 					operation.setStateResilient(new OrderRevocatedState(comment), ErrorState.class);
@@ -379,13 +379,13 @@ public class BaseOperationEventHandler extends DefaultOperationEventHandler {
 				else {
 					try {
 						LOGGER.info("Revoke rejected, order in a not revocable state.");	        	   
-						customerConnection.sendRevokeNack(operation, order, Messages.getString("REVOKE_NOT_ACKNOWLEDGED"));
+						customerConnection.sendRevokeNack(operation, order, Messages.getString("AutomaticRevokeDefaultMessage.0"));
 						operation.setRevocationState(RevocationState.NOT_ACKNOWLEDGED);
 						operation.setCustomerRevokeReceived(false);
 					} catch (BestXException e) {
 						LOGGER.error("Error while sending Revoke Nack", e);
 					}	        	
-					operatorConsoleConnection.updateRevocationStateChange(operation, operation.getRevocationState(), Messages.getString("REVOKE_NOT_ACKNOWLEDGED"));
+					operatorConsoleConnection.updateRevocationStateChange(operation, operation.getRevocationState(), Messages.getString("AutomaticRevokeDefaultMessage.0"));
 				}
 			}
 		}
