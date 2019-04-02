@@ -24,7 +24,6 @@ import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationIdType;
-import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.bestexec.BookClassifier;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.handlers.ExecutionReportHelper;
@@ -51,8 +50,8 @@ import it.softsolutions.bestx.states.CurandoState;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.LimitFileNoPriceState;
 import it.softsolutions.bestx.states.OrderNotExecutableState;
+import it.softsolutions.bestx.states.OrderRevocatedState;
 import it.softsolutions.bestx.states.SendAutoNotExecutionReportState;
-import it.softsolutions.bestx.states.SendNotExecutionReportState;
 import it.softsolutions.bestx.states.WarningState;
 import it.softsolutions.bestx.states.bloomberg.BBG_StartExecutionState;
 import it.softsolutions.bestx.states.marketaxess.MA_StartExecutionState;
@@ -361,12 +360,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	@Override
 	public void acceptOrderRevoke(Operation operation, Attempt currentAttempt,
 			SerialNumberService serialNumberService) {
-		try {
-			ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.CANCELLED);
-		} catch (BestXException e) {
-			operation.setStateResilient(new WarningState(operation.getState(), e, "Unable to create unexecution report"), ErrorState.class);	
-		}
-		operation.setStateResilient(new SendNotExecutionReportState("Cancellation accepted"), ErrorState.class);	
+		operation.setStateResilient(new OrderRevocatedState( Messages.getString("REVOKE_ACKNOWLEDGED")), ErrorState.class);	
 	}
 
 	/** get from the market codes in the getAllMarketsToTry which is the first one not used in the current attempt cycle

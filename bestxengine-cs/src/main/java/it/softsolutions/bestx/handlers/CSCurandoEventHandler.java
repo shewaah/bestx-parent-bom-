@@ -104,13 +104,6 @@ public class CSCurandoEventHandler extends CSBaseOperationEventHandler {
         
     }
 
-    @Override
-	public void onFixRevoke(CustomerConnection source) {
-		ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(),
-				operation, null, true);
-		csExecutionStrategyService.acceptOrderRevoke(operation, operation.getLastAttempt(), SerialNumberServiceProvider.getSerialNumberService());
-	}
-
 	@Override
 	public void onTimerExpired(String jobName, String groupName) {
 		String handlerJobName = super.getDefaultTimerJobName();
