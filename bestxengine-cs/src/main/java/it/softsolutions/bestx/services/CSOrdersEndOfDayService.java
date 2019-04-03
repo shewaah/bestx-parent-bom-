@@ -17,6 +17,7 @@ package it.softsolutions.bestx.services;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -75,36 +76,48 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
     public void init() {
         LOGGER.info("Initializing end of day timer service.");
         checkPrerequisites();
-        LOGGER.info("End of day standard scheduled for {}:{}", ordersEndOfDayHour, ordersEndOfDayMinute);
-        LOGGER.info("End of day non US Limit Files scheduled for {}:{}", limitFileNonUSEndOfDayHour, limitFileNonUSEndOfDayMinute);
-        LOGGER.info("End of day US Limit Files scheduled for {}:{}", limitFileUSEndOfDayHour, limitFileUSEndOfDayMinute);
         // calculating remaining time to the hour given by OrdersEndOfDayHour:OrdersEndOfDayMinute
-        Calendar calendar = Calendar.getInstance();
+        Calendar calendar = Calendar.getInstance(); // calendar.getTime()
         int year = Calendar.getInstance().get(Calendar.YEAR);
         int month = Calendar.getInstance().get(Calendar.MONTH);
         int day = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
 
-        calendar.set(year, month, day, ordersEndOfDayHour, ordersEndOfDayMinute);
-        setUpEndOfDayTimer(calendar, ordersEndOfDayRestartDelay, ORDERS_END_OF_DAY_ID);
-        
-        calendar.set(year, month, day, limitFileNonUSEndOfDayHour, limitFileNonUSEndOfDayMinute);
-        setUpEndOfDayTimer(calendar, ordersEndOfDayRestartDelay, LIMIT_FILE_NON_US_AND_GLOBAL_END_OF_DAY_ID);
-        
-        calendar.set(year, month, day, limitFileUSEndOfDayHour, limitFileUSEndOfDayMinute);
-        setUpEndOfDayTimer(calendar, ordersEndOfDayRestartDelay, LIMIT_FILE_US_AND_GLOBAL_END_OF_DAY_ID);
+        calendar.set(year, month, day, ordersEndOfDayHour, ordersEndOfDayMinute, 0);
+        LOGGER.info("End of day standard scheduled for {}", calendar.getTime().toString());
+        Calendar expireCalendar = setUpEndOfDayTimer(calendar, ordersEndOfDayRestartDelay, ORDERS_END_OF_DAY_ID);
+        if(expireCalendar != null && expireCalendar.compareTo(calendar) != 0)
+            LOGGER.info("End of day standard rescheduled at {}", expireCalendar.getTime().toString());
+
+       
+        calendar.set(year, month, day, limitFileNonUSEndOfDayHour, limitFileNonUSEndOfDayMinute, 0);
+        LOGGER.info("End of day non US Limit Files scheduled for {}", calendar.getTime().toString());
+        expireCalendar = setUpEndOfDayTimer(calendar, ordersEndOfDayRestartDelay, LIMIT_FILE_NON_US_AND_GLOBAL_END_OF_DAY_ID);
+        if(expireCalendar != null && expireCalendar.compareTo(calendar) != 0)
+            LOGGER.info("End of day non US Limit Files rescheduled at {}", expireCalendar.getTime().toString());
+       
+        calendar.set(year, month, day, limitFileUSEndOfDayHour, limitFileUSEndOfDayMinute, 0);
+        LOGGER.info("End of day US Limit Files scheduled for  {}", calendar.getTime().toString());
+        expireCalendar = setUpEndOfDayTimer(calendar, ordersEndOfDayRestartDelay, LIMIT_FILE_US_AND_GLOBAL_END_OF_DAY_ID);
+        if(expireCalendar != null && expireCalendar.compareTo(calendar) != 0)
+            LOGGER.info("End of day US Limit Files rescheduled at {}", expireCalendar.getTime().toString());
 
         JobExecutionDispatcher.INSTANCE.addTimerEventListener(CSOrdersEndOfDayService.class.getSimpleName(), this);
         LOGGER.info("Initialization done.");
     }
 
-    private void setUpEndOfDayTimer(Calendar calendar, Integer ordersEndOfDayRestartDelay, String timerName) {
+    private Calendar setUpEndOfDayTimer(Calendar calendar, Integer ordersEndOfDayRestartDelay, String timerName) {
         // getting the current time
         expireTime = calendar.getTimeInMillis();
+        Calendar expireCalendar = calendar;
         // calculating time remained from now to the EndOfDay time
-        long timeToExpire = expireTime - Calendar.getInstance().getTimeInMillis();
+        long now = Calendar.getInstance().getTimeInMillis();
+        long timeToExpire = expireTime - now;
         if (timeToExpire <= 0) {
             timeToExpire = ordersEndOfDayRestartDelay * 1000L; // close active operations anyway, in case of restart after end of day,
-                                                               // allowing system to startup (30 secs)
+                                                               // allowing system to startup (currently set to 300 secs)
+            expireTime = expireTime + timeToExpire;
+            expireCalendar = Calendar.getInstance();
+            expireCalendar.setTimeInMillis(now + timeToExpire); // expireCalendar.getTime()
         }
         // setupTimer bind the timer for this service
         try {
@@ -116,6 +129,7 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
         } catch (SchedulerException e) {
             LOGGER.error("Error while scheduling price discovery wait timer!", e);
         }
+        return expireCalendar;
     }
 
     private void checkPrerequisites() throws ObjectNotInitializedException {
