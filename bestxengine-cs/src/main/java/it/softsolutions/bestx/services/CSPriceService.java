@@ -599,7 +599,7 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 
 	@Override
 	public void setOrdersPerMinute(int ordersPerMinute) {
-		LOGGER.info("[{}] Changed number of orders per minute from {} to {}", priceServiceName, ordersPerMinute, ordersPerMinute);
+		LOGGER.info("[{}] Changed number of orders per minute from {} to {}", priceServiceName, this.configuredOrdersPerMinute, ordersPerMinute);
 		this.configuredOrdersPerMinute = ordersPerMinute;
 	}
 

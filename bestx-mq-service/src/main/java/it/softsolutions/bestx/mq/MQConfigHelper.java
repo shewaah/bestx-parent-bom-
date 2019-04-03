@@ -52,10 +52,10 @@ public class MQConfigHelper {
          }
       }
       else {
-         LOGGER.info("Password '{}' not encrypted, use the plain value.", encryptedPassword);
+         LOGGER.info("Password '*****' not encrypted, use the plain value.", encryptedPassword);
          password = encryptedPassword;
       }
-      LOGGER.trace("encryptedPassword = '{}', password = '{}'", encryptedPassword, password);
+      LOGGER.trace("encryptedPassword = '{}', password = '******'", encryptedPassword);
       return password;
    }
 

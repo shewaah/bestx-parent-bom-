@@ -359,7 +359,7 @@ public final class SODLoader {
 				password = encryptedPassword;
 			}
 		} else {
-			logger.info("Password '{}' not encrypted, use the plain value.", encryptedPassword);
+			logger.info("Password '*****' not encrypted, use the plain value.", encryptedPassword);
 			password = encryptedPassword;
 		}
 		logger.trace("encryptedPassword = '{}', password = '*****'", encryptedPassword, password);

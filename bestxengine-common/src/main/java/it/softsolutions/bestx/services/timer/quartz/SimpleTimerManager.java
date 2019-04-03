@@ -394,14 +394,14 @@ public class SimpleTimerManager implements TimerManager {
                 encryptedPassword = encryptedPassword.substring(4, encryptedPassword.length() - 1);
                 password = encryptor.decrypt(encryptedPassword);  
             } catch (Exception e) {
-                LOGGER.warn("Unable to decrypy password, use the plain value. Reason: {}", e.getMessage());
+                LOGGER.warn("Unable to decrypt password, use the plain value. Reason: {}", e.getMessage());
                 password = encryptedPassword;
             }
         } else {
-            LOGGER.info("Password '{}' not encrypted, use the plain value.", encryptedPassword);
+            LOGGER.info("Password '*****' not encrypted, use the plain value.", encryptedPassword);
             password = encryptedPassword;
         }
-        LOGGER.trace("encryptedPassword = '{}', password = '{}'", encryptedPassword, password);
+        LOGGER.trace("encryptedPassword = '{}', password = '*****'", encryptedPassword, password);
         return password;
     }
 }
