@@ -13,7 +13,6 @@
  */
 package it.softsolutions.bestx.services.executionstrategy;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,13 +22,13 @@ import org.slf4j.LoggerFactory;
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
-import it.softsolutions.bestx.model.ClassifiedProposal;
+import it.softsolutions.bestx.OrderHelper;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal.ProposalSubState;
 import it.softsolutions.bestx.model.SortedBook;
-import it.softsolutions.bestx.services.PriceController;
+import it.softsolutions.bestx.services.OperationStateAuditDAOProvider;
 import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.bestx.services.price.PriceResult;
 
@@ -54,49 +53,46 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
    }
 
    @Override
-    public void manageAutomaticUnexecution(Order order, Customer customer) throws BestXException {
-        if (order == null) {
-            throw new IllegalArgumentException("order is null");
-        }
+   public void manageAutomaticUnexecution(Order order, Customer customer) throws BestXException {
+      if (order == null) {
+         throw new IllegalArgumentException("order is null");
+      }
 
-        if (customer == null) {
-            throw new IllegalArgumentException("customer is null");
-        }
+      if (customer == null) {
+         throw new IllegalArgumentException("customer is null");
+      }
 
-        if(BondTypesService.isUST(operation.getOrder().getInstrument()) 
-        		&& operation.getLastAttempt().getMarketOrder() != null
-				&& operation.getLastAttempt().getMarketOrder().getMarket().getMarketCode() == MarketCode.TW) { // have got a rejection on the single attempt on TW
-        	onUnexecutionResult(Result.USSingleAttemptNotExecuted, Messages.getString("UnexecutionReason.0"));
-        	return;
-        }
-        //when there are no markets available, the execution service is called with a null price result, thus
-        //we can go in the LimitPriceNoFileState
-        if (priceResult == null) {
+      if(BondTypesService.isUST(operation.getOrder().getInstrument()) 
+            && operation.getLastAttempt().getMarketOrder() != null
+            && operation.getLastAttempt().getMarketOrder().getMarket().getMarketCode() == MarketCode.TW) { // have got a rejection on the single attempt on TW
+         onUnexecutionResult(Result.USSingleAttemptNotExecuted, Messages.getString("UnexecutionReason.0"));
+         return;
+      }
+      //when there are no markets available, the execution service is called with a null price result, thus
+      //we can go in the LimitPriceNoFileState
+      if (priceResult == null) {
+         onUnexecutionResult(Result.LimitFileNoPrice, Messages.getString("LimitFile.NoPrices"));
+      } else {
+         //if the sorted book contains at least one proposal in substate NONE, it means that we received a price that
+         //will not allow us to consider the book empty. A book is empty, thus sending the order to the Limit File No Price
+         //state, only if the proposals are all in the substate PRICE_OR_QTY_NOT_VALID or REJECTED_BY_MARKET, or the book
+         //is null
+         List<ProposalSubState> wantedSubStates = new ArrayList<ProposalSubState>(1);
+         wantedSubStates.add(ProposalSubState.NONE);
+         SortedBook sortedBook = priceResult.getSortedBook();
+         boolean emptyBook =  sortedBook == null || sortedBook.getProposalBySubState(wantedSubStates, order.getSide()).isEmpty();
+
+         if (emptyBook) {
+            this.operation.getLastAttempt().setSortedBook(sortedBook);
             onUnexecutionResult(Result.LimitFileNoPrice, Messages.getString("LimitFile.NoPrices"));
-        } else {
-            //if the sorted book contains at least one proposal in substate NONE, it means that we received a price that
-            //will not allow us to consider the book empty. A book is empty, thus sending the order to the Limit File No Price
-            //state, only if the proposals are all in the substate PRICE_OR_QTY_NOT_VALID or REJECTED_BY_MARKET, or the book
-            //is null
-            List<ProposalSubState> wantedSubStates = new ArrayList<ProposalSubState>(1);
-            wantedSubStates.add(ProposalSubState.NONE);
-           SortedBook sortedBook = priceResult.getSortedBook();
-            boolean emptyBook =  sortedBook == null || sortedBook.getProposalBySubState(wantedSubStates, order.getSide()).isEmpty();
-            
-            if (emptyBook) {
-               this.operation.getLastAttempt().setSortedBook(sortedBook);
-               onUnexecutionResult(Result.LimitFileNoPrice, Messages.getString("LimitFile.NoPrices"));
-            } else {
-                //time to update the delta between the order limit price and the best proposal one
-                if (order.getLimit() != null) {
-                    List<ClassifiedProposal> bookProposals = sortedBook.getSideProposals(order.getSide());
-                    BigDecimal limitPrice = order.getLimit().getAmount();
-                    LOGGER.debug("Order {} limit price {}, starting calculating delta from best proposal price.", order.getFixOrderId(), limitPrice.doubleValue());
-                    order.setBestPriceDeviationFromLimit(PriceController.INSTANCE.getBestProposalDelta(limitPrice.doubleValue() > 0.0 ? limitPrice : BigDecimal.ZERO, bookProposals, customer));
-                }
-                onUnexecutionResult(Result.LimitFile, Messages.getString("LimitFile"));
-            }
-            
-        }
-    }
+         } else {
+            //time to update the delta between the order limit price and the best proposal one
+
+            OrderHelper.setOrderBestPriceDeviationFromLimit(operation);
+            OperationStateAuditDAOProvider.getOperationStateAuditDao().updateOrderBestAndLimitDelta(order, order.getBestPriceDeviationFromLimit());
+            onUnexecutionResult(Result.LimitFile, Messages.getString("LimitFile"));
+         }
+
+      }
+   }
 }

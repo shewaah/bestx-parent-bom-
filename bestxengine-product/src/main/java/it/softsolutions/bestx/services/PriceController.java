@@ -13,6 +13,13 @@
  */
 package it.softsolutions.bestx.services;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.CustomerAttributes;
 import it.softsolutions.bestx.model.ClassifiedBook;
@@ -25,13 +32,6 @@ import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.SortedBook;
 import it.softsolutions.bestx.services.proposalclassifiers.DiscardWorstPriceProposalClassifier;
 import it.softsolutions.jsscommon.Money;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -290,6 +290,7 @@ public enum PriceController {
      * @throws BestXException
      */
     public boolean isDeviationFromLimitOverTheMax(SortedBook sortedBook, Order order) throws BestXException {
+       //FIXME SP verificare se si puo' integrare con OrderHelper
         if (sortedBook == null) {
             LOGGER.trace("{}, sortedBook null, no need to check the deviation from the customer configured maximum limit price", order.getFixOrderId());
             // returning false will make everything work as usual
