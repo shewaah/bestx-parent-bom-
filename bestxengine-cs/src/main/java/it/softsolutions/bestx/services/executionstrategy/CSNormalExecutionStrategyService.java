@@ -69,7 +69,7 @@ public class CSNormalExecutionStrategyService extends CSExecutionStrategyService
             throw new IllegalArgumentException("customer is null");
         }
 
-        if (customer.isAutoUnexecEnabled()) {
+        if (!operation.isNotAutoExecute() && customer.isAutoUnexecEnabled()) {
             LOGGER.info("Order {}, the customer requested the automatic not execution.");
             onUnexecutionResult(ExecutionStrategyService.Result.CustomerAutoNotExecution, Messages.getString("WaitingPrices.0"));
             return;
@@ -102,6 +102,6 @@ public class CSNormalExecutionStrategyService extends CSExecutionStrategyService
 
         LOGGER.info("Order {}, normal order flow.", order.getFixOrderId());
         // Success, null parameter because there is no need to choose a market to execute on
-        onUnexecutionResult(ExecutionStrategyService.Result.CustomerAutoNotExecution, Messages.getString("WaitingPrices.0"));
+    	onUnexecutionResult(ExecutionStrategyService.Result.Success, Messages.getString("WaitingPrices.0"));
     }
 }

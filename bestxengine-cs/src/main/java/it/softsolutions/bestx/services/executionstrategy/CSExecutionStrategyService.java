@@ -401,9 +401,23 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
      */
 	public void onUnexecutionResult(Result result, String message) {
 	    switch (result) {
+	    case MaxDeviationLimitViolated:
+	    case Success:
+	    	if(operation.isNotAutoExecute())
+	    		this.operation.setStateResilient(new CurandoState(message), ErrorState.class);
+	    	else
+	        try {
+	        	ExecutionReportHelper.prepareForAutoNotExecution(this.operation, SerialNumberServiceProvider.getSerialNumberService(), ExecutionReportState.REJECTED);
+	        	this.operation.setStateResilient(new SendAutoNotExecutionReportState(message), ErrorState.class);
+	        } catch (BestXException e) {
+	            LOGGER.error("Order {}, error while starting automatic not execution.", this.operation.getOrder().getFixOrderId(), e);
+	            String errorMessage = e.getMessage();
+	            this.operation.setStateResilient(new WarningState(this.operation.getState(), null, errorMessage), ErrorState.class);
+	        }
+	        break;
+// after real attempt of execution
 	    case USSingleAttemptNotExecuted:
 	    case CustomerAutoNotExecution:
-	    case MaxDeviationLimitViolated:
 	    case EODCalled:
 	        try {
 	        	ExecutionReportHelper.prepareForAutoNotExecution(this.operation, SerialNumberServiceProvider.getSerialNumberService(), ExecutionReportState.REJECTED);
@@ -425,7 +439,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	    		this.operation.setStateResilient(new LimitFileNoPriceState(message), ErrorState.class);
 	        break;
 	    case LimitFile:
-	        //Update the BestANdLimitDelta field on the TabHistoryOrdini table
+	        //Update the BestAndLimitDelta field on the TabHistoryOrdini table
 	        Order order = this.operation.getOrder();
 	        OperationStateAuditDAOProvider.getOperationStateAuditDao().updateOrderBestAndLimitDelta(order, order.getBestPriceDeviationFromLimit());
 	    	if(operation.isNotAutoExecute())

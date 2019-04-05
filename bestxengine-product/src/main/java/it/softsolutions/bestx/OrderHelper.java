@@ -40,7 +40,9 @@ public class OrderHelper {
    private static final Logger LOGGER = LoggerFactory.getLogger(OrderHelper.class);
 
    public static void setOrderBestPriceDeviationFromLimit(Operation operation) {
-      if (operation != null && operation.getLastAttempt() != null && operation.getLastAttempt().getSortedBook() != null) {
+      if (operation != null && operation.getLastAttempt() != null 
+    		  && operation.getLastAttempt().getSortedBook() != null
+    		  && operation.getLastAttempt().getExecutionProposal() == null) {
          Order order = operation.getOrder();
          if (order.getLimit() != null) {
             Customer customer = order.getCustomer();
@@ -50,7 +52,9 @@ public class OrderHelper {
             BigDecimal limitPrice = order.getLimit().getAmount();
             LOGGER.debug("Order {} limit price {}, starting calculating delta from best proposal price.", order.getFixOrderId(), limitPrice.doubleValue());
             try {
-               order.setBestPriceDeviationFromLimit(PriceController.INSTANCE.getBestProposalDelta(limitPrice.doubleValue() > 0.0 ? limitPrice : BigDecimal.ZERO, bookProposals, customer));
+               order.setBestPriceDeviationFromLimit(
+            		   PriceController.INSTANCE.getBestProposalDelta(
+            				   limitPrice.doubleValue() > 0.0 ? limitPrice : BigDecimal.ZERO, bookProposals, customer));
             }
             catch (BestXException e) {
                order.setBestPriceDeviationFromLimit(null);
