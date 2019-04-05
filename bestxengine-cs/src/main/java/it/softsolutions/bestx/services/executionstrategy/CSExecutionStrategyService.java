@@ -404,7 +404,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	    case MaxDeviationLimitViolated:
 	    case Success:
 	    	if(operation.isNotAutoExecute())
-	    		this.operation.setStateResilient(new CurandoState(message), ErrorState.class);
+	    		this.operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
 	    	else
 	        try {
 	        	ExecutionReportHelper.prepareForAutoNotExecution(this.operation, SerialNumberServiceProvider.getSerialNumberService(), ExecutionReportState.REJECTED);
