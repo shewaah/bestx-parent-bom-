@@ -494,9 +494,9 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
            	if (operation.getExecutionReports().size() > 0) {
            	   ExecutionReport executionReport = operation.getExecutionReports().get(operation.getExecutionReports().size() - 1);
                if (operation.lastSavedAttempt == attemptNo) {
-                  operationStateAuditDao.updateAttempt(order.getFixOrderId(), attempt, tsn, attemptNo, executionReport.getTicket(), executionReport);
+            	   operationStateAuditDao.updateAttempt(order.getFixOrderId(), attempt, tsn, attemptNo, executionReport.getTicket(), executionReport);
                } else {
-                  operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), attempt, tsn, attemptNo, executionReport.getTicket(), operation.lastSavedAttempt);
+            	   operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), attempt, tsn, attemptNo, executionReport.getTicket(), operation.lastSavedAttempt);
                }
             }
         }
