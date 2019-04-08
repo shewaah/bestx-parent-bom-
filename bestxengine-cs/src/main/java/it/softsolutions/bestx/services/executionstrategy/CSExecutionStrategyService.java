@@ -434,7 +434,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	        break;
 	    case LimitFileNoPrice:
 	    	if(this.operation.isNotAutoExecute())
-	    		this.operation.setStateResilient(new CurandoState(message), ErrorState.class);
+	    		this.operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
 	        else
 	    		this.operation.setStateResilient(new LimitFileNoPriceState(message), ErrorState.class);
 	        break;
@@ -443,7 +443,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	        Order order = this.operation.getOrder();
 	        OperationStateAuditDAOProvider.getOperationStateAuditDao().updateOrderBestAndLimitDelta(order, order.getBestPriceDeviationFromLimit());
 	    	if(operation.isNotAutoExecute())
-	    		this.operation.setStateResilient(new CurandoState(message), ErrorState.class);
+	    		this.operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
 	    	else
 	    		this.operation.setStateResilient(new OrderNotExecutableState(message), ErrorState.class);
 	        break;
