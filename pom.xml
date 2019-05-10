@@ -58,6 +58,11 @@
             </dependency>
             <dependency>
                 <groupId>it.softsolutions.bestx</groupId>
+                <artifactId>bestx-bondvision-market</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>it.softsolutions.bestx</groupId>
                 <artifactId>bestx-db</artifactId>
                 <version>${DB-Version}</version>
             </dependency>

@@ -49,11 +49,15 @@ public class BondTypesService {
     public static boolean isUST(Instrument instrument) {
     	if("US".equals(instrument.getCountry().getCode())
     			&& "US GOVERNMENT".equals(instrument.getSecurityType())
-    			&& ("US TREASURY N/B".equals(instrument.getIssuerName())
-    			|| "TREASURY BILL".equals(instrument.getIssuerName())
-    			|| "STRIP PRINC".equals(instrument.getIssuerName())
-    			|| "STRIPS".equals(instrument.getIssuerName())
-    			|| "TSY INFL IX N/B".equals(instrument.getIssuerName())))
+    			&& instrument.getIssuerName() != null
+    			&& (instrument.getIssuerName().contains("TREASURY")
+    					|| instrument.getIssuerName().contains("STRIP")
+    					|| instrument.getIssuerName().contains("TSY")))
+//    			&& ("US TREASURY N/B".equals(instrument.getIssuerName())
+//    			|| "TREASURY BILL".equals(instrument.getIssuerName())
+//    			|| "STRIP PRINC".equals(instrument.getIssuerName())
+//    			|| "STRIPS".equals(instrument.getIssuerName())
+//    			|| "TSY INFL IX N/B".equals(instrument.getIssuerName())))
     		return true;
     	return false;
     }
