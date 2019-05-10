@@ -14,127 +14,270 @@
 package it.softsolutions.bestx.markets.bloomberg;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Operation;
+import it.softsolutions.bestx.finders.MarketMakerFinder;
+import it.softsolutions.bestx.model.Attempt;
+import it.softsolutions.bestx.model.ExecutablePrice;
+import it.softsolutions.bestx.model.ExecutablePriceAskComparator;
+import it.softsolutions.bestx.model.ExecutablePriceBidComparator;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.MarketExecutionReport;
+import it.softsolutions.bestx.model.MarketMarketMaker;
 import it.softsolutions.bestx.model.Order;
+import it.softsolutions.bestx.model.Proposal.ProposalSide;
+import it.softsolutions.bestx.model.Proposal.ProposalType;
 import it.softsolutions.bestx.model.Rfq;
+import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.jsscommon.Money;
 import it.softsolutions.tradestac.fix.field.ExecType;
 import it.softsolutions.tradestac.fix.field.OrdStatus;
+import it.softsolutions.tradestac.fix.field.PartyIDSource;
+import it.softsolutions.tradestac.fix.field.PartyRole;
+import it.softsolutions.tradestac.fix.field.PriceType;
+import it.softsolutions.tradestac.fix50.TSExecutionReport;
+import it.softsolutions.tradestac.fix50.TSNoPartyID;
+import it.softsolutions.tradestac.fix50.component.TSCompDealersGrpComponent;
+import it.softsolutions.tradestac.fix50.component.TSParties;
+import quickfix.DoubleField;
+import quickfix.FieldNotFound;
+import quickfix.Group;
+import quickfix.MessageComponent;
+import quickfix.StringField;
+import quickfix.field.CompDealerID;
+import quickfix.field.CompDealerQuote;
 
 /**
  * 
- * Purpose: this class is mainly for ...
+ * Purpose: this class is created to decouple the order management from the channel management. The channel manager creates the TSExecutionReport and starts this class in a new thread
  * 
  * Project Name : bestx-bloomberg-market First created by: davide.rossoni Creation date: 12/lug/2013
  * 
  **/
+@SuppressWarnings("deprecation")
 public class OnExecutionReportRunnable implements Runnable {
-    private final Operation operation;
-    private final Market counterMarket;
-    private final BigDecimal lastPrice;
-    private final ExecType execType;
-    private final OrdStatus ordStatus;
-    private final String clOrdID;
-    private final String contractNo;
-    private final BloombergMarket market;
-    private final Date futSettDate;
-    private final Date transactTime;
-    private final String text;
+	private static final Logger LOGGER = LoggerFactory.getLogger(OnExecutionReportRunnable.class);
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OnExecutionReportRunnable.class);
+	private final Operation operation;
+	private final Market counterMarket;
+	private final BigDecimal lastPrice;
+	private final ExecType execType;
+	private final OrdStatus ordStatus;
+	private final String clOrdID;
+	private final String contractNo;
+	private final BloombergMarket market;
+	private final Date futSettDate;
+	private final Date transactTime;
+	private final String text;
+	private final BigDecimal accruedInterestAmount;
+	//BESTX-348: SP-20180905 added numDaysInterest field
+	private final Integer numDaysInterest;
+	//BESTX-385: SP-20190116 manage factor (228) field
+	private final BigDecimal factor;
+	private final String lastMkt; //AKA MifidMIC
+	private final TSExecutionReport tsExecutionReport;
+	private final MarketMakerFinder marketMakerFinder;
 
-    public OnExecutionReportRunnable(Operation operation, BloombergMarket market, Market counterMarket, String clOrdID, ExecType execType, OrdStatus ordStatus, BigDecimal accruedInterestAmount,
-            BigDecimal accruedInterestRate, BigDecimal lastPrice, String contractNo, Date futSettDate, Date transactTime, String text) {
-        this.operation = operation;
-        this.counterMarket = counterMarket;
-        this.lastPrice = lastPrice;
-        this.execType = execType;
-        this.ordStatus = ordStatus;
-        this.clOrdID = clOrdID;
-        this.contractNo = contractNo;
-        this.market = market;
-        this.futSettDate = futSettDate;
-        this.transactTime = transactTime;
-        this.text = text;
-    }
+	public OnExecutionReportRunnable(Operation operation, BloombergMarket market, Market counterMarket, TSExecutionReport tsExecutionReport, MarketMakerFinder marketMakerFinder) {
+		this.tsExecutionReport = tsExecutionReport;
+		this.operation = operation;
+		this.counterMarket = counterMarket;
+		this.clOrdID = tsExecutionReport.getClOrdID();
+		this.market = market;
+		this.execType = tsExecutionReport.getExecType();
+		this.ordStatus= tsExecutionReport.getOrdStatus();
+		this.accruedInterestAmount = tsExecutionReport.getAccruedInterestAmt() == null ? null : new BigDecimal(tsExecutionReport.getAccruedInterestAmt().toString());
+		if(tsExecutionReport.getPriceType() == PriceType.Percentage) {
+			this.lastPrice = tsExecutionReport.getLastPx() == null ? null : new BigDecimal(tsExecutionReport.getLastPx().toString());
+		} else {
+			this.lastPrice = tsExecutionReport.getLastParPrice() == null ? null : new BigDecimal(tsExecutionReport.getLastParPrice().toString());
+		}
+		this.contractNo = tsExecutionReport.getExecID();
+		this.futSettDate = tsExecutionReport.getSettlDate();
+		this.transactTime = tsExecutionReport.getTransactTime();
+		this.text = tsExecutionReport.getText();
+		//BESTX-348: SP-20180905 added numDaysInterest field
+		this.numDaysInterest = tsExecutionReport.getNumDaysInterest();
+		//BESTX-385: SP-20190116 manage factor (228) field
+		this.factor = tsExecutionReport.getFactor() != null ? BigDecimal.valueOf(tsExecutionReport.getFactor()) : BigDecimal.ZERO;  
+		this.lastMkt = tsExecutionReport.getCustomFieldString(23068); //MifidMIC
+		this.marketMakerFinder = marketMakerFinder;
+	}
 
-    public void run() {
-        Order order = this.operation.getOrder();
-        Rfq rfq = this.operation.getRfq();
-        Thread.currentThread().setName(
-                "OnExecutionReportRunnable-" + this.operation.toString() + "-ISIN:"
-                        + ((order != null && order.getInstrument() != null) ? order.getInstrument().getIsin() : (rfq != null && rfq.getInstrument() != null) ? rfq.getInstrument().getIsin() : "XXXX"));
-        if(order == null) {
-        	operation.onApplicationError(operation.getState(), new NullPointerException(), "Operation " + operation.getId() + " has no order!");
-        	return;
-        }
+	//TODO verify the values reported here are compliant
+	private static String calculateStatus(ExecutablePrice price, OrdStatus ordStatus, String dealerCode, BigDecimal execPrice) {
+		if(ordStatus == OrdStatus.Filled || ordStatus == OrdStatus.PartiallyFilled) { // dealer code is there and execPrice is there
+			if(execPrice.compareTo(price.getPrice().getAmount()) == 0 && dealerCode.compareTo(price.getOriginatorID()) == 0) 
+				return "Accepted";
+			if(execPrice.compareTo(price.getPrice().getAmount()) == 0)
+				return "Tied for Best";
+			if(BigDecimal.ZERO.compareTo(price.getPrice().getAmount()) >= 0)
+				return "Covered";
+		} else {
+			return "Missed";
+		}
+		return "Passed";
+	}
 
-        // ClassifiedProposal executionProposal =
-        // operation.getLastAttempt().getExecutionProposal();
-        MarketExecutionReport marketExecutionReport = new MarketExecutionReport();
-        marketExecutionReport.setActualQty(order.getQty());
-        marketExecutionReport.setInstrument(order.getInstrument());
-        marketExecutionReport.setMarket(counterMarket);
-        marketExecutionReport.setOrderQty(order.getQty());
-        marketExecutionReport.setPrice(new Money(order.getCurrency(), lastPrice));
-        marketExecutionReport.setLastPx(lastPrice);
-        marketExecutionReport.setSide(order.getSide());
 
-        // TODO is it ok to convert exectype and ignore ordstatus?
-        // the opposite conversion is done by FixExecutionReportOutputLazyBean:
-        // execType = ( state == ExecutionReport.ExecutionReportState.FILLED ? ExecutionReport.ExecutionReportState.FILLED.getValue() :
-        // ExecutionReport.ExecutionReportState.REJECTED.getValue() );
-        ExecutionReportState executionReportState;
-        if ((execType == ExecType.Trade) && (ordStatus == OrdStatus.Filled)) {
-            executionReportState = ExecutionReportState.FILLED;
-        } else {
-            executionReportState = ExecutionReportState.REJECTED;
-        }
-        LOGGER.info("orderID={}, mapped execType {} - ordStatus {} to executionReportState {}", order.getFixOrderId(), execType, ordStatus, executionReportState);
-        marketExecutionReport.setState(executionReportState);
-        marketExecutionReport.setTransactTime(this.transactTime);
-        marketExecutionReport.setSequenceId(null); // ID only
-        // needed for sending to customer
-        marketExecutionReport.setMarketOrderID(clOrdID); // <-- market order id is buy side's clOrdID
-        marketExecutionReport.setTicket(contractNo);
-        marketExecutionReport.setFutSettDate(futSettDate);
-        marketExecutionReport.setText(text);
-        // Stefano 20080704 - for future purpose
-        // Confrontare la settlment date dell'ordine con la
-        // BBSettlementDate devono essere uguali
-        // Verificare che la currency sia uguale
-        // Dall'instrument recupero il rateo per il calcolo
-        // dell'interest amount con la formula
-        // interestAmount = rateo * amount
-        // dove amount e' la qty dell'ordine
-        // marketExecutionReport.setAccruedInterestAmount(new
-        // Money(order.getInstrument().getCurrency(),
-        // accruedInterestAmount));
-        // marketExecutionReport.setAccruedInterestRate(accruedInterestRate);
-        marketExecutionReport.setAccruedInterestAmount(null);
-        marketExecutionReport.setAccruedInterestRate(null);
-        if (order.getInstrument().getBBSettlementDate() != null && order.getInstrument().getCurrency() != null && order.getInstrument().getRateo() != null
-                && order.getFutSettDate().equals(order.getInstrument().getBBSettlementDate()) && order.getCurrency().equals(order.getInstrument().getCurrency())) {
+	public void run() {
+		String dealerCode= null;
+		MarketMarketMaker execDealer= null;
 
-            BigDecimal interestAmount;
-            BigDecimal rateo = order.getInstrument().getRateo();
-            BigDecimal qty = order.getQty();
+		TSParties parties = tsExecutionReport.getTSParties();
+		if(parties != null) {
+			List<TSNoPartyID> list = parties.getTSNoPartyIDsList();
+			for(TSNoPartyID party: list) {
+				if(party.getPartyRole() == PartyRole.ExecutingFirm && party.getPartyIDSource() != PartyIDSource.LegalEntityIdentifier) {
+					dealerCode = party.getPartyID();
+					break;
+				}
+			}
+		}
+		PriceType priceType = tsExecutionReport.getPriceType();
+		Order order = this.operation.getOrder();
+		Rfq rfq = this.operation.getRfq();
+		Attempt attempt = operation.getLastAttempt();
+		Thread.currentThread().setName(
+				"OnExecutionReportRunnable-" + this.operation.toString() + "-ISIN:"
+						+ ((order != null && order.getInstrument() != null) ? order.getInstrument().getIsin() : (rfq != null && rfq.getInstrument() != null) ? rfq.getInstrument().getIsin() : "XXXX"));
+		if(order == null) {
+			operation.onApplicationError(operation.getState(), new NullPointerException(), "Operation " + operation.getId() + " has no order!");
+			return;
+		}
 
-            rateo = rateo.setScale(10);
-            qty = qty.setScale(5);
-            interestAmount = rateo.multiply(qty).divide(BigDecimal.valueOf(100.00));
-            interestAmount = interestAmount.setScale(2, BigDecimal.ROUND_HALF_UP);
-            marketExecutionReport.setAccruedInterestAmount(new Money(order.getInstrument().getCurrency(), interestAmount));
-            marketExecutionReport.setAccruedInterestRate(rateo);
-        }
-        operation.onMarketExecutionReport(market, order, marketExecutionReport);
-    }
+		MarketExecutionReport marketExecutionReport = new MarketExecutionReport();
+		marketExecutionReport.setActualQty(order.getQty());
+		marketExecutionReport.setInstrument(order.getInstrument());
+		marketExecutionReport.setMarket(counterMarket);
+		marketExecutionReport.setOrderQty(order.getQty());
+		marketExecutionReport.setPrice(new Money(order.getCurrency(), lastPrice));
+		marketExecutionReport.setLastPx(lastPrice);
+		marketExecutionReport.setSide(order.getSide());
+
+		marketExecutionReport.setExecType(execType.getFIXValue());
+		marketExecutionReport.setOrdStatus(ordStatus.getFIXValue());
+		// TODO 20190506 AMC verify that this management is appropriate. Better a switch on ordStatus?
+		ExecutionReportState executionReportState;
+		if ((execType == ExecType.New)) {
+			executionReportState = ExecutionReportState.NEW;
+		} else if ((execType == ExecType.Canceled) && ordStatus == OrdStatus.Canceled) {
+			executionReportState = ExecutionReportState.CANCELLED;
+		} else if ((execType == ExecType.Trade) && (ordStatus == OrdStatus.Filled)) {
+			executionReportState = ExecutionReportState.FILLED;
+		} else {
+			executionReportState = ExecutionReportState.REJECTED;
+		}
+		LOGGER.info("orderID={}, mapped execType {} - ordStatus {} to executionReportState {}", order.getFixOrderId(), execType, ordStatus, executionReportState);
+		marketExecutionReport.setState(executionReportState);
+		marketExecutionReport.setTransactTime(this.transactTime);
+		marketExecutionReport.setSequenceId(null); // ID only
+		// needed for sending to customer
+		marketExecutionReport.setMarketOrderID(clOrdID); // <-- market order id is buy side's clOrdID
+		marketExecutionReport.setTicket(contractNo);
+		marketExecutionReport.setFutSettDate(futSettDate);
+		marketExecutionReport.setText(text);
+		marketExecutionReport.setAccruedInterestAmount(new Money(order.getInstrument().getCurrency(), accruedInterestAmount));
+		marketExecutionReport.setAccruedInterestRate(null);
+		if (numDaysInterest != null) {
+			marketExecutionReport.setAccruedInterestDays(numDaysInterest);
+		}
+		if (factor != null) {
+			marketExecutionReport.setFactor(factor); // For inflation linked products only
+		}
+
+		// get competing dealer quotes feedback. Does not contain the executed proposal, so we shall add it
+		List<MessageComponent> customComp = tsExecutionReport.getCustomComponents();
+		if (customComp != null) {
+			for (MessageComponent comp : customComp) {
+				List<ExecutablePrice> prices = new ArrayList<ExecutablePrice>();
+				// add to prices the executed quote
+				ExecutablePrice executedPrice = new ExecutablePrice();
+				executedPrice.setOriginatorID(dealerCode);
+				try {
+					executedPrice.setMarketMarketMaker(marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), dealerCode));
+				} catch (BestXException e1) {
+					executedPrice.setMarketMarketMaker(null);
+				}
+				executedPrice.setPrice(marketExecutionReport.getPrice());
+				executedPrice.setQty(operation.getOrder().getQty());
+				// calculate status
+				executedPrice.setTimestamp(tsExecutionReport.getTransactTime());
+				executedPrice.setType(ProposalType.COUNTER);
+				executedPrice.setSide(operation.getOrder().getSide() == OrderSide.BUY ? ProposalSide.ASK : ProposalSide.BID);
+				executedPrice.setQuoteReqId(attempt.getMarketOrder().getFixOrderId());
+				executedPrice.setAuditQuoteState("Accepted");
+				
+				prices.add(0, executedPrice);
+	
+				if (comp instanceof TSCompDealersGrpComponent) {
+					try {
+						quickfix.field.NoCompDealers compDealerGrp = ((TSCompDealersGrpComponent) comp).get(new quickfix.field.NoCompDealers());
+						List<Group> groups = ((TSCompDealersGrpComponent) comp).getGroups(compDealerGrp.getField());
+
+						for (int i = 0; i < groups.size(); i++) {
+							ExecutablePrice price = new ExecutablePrice();
+							MarketMarketMaker tempMM = null;
+							if (groups.get(i).isSetField(CompDealerID.FIELD)) {
+								String quotingDealer = groups.get(i).getField(new StringField(CompDealerID.FIELD)).getValue();
+
+								tempMM = marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), quotingDealer);
+								if(tempMM == null) {
+									LOGGER.info("IMPORTANT! Tradeweb returned dealer {} not configured in BestX!. Please configure it", quotingDealer);
+									price.setOriginatorID(quotingDealer);
+								} else {
+									price.setOriginatorID(quotingDealer);
+									price.setMarketMarketMaker(tempMM);
+								}
+							}
+							if (groups.get(i).isSetField(CompDealerQuote.FIELD)) {
+								Double compDealerQuote = groups.get(i).getField(new DoubleField(CompDealerQuote.FIELD)).getValue();
+								price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerQuote)));
+							} else
+								price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
+							price.setQty(operation.getOrder().getQty());
+							// calculate status
+							price.setTimestamp(tsExecutionReport.getTransactTime());
+							price.setType(ProposalType.COUNTER);
+							price.setSide(operation.getOrder().getSide() == OrderSide.BUY ? ProposalSide.ASK : ProposalSide.BID);
+							price.setQuoteReqId(attempt.getMarketOrder().getFixOrderId());
+							price.setAuditQuoteState(calculateStatus(price, ordStatus, dealerCode, lastPrice));
+							if(tempMM == null) {
+								LOGGER.debug("Added Executable price for {}, price {}, status {}", price.getOriginatorID(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
+							} else {
+								LOGGER.debug("Added Executable price for {}, price {}, status {}", price.getMarketMarketMaker().getMarketMaker().getName(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
+							}
+							prices.add(price);
+						}
+					}
+					catch (FieldNotFound | BestXException e) {
+						LOGGER.warn("[MktMsg] Field not found in component dealers", e);
+					}
+				}
+				// sort the executable prices
+				Comparator<ExecutablePrice> comparator;
+				comparator = operation.getOrder().getSide() == OrderSide.BUY ? new ExecutablePriceAskComparator() : new ExecutablePriceBidComparator();
+		        Collections.sort(prices, comparator);
+		        // give them their rank
+				for(int i = 0; i < prices.size(); i++)
+					prices.get(i).setRank(i + 1);
+				// add the sorted, ranked executable prices list to the attempt
+				attempt.setExecutablePrices(prices);
+			}
+		} else {
+			LOGGER.info("[MktMsg] No custom component found in execution report {}", tsExecutionReport.getClOrdID());
+		}
+
+		operation.onMarketExecutionReport(market, order, marketExecutionReport);
+	}
 }

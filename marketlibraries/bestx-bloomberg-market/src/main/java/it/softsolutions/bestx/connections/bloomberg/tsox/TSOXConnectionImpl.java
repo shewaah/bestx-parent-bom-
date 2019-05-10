@@ -63,7 +63,7 @@ import quickfix.SessionID;
 
 /**  
  *
- * Purpose: this class is mainly for ...  
+ * Purpose: this class manages directed enquiries through TSOX on Bloomberg Multiasset protocol 
  *
  * Project Name : bestx-bloomberg-market 
  * First created by: davide.rossoni 
@@ -130,14 +130,7 @@ public class TSOXConnectionImpl extends AbstractTradeStacConnection implements T
          */
         tsoxConnectionListener.onExecutionReport(sessionID.toString(),
                         tsExecutionReport.getClOrdID(),
-                        tsExecutionReport.getExecType(), 
-                        tsExecutionReport.getOrdStatus(), 
-                        tsExecutionReport.getAccruedInterestAmt() != null ? BigDecimal.valueOf(tsExecutionReport.getAccruedInterestAmt()) : BigDecimal.ZERO, 
-                        BigDecimal.ZERO /*accruedInterestRate*/, 
-                        tsExecutionReport.getLastPx() != null ? BigDecimal.valueOf(tsExecutionReport.getLastPx()) : BigDecimal.ZERO, 
-                        tsExecutionReport.getExecID(), 
-                        tsExecutionReport.getSettlDate(), tsExecutionReport.getTransactTime(),
-                        tsExecutionReport.getText());
+                        tsExecutionReport);
 
     }
 

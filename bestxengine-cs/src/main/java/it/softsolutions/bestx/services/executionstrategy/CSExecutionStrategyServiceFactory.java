@@ -82,7 +82,6 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
       case LIMIT_FILE_PRICEDISCOVERY: {
          CSLimitFileExecutionStrategyService execService = new CSLimitFileExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest);
          execService.setMarketFinder(marketFinder);
-         execService.setAllMarketsToTry(this.getAllMarketsToTry());
          execService.setBookClassifier(bookClassifier);
          execService.setBookSorter(bookSorter);
          return execService;
@@ -90,7 +89,6 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
       case NORMAL_PRICEDISCOVERY: {
          CSNormalExecutionStrategyService execService = new CSNormalExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest);
          execService.setMarketFinder(marketFinder);
-         execService.setAllMarketsToTry(this.getAllMarketsToTry());
          execService.setBookClassifier(bookClassifier);
          execService.setBookSorter(bookSorter);
          return execService;
@@ -99,8 +97,7 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
       case ONLY_PRICEDISCOVERY: {
          CSNormalExecutionStrategyService execService = new CSNormalExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest);
          execService.setMarketFinder(marketFinder);
-         execService.setAllMarketsToTry(this.getAllMarketsToTry());
-         execService.setBookClassifier(bookClassifier);
+          execService.setBookClassifier(bookClassifier);
          execService.setBookSorter(bookSorter);
          return execService;
       }

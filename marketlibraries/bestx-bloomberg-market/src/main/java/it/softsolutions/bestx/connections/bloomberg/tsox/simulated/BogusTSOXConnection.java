@@ -43,17 +43,29 @@ import it.softsolutions.bestx.model.Rfq;
 import it.softsolutions.tradestac.api.ConnectionStatus;
 import it.softsolutions.tradestac.fix.field.ExecType;
 import it.softsolutions.tradestac.fix.field.OrdStatus;
+import it.softsolutions.tradestac.fix.field.PartyIDSource;
+import it.softsolutions.tradestac.fix.field.PartyRole;
+import it.softsolutions.tradestac.fix50.TSExecutionReport;
+import it.softsolutions.tradestac.fix50.TSNoPartyID;
+import it.softsolutions.tradestac.fix50.component.TSCompDealersGrpComponent;
+import it.softsolutions.tradestac.fix50.component.TSParties;
+import quickfix.Group;
+import quickfix.field.CompDealerID;
+import quickfix.field.CompDealerQuote;
+import quickfix.field.CompDealerStatus;
 
 /**
  *
- * Purpose: this class is mainly for ...  
+ * Purpose: this class simulates the connectivity to Bloomberg 
  *
  * Project Name : bestx-tsox-market
  * First created by: davide.rossoni
  * Creation date: 30/gen/2015
  * 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused" , "deprecation"})
+
+
 public class BogusTSOXConnection extends AbstractTradeStacConnection implements TSOXConnection {
 	
     public BogusTSOXConnection() {
@@ -104,7 +116,7 @@ public class BogusTSOXConnection extends AbstractTradeStacConnection implements 
 		new Thread() {
     		@Override
     		public void run() {
-    			try { Thread.sleep(2000); } catch (@SuppressWarnings("unused") InterruptedException e) { }
+    			try { Thread.sleep(2000); } catch (InterruptedException e) { }
     			
     			tsoxConnectionListener.onMarketConnectionStatusChange(getConnectionName(), ConnectionStatus.Connected);
     		}
@@ -142,22 +154,24 @@ public class BogusTSOXConnection extends AbstractTradeStacConnection implements 
 	@Override
 	public void sendRfq(MarketOrder marketOrder) throws BestXException {
 		LOGGER.debug("marketOrder = {}", marketOrder);
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {}
 
-		//sendNewExecutionReport(marketOrder);
+		sendNewExecutionReport(marketOrder);
 
 		try {
-			Thread.sleep(2000);
+			Thread.sleep(5000);
 		} catch (InterruptedException e) {}
 
 		if (cancelIsins.contains(marketOrder.getInstrument().getIsin())) {
 			sendCancelledExecutionReport(marketOrder);
 		} else if (rejectIsins.contains(marketOrder.getInstrument().getIsin())){
 			sendOrderReject(marketOrder);
-      } else if (fillIsins.contains(marketOrder.getInstrument().getIsin())){
-         sendFilledExecutionReport(marketOrder);
 		} else {
-			sendQuote(marketOrder);
-		}
+			sendFilledExecutionReport(marketOrder);
+		} 
+
 	}
 
 	private void sendQuote(MarketOrder marketOrder) {
@@ -201,7 +215,19 @@ public class BogusTSOXConnection extends AbstractTradeStacConnection implements 
 		Date transactTime = new Date();
 		String text = "simulated execution";
 		
-		tsoxConnectionListener.onExecutionReport(sessionId, clOrdId, execType, ordStatus, accruedInterestAmount, accruedInterestRate, lastPrice, contractNo, futSettDate, transactTime, text);
+		TSExecutionReport tsExecutionReport = new TSExecutionReport();
+		tsExecutionReport.setClOrdID(clOrdId);
+		tsExecutionReport.setExecType(execType);
+		tsExecutionReport.setOrdStatus(ordStatus);
+//		tsExecutionReport.setAccruedInterestAmt(accruedInterestAmount.doubleValue());
+//		tsExecutionReport.setAccruedInterestRate(accruedInterestRate);
+		tsExecutionReport.setLastPx(lastPrice.doubleValue());
+		tsExecutionReport.setExecID(contractNo);
+		tsExecutionReport.setSettlDate(futSettDate);
+		tsExecutionReport.setTransactTime(transactTime);
+		tsExecutionReport.setText(text);
+		
+		tsoxConnectionListener.onExecutionReport(sessionId, clOrdId, tsExecutionReport);
 	}
 
 	public static void setCancelIsins(List<String> cancelIsins) {
@@ -217,15 +243,70 @@ public class BogusTSOXConnection extends AbstractTradeStacConnection implements 
 		String clOrdId = marketOrder.getMarketSessionId();
 		ExecType execType = ExecType.Trade;
 		OrdStatus ordStatus = OrdStatus.Filled;
-		BigDecimal accruedInterestAmount = null;
-		BigDecimal accruedInterestRate = null;
+		BigDecimal accruedInterestAmount = new BigDecimal("123400.56");
+		int numDaysInterest = 62;
+//		Double factor = 345.9873;
+		Double factor = null;
+		
 		BigDecimal lastPrice = marketOrder.getLimit().getAmount();
 		String contractNo = "C#" + System.currentTimeMillis();
 		Date futSettDate = DateUtils.addDays(new Date(), 3);
 		Date transactTime = new Date();
-		String text = null;
+		String text = "Execution has been correctly simulated";
+		TSExecutionReport tsExecutionReport = new TSExecutionReport();
+		tsExecutionReport.setClOrdID(clOrdId);
+		tsExecutionReport.setExecType(execType);
+		tsExecutionReport.setOrdStatus(ordStatus);
+		tsExecutionReport.setAccruedInterestAmt(accruedInterestAmount.doubleValue());
+		tsExecutionReport.setPriceType(it.softsolutions.tradestac.fix.field.PriceType.Percentage);
+		tsExecutionReport.setLastPx(lastPrice.doubleValue());
+		tsExecutionReport.setExecID(contractNo);
+		tsExecutionReport.setSettlDate(futSettDate);
+		tsExecutionReport.setTransactTime(transactTime);
+		tsExecutionReport.setText(text);
+		tsExecutionReport.setNumDaysInterest(numDaysInterest);
+		if (factor != null) {
+			tsExecutionReport.setFactor(factor); // For inflation linked products only
+		}
+
+		// parties
+		TSParties parties = new TSParties();
+		List<TSNoPartyID> partiesList = new ArrayList<TSNoPartyID>();
+
+		TSNoPartyID execBroker = new TSNoPartyID();
+		execBroker.setPartyID("ETLX");
+		execBroker.setPartyIDSource(PartyIDSource.ProprietaryCustomCode);
+		execBroker.setPartyRole(PartyRole.ExecutingFirm);
+
+		partiesList.add(execBroker);
+		parties.setTSNoPartyIDsList(partiesList);
+		tsExecutionReport.setTSParties(parties);
+
+		// competing quotes
+		TSCompDealersGrpComponent compdealersComp = new TSCompDealersGrpComponent();
+
+		Group compdealer2 = new Group(10009, 10010, new int[] { 10010, 10011, 10012, 10015, 0 });
+		compdealer2.setField(new CompDealerQuote(100.674));
+		compdealer2.setField(new CompDealerID("ETLX"));	
+		compdealersComp.addGroup(compdealer2);
 		
-		tsoxConnectionListener.onExecutionReport(sessionId, clOrdId, execType, ordStatus, accruedInterestAmount, accruedInterestRate, lastPrice, contractNo, futSettDate, transactTime, text);
+		Group compdealer3 = new Group(10009, 10010, new int[] { 10010, 10011, 10012, 10015, 0 });
+		compdealer3.setField(new CompDealerQuote(101.435));
+		compdealer3.setField(new CompDealerID("MOMA"));	
+		compdealersComp.addGroup(compdealer3);
+		
+		Group compdealer4 = new Group(10009, 10010, new int[] { 10010, 10011, 10012, 10015, 0 });
+		compdealer4.setField(new CompDealerQuote(0.0));
+		compdealer4.setField(new CompDealerID("BARX"));	
+		compdealersComp.addGroup(compdealer4);
+
+		Group compdealer5 = new Group(10009, 10010, new int[] { 10010, 10011, 10012, 10015, 0 });
+		compdealer5.setField(new CompDealerID("BOBO"));	
+		compdealersComp.addGroup(compdealer5);
+
+		tsExecutionReport.addCustomComponent(compdealersComp);
+		
+		tsoxConnectionListener.onExecutionReport(sessionId, clOrdId, tsExecutionReport);
 		
 	}
 
@@ -242,7 +323,18 @@ public class BogusTSOXConnection extends AbstractTradeStacConnection implements 
 		Date transactTime = new Date();
 		String text = "Don't like your ugly face";
 		
-		tsoxConnectionListener.onExecutionReport(sessionId, clOrdId, execType, ordStatus, accruedInterestAmount, accruedInterestRate, lastPrice, contractNo, futSettDate, transactTime, text);
+		TSExecutionReport tsExecutionReport = new TSExecutionReport();
+		tsExecutionReport.setClOrdID(clOrdId);
+		tsExecutionReport.setExecType(execType);
+		tsExecutionReport.setOrdStatus(ordStatus);
+		tsExecutionReport.setAccruedInterestAmt(accruedInterestAmount.doubleValue());
+		tsExecutionReport.setLastPx(lastPrice.doubleValue());
+		tsExecutionReport.setExecID(contractNo);
+		tsExecutionReport.setSettlDate(futSettDate);
+		tsExecutionReport.setTransactTime(transactTime);
+		tsExecutionReport.setText(text);
+		
+		tsoxConnectionListener.onExecutionReport(sessionId, clOrdId, tsExecutionReport);
 		
 	}
 

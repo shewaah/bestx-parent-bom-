@@ -194,7 +194,11 @@ public class CSPOBexExecutionReport extends ExecutionReport {
 			this.setMultiDealerID(marketOrder.getMarket().getMicCode());
 		}
 
-		if(marketExecutionReport != null && (marketExecutionReport.getMarket().getMarketCode() == MarketCode.MARKETAXESS || (marketExecutionReport.getMarket().getMarketCode() == MarketCode.TW && marketExecutionReport.getState() == ExecutionReportState.FILLED))) {
+		if(marketExecutionReport != null && (marketExecutionReport.getMarket().getMarketCode() == MarketCode.MARKETAXESS
+									|| (marketExecutionReport.getMarket().getMarketCode() == MarketCode.TW && marketExecutionReport.getState() == ExecutionReportState.FILLED)
+									|| (marketExecutionReport.getMarket().getMarketCode() == MarketCode.BLOOMBERG)
+									|| (marketExecutionReport.getMarket().getMarketCode() == MarketCode.BV)
+									)) {
 			// manage MarketAxess more rich execution report
 			// get all quotes from attempt
 			int size = Math.min(pobExMaxSize, currentAttempt.getExecutablePrices().size());

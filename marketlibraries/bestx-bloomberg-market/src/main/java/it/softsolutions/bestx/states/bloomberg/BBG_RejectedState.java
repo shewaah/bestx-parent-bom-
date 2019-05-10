@@ -36,7 +36,7 @@ public class BBG_RejectedState extends BaseState implements Cloneable {
 	
 	public BBG_RejectedState(String comment, boolean forceAutoUnexecution) {
 	   super(OperationState.Type.Rejected, MarketCode.BLOOMBERG);
-		setComment(comment);
+		setComment(comment == null ? "" : comment);
 		
 		this.forceAutoUnexecution = forceAutoUnexecution;
 	}

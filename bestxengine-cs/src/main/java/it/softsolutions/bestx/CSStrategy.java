@@ -63,20 +63,19 @@ import it.softsolutions.bestx.handlers.OrderRejectableEventHandler;
 import it.softsolutions.bestx.handlers.OrderRevocatedEventHandler;
 import it.softsolutions.bestx.handlers.ParkedOrderEventHandler;
 import it.softsolutions.bestx.handlers.PriceDiscoveryEventHandler;
-import it.softsolutions.bestx.handlers.RejectQuoteAndSendAutoNotExecutionEventHandler;
 import it.softsolutions.bestx.handlers.SendNotExecutionReportEventHandler;
 import it.softsolutions.bestx.handlers.TerminalEventHandler;
 import it.softsolutions.bestx.handlers.ValidateByPunctualFilterEventHandler;
 import it.softsolutions.bestx.handlers.WaitingPriceEventHandler;
 import it.softsolutions.bestx.handlers.WarningEventHandler;
-import it.softsolutions.bestx.handlers.bloomberg.BBG_AcceptQuoteEventHandler;
 import it.softsolutions.bestx.handlers.bloomberg.BBG_ExecutedEventHandler;
-import it.softsolutions.bestx.handlers.bloomberg.BBG_ReceiveQuoteEventHandler;
-import it.softsolutions.bestx.handlers.bloomberg.BBG_RejectQuoteEventHandler;
 import it.softsolutions.bestx.handlers.bloomberg.BBG_RejectedEventHandler;
-import it.softsolutions.bestx.handlers.bloomberg.BBG_SendRfqEventHandler;
+import it.softsolutions.bestx.handlers.bloomberg.BBG_SendEnquiryEventHandler;
 import it.softsolutions.bestx.handlers.bloomberg.BBG_StartExecutionEventHandler;
 import it.softsolutions.bestx.handlers.bloomberg.UnreconciledTradeEventHandler;
+import it.softsolutions.bestx.handlers.bondvision.BV_SendOrderEventHandler;
+import it.softsolutions.bestx.handlers.bondvision.BV_SendRFCQEventHandler;
+import it.softsolutions.bestx.handlers.bondvision.BV_StartExecutionEventHandler;
 import it.softsolutions.bestx.handlers.internal.INT_ExecutedEventHandler;
 import it.softsolutions.bestx.handlers.internal.INT_ManageCounterEventHandler;
 import it.softsolutions.bestx.handlers.internal.INT_RejectedEventHandler;
@@ -87,8 +86,6 @@ import it.softsolutions.bestx.handlers.marketaxess.MA_RejectedEventHandler;
 import it.softsolutions.bestx.handlers.marketaxess.MA_SendOrderEventHandler;
 import it.softsolutions.bestx.handlers.marketaxess.MA_StartExecutionEventHandler;
 import it.softsolutions.bestx.handlers.matching.MATCH_ExecutedEventHandler;
-import it.softsolutions.bestx.handlers.matching.MATCH_MatchFoundEventHandler;
-import it.softsolutions.bestx.handlers.matching.MATCH_StartExecutionEventHandler;
 import it.softsolutions.bestx.handlers.tradeweb.TW_CancelledEventHandler;
 import it.softsolutions.bestx.handlers.tradeweb.TW_ExecutedEventHandler;
 import it.softsolutions.bestx.handlers.tradeweb.TW_RejectedEventHandler;
@@ -160,6 +157,7 @@ public class CSStrategy implements Strategy, SystemStateSelector {
    private String internalRfqMessagePrefix;
 
    private int mtsCreditExecTimeout;
+   private long bondVisionExecTimeout = 120 * 1000;
    private int sendExecRepTimeout;
    private String matchingMMcode;
    private List<String> internalMMcodesList;
@@ -204,13 +202,21 @@ public class CSStrategy implements Strategy, SystemStateSelector {
    private int pobExMaxSize;
    private int targetPriceMaxLevel;
 
-   public int getTargetPriceMaxLevel() {
-	return targetPriceMaxLevel;
-}
+   public long getBondVisionExecTimeout() {
+	   return bondVisionExecTimeout;
+   }
 
-public void setTargetPriceMaxLevel(int targetPriceMaxLevel) {
-	this.targetPriceMaxLevel = targetPriceMaxLevel;
-}
+   public void setBondVisionExecTimeout(long bondVisionExecTimeout) {
+	   this.bondVisionExecTimeout = bondVisionExecTimeout;
+   }
+
+   public int getTargetPriceMaxLevel() {
+	   return targetPriceMaxLevel;
+   }
+
+   public void setTargetPriceMaxLevel(int targetPriceMaxLevel) {
+	   this.targetPriceMaxLevel = targetPriceMaxLevel;
+   }
 
 //20180925 - SP - BESTX-352
    private CurandoTimerRetriever curandoTimerRetriever;
@@ -468,16 +474,16 @@ public void setTargetPriceMaxLevel(int targetPriceMaxLevel) {
       }
 
       switch (type) {
-         case AcceptQuote:
-            switch (marketCode) {
-               case BLOOMBERG:
-                  handler = new BBG_AcceptQuoteEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BLOOMBERG).getBuySideConnection(), serialNumberService,
-                        marketExecTimeout, getMultipleQuotesHandler(operation.getOrder().getFixOrderId()));
-               break;
-               default:
-                  throw new BestXException(Messages.getString("StrategyUnexpectedMarketCode.0", marketCode));
-            }
-         break;
+//         case AcceptQuote:
+//            switch (marketCode) {
+//               case BLOOMBERG:
+//                  handler = new BBG_AcceptQuoteEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BLOOMBERG).getBuySideConnection(), serialNumberService,
+//                        marketExecTimeout, getMultipleQuotesHandler(operation.getOrder().getFixOrderId()));
+//               break;
+//               default:
+//                  throw new BestXException(Messages.getString("StrategyUnexpectedMarketCode.0", marketCode));
+//            }
+//         break;
          case BusinessValidation:
             handler = new BusinessValidationEventHandler(operation, orderValidationService);
          break;
@@ -595,35 +601,35 @@ public void setTargetPriceMaxLevel(int targetPriceMaxLevel) {
                break;
             }
          }
-         case RejectQuote:
-            switch (marketCode) {
-               case BLOOMBERG:
-                  handler = new BBG_RejectQuoteEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BLOOMBERG).getBuySideConnection(),
-                        getMultipleQuotesHandler(operation.getOrder().getFixOrderId()));
-               break;
-               default:
-                  throw new BestXException(Messages.getString("StrategyUnexpectedMarketCode.0", marketCode));
-            }
-         break;
-         case RejectQuoteAndAutoNotExecutionReport:
-            switch (marketCode) {
-               case BLOOMBERG:
-                  handler = new RejectQuoteAndSendAutoNotExecutionEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BLOOMBERG).getBuySideConnection(),
-                        serialNumberService);
-               break;
-               default:
-                  throw new BestXException(Messages.getString("StrategyUnexpectedMarketCode.0", marketCode));
-            }
-         break;
-         case ReceiveQuote:
-            switch (marketCode) {
-               case BLOOMBERG:
-                  handler = new BBG_ReceiveQuoteEventHandler(operation, getMultipleQuotesHandler(operation.getOrder().getFixOrderId()));
-               break;
-			default:
-				break;
-            }
-         break;
+//         case RejectQuote:
+//            switch (marketCode) {
+//               case BLOOMBERG:
+//                  handler = new BBG_RejectQuoteEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BLOOMBERG).getBuySideConnection(),
+//                        getMultipleQuotesHandler(operation.getOrder().getFixOrderId()));
+//               break;
+//               default:
+//                  throw new BestXException(Messages.getString("StrategyUnexpectedMarketCode.0", marketCode));
+//            }
+//         break;
+//         case RejectQuoteAndAutoNotExecutionReport:
+//            switch (marketCode) {
+//               case BLOOMBERG:
+//                  handler = new RejectQuoteAndSendAutoNotExecutionEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BLOOMBERG).getBuySideConnection(),
+//                        serialNumberService);
+//               break;
+//               default:
+//                  throw new BestXException(Messages.getString("StrategyUnexpectedMarketCode.0", marketCode));
+//            }
+//         break;
+//         case ReceiveQuote:
+//            switch (marketCode) {
+//               case BLOOMBERG:
+//                  handler = new BBG_ReceiveQuoteEventHandler(operation, getMultipleQuotesHandler(operation.getOrder().getFixOrderId()));
+//               break;
+//			default:
+//				break;
+//            }
+//         break;
          case SendAutoNotExecutionReport:
          case SendNotExecutionReport:
             handler = new SendNotExecutionReportEventHandler(operation, serialNumberService);
@@ -641,12 +647,10 @@ public void setTargetPriceMaxLevel(int targetPriceMaxLevel) {
                    handler = new MA_SendOrderEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.MARKETAXESS).getBuySideConnection(), serialNumberService,
                          marketAxessExecTimeout, orderCancelDelay, bestXConfigurationDao, marketMakerFinder, marketFinder.getMarketByCode(MarketCode.MARKETAXESS, null), venueFinder);
                 break;
-/*
                case BV:
                    handler = new BV_SendOrderEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BV).getBuySideConnection(), serialNumberService,
                          bondVisionExecTimeout, orderCancelDelay, bestXConfigurationDao, marketMakerFinder, marketFinder.getMarketByCode(MarketCode.BV, null), venueFinder);
                 break;
-*/
                default:
                   throw new BestXException(Messages.getString("StrategyUnexpectedMarketCode.0", marketCode));
             }
@@ -654,9 +658,13 @@ public void setTargetPriceMaxLevel(int targetPriceMaxLevel) {
          case SendRfq:
             switch (marketCode) {
                case BLOOMBERG:
-                  handler = new BBG_SendRfqEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BLOOMBERG).getBuySideConnection(), serialNumberService, marketExecTimeout,
-                        getMultipleQuotesHandler(operation.getOrder().getFixOrderId()), tsoxTechnicalRejectReasons);
+                  handler = new BBG_SendEnquiryEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BLOOMBERG).getBuySideConnection(), serialNumberService, marketExecTimeout,
+                        orderCancelDelay, null, tsoxTechnicalRejectReasons);
                break;
+               case BV:
+                   handler = new BV_SendRFCQEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BV).getBuySideConnection(), serialNumberService,
+                           bondVisionExecTimeout, orderCancelDelay, bestXConfigurationDao, marketMakerFinder, marketFinder.getMarketByCode(MarketCode.BV, null), venueFinder);
+                break;
                default:
                   throw new BestXException(Messages.getString("StrategyUnexpectedMarketCode.0", marketCode));
             }
@@ -679,11 +687,9 @@ public void setTargetPriceMaxLevel(int targetPriceMaxLevel) {
                case MARKETAXESS:
                   handler = new MA_StartExecutionEventHandler(operation);
                break;
-/* 
                case BV:
                   handler = new BV_StartExecutionEventHandler(operation);
                break;
-*/
                default:
                   throw new BestXException(Messages.getString("StrategyUnexpectedMarketCode.0", marketCode));
             }

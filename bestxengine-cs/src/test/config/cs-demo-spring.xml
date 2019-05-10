@@ -1018,10 +1018,10 @@
         <property name="venueFinder"><ref bean="dbBasedVenueFinder"/></property>
         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
         <property name="tradeStacPreTradeConnection"><ref bean="simulatedBlpConnector"/></property>
-        <!-- property name="tsoxConnection"><ref bean="tsoxConnector"/></property>  -->
+        <property name="tsoxConnection"><ref bean="tsoxConnector"/></property>
     </bean>
 
-<!--     <bean id="tsoxConnector" class="it.softsolutions.bestx.connections.bloomberg.tsox.simulated.BogusTSOXConnection" init-method="init">
+     <bean id="tsoxConnector" class="it.softsolutions.bestx.connections.bloomberg.tsox.simulated.BogusTSOXConnection" init-method="init">
         <property name="tsoxConnectionListener"><ref bean="bloombergMarket"/></property>
         <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
         <property name="cancelIsins">
@@ -1033,7 +1033,19 @@
         	</list>
 		</property>
 	</bean>
- --><!--
+<!--       <bean id="tsoxConnector" class="it.softsolutions.bestx.connections.bloomberg.tsox.RBLD_TSOXConnectionImpl" init-method="init">
+        <property name="tsoxConnectionListener"><ref bean="bloombergMarket"/></property>
+        <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
+		<property name="traderCode"><value>${Bloomberg.Tsox.TraderCode}</value></property>
+		<property name="bestxAlgoID"><value>${Bloomberg.Tsox.ExecutionDecisionMakerID}</value></property>
+		<property name="investmentDecisorID"><value>${Bloomberg.Tsox.InvestmentDecisionMakerID}</value></property>
+		<property name="investmentDecisorRoleQualifier"><value>${Bloomberg.Tsox.InvestmentDecisionRoleQualifier}</value></property>
+		<property name="enteringFirmCode"><value>${Bloomberg.Tsox.enteringFirmCode}</value></property>
+		<property name="defaultTradingCapacity"><value>P</value></property>
+        <property name="fixConfigFileName" value="fix-tradestac-tsox.properties" />      
+	</bean>
+-->
+<!--
     <bean id="blpConnector" class="it.softsolutions.bestx.connections.bloomberg.blp.BLPConnector" init-method="init">
         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
         <property name="marketMakerFinder"><ref bean="dbBasedMarketMakerFinder"/></property>

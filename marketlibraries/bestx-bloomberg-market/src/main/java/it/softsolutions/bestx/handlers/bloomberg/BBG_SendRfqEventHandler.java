@@ -176,6 +176,7 @@ public class BBG_SendRfqEventHandler extends BaseOperationEventHandler {
         }
         
         String reason = marketExecutionReport.getText();
+        // FIXME 20190506 verify that the Execution Report carries the order ID
         //order.getCustomerOrderId() // clOrdID
         //marketExecutionReport.getClOrdID (non esiste...)
         if (marketExecutionReport.getState() == ExecutionReportState.REJECTED) {

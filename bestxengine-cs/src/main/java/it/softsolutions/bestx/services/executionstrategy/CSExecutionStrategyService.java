@@ -55,6 +55,7 @@ import it.softsolutions.bestx.states.OrderRevocatedState;
 import it.softsolutions.bestx.states.SendAutoNotExecutionReportState;
 import it.softsolutions.bestx.states.WarningState;
 import it.softsolutions.bestx.states.bloomberg.BBG_StartExecutionState;
+import it.softsolutions.bestx.states.bondvision.BV_StartExecutionState;
 import it.softsolutions.bestx.states.marketaxess.MA_StartExecutionState;
 import it.softsolutions.bestx.states.tradeweb.TW_StartExecutionState;
 
@@ -116,22 +117,6 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		return allMarketsToTry;
 	}
 
-	public void setAllMarketsToTry(List<MarketCode> inputMarkets) {
-		List<MarketCode>localMarketsToTry = inputMarkets;
-		marketsToTry = new ArrayList<Market>(localMarketsToTry.size());
-		this.allMarketsToTry = new ArrayList<MarketCode>(localMarketsToTry.size());
-		localMarketsToTry.forEach(marketCode ->{
-			try {
-				marketsToTry.addAll(marketFinder.getMarketsByCode(marketCode));
-			} catch (BestXException e) {
-				LOGGER.warn("Exception while trying to get market code {} from Database", marketCode, e);
-			}});
-		marketsToTry.sort(new MarketComparator());
-		for(int i = 0; i < marketsToTry.size(); i++)
-			this.allMarketsToTry.add(i, marketsToTry.get(i).getMarketCode()); 
-	}
-
-
 	@Override
 	public abstract void manageAutomaticUnexecution(Order order, Customer customer) throws BestXException;
 
@@ -151,23 +136,8 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	 */
 	@Override
 	public void startExecution(Operation operation, Attempt currentAttempt, SerialNumberService serialNumberService) {
-		// manage UST automatic rejection when best is on Bloomberg
-//		if(rejectOrderWhenBloombergIsBest && operation.getLastAttempt().getSortedBook() != null 
-//				&& operation.getLastAttempt().getSortedBook().getBestProposalBySide(operation.getOrder().getSide()) != null
-//				&& operation.getLastAttempt().getSortedBook().getBestProposalBySide(
-//						operation.getOrder().getSide()).getMarket().getMarketCode() == MarketCode.BLOOMBERG
-//				&& BondTypesService.isUST(operation.getOrder().getInstrument())) { 
-//			try {
-//				ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
-//				operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("RejectWhenBloombergBest.0")), ErrorState.class);
-//				// last command in method for this case
-//			} catch (BestXException e) {
-//				LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
-//				String errorMessage = e.getMessage();
-//				operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
-//			}
-//		} else
-			// manage custom strategy to execute UST on Tradeweb with no MMM specified and limit price as specified in client order
+
+		// manage custom strategy to execute UST on Tradeweb with no MMM specified and limit price as specified in client order
 		if(BondTypesService.isUST(operation.getOrder().getInstrument())) { // BESTX-382
 			// override execution proposal every time
 			MarketOrder marketOrder = new MarketOrder();
@@ -209,6 +179,10 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 						operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
 					}
 				} else {
+					String bbg_orderID = operation.getIdentifier(OperationIdType.BLOOMBERG_CLORD_ID);
+					if (bbg_orderID != null) {
+						operation.removeIdentifier(OperationIdType.BLOOMBERG_CLORD_ID);
+					}
 					// requested on March 2019 rendez vous un Zurich currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
 					currentAttempt.getMarketOrder().setMarketMarketMaker(null);
 					operation.setStateResilient(new BBG_StartExecutionState(), ErrorState.class);
@@ -233,7 +207,18 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 				// requested on March 2019 rendez vous un Zurich currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
 				currentAttempt.getMarketOrder().setMarketMarketMaker(null);
 				operation.setStateResilient(new MA_StartExecutionState(), ErrorState.class);
-				break;            
+				break;
+			case BV:
+				String bvSessionId = operation.getIdentifier(OperationIdType.BV_RFQ_ID);
+				if(bvSessionId == null) {
+					operation.removeIdentifier(OperationIdType.BV_RFQ_ID);
+				}
+				MarketOrder marketOrder = currentAttempt.getMarketOrder();
+				List<MarketMarketMakerSpec> dealers = currentAttempt.getSortedBook().getValidProposalDealersByMarket(MarketCode.BV, marketOrder.getSide());
+				marketOrder.setDealers(dealers);
+				marketOrder.setMarketMarketMaker(null);
+				operation.setStateResilient(new BV_StartExecutionState(), ErrorState.class);
+				break;
 			default:
 				operation.removeLastAttempt();
 				operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("MARKET_UNKNOWN",
@@ -390,11 +375,6 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 			return marketCodeIndex < currentMarkets.size() ? currentMarkets.get(marketCodeIndex) : null;
 		}
 		return null;
-	}
-
-	@Override
-	public void resetMarketsToTry() {
-		setAllMarketsToTry(this.allMarketsToTry);
 	}
 
     /** 

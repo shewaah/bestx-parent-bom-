@@ -23,6 +23,8 @@ import org.joda.time.DateTimeComparator;
 import org.joda.time.format.DateTimeFormat;
 import org.junit.Test;
 
+import it.softsolutions.bestx.services.DateService;
+
 /**  
  *
  * Purpose: this class is mainly for ...  
@@ -48,13 +50,13 @@ public class MergeUTCDateTimeTest {
 
     @Test
     public void convertUTCToLocalNull() {
-        Date res = BLPHelper.convertUTCToLocal(null, null);
+        Date res = DateService.convertUTCToLocal(null, null);
         assertTrue(DateUtils.isSameDay(res, new Date()));
     }
     
     @Test
     public void convertUTCToLocalDate() {
-        Date res = BLPHelper.convertUTCToLocal(new Date(), null);
+        Date res = DateService.convertUTCToLocal(new Date(), null);
         assertEquals(0, dayOnlyComparator.compare(res, todayDate));
         assertEquals(0, timeOnlyComparator.compare(res, midnightTime));
     }

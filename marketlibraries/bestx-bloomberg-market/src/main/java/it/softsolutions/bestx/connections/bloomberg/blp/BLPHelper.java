@@ -270,7 +270,7 @@ public class BLPHelper {
             classifiedProposal.setNonStandardSettlementDateAllowed(false);
             classifiedProposal.setNativeMarketMarketMaker(marketMarketMaker);
             
-            Date timestamp = convertUTCToLocal(date, time);
+            Date timestamp = DateService.convertUTCToLocal(date, time);
             classifiedProposal.setTimestamp(timestamp);
 
             Money price = new Money(instrument.getCurrency(), amount);
@@ -300,32 +300,6 @@ public class BLPHelper {
         return classifiedProposal;
     }
     
-    /**
-     * Merges and converts date and time in UTC timezone in a single dateTime in Default (local) timezone
-     * 
-     * @param date a date in UTC timezone (usually a FIX MDEntryDate)
-     * @param time a time in UTC timezone (usually a FIX MDEntryTime)
-     * @return a dateTime in Default timezone
-     */
-    protected static Date convertUTCToLocal(Date date, Date time) {
-        Date res = null;
-        
-        if (time != null) {
-            DateTime utcDate = new DateTime(date, DateTimeZone.UTC);
-            DateTime utcTime = new DateTime(time, DateTimeZone.UTC);
-            // concatenate date and time and retrieve UTC dateTime
-            DateTime utcDateTime = utcDate.toLocalDate().toDateTime(utcTime.toLocalTime());
-            // force timeZone to UTC
-            utcDateTime = utcDateTime.withZone(DateTimeZone.UTC);
-
-            res = new Date(DateTimeZone.getDefault().convertUTCToLocal(utcDateTime.getMillis()));
-        } else {
-            // restrict date to localDate in order to avoid 02:00:00 instead of 00:00:00
-            res = new LocalDate(date).toDate();
-        }
-        return res;
-    }
-   
     /**
      * Creates a classifiedProposal (Reject) with the specified reason
      * 

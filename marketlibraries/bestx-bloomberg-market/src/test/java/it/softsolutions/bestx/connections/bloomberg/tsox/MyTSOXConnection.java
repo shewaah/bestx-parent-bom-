@@ -14,6 +14,13 @@
 package it.softsolutions.bestx.connections.bloomberg.tsox;
 
 
+import java.math.BigDecimal;
+import java.util.Date;
+
+import org.apache.commons.lang3.time.DateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.connections.Connection;
@@ -21,19 +28,11 @@ import it.softsolutions.bestx.connections.ConnectionListener;
 import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.MarketMarketMaker;
 import it.softsolutions.bestx.model.MarketOrder;
-import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.Proposal.ProposalSide;
 import it.softsolutions.bestx.model.Proposal.ProposalType;
+import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.tradestac.api.ConnectionStatus;
-import it.softsolutions.tradestac.fix.field.ExecType;
-import it.softsolutions.tradestac.fix.field.OrdStatus;
-
-import java.math.BigDecimal;
-import java.util.Date;
-
-import org.apache.commons.lang3.time.DateUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import it.softsolutions.tradestac.fix50.TSExecutionReport;
 
 /**  
  *
@@ -56,7 +55,7 @@ public class MyTSOXConnection {
 		messages.setLanguage("it");
 		messages.setCountry("IT");
 		
-        tsoxConnection = new TSOXConnectionImpl();
+        tsoxConnection = new RBLD_TSOXConnectionImpl();
         tsoxConnection.setTsoxConnectionListener(new InnerTSOXConnectionListener());
         
         try { Thread.sleep(5000); } catch (InterruptedException e) { }
@@ -104,7 +103,8 @@ public class MyTSOXConnection {
         }
         
     }
-    
+ 
+    @SuppressWarnings("deprecated")
     private class InnerTSOXConnectionListener implements TSOXConnectionListener {
 
         @Override
@@ -133,9 +133,8 @@ public class MyTSOXConnection {
         }
 
         @Override
-        public void onExecutionReport(String sessionId, String clOrdId, ExecType execType, OrdStatus ordStatus, BigDecimal accruedInterestAmount, BigDecimal accruedInterestRate, BigDecimal lastPrice,
-                        String contractNo, Date futSettDate, Date transactTime, String text) {
-            LOGGER.debug("{}, {}, {}, {}", sessionId, clOrdId, execType, ordStatus);
+        public void onExecutionReport(String sessionId, String clOrdId, TSExecutionReport tsExecutionReport) {
+            LOGGER.debug("{}, {}, {}, {}", sessionId, clOrdId, tsExecutionReport.getExecType(), tsExecutionReport.getOrdStatus());
         }
 
         @Override
@@ -152,6 +151,12 @@ public class MyTSOXConnection {
         public void onQuoteStatusExpired(String sessionId, String quoteReqID, String quoteID, String dealer) {
             LOGGER.debug("{}, {}, {}, {}", sessionId, quoteReqID, quoteID, dealer);
         }
+
+		@Override
+		public void onCancelReject(String sessionId, String quoteReqId, String reason) {
+			// TODO Auto-generated method stub
+			
+		}
         
     }
 }
