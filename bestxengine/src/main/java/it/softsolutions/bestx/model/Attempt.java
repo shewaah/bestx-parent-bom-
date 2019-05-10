@@ -29,6 +29,7 @@ public class Attempt {
     public static enum AttemptState { 
         COUNTER_RECEIVED, ACCEPTED_COUNTER, PASSED_COUNTER, EXECUTED, REJECTED, EXPIRED
     }
+    public static int BEST = 0;
     
     public static int maxAttemptNo = 10;
     @SuppressWarnings("unused")

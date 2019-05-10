@@ -1248,7 +1248,6 @@
 				<entry key="ONLY_PRICEDISCOVERY" value-ref="pDOnlyPriceService" />
 			</map>
 		</property>
-        <!--property name="doubleQueueActive"><value>false</value></property-->
 	</bean>
     <bean id="serialNumberServiceProvider" class="it.softsolutions.bestx.services.SerialNumberServiceProvider">
         <property name="serialNumberService"><ref bean="serialNumberService"></ref></property>

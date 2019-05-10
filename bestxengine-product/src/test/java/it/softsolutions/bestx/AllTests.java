@@ -4,12 +4,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import it.softsolutions.bestx.connections.bondvision.BondVisionRFQOutputLazyBeanTest;
-
 @RunWith(Suite.class)
-@SuiteClasses({ 
-	BondVisionRFQOutputLazyBeanTest.class/*,
-	RTFIBSProposalInputLazyBeanTest.class,
+@SuiteClasses({ /*
+	BondVisionRFQOutputLazyBeanTest.class,
 	BondVisionMarketTest.class,
 	RegulatedMarket_ZeroPriceTest.class, 
 	ApplicationMonitorTest.class,

@@ -28,9 +28,6 @@ import java.util.Map;
  **/
 public class PriceServiceProvider
 {
-   private static boolean doubleQueueActive;
-   
-   
    Map<PriceDiscoveryType, PriceService> priceServices = new HashMap<PriceDiscoveryType, PriceService>();
 
    public Map<PriceDiscoveryType, PriceService> getPriceServices()
@@ -46,15 +43,5 @@ public class PriceServiceProvider
    public PriceService getPriceService(PriceDiscoveryType priceDiscType)
    {
       return priceServices.get(priceDiscType);
-   }
-
-   public void setDoubleQueueActive(boolean doubleQueueActive)
-   {
-      this.doubleQueueActive = doubleQueueActive;
-   }
-
-   public static boolean isDoubleQueueActive()
-   {
-      return doubleQueueActive;
    }
 }
