@@ -95,6 +95,8 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 	private Market market;
 	private VenueFinder venueFinder;
 
+	protected boolean isCancelBestXInitiative = false;
+
 	public MA_SendOrderEventHandler(Operation operation, MarketBuySideConnection connection, SerialNumberService serialNumberService, long waitingExecutionDelay, long orderCancelDelay, BestXConfigurationDao bestXConfigurationDao, MarketMakerFinder marketMakerFinder, Market market, VenueFinder venueFinder) {
 		super(operation);
 		this.serialNumberService = serialNumberService;
@@ -205,8 +207,11 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 				executionReport.setMarketOrderID(marketExecutionReport.getMarketOrderID());
 				// set quotes
 				addQuotesToAttempt(currentAttempt, marketExecutionReport);
-
-				operation.setStateResilient(new MA_CancelledState(), ErrorState.class);
+				if(isCancelBestXInitiative)
+					operation.setStateResilient(new MA_CancelledState("No answer received after the configuration numebr of seconds. Order has been automatically cancelled by BestX!"),
+							ErrorState.class);
+				else 
+					operation.setStateResilient(new MA_CancelledState(), ErrorState.class);
 				break;
 			case REJECTED:
 				stopDefaultTimer();    
@@ -444,6 +449,7 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 					handlerJobName += REVOKE_TIMER_SUFFIX;
 					setupTimer(handlerJobName, orderCancelDelay, false);
 					// send order cancel message to the market
+					isCancelBestXInitiative = true;
 					connection.revokeOrder(operation, operation.getLastAttempt().getMarketOrder(), Messages.getString("MARKETAXESS_RevokeOrderForTimeout"));
 				} catch (BestXException e) {
 					LOGGER.error("Error {} while revoking the order {}", e.getMessage(), operation.getOrder().getFixOrderId(), e);
@@ -467,6 +473,7 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 			String reason = Messages.getString("EventRevocationRequest.0");
 			updateOperationToRevocated(reason);
 			try {
+				isCancelBestXInitiative = true;
 				connection.revokeOrder(operation, marketOrder, reason);
 			} catch (BestXException e) {
 				LOGGER.error("An error occurred while revoking the order {}", operation.getOrder().getFixOrderId(), e);
@@ -480,6 +487,7 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 		public void onMarketOrderCancelRequestReject(MarketBuySideConnection source, Order order, String reason) {
 			String handlerJobName = super.getDefaultTimerJobName() + REVOKE_TIMER_SUFFIX;
 			try {
+				isCancelBestXInitiative = false;
 				stopTimer(handlerJobName);
 				LOGGER.info("Order {} cancel rejected, waiting for the order execution or cancellation", order.getFixOrderId());
 				//recreate the timer with a longer timeout (the same used for the execution)
@@ -499,6 +507,7 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 	         setupTimer(handlerJobName, orderCancelDelay, false);
 
 	         // send order cancel message to the market
+			 isCancelBestXInitiative = true;
 	         connection.revokeOrder(operation, operation.getLastAttempt().getMarketOrder(), Messages.getString("TW_RevokeOrder"));
 	      } catch (BestXException e) {
 	         LOGGER.error("An error occurred while revoking the order {}", operation.getOrder().getFixOrderId(), e);

@@ -66,6 +66,7 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
 	protected MarketBuySideConnection twConnection;
 	protected long orderCancelDelay;
 	private BestXConfigurationDao bestXConfigurationDao;
+	protected boolean isCancelBestXInitiative = false;
 	
     public TW_SendOrderEventHandler(Operation operation, MarketBuySideConnection twConnection, SerialNumberService serialNumberService, long waitingExecutionDelay, long orderCancelDelay, BestXConfigurationDao bestXConfigurationDao) {
     	super(operation);
@@ -205,7 +206,7 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
 				boolean isNoDealerReply = text.toLowerCase().contains(noAnswerMsg);
 
        		 	Object maxRetries = bestXConfigurationDao.loadProperty(TradewebMarket.TW_MAX_EXEC_RETRIES_PROPERTY);
-                if ( !operation.isCustomerRevokeReceived() ) {  
+                if ( !operation.isCustomerRevokeReceived() ) {
 		        	//[RR20150408] CRSBXTWIGR-9 if the QuotedDealers list sent by the market contains the dealer with whom we tried to execute,
 		        	//proceed as usual with a technical failure
 		        	 if ( ( quotedDealers != null && marketOrderTarget != null && quotedDealers.toLowerCase().contains(marketOrderTarget.toLowerCase()) ) 
@@ -230,7 +231,7 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
 		        					 maxTries = Integer.valueOf((String) maxRetries);
 		        				 }
 		        				 int actualTries = currentAttempt.getConsecutiveExecutionRetries();
-				        		 LOGGER.info("AAA maxTries = {}, actualTries = {}", maxRetries, actualTries);
+				        		 LOGGER.info("Tradeweb maxTries = {}, actualTries = {}", maxRetries, actualTries);
 
 		        				 if(actualTries < maxTries) { 
 		        					 LOGGER.info("Order {}, received a CANCEL exec report, the trader did not answer, resend the order to the market.", order.getFixOrderId());
@@ -254,7 +255,17 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
 							operation.setStateResilient(new TW_RejectedState(Messages.getString("TWRejectPrefix", marketExecutionReport.getText())), ErrorState.class);
 		        	 }
 		        } else {
-					operation.setStateResilient(new TW_CancelledState(), ErrorState.class);
+					if(isCancelBestXInitiative) {
+						marketExecutionReport.setState(ExecutionReportState.REJECTED);
+						marketExecutionReport.setReason(RejectReason.AUTO_REJECTED);
+						operation.setStateResilient(new TW_CancelledState("No answer received after the configuration numebr of seconds. Order has been automatically cancelled by BestX!"),
+								ErrorState.class);
+					}
+					else {
+						marketExecutionReport.setState(ExecutionReportState.REJECTED);
+						marketExecutionReport.setReason(RejectReason.TRADER_REJECTED);
+						operation.setStateResilient(new TW_CancelledState(text), ErrorState.class);
+					}
 				}
 				break;
             case REJECTED:
