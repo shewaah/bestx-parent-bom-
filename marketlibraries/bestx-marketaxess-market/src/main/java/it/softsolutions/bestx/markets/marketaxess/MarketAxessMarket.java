@@ -708,11 +708,10 @@ public class MarketAxessMarket extends MarketCommon implements TradeStacPreTrade
 	@Override
 	public void onExecutionReport(String sessionId, String clOrdID, MarketExecutionReport executionReport) {
 		LOGGER.debug("sessionId = {}, ExecutionReport {}", sessionId, executionReport);
-
+		
 		String cleanClOrdId = clOrdID; // leave here to manage when necessary the clean operation on the order id
 		String text = executionReport.getText();
 		String execType = executionReport.getExecType();
-		String executionBroker = executionReport.getExecBroker();
 		char ordStatus = executionReport.getOrdStatus();
 		BigDecimal lastPrice = executionReport.getLastPx(); 
 		// AMC BESTX-313 20170719 added || "".equalsIgnoreCase(text)
@@ -724,9 +723,22 @@ public class MarketAxessMarket extends MarketCommon implements TradeStacPreTrade
 				throw new BestXException("Operation order is null");
 			}
 
-			LOGGER.info("[MktMsg] orderID = {}, ExecutionReport received: original clOrdId={}, OrdStatus={}, ExecType={}, LastPrice={}, ExecutionBroker={}, text={}", operation.getOrder().getFixOrderId(), cleanClOrdId, ordStatus, execType, lastPrice, executionBroker, cleanText);
+			MarketMarketMaker mmm = null;
+			try {
+				mmm = marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), executionReport.getExecBroker());
+			} catch (BestXException e) {
+				LOGGER.warn("Order {} received execution report with state {} and no Market Maker associated to market dealer code {}",
+						operation.getOrder().getFixOrderId(), executionReport.getExecType(), executionReport.getExecBroker());
+	        	LOGGER.info("IMPORTANT! MarketAxess returned dealer {} not configured in BestX!. Please configure it", executionReport.getExecBroker());
+			}
+			if(mmm != null) {
+				executionReport.setMarketMaker(mmm.getMarketMaker() == null ? null : mmm.getMarketMaker());
+			}
 
+			LOGGER.info("[MktMsg] orderID = {}, ExecutionReport received: original clOrdId={}, OrdStatus={}, ExecType={}, LastPrice={}, ExecutionBroker={}, text={}", 
+					operation.getOrder().getFixOrderId(), cleanClOrdId, ordStatus, execType, lastPrice, mmm.getMarketMaker(), cleanText);
 			String orderId = operation.getOrder().getFixOrderId();
+			
 			LOGGER.debug("Execution report received for the order {}, registering statistics.", orderId);
 			if(!("" + ExecType.NEW).equals(execType) && !("" + ExecType.ORDER_STATUS).equals(execType)) {
    			if(executionReport.getActualQty() != null && BigDecimal.ZERO.compareTo(executionReport.getActualQty()) < 0) {

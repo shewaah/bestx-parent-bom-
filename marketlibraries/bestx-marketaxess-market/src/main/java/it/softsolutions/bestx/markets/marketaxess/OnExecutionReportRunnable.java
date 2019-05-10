@@ -114,19 +114,7 @@ public class OnExecutionReportRunnable implements Runnable {
             executionReport.setAccruedInterestRate(rateo);
         }
         
-		MarketMarketMaker mmm = null;
-		try {
-			mmm = market.getMarketMakerFinder().getMarketMarketMakerByCode(market.getMarketCode(), executionReport.getExecBroker());
-		} catch (BestXException e) {
-			LOGGER.warn("Order {} received execution report with state {} and no Market Maker associated to market dealer code {}",
-					operation.getOrder().getFixOrderId(), executionReport.getExecType(), executionReport.getExecBroker());
-		}
-		if(mmm != null) {
-			MarketMaker executionBroker = mmm.getMarketMaker();
-			if(executionBroker != null) {
-				executionReport.setMarketMaker(executionBroker);
-			}
-		}
+
         operation.onMarketExecutionReport(market, order, executionReport);
     }
     

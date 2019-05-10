@@ -88,6 +88,7 @@ import it.softsolutions.jsscommon.Money;
 import it.softsolutions.tradestac.api.ConnectionStatus;
 import it.softsolutions.tradestac.fix.field.ExecType;
 import it.softsolutions.tradestac.fix.field.OrdStatus;
+import it.softsolutions.tradestac.fix.field.PartyIDSource;
 import it.softsolutions.tradestac.fix.field.PartyRole;
 import it.softsolutions.tradestac.fix50.TSExecutionReport;
 import it.softsolutions.tradestac.fix50.TSNoPartyID;
@@ -814,7 +815,7 @@ public class TradewebMarket extends MarketCommon
       String executionBroker = null;
       if(tsExecutionReport.getTSParties() != null)
     	  for (TSNoPartyID party : tsExecutionReport.getTSParties().getTSNoPartyIDsList()) {
-	         if (party.getPartyRole() == PartyRole.ExecutingFirm) {
+	         if (party.getPartyRole() == PartyRole.ExecutingFirm && party.getPartyIDSource() != PartyIDSource.LegalEntityIdentifier) {
 	            executionBroker = party.getPartyID();
 	            break;
 	         }
