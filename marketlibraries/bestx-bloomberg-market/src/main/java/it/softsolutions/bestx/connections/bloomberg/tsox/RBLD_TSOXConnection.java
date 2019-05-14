@@ -63,38 +63,88 @@ import quickfix.SessionID;
  * 
  **/
 @SuppressWarnings("deprecation")
-public class RBLD_TSOXConnectionImpl extends AbstractTradeStacConnection implements TSOXConnection {
+public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements TSOXConnection {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RBLD_TSOXConnectionImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RBLD_TSOXConnection.class);
 
     private TSOXConnectionListener tsoxConnectionListener;
     private TradeStacClientSession tradeStacClientSession;
 
     // tsoxEnquiryTime: maximum validity time of orders (in seconds) 
     private long tsoxEnquiryTime;
-
+    /**
+     * Gets the tsox EnquiryTime.
+     *
+     * @return the tsox EnquiryTime
+     */
+    public long getTsoxEnquiryTime() {
+        return tsoxEnquiryTime;
+    }
+    /**
+     * Sets the tsox EnquiryTime.
+     *
+     * @param tsoxEnquiryTime the new tsox EnquiryTime
+     */
+    public void setTsoxWiretime(long tsoxWiretime) {
+        this.tsoxEnquiryTime = tsoxWiretime;
+    }
 
     // trader code to be sent to Tsox in QuoteRequest with PartyRole=11(Originator)
     private String tsoxTradercode;
+    /**
+     * Gets the tsox tradercode.
+     *
+     * @return the tsox tradercode
+     */
+    public String getTsoxTradercode() {
+        return tsoxTradercode;
+    }
+    /**
+     * Sets the tsox tradercode.
+     *
+     * @param tsoxTradercode the new tsox tradercode
+     */
+    public void setTsoxTradercode(String tsoxTradercode) {
+        this.tsoxTradercode = tsoxTradercode;
+    }
+   
+    private String defaultCapacity;
+    public String getDefaultCapacity() {
+		return defaultCapacity;
+	}
+	public void setDefaultCapacity(String defaultCapacity) {
+		this.defaultCapacity = defaultCapacity;
+	}
+
 
 	private String investmentDecisorCode;
+	public String getInvestmentDecisorCode() {
+		return investmentDecisorCode;
+	}
+	public void setInvestmentDecisorCode(String investmentDecisorCode) {
+		this.investmentDecisorCode = investmentDecisorCode;
+	}
 
 	private String enteringFirmCode;
+	public String getEnteringFirmCode() {
+		return enteringFirmCode;
+	}
+	public void setEnteringFirmCode(String enteringFirmCode) {
+		this.enteringFirmCode = enteringFirmCode;
+	}
 
 	private PartyRoleQualifier investmentDecisorQualifier;
-	
     public PartyRoleQualifier getInvestmentDecisorQualifier() {
 		return investmentDecisorQualifier;
 	}
-
-	public void setInvestmentDecisorQualifier(PartyRoleQualifier investmentDecisorQualifier) {
+    public void setInvestmentDecisorQualifier(PartyRoleQualifier investmentDecisorQualifier) {
 		this.investmentDecisorQualifier = investmentDecisorQualifier;
 	}
 
 	/**
      * Instantiates a new tSOX connection impl.
      */
-    public RBLD_TSOXConnectionImpl() {
+    public RBLD_TSOXConnection() {
         super(Market.MarketCode.BLOOMBERG + "#tsox");
     }
 
@@ -281,43 +331,6 @@ public class RBLD_TSOXConnectionImpl extends AbstractTradeStacConnection impleme
         return tsNewOrderSingle;
     }
 
-    /**
-     * Gets the tsox EnquiryTime.
-     *
-     * @return the tsox EnquiryTime
-     */
-    public long getTsoxEnquiryTime() {
-        return tsoxEnquiryTime;
-    }
-
-
-    /**
-     * Sets the tsox EnquiryTime.
-     *
-     * @param tsoxEnquiryTime the new tsox EnquiryTime
-     */
-    public void setTsoxWiretime(long tsoxWiretime) {
-        this.tsoxEnquiryTime = tsoxWiretime;
-    }
-
-
-    /**
-     * Gets the tsox tradercode.
-     *
-     * @return the tsox tradercode
-     */
-    public String getTsoxTradercode() {
-        return tsoxTradercode;
-    }
-
-    /**
-     * Sets the tsox tradercode.
-     *
-     * @param tsoxTradercode the new tsox tradercode
-     */
-    public void setTsoxTradercode(String tsoxTradercode) {
-        this.tsoxTradercode = tsoxTradercode;
-    }
 
 	@Override
 	public void sendSubjectOrder(MarketOrder marketOrder) throws BestXException {
@@ -337,22 +350,6 @@ public class RBLD_TSOXConnectionImpl extends AbstractTradeStacConnection impleme
 	@Override
 	public void rejectProposal(Operation operation, Instrument instrument, Proposal proposal) throws BestXException {
 		throw new UnsupportedOperationException();		
-	}
-
-	public String getInvestmentDecisorCode() {
-		return investmentDecisorCode;
-	}
-
-	public void setInvestmentDecisorCode(String investmentDecisorCode) {
-		this.investmentDecisorCode = investmentDecisorCode;
-	}
-
-	public String getEnteringFirmCode() {
-		return enteringFirmCode;
-	}
-
-	public void setEnteringFirmCode(String enteringFirmCode) {
-		this.enteringFirmCode = enteringFirmCode;
 	}
 
 }

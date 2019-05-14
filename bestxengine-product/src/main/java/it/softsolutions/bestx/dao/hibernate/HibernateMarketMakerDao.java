@@ -13,27 +13,27 @@
  */
 package it.softsolutions.bestx.dao.hibernate;
 
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.dao.MarketMakerDao;
 import it.softsolutions.bestx.exceptions.ObjectNotInitializedException;
+import it.softsolutions.bestx.markets.MarketCommon;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.MarketMaker;
 import it.softsolutions.bestx.model.MarketMarketMaker;
 
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-
 /**
  * 
- * Purpose: this class is mainly for ...
+ * Purpose: this class manages the mapping of MarketMaker and MarketMarketMaker
  * 
  * Project Name : bestxengine-product First created by: davide.rossoni Creation date: 24/ago/2012
  * 
  **/
 public class HibernateMarketMakerDao implements MarketMakerDao {
     private SessionFactory sessionFactory;
-
-    /**
+	/**
      * Set the Hibernate SessionFactory
      * 
      * @param sessionFactory

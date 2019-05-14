@@ -273,6 +273,7 @@ public class CSPOBexExecutionReport extends ExecutionReport {
 		case "Done-APC":
 		case "Done-Subject to FX":
 		case "Done-Amended":
+		case "Accepted":
 			return "Accepted"; //BESTX-314 CS tracking defect ID 16169
 		case "Covered":
 			return "Covered";

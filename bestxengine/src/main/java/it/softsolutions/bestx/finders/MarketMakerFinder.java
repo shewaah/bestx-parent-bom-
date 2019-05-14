@@ -50,4 +50,11 @@ public interface MarketMakerFinder {
      * @throws BestXException
      */
     MarketMarketMaker getMarketMarketMakerByCode(MarketCode marketCode, String code) throws BestXException;
+    
+    /**
+     * @param tsoxSpecificCode the market maker specific code on TSOX
+     * @return the market maker associated to tsoxSpecificCode on TSOX
+     * @throws BestXException
+     */
+    MarketMarketMaker getMarketMarketMakerByTSOXCode(String tsoxSpecificCode) throws BestXException;
 }

@@ -35,6 +35,7 @@ import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.MarketExecutionReport;
 import it.softsolutions.bestx.model.MarketMarketMaker;
 import it.softsolutions.bestx.model.Order;
+import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Proposal.ProposalSide;
 import it.softsolutions.bestx.model.Proposal.ProposalType;
 import it.softsolutions.bestx.model.Rfq;
@@ -121,7 +122,7 @@ public class OnExecutionReportRunnable implements Runnable {
 				return "Accepted";
 			if(execPrice.compareTo(price.getPrice().getAmount()) == 0)
 				return "Tied for Best";
-			if(BigDecimal.ZERO.compareTo(price.getPrice().getAmount()) >= 0)
+			if(BigDecimal.ZERO.compareTo(price.getPrice().getAmount()) < 0)
 				return "Covered";
 		} else {
 			return "Missed";
@@ -132,7 +133,6 @@ public class OnExecutionReportRunnable implements Runnable {
 
 	public void run() {
 		String dealerCode= null;
-		MarketMarketMaker execDealer= null;
 
 		TSParties parties = tsExecutionReport.getTSParties();
 		if(parties != null) {
@@ -144,7 +144,7 @@ public class OnExecutionReportRunnable implements Runnable {
 				}
 			}
 		}
-		PriceType priceType = tsExecutionReport.getPriceType();
+
 		Order order = this.operation.getOrder();
 		Rfq rfq = this.operation.getRfq();
 		Attempt attempt = operation.getLastAttempt();
@@ -161,7 +161,10 @@ public class OnExecutionReportRunnable implements Runnable {
 		marketExecutionReport.setInstrument(order.getInstrument());
 		marketExecutionReport.setMarket(counterMarket);
 		marketExecutionReport.setOrderQty(order.getQty());
-		marketExecutionReport.setPrice(new Money(order.getCurrency(), lastPrice));
+		if(lastPrice == null)
+			marketExecutionReport.setPrice(new Money(order.getCurrency(), BigDecimal.ZERO));
+		else
+			marketExecutionReport.setPrice(new Money(order.getCurrency(), lastPrice));
 		marketExecutionReport.setLastPx(lastPrice);
 		marketExecutionReport.setSide(order.getSide());
 
@@ -187,8 +190,11 @@ public class OnExecutionReportRunnable implements Runnable {
 		marketExecutionReport.setTicket(contractNo);
 		marketExecutionReport.setFutSettDate(futSettDate);
 		marketExecutionReport.setText(text);
-		marketExecutionReport.setAccruedInterestAmount(new Money(order.getInstrument().getCurrency(), accruedInterestAmount));
+		marketExecutionReport.setAccruedInterestAmount(new Money(order.getInstrument().getCurrency(), 
+				accruedInterestAmount == null ? BigDecimal.ZERO : accruedInterestAmount));
 		marketExecutionReport.setAccruedInterestRate(null);
+		marketExecutionReport.setLastMkt(lastMkt);
+		
 		if (numDaysInterest != null) {
 			marketExecutionReport.setAccruedInterestDays(numDaysInterest);
 		}
@@ -205,11 +211,13 @@ public class OnExecutionReportRunnable implements Runnable {
 				ExecutablePrice executedPrice = new ExecutablePrice();
 				executedPrice.setOriginatorID(dealerCode);
 				try {
-					executedPrice.setMarketMarketMaker(marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), dealerCode));
+//					executedPrice.setMarketMarketMaker(marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), dealerCode));
+					executedPrice.setMarketMarketMaker(marketMakerFinder.getMarketMarketMakerByTSOXCode(dealerCode));
 				} catch (BestXException e1) {
 					executedPrice.setMarketMarketMaker(null);
 				}
 				executedPrice.setPrice(marketExecutionReport.getPrice());
+				executedPrice.setPriceType(Proposal.PriceType.PRICE);
 				executedPrice.setQty(operation.getOrder().getQty());
 				// calculate status
 				executedPrice.setTimestamp(tsExecutionReport.getTransactTime());
@@ -231,7 +239,8 @@ public class OnExecutionReportRunnable implements Runnable {
 							if (groups.get(i).isSetField(CompDealerID.FIELD)) {
 								String quotingDealer = groups.get(i).getField(new StringField(CompDealerID.FIELD)).getValue();
 
-								tempMM = marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), quotingDealer);
+//								tempMM = marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), quotingDealer);
+								tempMM = marketMakerFinder.getMarketMarketMakerByTSOXCode(quotingDealer);
 								if(tempMM == null) {
 									LOGGER.info("IMPORTANT! Tradeweb returned dealer {} not configured in BestX!. Please configure it", quotingDealer);
 									price.setOriginatorID(quotingDealer);
@@ -245,6 +254,7 @@ public class OnExecutionReportRunnable implements Runnable {
 								price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerQuote)));
 							} else
 								price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
+							price.setPriceType(Proposal.PriceType.PRICE);
 							price.setQty(operation.getOrder().getQty());
 							// calculate status
 							price.setTimestamp(tsExecutionReport.getTransactTime());

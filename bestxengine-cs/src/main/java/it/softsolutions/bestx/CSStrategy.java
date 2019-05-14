@@ -658,8 +658,8 @@ public class CSStrategy implements Strategy, SystemStateSelector {
          case SendRfq:
             switch (marketCode) {
                case BLOOMBERG:
-                  handler = new BBG_SendEnquiryEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BLOOMBERG).getBuySideConnection(), serialNumberService, marketExecTimeout,
-                        orderCancelDelay, null, tsoxTechnicalRejectReasons);
+                  handler = new BBG_SendEnquiryEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BLOOMBERG).getBuySideConnection(), 
+                		serialNumberService, marketExecTimeout, tsoxTechnicalRejectReasons);
                break;
                case BV:
                    handler = new BV_SendRFCQEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BV).getBuySideConnection(), serialNumberService,

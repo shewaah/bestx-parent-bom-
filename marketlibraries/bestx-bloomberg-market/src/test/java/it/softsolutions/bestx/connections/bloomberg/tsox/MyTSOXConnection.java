@@ -55,7 +55,7 @@ public class MyTSOXConnection {
 		messages.setLanguage("it");
 		messages.setCountry("IT");
 		
-        tsoxConnection = new RBLD_TSOXConnectionImpl();
+        tsoxConnection = new RBLD_TSOXConnection();
         tsoxConnection.setTsoxConnectionListener(new InnerTSOXConnectionListener());
         
         try { Thread.sleep(5000); } catch (InterruptedException e) { }

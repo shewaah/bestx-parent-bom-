@@ -109,4 +109,13 @@ public class MapMarketMakerFinder implements MarketMakerFinder {
         
         return marketMarketMaker;
     }
+    
+    /**
+     * @param tsoxSpecificCode the market maker specific code on TSOX
+     * @return the market maker associated to tsoxSpecificCode on TSOX
+     */
+    @Override
+    public MarketMarketMaker getMarketMarketMakerByTSOXCode(String tsoxSpecificCode) {
+    	return getMarketMarketMakerByCode(MarketCode.TSOX, tsoxSpecificCode);
+    }
 }

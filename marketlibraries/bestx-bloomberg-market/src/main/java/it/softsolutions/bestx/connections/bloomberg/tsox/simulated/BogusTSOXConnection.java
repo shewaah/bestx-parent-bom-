@@ -164,6 +164,9 @@ public class BogusTSOXConnection extends AbstractTradeStacConnection implements 
 			Thread.sleep(5000);
 		} catch (InterruptedException e) {}
 
+		//		cancelIsins.remove(0);
+//		if(cancelIsins.size() == 0)
+//			cancelIsins.add("TRFAKBK11926");
 		if (cancelIsins.contains(marketOrder.getInstrument().getIsin())) {
 			sendCancelledExecutionReport(marketOrder);
 		} else if (rejectIsins.contains(marketOrder.getInstrument().getIsin())){
@@ -248,7 +251,7 @@ public class BogusTSOXConnection extends AbstractTradeStacConnection implements 
 //		Double factor = 345.9873;
 		Double factor = null;
 		
-		BigDecimal lastPrice = marketOrder.getLimit().getAmount();
+		BigDecimal lastPrice = new BigDecimal("100.002");
 		String contractNo = "C#" + System.currentTimeMillis();
 		Date futSettDate = DateUtils.addDays(new Date(), 3);
 		Date transactTime = new Date();
@@ -287,7 +290,7 @@ public class BogusTSOXConnection extends AbstractTradeStacConnection implements 
 
 		Group compdealer2 = new Group(10009, 10010, new int[] { 10010, 10011, 10012, 10015, 0 });
 		compdealer2.setField(new CompDealerQuote(100.674));
-		compdealer2.setField(new CompDealerID("ETLX"));	
+		compdealer2.setField(new CompDealerID("ETLX1"));	
 		compdealersComp.addGroup(compdealer2);
 		
 		Group compdealer3 = new Group(10009, 10010, new int[] { 10010, 10011, 10012, 10015, 0 });
@@ -317,7 +320,7 @@ public class BogusTSOXConnection extends AbstractTradeStacConnection implements 
 		OrdStatus ordStatus = OrdStatus.Canceled;
 		BigDecimal accruedInterestAmount = null;
 		BigDecimal accruedInterestRate = null;
-		BigDecimal lastPrice = marketOrder.getLimit().getAmount();
+		BigDecimal lastPrice = marketOrder.getLimit() != null ? marketOrder.getLimit().getAmount() : null;
 		String contractNo = "C#" + System.currentTimeMillis();
 		Date futSettDate = DateUtils.addDays(new Date(), 3);
 		Date transactTime = new Date();
@@ -327,8 +330,8 @@ public class BogusTSOXConnection extends AbstractTradeStacConnection implements 
 		tsExecutionReport.setClOrdID(clOrdId);
 		tsExecutionReport.setExecType(execType);
 		tsExecutionReport.setOrdStatus(ordStatus);
-		tsExecutionReport.setAccruedInterestAmt(accruedInterestAmount.doubleValue());
-		tsExecutionReport.setLastPx(lastPrice.doubleValue());
+		tsExecutionReport.setAccruedInterestAmt(accruedInterestAmount != null ? accruedInterestAmount.doubleValue() : null);
+		tsExecutionReport.setLastPx(lastPrice!= null ? lastPrice.doubleValue() : null);
 		tsExecutionReport.setExecID(contractNo);
 		tsExecutionReport.setSettlDate(futSettDate);
 		tsExecutionReport.setTransactTime(transactTime);

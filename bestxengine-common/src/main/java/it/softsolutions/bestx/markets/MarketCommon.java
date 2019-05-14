@@ -38,6 +38,7 @@ public abstract class MarketCommon extends MarketConnection implements MarketMXB
     protected Double executionsVolume;
     protected Double executionsRatio;
 
+
     public MarketCommon() {
         super();
     }

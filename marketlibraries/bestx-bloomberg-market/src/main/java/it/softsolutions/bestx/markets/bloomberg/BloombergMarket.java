@@ -963,10 +963,7 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
 
 	@Override
 	public void onCancelReject(String sessionId, String quoteReqId, String reason) {
-		// FIXME manage cancel request reject: write here code to manage the following cases -
-		// order not is cancellable state
-		// order unknown
-		// order already processed
+		LOGGER.error("onCancelReject received while BestX! is supposed not to cancel any enquiry!");
 	}
 
 }
