@@ -3,6 +3,7 @@
  */
 package it.softsolutions.bestx.handlers;
 
+import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -17,6 +18,7 @@ import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.ExecutionReport;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.model.Order;
+import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.OperationStateAuditDAOProvider;
 import it.softsolutions.bestx.services.SerialNumberServiceProvider;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyService;
@@ -63,6 +65,7 @@ public class CSCurandoEventHandler extends CSBaseOperationEventHandler {
 
       OrderHelper.setOrderBestPriceDeviationFromLimit(operation);
       OperationStateAuditDAOProvider.getOperationStateAuditDao().updateOrderBestAndLimitDelta(order, order.getBestPriceDeviationFromLimit());
+      OperationStateAuditDAOProvider.getOperationStateAuditDao().updateOrderNextExecutionTime(operation.getOrder(), new Date(DateService.newLocalDate().getTime() + mSecDelay));
    }
 
    protected long getTimerInterval(Order order, Customer customer) {

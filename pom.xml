@@ -5,7 +5,7 @@
     <groupId>it.softsolutions.bestx</groupId>
     <artifactId>bestxengine-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.3.10</version>
+    <version>4.3.10-v1_BESTX_420</version>
 
     <name>BestX! Engine Develop</name>
     <description>Comprising all the modules in bestengine installation for CS</description>
