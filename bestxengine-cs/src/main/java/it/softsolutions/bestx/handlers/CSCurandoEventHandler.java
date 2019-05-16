@@ -65,7 +65,7 @@ public class CSCurandoEventHandler extends CSBaseOperationEventHandler {
 
       OrderHelper.setOrderBestPriceDeviationFromLimit(operation);
       OperationStateAuditDAOProvider.getOperationStateAuditDao().updateOrderBestAndLimitDelta(order, order.getBestPriceDeviationFromLimit());
-      OperationStateAuditDAOProvider.getOperationStateAuditDao().updateOrderNextExecutionTime(operation.getOrder(), new Date(DateService.newLocalDate().getTime() + mSecDelay));
+      OperationStateAuditDAOProvider.getOperationStateAuditDao().updateOrderNextExecutionTime(order, new Date(DateService.newLocalDate().getTime() + mSecDelay));
    }
 
    protected long getTimerInterval(Order order, Customer customer) {
