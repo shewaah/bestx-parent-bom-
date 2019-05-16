@@ -30,17 +30,6 @@ public class BBG_StartExecutionEventHandler extends BaseOperationEventHandler {
 	
 	@Override
 	public void onNewState(OperationState currentState) {
-        ProposalType type = operation.getLastAttempt().getExecutionProposal().getType();
-        //[RR20131024] BXMNT-356: we can start di execution also from proposals of type COUNTER
-        if (type == ProposalType.INDICATIVE || type == ProposalType.COUNTER
-                        //|| (type == ProposalType.COUNTER /* // FIXME ticket 4281 && market maker e' il mio (PriceForgeService.getAkrosDeskMarketMaker()) */)
-                        || !DateUtils.isSameDay(operation.getOrder().getFutSettDate(), operation.getLastAttempt().getExecutionProposal().getFutSettDate())) {
-            operation.setStateResilient(new BBG_SendRfqState(), ErrorState.class);
-        } else {
-            // TODO PM should be BBG_ReceiveQuoteState ?
-            //operation.setStateResilient(new BBG_ReceiveQuoteState(), ErrorState.class);
-            operation.setStateResilient(new WarningState(currentState, null, "Support for proposals non INDICATIVE not yet implemented"), ErrorState.class);
-        }
-        
+		operation.setStateResilient(new BBG_SendRfqState(), ErrorState.class);
 	}
 }

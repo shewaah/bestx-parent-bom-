@@ -535,12 +535,12 @@ public class FixOrderInputLazyBean extends Order {
 
 	@Override
 	public Parties getDecisionMaker() {
-		return super.getDecisionMaker();  //FIXME update for most clients
+		return super.getDecisionMaker();
 	}
 
 	@Override
 	public Parties getExecutionDecisor() {
-		return super.getExecutionDecisor(); //FIXME update for most clients
+		return super.getExecutionDecisor();
 	}
 
 	@Override

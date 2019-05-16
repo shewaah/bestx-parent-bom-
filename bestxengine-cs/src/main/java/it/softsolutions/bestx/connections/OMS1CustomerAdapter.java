@@ -203,7 +203,7 @@ public class OMS1CustomerAdapter extends CustomerAdapterStatistics implements Cu
 
     @Override
     public void onFixOrderNotification(final FixGatewayConnection source, final FixOrderInputLazyBean fixOrder) {
-        LOGGER.info("New order from FIX interface - OrderId: {} - {}", fixOrder.getFixOrderId(), fixOrder); // FIXME resettare il nome del thread per evitare che resti il nome dell'operation precedente
+        LOGGER.info("New order from FIX interface - OrderId: {} - {}", fixOrder.getFixOrderId(), fixOrder);
 
         executor.execute(new Runnable() {
         	
@@ -212,6 +212,12 @@ public class OMS1CustomerAdapter extends CustomerAdapterStatistics implements Cu
         
 		        statTotalFixOrderNotifications.incrementAndGet();
 		        orderReceived++;
+		           Thread.currentThread().setName(
+		                    "onFixOrderNotification-"
+		                            + fixOrder.getFixOrderId()
+		                            + "-ISIN:"
+		                            + ((fixOrder.getInstrumentCode() != null) ? fixOrder.getInstrumentCode() : "XXXX"));
+
 		        ApplicationMonitor.onNewOrder(source.getConnectionName()); // for statistics logging
 //		        try {
 //					Restrictions.onNewOrder();

@@ -334,7 +334,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		}
 
 		MarketCode mktCode = null;
-		// FIXME AMC 20160824 l'uso del servizio titoliIncrociabiliService dovrebbe essere legato a un flag o all'essere tale servizio non nullo
 		// CS non usa e non ha mai usato il match tra ordini
 		if (titoliIncrociabiliService != null)
 			try {

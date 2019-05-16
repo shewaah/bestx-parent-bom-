@@ -19,6 +19,9 @@ import it.softsolutions.bestx.connections.Connection;
 import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Proposal;
+import it.softsolutions.tradestac.api.TradeStacException;
+import it.softsolutions.tradestac.fix50.TSBusinessMessageReject;
+import quickfix.SessionID;
 
 /**  
  *
@@ -47,5 +50,4 @@ public interface TSOXConnection extends Connection {
     void acceptProposal(Operation operation, Instrument instrument, Proposal proposal) throws BestXException;
 
     void rejectProposal(Operation operation, Instrument instrument, Proposal proposal) throws BestXException;
-
 }

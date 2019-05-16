@@ -772,7 +772,7 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
 			if ((operation.getOrder().getSide() == OrderSide.BUY && side == ProposalSide.ASK) || (operation.getOrder().getSide() == OrderSide.SELL && side == ProposalSide.BID)) {
 				try {
 					// #####################################################################
-					// TODO [DR20131126] Remove this!!! Workaround for TSOX Test environment
+					// 	 [DR20131126] Remove this!!! Workaround for TSOX Test environment
 					//                	if (dealerCodeMap.containsKey(quoteReqId)) {
 					//                		String dealerCode = dealerCodeMap.get(quoteReqId);
 					//                		LOGGER.warn("WARNING!!! Order {}: dealerCode [{}] replaced with [{}] in order to permit return from TSOX testing", operation.getOrder().getFixOrderId(), marketMaker, dealerCode);

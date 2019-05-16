@@ -629,14 +629,14 @@ public class BLPConnectorBogusTSTest{
       @Override
       public void onInit(boolean result)
       {
-         // TODO Auto-generated method stub
+
          
       }
 
       @Override
       public void onStart(boolean result)
       {
-         // TODO Auto-generated method stub
+
          
       }
 
@@ -655,7 +655,7 @@ public class BLPConnectorBogusTSTest{
       @Override
       public void onStop(boolean result)
       {
-         // TODO Auto-generated method stub
+
          
       }
       

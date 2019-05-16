@@ -80,13 +80,13 @@ public class BogusMDSConnection implements TradeStacPreTradeConnection {
 
 	@Override
     public void connect() throws BestXException {
-	    // TODO Auto-generated method stub
+
 	    
     }
 
 	@Override
     public void disconnect() throws BestXException {
-	    // TODO Auto-generated method stub
+
 	    
     }
 
@@ -97,7 +97,7 @@ public class BogusMDSConnection implements TradeStacPreTradeConnection {
 
 	@Override
     public void setConnectionListener(ConnectionListener listener) {
-	    // TODO Auto-generated method stub
+
 	    
     }
 
@@ -180,7 +180,6 @@ public class BogusMDSConnection implements TradeStacPreTradeConnection {
             ProposalType proposalType = ProposalType.INDICATIVE;
             String reason = null;
 
-            // [DR20120504] TODO is the venue.copyOf necessary ?
             Venue bloombergVenue = new Venue(venue);
             bloombergVenue.setMarket(market);
 

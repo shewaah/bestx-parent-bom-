@@ -475,7 +475,7 @@ public class FixExecutionReportOutputLazyBean extends FixOutputLazyBean {
             msg.setValue(FixMessageFields.FIX_QuoteMarket, lastMkt);
         }
         if (transactTime != null) {
-            msg.setValue(FixMessageFields.FIX_TransactTime, DateService.format(DateService.dateTimeISO, transactTime));  // FIXME TEST added millis ...
+            msg.setValue(FixMessageFields.FIX_TransactTime, DateService.format(DateService.dateTimeISO, transactTime));
         }
         if (accruedDays != null) {
             msg.setValue(FixMessageFields.FIX_QuoteAccruedDays, accruedDays);

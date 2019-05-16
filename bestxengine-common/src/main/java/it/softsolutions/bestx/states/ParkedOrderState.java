@@ -44,8 +44,6 @@ public class ParkedOrderState extends BaseState implements Cloneable {
     */
    @Override
    public void validate() throws BestXException {
-      // TODO Auto-generated method stub
-
    }
 
    /* (non-Javadoc)

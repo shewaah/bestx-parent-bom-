@@ -290,8 +290,7 @@ public enum PriceController {
      * @throws BestXException
      */
     public boolean isDeviationFromLimitOverTheMax(SortedBook sortedBook, Order order) throws BestXException {
-       //FIXME SP verificare se si puo' integrare con OrderHelper
-        if (sortedBook == null) {
+       if (sortedBook == null) {
             LOGGER.trace("{}, sortedBook null, no need to check the deviation from the customer configured maximum limit price", order.getFixOrderId());
             // returning false will make everything work as usual
             return false;

@@ -356,7 +356,6 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 		}
 //	}
 
-	// FIXME substitute with fix values
 		private PriceType convertPriceType(DealerQuotePriceType dealerQuotePriceType) {
 			if (dealerQuotePriceType == null)
 				return null;
@@ -366,6 +365,7 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 			case "6":
 				return PriceType.SPREAD;
 			case "9":
+			case "10":
 				return PriceType.YIELD;
 			default:
 				return null;

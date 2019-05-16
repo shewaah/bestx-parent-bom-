@@ -154,7 +154,6 @@ public class MyTSOXConnection {
 
 		@Override
 		public void onCancelReject(String sessionId, String quoteReqId, String reason) {
-			// TODO Auto-generated method stub
 			
 		}
         

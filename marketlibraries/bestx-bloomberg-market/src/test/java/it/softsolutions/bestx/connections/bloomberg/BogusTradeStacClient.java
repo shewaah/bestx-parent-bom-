@@ -304,20 +304,14 @@ public class BogusTradeStacClient implements TradeStacClientSession {
 
     @Override
     public void manageNewOrderSingle(TSNewOrderSingle tsNewOrderSingle) throws TradeStacException {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void manageOrderCancelRequest(TSOrderCancelRequest tsOrderCancelRequest) throws TradeStacException {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void manageTradeStacRequest(TSTradeStacRequest tsTradeStacRequest) throws TradeStacException {
-        // TODO Auto-generated method stub
-
     }
 
     public interface BogusTSClientListener {
@@ -334,86 +328,85 @@ public class BogusTradeStacClient implements TradeStacClientSession {
 
     @Override
     public void manageSecurityDefinitionRequest(TSSecurityDefinitionRequest tsSecurityDefinitionRequest) throws TradeStacException {
-        // TODO Auto-generated method stub
+
 
     }
 
     @Override
     public void manageQuoteRequest(TSQuoteRequest tsQuoteRequest) throws TradeStacException {
-        // TODO Auto-generated method stub
+
 
     }
 
     @Override
     public void manageQuoteAck(TSQuoteAck tsQuoteAck) throws TradeStacException {
-        // TODO Auto-generated method stub
+
 
     }
 
     @Override
     public void manageQuoteResponse(TSQuoteResponse tsQuoteResponse) throws TradeStacException {
-        // TODO Auto-generated method stub
+
 
     }
 
 	@Override
     public void manageQuote(TSQuote tsQuote) throws TradeStacException {
-	    // TODO Auto-generated method stub
+
 	    
     }
 
 	@Override
     public void manageNewOrderCross(TSNewOrderCross tsNewOrderCross) throws TradeStacException {
-	    // TODO Auto-generated method stub
+
 	    
     }
 
 	@Override
     public void manageCrossOrderCancelRequest(TSCrossOrderCancelRequest tsCrossOrderCancelRequest) throws TradeStacException {
-	    // TODO Auto-generated method stub
+
 	    
     }
 
 	@Override
     public void manageCrossOrderCancelReplaceRequest(TSCrossOrderCancelReplaceRequest tsCrossOrderCancelReplaceRequest) throws TradeStacException {
-	    // TODO Auto-generated method stub
+
 	    
     }
 
 	@Override
     public void manageTradingSessionListRequest(TSTradingSessionListRequest tsTradingSessionListRequest) throws TradeStacException {
-	    // TODO Auto-generated method stub
+
 	    
     }
 
 	@Override
     public void manageOrderMassCancelRequest(TSOrderMassCancelRequest tsOrderCancelRequest) throws TradeStacException {
-	    // TODO Auto-generated method stub
+
 	    
     }
 
 	@Override
     public void manageOrderCancelReplaceRequest(TSOrderCancelReplaceRequest tsOrderCancelReplaceRequest) throws TradeStacException {
-	    // TODO Auto-generated method stub
+
 	    
     }
 
 	@Override
     public void manageQuoteCancel(TSQuoteCancel tsQuoteCancel) throws TradeStacException {
-	    // TODO Auto-generated method stub
+
 	    
     }
 
 	@Override
     public void manageSecurityListRequest(TSSecurityListRequest tsSecurityListRequest) throws TradeStacException {
-	    // TODO Auto-generated method stub
+
 	    
     }
 
 	@Override
 	public void manageTradeCaptureReportRequest(TSTradeCaptureReportRequest tradeCaptureReportRequest)
 			throws TradeStacException {
-		// TODO Auto-generated method stub
 		
 	}
 

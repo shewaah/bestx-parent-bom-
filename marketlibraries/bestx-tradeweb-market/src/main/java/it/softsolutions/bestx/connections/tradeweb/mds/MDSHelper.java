@@ -267,7 +267,6 @@ public class MDSHelper extends MarketPriceDiscoveryHelper {
                 LOGGER.warn("The market maker {} might not have quantities for {}", code, instrument.getIsin());
             }
 
-            // [DR20120504] TODO is the venue.copyOf necessary ?
             Venue bloombergVenue = new Venue(venue);
             bloombergVenue.setMarket(market);
 
@@ -381,7 +380,6 @@ public class MDSHelper extends MarketPriceDiscoveryHelper {
             classifiedProposal.setProposalSubState(ProposalSubState.REJECTED_BY_MARKET);
             classifiedProposal.setReason(reason);
 
-            // [DR20120504] TODO is the venue.copyOf necessary ?
             Venue bloombergVenue = new Venue(venue);
             bloombergVenue.setMarket(market);
             classifiedProposal.setMarket(market);

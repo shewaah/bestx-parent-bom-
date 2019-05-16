@@ -53,7 +53,6 @@ public class HibernateBloombergFeedTradeDao implements BloombergFeedTradeDao {
 
     @Override
     public void saveTrade(BloombergFeedTrade trade) {
-        // TODO PM HibernateTradeFillDao first cancels, then saves - is it necessary, or is saveOrUpdate ok?
         checkPreRequisites();
 
         Session session = null;

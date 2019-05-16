@@ -175,7 +175,6 @@ public class OnExecutionReportRunnable implements Runnable {
         	break;
 		default:
 			LOGGER.error("Order {}, exec report with OrdStatus {} unexpected, cannot map to an ExecutioReportState", order.getFixOrderId(), ordStatus);
-			//TODO come agire in questo caso?
 			break;
         }
         

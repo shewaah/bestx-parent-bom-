@@ -10,7 +10,6 @@ import it.softsolutions.bestx.model.Rfq.OrderSide;
 public class QuoteProcessorAccruedInterest implements QuoteProcessor {
     
     public Quote process(Quote bean, Instrument instrument, OrderSide orderSide, BigDecimal qty, Date futSettDate) {
-        // TODO To be implemented accrued interest calculation!!
         return bean;
     }
 }

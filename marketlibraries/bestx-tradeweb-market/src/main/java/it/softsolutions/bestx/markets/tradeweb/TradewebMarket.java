@@ -632,7 +632,6 @@ public class TradewebMarket extends MarketCommon
       checkBuySideConnection();
       LOGGER.debug("listener = {}, marketOrder = {}, reason = {}", operation, marketOrder, reason);
 
-      // TODO [DR20150114] Complete here
       String clOrdID = marketOrder.getMarketSessionId();
       LOGGER.info("[MktReq] Order {}, Sending Cancel - ClOrdID={}", operation.getOrder().getFixOrderId(), clOrdID);
 
@@ -644,7 +643,6 @@ public class TradewebMarket extends MarketCommon
       checkBuySideConnection();
       LOGGER.debug("listener = {}, marketOrder = {}, reason = {}, sendOrderCancelTimeout = {}", operation, marketOrder, reason, sendOrderCancelTimeout);
 
-      // TODO [DR20150114] Complete here
       String clOrdID = marketOrder.getMarketSessionId();
       LOGGER.info("[MktReq] Order {}, Sending Cancel - ClOrdID={}", operation.getOrder().getFixOrderId(), clOrdID);
 

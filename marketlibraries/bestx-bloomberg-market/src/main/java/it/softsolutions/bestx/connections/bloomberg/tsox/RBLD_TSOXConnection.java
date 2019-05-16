@@ -198,14 +198,12 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
     public void onBusinessMessageReject(SessionID sessionID, TSBusinessMessageReject tsBusinessMessageReject) throws TradeStacException {
         LOGGER.info("{}, {}", sessionID, tsBusinessMessageReject);
 
-        // FIXME complete:
+        // FIXME check if complete:
         // check if the message is requiring the resend of the original message
         switch(tsBusinessMessageReject.getBusinessRejectReason()) {
         // if so, do it
+        // else ask to put order to warning state
         case ApplicationNotAvailable:
-        	// FIXME write here code to resend message
-        	break;
-            // else ask to put order to warning state
         default:
         	if(tsBusinessMessageReject.getMsgType() == MsgType.OrderSingle) {
         		tsoxConnectionListener.onOrderReject(sessionID.toString(), tsBusinessMessageReject.getBusinessRejectRefID(),

@@ -203,7 +203,7 @@ public class BBG_AcceptQuoteEventHandler extends BaseOperationEventHandler {
             operation.setStateResilient(new BBG_INT_AcceptBestIfStillValidState("Order rejected (" + text + "), trying again"), ErrorState.class);
            
 //
-// TODO PM se vado in BBG_INT_AcceptBestIfStillValidState (vedasi sopra) l'effetto collaterale, nel caso il dealer effettivamente non risponda (tsox test qty=17000)
+// 		   PM se vado in BBG_INT_AcceptBestIfStillValidState (vedasi sopra) l'effetto collaterale, nel caso il dealer effettivamente non risponda (tsox test qty=17000)
 //         e' che effettuo due tentativi di esecuzione.
 //         Se pero' l'accept e' fallita perche' sono in ritardo sulla QuoteID, ha senso ritentare.
 //         Se invece vado in Rejected, come qui sotto, evito il doppio tentativo, ma

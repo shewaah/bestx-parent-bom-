@@ -115,7 +115,7 @@ public class OnExecutionReportRunnable implements Runnable {
 		this.marketMakerFinder = marketMakerFinder;
 	}
 
-	//TODO verify the values reported here are compliant
+	//FIXME verify the values reported here are compliant
 	private static String calculateStatus(ExecutablePrice price, OrdStatus ordStatus, String dealerCode, BigDecimal execPrice) {
 		if(ordStatus == OrdStatus.Filled || ordStatus == OrdStatus.PartiallyFilled) { // dealer code is there and execPrice is there
 			if(execPrice.compareTo(price.getPrice().getAmount()) == 0 && dealerCode.compareTo(price.getOriginatorID()) == 0) 
@@ -170,7 +170,7 @@ public class OnExecutionReportRunnable implements Runnable {
 
 		marketExecutionReport.setExecType(execType.getFIXValue());
 		marketExecutionReport.setOrdStatus(ordStatus.getFIXValue());
-		// TODO 20190506 AMC verify that this management is appropriate. Better a switch on ordStatus?
+		// FIXME 20190506 AMC verify that this management is appropriate. Better a switch on ordStatus?
 		ExecutionReportState executionReportState;
 		if ((execType == ExecType.New)) {
 			executionReportState = ExecutionReportState.NEW;

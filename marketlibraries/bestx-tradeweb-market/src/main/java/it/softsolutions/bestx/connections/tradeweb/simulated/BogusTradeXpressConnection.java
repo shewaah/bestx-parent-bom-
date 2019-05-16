@@ -132,10 +132,11 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 		sendNewExecutionReport(marketOrder);
 
 		if(cancelIsins.isEmpty() || !cancelIsins.contains("US912810QX90")) cancelIsins.add("US912810QX90");
-		if(cancelIsins.isEmpty() || !cancelIsins.contains("XS1897488091"))cancelIsins.add("XS1897488091");
-//		if(cancelIsins.isEmpty() || !cancelIsins.contains("US912810EC81"))cancelIsins.add("US912810EC81");
-		if(cancelIsins.isEmpty() || !cancelIsins.contains("TRFAKBK11926"))cancelIsins.add("TRFAKBK11926");
-		cancelIsins.remove("US912810EC81");
+		if(!cancelIsins.contains("XS1897488091"))cancelIsins.add("XS1897488091");
+		if(!cancelIsins.contains("US912810EC81"))cancelIsins.add("US912810EC81");
+		if(!cancelIsins.contains("TRFAKBK11926"))cancelIsins.add("TRFAKBK11926");
+//		cancelIsins.remove("US912810EC81");
+
 		if (cancelIsins.contains(marketOrder.getInstrument().getIsin())) {
 			sendCancelledExecutionReport(marketOrder);
 		} else if (rejectIsins.contains(marketOrder.getInstrument().getIsin())){  //rejectIsins.add("XS0365323608");
@@ -224,7 +225,7 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 			//tsNoPartyIDsList.add(new TSNoPartyID("DLRW", PartyIDSource.BIC, PartyRole.ExecutingFirm));
 		tsp.setTSNoPartyIDsList(tsNoPartyIDsList);
 		execReport.setTSParties(tsp);
-		//FIXME add MiFID II fields
+		//TODO add MiFID II fields
 
 		TSCompDealersGrpComponent compdealersComp = new TSCompDealersGrpComponent();
 
@@ -276,7 +277,7 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 			tsp.setTSNoPartyIDsList(tsNoPartyIDsList);
 			execReport.setTSParties(tsp);
 		}
-		//FIXME add MiFID II fields
+		//TODO add MiFID II fields
 				
 		tradeXpressConnectionListener.onExecutionReport(sessionId, clOrdId, execReport);
 	}

@@ -94,7 +94,6 @@ public class BLPConnectorTest {
 //            }
 //            catch (InterruptedException e)
 //            {
-//               // TODO Auto-generated catch block
 //               e.printStackTrace();
 //            }
 			}

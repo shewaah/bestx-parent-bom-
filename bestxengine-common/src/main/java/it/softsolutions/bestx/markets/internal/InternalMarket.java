@@ -423,7 +423,7 @@ public class InternalMarket extends MarketConnection implements Connection, Conn
         tsn = serialNumberService.getSerialNumber("BTS_TSN", DateService.newLocalDate());
         operationRegistry.bindOperation(source, OperationIdType.BTS_TSN, Long.toString(tsn));
         cmfConnection.sendRequest(Long.toString(tsn), trader == null ? null : trader.getTraderName(),
-                order.getCustomer().getBbgName(), // TODO verificare cosa fare nel default
+                order.getCustomer().getBbgName(), 
                 order.getInstrument().getIsin(), order.getQty(), (price == null || BigDecimal.ZERO.compareTo(price.getAmount()) == 0) ? null : price.getAmount(), "2", "2", order.getSide(), orderId,
                 "000" + pendExpiration, null, sourceCode, null); // ticket number
     }

@@ -43,8 +43,6 @@ public class DiscardWorstPriceProposalClassifier implements ProposalClassifier {
 			 * if NOT enabled from config we don't go for the old way : we check if we have already done the call to
 			 * isAMatch, if so we won't do it again making the query only once.
 			 */
-	        // FIXME AMC 20160824 l'uso del servizio titoliIncrociabiliService dovrebbe essere legato a un flag o all'essere tale servizio non nullo
-	        // CS non usa e non ha mai usato il match tra ordini
 	 			if (!isMatchByQueryEnabled()) {
 				if (order.getIsMatchingFromQuery() == Order.IsMatchingFromQueryStates.NONE) {
 					isAMatchOrder = titoliIncrociabiliService.isAMatch(order);

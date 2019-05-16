@@ -291,7 +291,7 @@ public class MarketAxessMarket extends MarketCommon implements TradeStacPreTrade
 			try {
 				proposalAggregator.onProposal(askClassifiedProposal);
 
-				//FIXME AMC è vero? [DR20150409] La risposta MarketAxess non include nessun orderID, utilizziamo l'ISIN così come è stato utilizzato nella pricesRequested(isin);
+				//[DR20150409] La risposta MarketAxess non include nessun orderID, utilizziamo l'ISIN così come è stato utilizzato nella pricesRequested(isin);
 				marketStatistics.pricesResponseReceived(isin, 1);
 			} catch (BestXException e) {
 				LOGGER.error("Error managing classifiedProposal {}: {}", askClassifiedProposal, e.getMessage(), e);
@@ -300,7 +300,7 @@ public class MarketAxessMarket extends MarketCommon implements TradeStacPreTrade
 			try {
 				proposalAggregator.onProposal(bidClassifiedProposal);
 
-				//FIXME AMC è vero? [DR20150409] La risposta MarketAxess  non include nessun orderID, utilizziamo l'ISIN così come è stato utilizzato nella pricesRequested(isin);
+				//[DR20150409] La risposta MarketAxess  non include nessun orderID, utilizziamo l'ISIN così come è stato utilizzato nella pricesRequested(isin);
 				marketStatistics.pricesResponseReceived(isin, 1);
 			} catch (BestXException e) {
 				LOGGER.error("Error managing classifiedProposal {}: {}", bidClassifiedProposal, e.getMessage(), e);
@@ -318,7 +318,6 @@ public class MarketAxessMarket extends MarketCommon implements TradeStacPreTrade
 
 	@Override
 	public void cleanBook() {
-		//TODO AMC is anything needed?
 	}
 
 	@Override
@@ -514,7 +513,7 @@ public class MarketAxessMarket extends MarketCommon implements TradeStacPreTrade
 			// [BXMNT-430] marketSpecificCodes * 2 (BID e ASK)
 			marketStatistics.pricesRequested(isin, marketSpecificCodes.size() * 2);
 
-//			marketSpecificCodes.remove(7);  //FIXME levare!!!!!
+//			marketSpecificCodes.remove(7);
 //			marketSpecificCodes.remove(0);
 
 

@@ -757,7 +757,6 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         String executionMarketMaker = getExecutionReportMarketMaker(operation.getExecutionReports());
         String executionReportPrice = getExecutionReportPrice(operation.getExecutionReports());
         String executionProposalAmount = getLimitAttemptPrice(operation.getLastAttempt());
-        // FIXME use proposal settlement date as a preferred one
         String executionProposalFutSettDate = order.getFutSettDate() != null ? DateService.format(dateFormat, order.getFutSettDate()) : null;
 
         OperationState.Type type = newState.getType();

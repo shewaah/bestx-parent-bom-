@@ -276,10 +276,10 @@ public class SimpleMarketProposalAggregator implements MarketProposalAggregator 
         }
         realIsinBookListenersList.removeAll(toBeDeleted);
 
-        // TODO : capire se e' necessario :
-        if (realIsinBookListenersList.isEmpty()) {
-            cleanBook(isin, realIsinBookListenersList);
-        }
+//        // TODO : capire se e' necessario :
+//        if (realIsinBookListenersList.isEmpty()) {
+//            cleanBook(isin, realIsinBookListenersList);
+//        }
     }
 
     public void buildAndNotifyDependingMarketsBook(MarketPriceConnectionListener isinBookListener, Order order, BaseBook marketBook) throws BestXException {

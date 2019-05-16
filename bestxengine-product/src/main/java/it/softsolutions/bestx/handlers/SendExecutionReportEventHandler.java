@@ -50,7 +50,6 @@ public class SendExecutionReportEventHandler extends BaseOperationEventHandler {
 	
     private static final Logger LOGGER = LoggerFactory.getLogger(SendExecutionReportEventHandler.class);
 	
-    // FIXME AMC 20100505 attenzione perche' il calcolo delle commissioni e' replicato in TLX_SendReportsEventHandler,
     // MOT_SendReportsEventHandler e SendExecutionReportEventHandler
 
     private static final long serialVersionUID = 6528789682264435894L;
