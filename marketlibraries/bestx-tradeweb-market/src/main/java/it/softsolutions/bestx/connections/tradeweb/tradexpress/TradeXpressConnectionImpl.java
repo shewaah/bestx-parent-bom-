@@ -189,14 +189,15 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
         int tradingMode = Integer.parseInt(defaultTradingMode) ; // got from configuration
         if(marketOrder.isMiFIDRestricted() != null && !marketOrder.isMiFIDRestricted())
         	tradingMode = TradingMode.OFF_MTF; //"offMTF";
-        else if(marketOrder.isMiFIDRestricted() != null && marketOrder.isMiFIDRestricted())
-        	tradingMode = TradingMode.ON_MTF; //"onMTF";
+        // removed for BESTX-395
+//        else if(marketOrder.isMiFIDRestricted() != null && marketOrder.isMiFIDRestricted())
+//        	tradingMode = TradingMode.ON_MTF; //"onMTF";
         List<Field<?>> customFields = new ArrayList<Field<?>>();
         customFields.add(new TradingMode(tradingMode));
 
         // trading capacity
         // ClientTradingCapacity (23082)
-        if(tradingMode == TradingMode.ON_MTF) {
+        if(tradingMode == TradingMode.ON_MTF /*||  BESTX-395  tradingMode == TradingMode.ON_EUMTF*/) {  // Requires change to tradestc-tw-adapter  TradingMode
 	        Character clientTradingCapacity = TradewebDataHelper.convertTradingCapacity(marketOrder);
 	        if(clientTradingCapacity == null)
 	        	clientTradingCapacity = defaultTradingCapacity; //defaultTradingCapacity='P';
