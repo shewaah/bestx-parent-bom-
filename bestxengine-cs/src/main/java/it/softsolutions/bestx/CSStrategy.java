@@ -1254,10 +1254,6 @@ public class CSStrategy implements Strategy, SystemStateSelector {
             externalLastQuoteId = externalQuote.getSenderQuoteId();
          }
          String internalLastQuoteId = "";
-         Proposal internalQuote = handler.getUpdatedInternalQuote();
-         if (internalQuote != null) {
-            internalLastQuoteId = internalQuote.getSenderQuoteId();
-         }
 
          LOGGER.debug("[INT-TRACE] Removing multiple quotes handler for {} - external quoteID={}, internal quoteID={}", operationId, externalLastQuoteId, internalLastQuoteId);
 

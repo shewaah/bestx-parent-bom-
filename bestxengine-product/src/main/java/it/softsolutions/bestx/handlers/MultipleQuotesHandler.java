@@ -39,24 +39,14 @@ public class MultipleQuotesHandler {
     }
 
     private String externalQuoteReqID;
-    private String internalQuoteReqID;
     private ClassifiedProposal externalQuote;
-    private ClassifiedProposal internalQuote;
 
     private void setExternalQuoteReqID(String quoteReqID) {
         this.externalQuoteReqID = quoteReqID;
     }
 
-    private void setInternalQuoteReqID(String quoteReqID) {
-        this.internalQuoteReqID = quoteReqID;
-    }
-
     public ClassifiedProposal getUpdatedExternalQuote() {
         return externalQuote;
-    }
-
-    public ClassifiedProposal getUpdatedInternalQuote() {
-        return internalQuote;
     }
 
     public synchronized void manageQuoteStatusChange(MarketCode mkt, String quoteID, Proposal.ProposalType proposalStatus) throws BestXException {
@@ -76,17 +66,7 @@ public class MultipleQuotesHandler {
             currentExternalQuote.setType(proposalStatus);
             return;
         }
-        
-        ClassifiedProposal currentInternalQuote = getUpdatedInternalQuote();
-        if ( (currentInternalQuote != null) && 
-                        (currentInternalQuote.getMarket().getMarketCode() == mkt) && 
-                        (currentInternalQuote.getSenderQuoteId() != null) && 
-                        (currentInternalQuote.getSenderQuoteId().equals(quoteID)) ) {
-                       LOGGER.info("[MktMsg] Updating status to {} for internal quoteID {}, mkt {}", proposalStatus, quoteID, mkt);
-                       currentInternalQuote.setType(proposalStatus);
-                       return;
-       }
-        
+                
         LOGGER.info("No match for quote status {} for quoteID {}, mkt {}", proposalStatus, quoteID, mkt);
         
     }
@@ -109,49 +89,24 @@ public class MultipleQuotesHandler {
 
         LOGGER.info("Received new proposal, quoteReqID={}, quoteID={}, mkt={}", quoteReqID, quoteID, mkt);
 
-        // handle internal quote
-        if (InternalizationHelper.isInternalQuote(mkt, quoteReqID)) {
-            if (internalQuoteReqID == null) {
-                // set first internal quoteRedID
-                LOGGER.debug("Received internal quote, quoteReqID={}, quoteID={}, state={}, setting internalQuoteReqID={}", quoteReqID, quoteID, callingStateName, quoteReqID);
-                setInternalQuoteReqID(quoteReqID);
-            }
-
-            if (!internalQuoteReqID.equals(quoteReqID)) {
-                LOGGER.warn("Received internal quote with quoteReqID={} different from expected={}, quoteID={}, state={}, ignoring it", quoteReqID, internalQuoteReqID, quoteID, callingStateName);
-                return;
-            }
-
-            String currentInternalQuoteID = ( internalQuote == null ? null : internalQuote.getSenderQuoteId() );  
-            if ( isNewer(mkt, quoteID, currentInternalQuoteID) ) {
-                LOGGER.info("[MktMsg] Updating internal quote, quoteReqID={}, quoteID={}, state={}", quoteReqID, quoteID, callingStateName);
-                internalQuote = proposal;
-            }
-            else {
-                LOGGER.info("Internal quote older than incoming, ignoring it, quoteReqID={}, quoteID={}, state={}", quoteReqID, quoteID, callingStateName);
-            }
+        if (externalQuoteReqID == null) {
+            // set first external quoteRedID
+            LOGGER.debug("Received external quote, quoteReqID={}, quoteID={}, state={}, setting externalQuoteReqID={}", quoteReqID, quoteID, callingStateName, quoteReqID);
+            setExternalQuoteReqID(quoteReqID);
         }
-        // handle external quote
+
+        if (!externalQuoteReqID.equals(quoteReqID)) {
+            LOGGER.warn("Received external quote with quoteReqID={} different from expected={}, quoteID={}, state={}, ignoring it", quoteReqID, externalQuoteReqID, quoteID, callingStateName);
+            return;
+        }
+
+        String currentExternalQuoteID = ( externalQuote == null ? null : externalQuote.getSenderQuoteId() );  
+        if ( isNewer(mkt, quoteID, currentExternalQuoteID) ) {
+            LOGGER.info("[MktMsg] Updating external quote, quoteReqID={}, quoteID={}, state={}", quoteReqID, quoteID, callingStateName);
+            externalQuote = proposal;
+        }
         else {
-            if (externalQuoteReqID == null) {
-                // set first external quoteRedID
-                LOGGER.debug("Received external quote, quoteReqID={}, quoteID={}, state={}, setting externalQuoteReqID={}", quoteReqID, quoteID, callingStateName, quoteReqID);
-                setExternalQuoteReqID(quoteReqID);
-            }
-
-            if (!externalQuoteReqID.equals(quoteReqID)) {
-                LOGGER.warn("Received external quote with quoteReqID={} different from expected={}, quoteID={}, state={}, ignoring it", quoteReqID, externalQuoteReqID, quoteID, callingStateName);
-                return;
-            }
-
-            String currentExternalQuoteID = ( externalQuote == null ? null : externalQuote.getSenderQuoteId() );  
-            if ( isNewer(mkt, quoteID, currentExternalQuoteID) ) {
-                LOGGER.info("[MktMsg] Updating external quote, quoteReqID={}, quoteID={}, state={}", quoteReqID, quoteID, callingStateName);
-                externalQuote = proposal;
-            }
-            else {
-                LOGGER.info("External quote older than incoming, ignoring it, quoteReqID={}, quoteID={}, state={}", quoteReqID, quoteID, callingStateName);
-            }
+            LOGGER.info("External quote older than incoming, ignoring it, quoteReqID={}, quoteID={}, state={}", quoteReqID, quoteID, callingStateName);
         }
     }    
 
@@ -177,23 +132,6 @@ public class MultipleQuotesHandler {
         if (quoteID.isEmpty()) {
             throw new BestXException("QuoteID is empty");
         }
-
-        if (mktCode == MarketCode.BLOOMBERG) {
-            //
-            // expected format for BLOOMBERG quoteIDs: 13857296630342097984:0:<progressive number>
-            // but no check is done (except for quoteID not being null/empty
-            //
-            //            String[] quoteIdParts = quoteID.split(":");
-            //            if (quoteIdParts.length != 3) {
-            //                throw new BestXException("QuoteID [" + quoteID + "] wrong format, should be <number 1>:<number 2>:<progressive number>");
-            //            }
-            //            try {
-            //                int value = Integer.parseInt(quoteIdParts[2]);
-            //            }
-            //            catch (NumberFormatException e) {
-            //                throw new BestXException("QuoteID [" + quoteID + "] wrong format, should be <number 1>:<number 2>:<progressive number>");
-            //            }
-        }
     }
 
     protected boolean isNewer(MarketCode mktCode, String newQuoteID, String oldQuoteID) throws BestXException {
@@ -207,21 +145,8 @@ public class MultipleQuotesHandler {
         if (newQuoteID.isEmpty()) {
             throw new BestXException("New QuoteID is empty");
         }
-
-        if (mktCode == MarketCode.BLOOMBERG) {
-            //
-            // expected format for BLOOMBERG quoteIDs: 13857296630342097984:0:<progressive number>
-            // but no check is done (except for quoteID not being null/empty, or equal to the existing one)
-            //
-            if ( (oldQuoteID != null) && (!oldQuoteID.isEmpty()) && (newQuoteID.equals(oldQuoteID)) ) {
-                return false;
-            }
-
-            return true;
-        }
-        else {
-            return false;
-        }
+        // FIXME AMC manage this in the scenario of quote stream for BV
+        return true;
 
     }
 
@@ -232,8 +157,8 @@ public class MultipleQuotesHandler {
 
         switch (mktCode) {
         case BLOOMBERG:
+        case BV:
             return true;
-
         default:
             return false;
         }

@@ -32,6 +32,7 @@ import it.softsolutions.bestx.model.Proposal.ProposalType;
  * Creation date: 04/mar/2013 
  * 
  **/
+@Deprecated
 public class InternalizationHelper {
 	private static final Logger LOGGER = LoggerFactory.getLogger(InternalizationHelper.class);
 

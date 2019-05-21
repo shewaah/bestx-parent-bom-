@@ -41,6 +41,7 @@ import quickfix.Field;
 import quickfix.Group;
 import tw.quickfix.field.CompDealerID;
 import tw.quickfix.field.CompDealerQuote;
+import tw.quickfix.field.CompDealerQuoteType;
 import tw.quickfix.field.CompDealerStatus;
 import tw.quickfix.field.MiFIDMIC;
 
@@ -134,7 +135,7 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 		if(cancelIsins.isEmpty() || !cancelIsins.contains("US912810QX90")) cancelIsins.add("US912810QX90");
 		if(!cancelIsins.contains("XS1897488091"))cancelIsins.add("XS1897488091");
 		if(!cancelIsins.contains("US912810EC81"))cancelIsins.add("US912810EC81");
-		if(!cancelIsins.contains("TRFAKBK11926"))cancelIsins.add("TRFAKBK11926");
+//		if(!cancelIsins.contains("TRFAKBK11926"))cancelIsins.add("TRFAKBK11926");
 //		cancelIsins.remove("US912810EC81");
 
 		if (cancelIsins.contains(marketOrder.getInstrument().getIsin())) {
@@ -231,25 +232,26 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 
 		Group compdealer2 = new Group(10009, 10010, new int[] { 10010, 10011, 10012, 10015, 10016, 0 });
 		compdealer2.setField(new CompDealerQuote(100.674));
-		compdealer2.setField(new CompDealerID("DLRY"));	
+		compdealer2.setField(new CompDealerID("DLRW"));
+		compdealer2.setField(new CompDealerQuoteType(1));
 		compdealersComp.addGroup(compdealer2);
 		
 		Group compdealer3 = new Group(10009, 10010, new int[] { 10010, 10011, 10012, 10015, 10016, 0 });
 //		compdealer3.setField(new CompDealerStatus(6));
 		compdealer3.setField(new CompDealerQuote(101.435));
 		compdealer3.setField(new CompDealerID("DLRB"));	
-		compdealersComp.addGroup(compdealer3);
+//		compdealersComp.addGroup(compdealer3);
 		
 		Group compdealer4 = new Group(10009, 10010, new int[] { 10010, 10011, 10012, 10015, 10016, 0 });
 		compdealer4.setField(new CompDealerStatus(2));
 		compdealer4.setField(new CompDealerQuote(0.0));
 		compdealer4.setField(new CompDealerID("DLRZ"));	
-		compdealersComp.addGroup(compdealer4);
+//		compdealersComp.addGroup(compdealer4);
 
 		Group compdealer5 = new Group(10009, 10010, new int[] { 10010, 10011, 10012, 10015, 10016, 0 });
 		compdealer5.setField(new CompDealerStatus(2));
 		compdealer5.setField(new CompDealerID("DLRK"));	
-		compdealersComp.addGroup(compdealer5);
+//		compdealersComp.addGroup(compdealer5);
 
 		execReport.addCustomComponent(compdealersComp);
 		

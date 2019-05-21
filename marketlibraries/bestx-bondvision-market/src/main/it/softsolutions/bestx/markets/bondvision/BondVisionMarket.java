@@ -681,7 +681,7 @@ public class BondVisionMarket extends MarketCommon implements MarketBuySideConne
                         LOGGER.debug("Quote received for the order {}, registering statistics.", orderId);
                         // marketStatistics.orderResponseReceived(orderId);
 
-                        LOGGER.debug("[RTFICNT] Setting flag to true");
+                        LOGGER.debug("[BVCNT] Setting flag to true");
                         operation.setProcessingCounter(true);
 
                         ClassifiedProposal proposal = new ClassifiedProposal();

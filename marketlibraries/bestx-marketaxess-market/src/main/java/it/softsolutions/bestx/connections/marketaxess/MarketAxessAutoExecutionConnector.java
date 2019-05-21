@@ -355,8 +355,7 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
       
 		//ESCB Stability Flag
 		newOrderSingle.setField(new MKTXESCBStblty(MKTXESCBStblty.INVESTMENT_OPERATIONS));
-
-
+		
 		// da usare se si preferisce usare il solo dealer best
 		String dealerCode = marketOrder.getMarketMarketMaker() != null ? marketOrder.getMarketMarketMaker().getMarketSpecificCode() : null;
 
