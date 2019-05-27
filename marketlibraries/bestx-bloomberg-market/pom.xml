@@ -3,7 +3,7 @@
     <parent>
         <artifactId>marketlibraries</artifactId>
         <groupId>it.softsolutions.bestx</groupId>
-        <version>4.3.10-v2_BESTX_420</version>
+        <version>4.3.10-v3_BESTX_420-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
