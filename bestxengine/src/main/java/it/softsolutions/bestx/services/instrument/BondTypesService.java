@@ -47,8 +47,7 @@ public class BondTypesService {
 
     // BESTX-382 added the definition here of what is a UST AMC 20190108
     public static boolean isUST(Instrument instrument) {
-    	if("US".equals(instrument.getCountry().getCode())
-    			&& "US GOVERNMENT".equals(instrument.getSecurityType())
+    	if("US GOVERNMENT".equals(instrument.getSecurityType())
     			&& ("US TREASURY N/B".equals(instrument.getIssuerName())
     			|| "TREASURY BILL".equals(instrument.getIssuerName())
     			|| "STRIP PRINC".equals(instrument.getIssuerName())
