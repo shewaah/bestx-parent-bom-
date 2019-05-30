@@ -1,23 +1,15 @@
 /*
- * Project Name : BestXEngine_Akros
- *
- * Copyright    : Copyright (c) 2002 SoftSolutions!.  All rights reserved.
- *                This source code constitutes the unpublished,
- *                confidential and proprietary information of SoftSolutions!.
- *
- * Created by   : SoftSolutions! Italy.
- *
- * CVS information
- * File name    : $RCSfile $
- * Author       : $Author: ruggero.rizzo $
- * Date         : $Date: 2010-12-24 08:45:56 $
- * Header       : $Id: BV_ManagingRfqEventHandler.java,v 1.3 2010-12-24 08:45:56 ruggero.rizzo Exp $
- * Revision     : $Revision: 1.3 $
- * Source       : $Source: /root/scripts/BestXEngine_Akros/src/it/softsolutions/bestx/handlers/bondvision/BV_ManagingRfqEventHandler.java,v $
- * Tag name     : $Name: not supported by cvs2svn $
- * State        : $State: Exp $
- *
- * For more details see cvs web documentation for project: BestXEngine_Akros
+ * Copyright 2019-2028 SoftSolutions! srl 
+ * All Rights Reserved. 
+ * 
+ * NOTICE: All information contained herein is, and remains the property of SoftSolutions! srl 
+ * The intellectual and technical concepts contained herein are proprietary to SoftSolutions! srl and 
+ * may be covered by EU, U.S. and other Foreign Patents, patents in process, and 
+ * are protected by trade secret or copyright law. 
+ * Dissemination of this information or reproduction of this material is strictly forbidden 
+ * unless prior written permission is obtained from SoftSolutions! srl.
+ * Any additional licenses, terms and conditions, if any, are defined in file 'LICENSE.txt', 
+ * which may be part of this software package.
  */
 package it.softsolutions.bestx.handlers.bondvision;
 

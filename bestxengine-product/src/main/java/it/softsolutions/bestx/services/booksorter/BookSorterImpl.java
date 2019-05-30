@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import it.softsolutions.bestx.bestexec.BookSorter;
 import it.softsolutions.bestx.model.ClassifiedBook;
 import it.softsolutions.bestx.model.ClassifiedProposal;
+import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.SortedBook;
 
 /**
@@ -52,19 +53,19 @@ public class BookSorterImpl implements BookSorter {
         SortedBook sortedBook = new SortedBook();
         sortedBook.setInstrument(classifiedBook.getInstrument());
         LOGGER.info("  -----------------------------------------------------------------------------------------");
-        sortedBook.setAskProposals(sortProposals(classifiedBook.getAskProposals(), new ClassifiedAskComparator()));
+        sortedBook.setAskProposals(sortProposals(classifiedBook.getInstrument(), classifiedBook.getAskProposals(), new ClassifiedAskComparator()));
         LOGGER.info("-----------------------------------------------------------------------------------------");
-        sortedBook.setBidProposals(sortProposals(classifiedBook.getBidProposals(), new ClassifiedBidComparator()));
+        sortedBook.setBidProposals(sortProposals(classifiedBook.getInstrument(), classifiedBook.getBidProposals(), new ClassifiedBidComparator()));
         LOGGER.info("  -----------------------------------------------------------------------------------------");
         return sortedBook;
     }
-    private List<ClassifiedProposal> sortProposals(Collection<? extends ClassifiedProposal> proposals, Comparator<ClassifiedProposal> comparator) {
+    private List<ClassifiedProposal> sortProposals(Instrument instrument, Collection<? extends ClassifiedProposal> proposals, Comparator<ClassifiedProposal> comparator) {
         ArrayList<ClassifiedProposal> classifiedProposals = new ArrayList<ClassifiedProposal>();
         classifiedProposals.addAll(proposals);
         try {
         Collections.sort(classifiedProposals, comparator);
     	for(int i = 0; i < classifiedProposals.size(); i++)
-    		LOGGER.info("{}{}", i, classifiedProposals.get(i).toStringShort());
+        	LOGGER.info("{}{}{}", instrument == null ? "null" : instrument.getIsin(), i, classifiedProposals.get(i).toStringShort());
         } catch(IllegalArgumentException e) {
         	System.out.println(e.toString());
         	e.printStackTrace(System.out);

@@ -1,24 +1,17 @@
 /*
- * Project Name : BestXEngine_common
- *
- * Copyright    : Copyright (c) 2002 SoftSolutions!.  All rights reserved.
- *                This source code constitutes the unpublished,
- *                confidential and proprietary information of SoftSolutions!.
- *
- * Created by   : SoftSolutions! Italy.
- *
- * CVS information
- * File name    : $RCSfile $
- * Author       : $Author: anna.cochetti $
- * Date         : $Date: 2010-01-15 08:59:28 $
- * Header       : $Id: BondvisionFillInputBean.java,v 1.1 2010-01-15 08:59:28 anna.cochetti Exp $
- * Revision     : $Revision: 1.1 $
- * Source       : $Source: /root/scripts/BestXEngine_common/src/it/softsolutions/bestx/connections/bondvision/BondvisionFillInputBean.java,v $
- * Tag name     : $Name: not supported by cvs2svn $
- * State        : $State: Exp $
- *
- * For more details see cvs web documentation for project: BestXEngine_common
+ * Copyright 2019-2028 SoftSolutions! srl 
+ * All Rights Reserved. 
+ * 
+ * NOTICE: All information contained herein is, and remains the property of SoftSolutions! srl 
+ * The intellectual and technical concepts contained herein are proprietary to SoftSolutions! srl and 
+ * may be covered by EU, U.S. and other Foreign Patents, patents in process, and 
+ * are protected by trade secret or copyright law. 
+ * Dissemination of this information or reproduction of this material is strictly forbidden 
+ * unless prior written permission is obtained from SoftSolutions! srl.
+ * Any additional licenses, terms and conditions, if any, are defined in file 'LICENSE.txt', 
+ * which may be part of this software package.
  */
+
 package it.softsolutions.bestx.connections.bondvision;
 
 import it.softsolutions.bestx.connections.xt2.XT2InputLazyBean;

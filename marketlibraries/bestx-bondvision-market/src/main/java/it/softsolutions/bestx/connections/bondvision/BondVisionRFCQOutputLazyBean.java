@@ -1,5 +1,6 @@
 /*
- * Copyright 1997-2012 SoftSolutions! srl 
+ /*
+ * Copyright 2019-2028 SoftSolutions! srl 
  * All Rights Reserved. 
  * 
  * NOTICE: All information contained herein is, and remains the property of SoftSolutions! srl 
