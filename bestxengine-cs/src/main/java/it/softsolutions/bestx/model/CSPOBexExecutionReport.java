@@ -237,7 +237,8 @@ public class CSPOBexExecutionReport extends ExecutionReport {
 				dealerGroup.setDealerID(marketExecutionReport.getMarketMaker().getCode());
 			} else if(marketOrder != null && marketOrder.getMarketMarketMaker()!= null) {
 				dealerGroup.setDealerID(marketOrder.getMarketMarketMaker().getMarketMaker().getCode());
-			}
+			} else if(marketExecutionReport.getExecBroker() != null)
+				dealerGroup.setDealerID(marketExecutionReport.getExecBroker());  //BESTX-424
 
 			if (counteroffer != null && counteroffer.getMarketMarketMaker() != null && counteroffer.getPrice() != null) {  // got a counteroffer
 				dealerGroup.setDealerQuotePrice(counteroffer.getPrice().getAmount());
