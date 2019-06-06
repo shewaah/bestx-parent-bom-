@@ -30,7 +30,6 @@ import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.tradestac.api.TradeStacException;
 import it.softsolutions.tradestac.client.TradeStacClientSession;
-import it.softsolutions.tradestac.fix.field.BusinessRejectReason;
 import it.softsolutions.tradestac.fix.field.Currency;
 import it.softsolutions.tradestac.fix.field.ExecType;
 import it.softsolutions.tradestac.fix.field.MsgType;
@@ -69,6 +68,62 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
 
     private TSOXConnectionListener tsoxConnectionListener;
     private TradeStacClientSession tradeStacClientSession;
+    
+    private String traderCode;
+    private String investmentDecisionMakerID;
+    private String investmentDecisionQualifier;
+    /**
+	 * @return the traderCode
+	 */
+	public String getTraderCode() {
+		return traderCode;
+	}
+	/**
+	 * @param traderCode the traderCode to set
+	 */
+	public void setTraderCode(String traderCode) {
+		this.traderCode = traderCode;
+	}
+	/**
+	 * @return the investmentDecisionMakerID
+	 */
+	public String getInvestmentDecisionMakerID() {
+		return investmentDecisionMakerID;
+	}
+	/**
+	 * @param investmentDecisionMakerID the investmentDecisionMakerID to set
+	 */
+	public void setInvestmentDecisionMakerID(String investmentDecisionMakerID) {
+		this.investmentDecisionMakerID = investmentDecisionMakerID;
+	}
+	/**
+	 * @return the investmentDecisionQualifier
+	 */
+	public String getInvestmentDecisionQualifier() {
+		return investmentDecisionQualifier;
+	}
+	/**
+	 * @param investmentDecisionQualifier the investmentDecisionQualifier to set
+	 */
+	public void setInvestmentDecisionQualifier(String investmentDecisionQualifier) {
+		this.investmentDecisionQualifier = investmentDecisionQualifier;
+	}
+	/**
+	 * @return the executionDecisionMakerID
+	 */
+	public String getExecutionDecisionMakerID() {
+		return executionDecisionMakerID;
+	}
+	/**
+	 * @param executionDecisionMakerID the executionDecisionMakerID to set
+	 */
+	public void setExecutionDecisionMakerID(String executionDecisionMakerID) {
+		this.executionDecisionMakerID = executionDecisionMakerID;
+	}
+
+	private String executionDecisionMakerID;
+
+    
 
     // tsoxEnquiryTime: maximum validity time of orders (in seconds) 
     private long tsoxEnquiryTime;
@@ -85,8 +140,8 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
      *
      * @param tsoxEnquiryTime the new tsox EnquiryTime
      */
-    public void setTsoxWiretime(long tsoxWiretime) {
-        this.tsoxEnquiryTime = tsoxWiretime;
+    public void setTsoxEnquiryTime(long tsoxEnquirytime) {
+        this.tsoxEnquiryTime = tsoxEnquirytime;
     }
 
     // trader code to be sent to Tsox in QuoteRequest with PartyRole=11(Originator)
@@ -115,16 +170,6 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
 	public void setDefaultCapacity(String defaultCapacity) {
 		this.defaultCapacity = defaultCapacity;
 	}
-
-
-	private String investmentDecisorCode;
-	public String getInvestmentDecisorCode() {
-		return investmentDecisorCode;
-	}
-	public void setInvestmentDecisorCode(String investmentDecisorCode) {
-		this.investmentDecisorCode = investmentDecisorCode;
-	}
-
 	private String enteringFirmCode;
 	public String getEnteringFirmCode() {
 		return enteringFirmCode;
@@ -205,13 +250,13 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
         // else ask to put order to warning state
         case ApplicationNotAvailable:
         default:
-        	if(tsBusinessMessageReject.getMsgType() == MsgType.OrderSingle) {
+        	if(tsBusinessMessageReject.getRefMsgType() == MsgType.OrderSingle) {
         		tsoxConnectionListener.onOrderReject(sessionID.toString(), tsBusinessMessageReject.getBusinessRejectRefID(),
-        				tsBusinessMessageReject.getBusinessRejectReason().toString().concat(" - ").concat(tsBusinessMessageReject.getText()));
+        				tsBusinessMessageReject.getText());
         	}
-        	else if(tsBusinessMessageReject.getMsgType() == MsgType.OrderCancelRequest) {
+        	else if(tsBusinessMessageReject.getRefMsgType() == MsgType.OrderCancelRequest) {
         		tsoxConnectionListener.onCancelReject(sessionID.toString(), tsBusinessMessageReject.getBusinessRejectRefID(),
-        				tsBusinessMessageReject.getBusinessRejectReason().toString().concat(" - ").concat(tsBusinessMessageReject.getText()));
+        				tsBusinessMessageReject.getText());
         	}
         		break;
         }
@@ -288,7 +333,7 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
         trader.setPartyRole(PartyRole.OrderOriginationTrader);
 
         TSNoPartyID investmentDecisor = new TSNoPartyID();
-        investmentDecisor.setPartyID(investmentDecisorCode);
+        investmentDecisor.setPartyID(investmentDecisionMakerID);
         investmentDecisor.setPartyIDSource(PartyIDSource.ProprietaryCustomCode);
         investmentDecisor.setPartyRole(PartyRole.InvestmentDecisionMaker);
         investmentDecisor.setPartyRoleQualifier(investmentDecisorQualifier);

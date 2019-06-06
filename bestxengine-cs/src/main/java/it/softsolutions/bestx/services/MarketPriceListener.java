@@ -214,32 +214,32 @@ public class MarketPriceListener implements MarketPriceConnectionListener {
                      * mercato e da BBG.
                      */
 
-                    PriceForgeRuleBean rule = null;
-                    // intervento per Desk corporates per modificare il contenuto del book in accordo con il set di regole descritto in
-                    // tabella PriceForgeRuleTable
-                    if (priceForgeService != null && canUsePriceForge(PriceForgeService.getPriceForgeMarketCode(), order)) {
-                        rule = priceForgeService.getRule(consolidatedBook, order);
-                    } else {
-                        if (priceForgeService == null) {
-                            LOGGER.debug("{} PriceForgeService not available.", logStart);
-                        } else {
-                            LOGGER.debug("{} PriceForgeService cannot be used.", logStart);
-                        }
-                    }
-
+//                    PriceForgeRuleBean rule = null;
+//                    // intervento per Desk corporates per modificare il contenuto del book in accordo con il set di regole descritto in
+//                    // tabella PriceForgeRuleTable
+//                    if (priceForgeService != null && canUsePriceForge(PriceForgeService.getPriceForgeMarketCode(), order)) {
+//                        rule = priceForgeService.getRule(consolidatedBook, order);
+//                    } else {
+//                        if (priceForgeService == null) {
+//                            LOGGER.debug("{} PriceForgeService not available.", logStart);
+//                        } else {
+//                            LOGGER.debug("{} PriceForgeService cannot be used.", logStart);
+//                        }
+//                    }
+//
                     // MSA 20110322 Get OrderId
                     // se rule e' != null, vuol dire che anche il price Forge Service lo e' e
                     // e' possibile utilizzarlo
                     BaseBook processedBook = consolidatedBook;
-                    if (rule != null) {
-                        LOGGER.debug("{}, processing the rule found.", logStart);
-                        processedBook = (BaseBook) priceForgeService.processRule(rule, consolidatedBook, order);
-                        LOGGER.debug("{}, rule processed, working with the possibly modified book.", logStart);
-                    } else {
-                        LOGGER.debug(
-                                "{}, No rules available, no default rule could be determined, the ISIN {} is probably new and has no asset type and bond type defined. Leave the market proposals unchanged.",
-                                logStart, order.getInstrument().getIsin());
-                    }
+//                    if (rule != null) {
+//                        LOGGER.debug("{}, processing the rule found.", logStart);
+//                        processedBook = (BaseBook) priceForgeService.processRule(rule, consolidatedBook, order);
+//                        LOGGER.debug("{}, rule processed, working with the possibly modified book.", logStart);
+//                    } else {
+//                        LOGGER.debug(
+//                                "{}, No rules available, no default rule could be determined, the ISIN {} is probably new and has no asset type and bond type defined. Leave the market proposals unchanged.",
+//                                logStart, order.getInstrument().getIsin());
+//                    }
                     LOGGER.debug("Classify Book");
 
                     processedBook.checkSides();
@@ -266,13 +266,13 @@ public class MarketPriceListener implements MarketPriceConnectionListener {
                     boolean replaced = false;
                     if (!atLeastOnePriceAvailable) {
                         LOGGER.info("Order {}, no valid price for side: {}", order.getFixOrderId(), order.getSide().name());
-                        if (priceForgeService != null && canUsePriceForge(PriceForgeService.getPriceForgeMarketCode(), order)) {
-                            LOGGER.debug("Order {}, putting back in the book the original proposal removed on behalf of the price forge best", order.getFixOrderId());
-                            priceForgeService.replacePriceForgeProposalsWithOriginalProposals(processedBook, order, rule);
-                            replaced = true;
-                            LOGGER.debug("Order {}, performing again the book classification.", order.getFixOrderId());
-                            classifiedBook = bookClassifier.getClassifiedBook(processedBook, order, previousAttempts, venues);
-                        }
+//                        if (priceForgeService != null && canUsePriceForge(PriceForgeService.getPriceForgeMarketCode(), order)) {
+//                            LOGGER.debug("Order {}, putting back in the book the original proposal removed on behalf of the price forge best", order.getFixOrderId());
+//                            priceForgeService.replacePriceForgeProposalsWithOriginalProposals(processedBook, order, rule);
+//                            replaced = true;
+//                            LOGGER.debug("Order {}, performing again the book classification.", order.getFixOrderId());
+//                            classifiedBook = bookClassifier.getClassifiedBook(processedBook, order, previousAttempts, venues);
+//                        }
                     }
 
                     LOGGER.debug("{} Sort Book", logStart);
@@ -280,14 +280,14 @@ public class MarketPriceListener implements MarketPriceConnectionListener {
                     try {
                     	sortedBook = bookSorter.getSortedBook(classifiedBook);
                     } catch (IllegalArgumentException e) {
-                    	LOGGER.warn("IllegalArgumentException in sorting book for order {}: original book is {}", order.getFixOrderId(), classifiedBook.toString(), e);
+                    	LOGGER.warn("IllegalArgumentException in sorting book for order {}: original book is {}", order.getFixOrderId(), classifiedBook == null? "null book" : classifiedBook.toString(), e);
                     	throw e;
         			}
                     // intervento per Desk corporates per modificare il contenuto del book in accordo con il set di regole descritto in
                     // tabella PriceForgeRuleTable
-                    if (priceForgeService != null && !replaced && canUsePriceForge(PriceForgeService.getPriceForgeMarketCode(), order)) {
-                        priceForgeService.changeBestProposals(processedBook, sortedBook, order, rule);
-                    }
+//                    if (priceForgeService != null && !replaced && canUsePriceForge(PriceForgeService.getPriceForgeMarketCode(), order)) {
+//                        priceForgeService.changeBestProposals(processedBook, sortedBook, order, rule);
+//                    }
 
                     if (OrderSide.BUY.equals(order.getSide())) {
                         currentProposals = sortedBook.getAskProposals();
@@ -400,18 +400,18 @@ public class MarketPriceListener implements MarketPriceConnectionListener {
                         for (MarketMarketMaker mmm : mmmNotQuotingInstr) {
                             MarketCode mktCode = mmm.getMarket().getMarketCode();
                             LOGGER.debug("{} Market Maker {}", logStart, mmm.getMarketSpecificCode());
-                            if (mktCode != null && mktCode.equals(priceForgeMktCode) && rule != null && rule.getAction() != null) {
-
-                                LOGGER.debug(
-                                        "{} Market maker of the price forge market ({}), check if the market maker is the internal one and the price forge strategy is BEST, if so we cannot build a market maker not quoting instrument proposal.",
-                                        logStart, priceForgeMktCode.name());
-                                MarketMaker mm = mmm.getMarketMaker();
-                                if (mm != null && mm.equals(priceForgeMM) && rule.getAction().equals(PriceForgeRuleBean.ActionType.ADD_SPREAD)) {
-                                    LOGGER.debug("{} Internal market maker ({}) and the price forge strategy is BEST, do not build a market maker not quoting instrument proposal.", logStart,
-                                            priceForgeMM.getCode());
-                                    continue;
-                                }
-                            }
+//                            if (mktCode != null && mktCode.equals(priceForgeMktCode) && rule != null && rule.getAction() != null) {
+//
+//                                LOGGER.debug(
+//                                        "{} Market maker of the price forge market ({}), check if the market maker is the internal one and the price forge strategy is BEST, if so we cannot build a market maker not quoting instrument proposal.",
+//                                        logStart, priceForgeMktCode.name());
+//                                MarketMaker mm = mmm.getMarketMaker();
+//                                if (mm != null && mm.equals(priceForgeMM) && rule.getAction().equals(PriceForgeRuleBean.ActionType.ADD_SPREAD)) {
+//                                    LOGGER.debug("{} Internal market maker ({}) and the price forge strategy is BEST, do not build a market maker not quoting instrument proposal.", logStart,
+//                                            priceForgeMM.getCode());
+//                                    continue;
+//                                }
+//                            }
 
                             //
                             // Some market market makers are the same trading venue, there is no need

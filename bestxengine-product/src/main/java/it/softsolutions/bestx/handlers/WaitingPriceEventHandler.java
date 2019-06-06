@@ -310,8 +310,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		Attempt currentAttempt = operation.getLastAttempt();
 		currentAttempt.setSortedBook(priceResult.getSortedBook());
 
-
-
 		LOGGER.debug("Order {}, End of the price discovery, check if we received a customer revoke for this order and, if so, start the revoking routine.", operation.getOrder().getFixOrderId());
 		if (checkCustomerRevoke(operation.getOrder())) {
 			LOGGER.info("Order {}, end of the price discovery, customer revoke received for this order. Start the cancel routine.", operation.getOrder().getFixOrderId());

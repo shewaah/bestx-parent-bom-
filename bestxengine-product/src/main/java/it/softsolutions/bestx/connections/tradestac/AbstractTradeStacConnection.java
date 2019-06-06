@@ -66,6 +66,7 @@ import quickfix.SessionSettings;
  * Creation date: 28/set/2012 
  * 
  **/
+@SuppressWarnings("deprecation")
 public class AbstractTradeStacConnection implements Connection, TradeStacSessionCallback, TradeStacApplicationCallback {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTradeStacConnection.class);
@@ -186,7 +187,8 @@ public class AbstractTradeStacConnection implements Connection, TradeStacSession
         throw new UnsupportedOperationException();
     }
     
-    @Override
+
+	@Override
     public void onNetworkCounterpartySystemStatusResponse(SessionID sessionID, TSNetworkCounterpartySystemStatusResponse tsNetworkCounterpartySystemStatusResponse) throws TradeStacException {
         LOGGER.debug("[{}] {}, {}", connectionName, sessionID, tsNetworkCounterpartySystemStatusResponse);
 

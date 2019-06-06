@@ -872,7 +872,10 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
 	@Override
 	public void onOrderReject(final String sessionId, String quoteReqId, final String reason) {
 		LOGGER.info("Order reject ({}) received from {} : {}", reason, getMarketCode(), sessionId);
-		executor.execute(new OnOrderRejectRunnable(quoteReqId, reason, this));
+		if(quoteReqId == null) {
+			LOGGER.error("onOrderReject with null quoteReqId received, reason was {}", reason);
+		} else
+			executor.execute(new OnOrderRejectRunnable(quoteReqId, reason, this));
 	}
 
 	@Override

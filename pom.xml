@@ -20,10 +20,11 @@
         <bestx-marketaxess-fi-buyside-fix-messages.version>2.0.4</bestx-marketaxess-fi-buyside-fix-messages.version>
 
         <!--  gateways dependency -->
-        <tradestac-client.version>2.1.8</tradestac-client.version>
+        <tradestac-client.version>2.1.9-SNAPSHOT</tradestac-client.version>
         <tradestac2-client.version>1.2.1</tradestac2-client.version>
         <quickfixjrootobjects.version>1.1.4</quickfixjrootobjects.version>
-        <tradestac-tw-adapter.version>2.1.4</tradestac-tw-adapter.version>
+        <tradestac-tw-adapter.version>2.1.5-SNAPSHOT</tradestac-tw-adapter.version>
+        <tradestac-bloomberg-adapter.version>1.1.15-SNAPSHOT</tradestac-bloomberg-adapter.version>
 
         <!-- third party -->
         <quickfix.version>1.6.4</quickfix.version>
