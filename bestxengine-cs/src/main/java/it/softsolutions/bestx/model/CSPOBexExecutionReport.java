@@ -237,28 +237,30 @@ public class CSPOBexExecutionReport extends ExecutionReport {
 				dealerGroup.setDealerID(marketExecutionReport.getMarketMaker().getCode());
 			} else if(marketOrder != null && marketOrder.getMarketMarketMaker()!= null) {
 				dealerGroup.setDealerID(marketOrder.getMarketMarketMaker().getMarketMaker().getCode());
-			} else if(marketExecutionReport.getExecBroker() != null)
+			} else if(marketExecutionReport != null && marketExecutionReport.getExecBroker() != null)
 				dealerGroup.setDealerID(marketExecutionReport.getExecBroker());  //BESTX-424
 
-			if (counteroffer != null && counteroffer.getMarketMarketMaker() != null && counteroffer.getPrice() != null) {  // got a counteroffer
-				dealerGroup.setDealerQuotePrice(counteroffer.getPrice().getAmount());
-				dealerGroup.setDealerQuoteOrdQty(counteroffer.getQty());
-				dealerGroup.setDealerQuoteTime(counteroffer.getTimestamp());  // counteroffer time is in local time
-				this.addCSDealerGroup(dealerGroup);
-			} else if(marketOrder != null) {
-				if(marketExecutionReport != null && marketExecutionReport.getPrice() != null && marketExecutionReport.getPrice().getAmount() != null
-						&& BigDecimal.ZERO.compareTo(marketExecutionReport.getPrice().getAmount()) < 0) {
-					dealerGroup.setDealerQuotePrice(marketExecutionReport.getPrice().getAmount());
-				} else {
-					dealerGroup.setDealerQuotePrice(marketOrder.getLimit().getAmount());
+			if(dealerGroup.getDealerID() != null) {
+				if (counteroffer != null && counteroffer.getMarketMarketMaker() != null && counteroffer.getPrice() != null) {  // got a counteroffer
+					dealerGroup.setDealerQuotePrice(counteroffer.getPrice().getAmount());
+					dealerGroup.setDealerQuoteOrdQty(counteroffer.getQty());
+					dealerGroup.setDealerQuoteTime(counteroffer.getTimestamp());  // counteroffer time is in local time
+					this.addCSDealerGroup(dealerGroup);
+				} else if(marketOrder != null) {
+					if(marketExecutionReport != null && marketExecutionReport.getPrice() != null && marketExecutionReport.getPrice().getAmount() != null
+							&& BigDecimal.ZERO.compareTo(marketExecutionReport.getPrice().getAmount()) < 0) {
+						dealerGroup.setDealerQuotePrice(marketExecutionReport.getPrice().getAmount());
+					} else {
+						dealerGroup.setDealerQuotePrice(marketOrder.getLimit().getAmount());
+					}
+					if(marketExecutionReport != null && marketExecutionReport.getActualQty() != null) {
+						dealerGroup.setDealerQuoteOrdQty(marketExecutionReport.getActualQty());
+					} else {
+						dealerGroup.setDealerQuoteOrdQty(marketOrder.getQty());
+					}
+					dealerGroup.setDealerQuoteTime(DateService.convertUTCToLocal(marketOrder.getTransactTime()));  // market order tiome is in UTC time
+					this.addCSDealerGroup(dealerGroup);
 				}
-				if(marketExecutionReport != null && marketExecutionReport.getActualQty() != null) {
-					dealerGroup.setDealerQuoteOrdQty(marketExecutionReport.getActualQty());
-				} else {
-					dealerGroup.setDealerQuoteOrdQty(marketOrder.getQty());
-				}
-				dealerGroup.setDealerQuoteTime(DateService.convertUTCToLocal(marketOrder.getTransactTime()));  // market order tiome is in UTC time
-				this.addCSDealerGroup(dealerGroup);
 			}
 		}
 	}
