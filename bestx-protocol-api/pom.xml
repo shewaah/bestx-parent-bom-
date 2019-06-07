@@ -10,6 +10,7 @@
     <artifactId>bestx-protocol-api</artifactId>
     <packaging>jar</packaging>
     <name>BestX - protocol API</name>
+    <description>Creates and sends messages to bestxengine: clients are app GUI and automated test</description>
 
     <dependencies>
         <dependency>

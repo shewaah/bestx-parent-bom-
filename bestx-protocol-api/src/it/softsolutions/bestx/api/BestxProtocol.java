@@ -39,7 +39,7 @@ import it.softsolutions.ib4j.clientserver.IBcsReqRespClient;
  * @author anna.cochetti
  *
  */
-public class BestxProtocol {
+public class BestxProtocol implements BestxProtocolMBean {
 
 	private static final Logger logger = LoggerFactory.getLogger(BestxProtocol.class);
    private IBcsReqRespClient reqRespClient;
