@@ -32,8 +32,10 @@ import it.softsolutions.tradestac.api.TradeStacException;
 import it.softsolutions.tradestac.client.TradeStacClientSession;
 import it.softsolutions.tradestac.fix.field.Currency;
 import it.softsolutions.tradestac.fix.field.ExecType;
+import it.softsolutions.tradestac.fix.field.HandlInst;
 import it.softsolutions.tradestac.fix.field.MsgType;
 import it.softsolutions.tradestac.fix.field.OrdType;
+import it.softsolutions.tradestac.fix.field.OrderCapacity;
 import it.softsolutions.tradestac.fix.field.PartyIDSource;
 import it.softsolutions.tradestac.fix.field.PartyRole;
 import it.softsolutions.tradestac.fix.field.PartyRoleQualifier;
@@ -50,6 +52,7 @@ import it.softsolutions.tradestac.fix50.component.TSInstrument;
 import it.softsolutions.tradestac.fix50.component.TSOrderQtyData;
 import it.softsolutions.tradestac.fix50.component.TSParties;
 import quickfix.ConfigError;
+import quickfix.Field;
 import quickfix.SessionID;
 
 /**  
@@ -70,7 +73,21 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
     private TradeStacClientSession tradeStacClientSession;
     
     private String traderCode;
-    private String investmentDecisionMakerID;
+    private String destinationMICCode;
+    /**
+	 * @return the destinationMICCode
+	 */
+	public String getDestinationMICCode() {
+		return destinationMICCode;
+	}
+	/**
+	 * @param destinationMICCode the destinationMICCode to set
+	 */
+	public void setDestinationMICCode(String destinationMICCode) {
+		this.destinationMICCode = destinationMICCode;
+	}
+
+	private String investmentDecisionMakerID;
     private String investmentDecisionQualifier;
     /**
 	 * @return the traderCode
@@ -144,15 +161,13 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
         this.tsoxEnquiryTime = tsoxEnquirytime;
     }
 
-    // trader code to be sent to Tsox in QuoteRequest with PartyRole=11(Originator)
-    private String tsoxTradercode;
     /**
      * Gets the tsox tradercode.
      *
      * @return the tsox tradercode
      */
     public String getTsoxTradercode() {
-        return tsoxTradercode;
+        return traderCode;
     }
     /**
      * Sets the tsox tradercode.
@@ -160,15 +175,16 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
      * @param tsoxTradercode the new tsox tradercode
      */
     public void setTsoxTradercode(String tsoxTradercode) {
-        this.tsoxTradercode = tsoxTradercode;
+        this.traderCode = tsoxTradercode;
     }
    
-    private String defaultCapacity;
+    private OrderCapacity defaultCapacity = OrderCapacity.Principal;
+    
     public String getDefaultCapacity() {
-		return defaultCapacity;
+		return "" + defaultCapacity.getFIXValue();
 	}
 	public void setDefaultCapacity(String defaultCapacity) {
-		this.defaultCapacity = defaultCapacity;
+		this.defaultCapacity = OrderCapacity.getInstanceForFIXValue(defaultCapacity.trim().charAt(0));
 	}
 	private String enteringFirmCode;
 	public String getEnteringFirmCode() {
@@ -250,15 +266,18 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
         // else ask to put order to warning state
         case ApplicationNotAvailable:
         default:
-        	if(tsBusinessMessageReject.getRefMsgType() == MsgType.OrderSingle) {
-        		tsoxConnectionListener.onOrderReject(sessionID.toString(), tsBusinessMessageReject.getBusinessRejectRefID(),
-        				tsBusinessMessageReject.getText());
-        	}
-        	else if(tsBusinessMessageReject.getRefMsgType() == MsgType.OrderCancelRequest) {
-        		tsoxConnectionListener.onCancelReject(sessionID.toString(), tsBusinessMessageReject.getBusinessRejectRefID(),
-        				tsBusinessMessageReject.getText());
-        	}
-        		break;
+    		if(tsBusinessMessageReject.getBusinessRejectRefID() == null) {
+    			LOGGER.error("onBusinessMessageReject with null BusinessRejectRefID received, reason was {}", tsBusinessMessageReject.getText());
+    		} else
+    			if(tsBusinessMessageReject.getRefMsgType() == MsgType.OrderSingle) {
+    				tsoxConnectionListener.onOrderReject(sessionID.toString(), tsBusinessMessageReject.getBusinessRejectRefID(),
+    						tsBusinessMessageReject.getText());
+    			}
+    			else if(tsBusinessMessageReject.getRefMsgType() == MsgType.OrderCancelRequest) {
+    				tsoxConnectionListener.onCancelReject(sessionID.toString(), tsBusinessMessageReject.getBusinessRejectRefID(),
+    						tsBusinessMessageReject.getText());
+    			}
+    		break;
         }
     }
 
@@ -287,7 +306,7 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
         }
 
         try {
-            tradeStacClientSession.manageNewOrderSingle(tsNewOrderSingle);
+            tradeStacClientSession.manageNewOrderSingle(tsNewOrderSingle);  //tsNewOrderSingle.toFIXMessage()
         } catch (TradeStacException e) {
             throw new BestXException(String.format("Error managing newOrderSingle [%s]", tsNewOrderSingle), e);
         }
@@ -328,10 +347,10 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
         
         //parties
         TSNoPartyID trader = new TSNoPartyID();
-        trader.setPartyID(tsoxTradercode);
+        trader.setPartyID(traderCode);
         trader.setPartyIDSource(PartyIDSource.ProprietaryCustomCode);
         trader.setPartyRole(PartyRole.OrderOriginationTrader);
-
+        
         TSNoPartyID investmentDecisor = new TSNoPartyID();
         investmentDecisor.setPartyID(investmentDecisionMakerID);
         investmentDecisor.setPartyIDSource(PartyIDSource.ProprietaryCustomCode);
@@ -345,7 +364,7 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
 
         List<TSNoPartyID> tsNoPartyIDsList = new ArrayList<TSNoPartyID>();
         tsNoPartyIDsList.add(trader);
-        tsNoPartyIDsList.add(investmentDecisor);
+//        tsNoPartyIDsList.add(investmentDecisor);
         tsNoPartyIDsList.add(enteringFirm);
 
         TSParties tsParties = new TSParties();
@@ -358,13 +377,27 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
 		tsNewOrderSingle.setSide(side);
 		tsNewOrderSingle.setTSInstrument(tsInstrument);
 		tsNewOrderSingle.setTSOrderQtyData(tsOrderQtyData);
-        tsNewOrderSingle.setTSParties(tsParties);
+		tsNewOrderSingle.setTSParties(tsParties);
         tsNewOrderSingle.setSettlDate(settlDate);
         tsNewOrderSingle.setTransactTime(transactTime);
         tsNewOrderSingle.setCurrency(currency);
         tsNewOrderSingle.setPrice(price);
         tsNewOrderSingle.setPriceType(priceType);
         tsNewOrderSingle.setText(text);
+        tsNewOrderSingle.setOrderCapacity(defaultCapacity);
+        tsNewOrderSingle.setHandlInst(HandlInst.AutoRoute);  // required for scenario FI 1
+        
+        // set custom fields
+        List<Field<?>> customFields = new ArrayList<Field<?>>();
+        Field<Integer> autoOrdType = new Field<Integer>(22484, new Integer(1)); // required for scenario FI 1
+        customFields.add(autoOrdType);
+        Field<String> stagedOrderIsInquiry = new Field<String>(9575, "Y");
+        customFields.add(stagedOrderIsInquiry);
+        Field<Integer> qtyType = new Field<Integer>(854, 0); 
+        customFields.add(qtyType);
+//        Field<String> marketSegmentID = new Field<String>(854, "BMTF"); 
+//        customFields.add(marketSegmentID);
+               tsNewOrderSingle.setCustomFields(customFields);
 	
 //		tsNewOrderSingle.setTradeDate(tradeDate);
 //		tsNewOrderSingle.setEncodedText(encodedText);

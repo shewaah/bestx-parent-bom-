@@ -135,7 +135,7 @@ public class OnExecutionReportRunnable implements Runnable {
 		String dealerCode= null;
 
 		TSParties parties = tsExecutionReport.getTSParties();
-		if(parties != null) {
+		if(parties != null && parties.getTSNoPartyIDsList() != null) {
 			List<TSNoPartyID> list = parties.getTSNoPartyIDsList();
 			for(TSNoPartyID party: list) {
 				if(party.getPartyRole() == PartyRole.ExecutingFirm && party.getPartyIDSource() != PartyIDSource.LegalEntityIdentifier) {
