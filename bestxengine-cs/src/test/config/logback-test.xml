@@ -33,15 +33,14 @@
     </appender>
     <appender name="BestXBloombergLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <prudent>false</prudent>
+        <file>./log/BestX-Bloomberg.log</file>
         <encoder>
             <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-3line - %message%n</pattern>
         </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>./log/BestX-Bloomberg.%d.%i.log.gz</fileNamePattern>
-            <maxHistory>30</maxHistory>
-            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>20MB</maxFileSize>
-            </timeBasedFileNamingAndTriggeringPolicy>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>./log/BestX-Bloomberg.%i.log.gz</fileNamePattern>
+            <minIndex>1</minIndex> 
+            <maxIndex>3</maxIndex>
         </rollingPolicy>
     </appender>
     <appender name="BestXCommonsLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -58,17 +57,19 @@
         </rollingPolicy>
     </appender>
     <appender name="QuickfixLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>./log/Quickfix.log</file>
         <prudent>false</prudent>
         <encoder>
-            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-3line - %message%n</pattern>
+           <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-3line - %message%n</pattern>
         </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>./log/Quickfix.%d.%i.log.gz</fileNamePattern>
-            <maxHistory>30</maxHistory>
-            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>20MB</maxFileSize>
-            </timeBasedFileNamingAndTriggeringPolicy>
-        </rollingPolicy>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>./log/Quickfix.%i.log.gz</fileNamePattern>
+            <minIndex>1</minIndex> 
+            <maxIndex>3</maxIndex>
+         </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+      		<maxFileSize>15MB</maxFileSize>
+        </triggeringPolicy>
     </appender>
     <appender name="QuartzLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <prudent>false</prudent>
@@ -184,10 +185,10 @@
     <logger name="quickfixj" additivity="false" level="INFO">
         <appender-ref ref="QuickfixLogger" />
     </logger>
-    <logger name="org.hibernate" additivity="false" level="DEBUG">
+    <logger name="org.hibernate" additivity="false" level="INFO">
         <appender-ref ref="HibernateLogger" />
     </logger>
-    <logger name="com.microsoft" additivity="false" level="DEBUG">
+    <logger name="com.microsoft" additivity="false" level="INFO">
         <appender-ref ref="HibernateLogger" />
     </logger>
     <logger name="net.sf" additivity="false" level="INFO">
@@ -238,7 +239,7 @@
 	<logger name="it.softsolutions.bestx.management.statistics" additivity="false" level="ERROR">
 		<appender-ref ref="STDOUT" />
 	</logger>
-	<logger name="it.softsolutions.bestx.markets.tradeweb" additivity="false" level="DEBUG">
+	<logger name="it.softsolutions.bestx.markets.tradeweb" additivity="false" level="INFO">
 		<appender-ref ref="BestXLogger" />
 	</logger>
 		<logger name="it.softsolutions.bestx.ThreadPoolSortedQueueExecutor" additivity="false" level="DEBUG">

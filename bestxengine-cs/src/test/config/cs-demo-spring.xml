@@ -930,7 +930,9 @@
                             <property name="marketSecurityStatusService"><ref bean="marketSecurityStatusService"></ref></property>
                             <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
 						</bean>
+						<!-- AMC commented for testing purposes only
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardMarketTriedInEarlierAttemptProposalClassifier"></bean>
+                 -->
                         <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardWorstPriceProposalClassifier">
                             <property name="titoliIncrociabiliService"><ref bean="titoliIncrociabiliServer"></ref></property>
                             <!--  Flag per abilitare o disabilitare il controllo che un ordine sia o meno un matching tramite query -->
@@ -1018,7 +1020,7 @@
         <property name="tsoxConnection"><ref bean="tsoxConnector"/></property>
     </bean>
 
-     <bean id="tsoxConnector" class="it.softsolutions.bestx.connections.bloomberg.tsox.simulated.BogusTSOXConnection" init-method="init">
+<!--      <bean id="tsoxConnector" class="it.softsolutions.bestx.connections.bloomberg.tsox.simulated.BogusTSOXConnection" init-method="init">
         <property name="tsoxConnectionListener"><ref bean="bloombergMarket"/></property>
         <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
         <property name="cancelIsins">
@@ -1030,18 +1032,23 @@
         	</list>
 		</property>
 	</bean>
-<!--       <bean id="tsoxConnector" class="it.softsolutions.bestx.connections.bloomberg.tsox.RBLD_TSOXConnection" init-method="init">
+ -->
+       <bean id="tsoxConnector" class="it.softsolutions.bestx.connections.bloomberg.tsox.RBLD_TSOXConnection" init-method="init">
+		<property name="tradeStacClientSession">
+			<bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
+		</property>
         <property name="tsoxConnectionListener"><ref bean="bloombergMarket"/></property>
-        <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
+		<property name="destinationMICCode"><value>${Bloomberg.Tsox.DestinationMICCode}</value></property>
 		<property name="traderCode"><value>${Bloomberg.Tsox.TraderCode}</value></property>
-		<property name="bestxAlgoID"><value>${Bloomberg.Tsox.ExecutionDecisionMakerID}</value></property>
-		<property name="investmentDecisorID"><value>${Bloomberg.Tsox.InvestmentDecisionMakerID}</value></property>
-		<property name="investmentDecisorRoleQualifier"><value>${Bloomberg.Tsox.InvestmentDecisionRoleQualifier}</value></property>
-		<property name="enteringFirmCode"><value>${Bloomberg.Tsox.enteringFirmCode}</value></property>
-		<property name="defaultCapacity"><value>${Bloomberg.Tsox.defaultCapacity}</value></property>
+		<property name="executionDecisionMakerID"><value>${Bloomberg.Tsox.ExecutionDecisionMakerID}</value></property>
+		<property name="investmentDecisionMakerID"><value>${Bloomberg.Tsox.InvestmentDecisionMakerID}</value></property>
+		<property name="investmentDecisionQualifier"><value>${Bloomberg.Tsox.InvestmentDecisionQualifier}</value></property>
+		<property name="enteringFirmCode"><value>${Bloomberg.Tsox.EnteringFirmCode}</value></property>
+		<property name="defaultCapacity"><value>${Bloomberg.Tsox.DefaultCapacity}</value></property>
+		<property name="tsoxEnquiryTime"><value>${Bloomberg.Tsox.TsoxEnquiryTime}</value></property>
         <property name="fixConfigFileName" value="fix-tradestac-tsox.properties" />      
 	</bean>
--->
+
 <!--
     <bean id="blpConnector" class="it.softsolutions.bestx.connections.bloomberg.blp.BLPConnector" init-method="init">
         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>

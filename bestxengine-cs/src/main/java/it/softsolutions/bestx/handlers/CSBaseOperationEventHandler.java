@@ -27,6 +27,7 @@ import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.Operation.RevocationState;
 import it.softsolutions.bestx.connections.CustomerConnection;
 import it.softsolutions.bestx.connections.MarketBuySideConnection;
+import it.softsolutions.bestx.fix.field.OrdStatus;
 import it.softsolutions.bestx.markets.bloomberg.BloombergMarket;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.Attempt.AttemptState;
@@ -199,14 +200,17 @@ public class CSBaseOperationEventHandler extends BaseOperationEventHandler {
 		        }
 				executionReport.setMarketOrderID(marketExecutionReport.getMarketOrderID());
 	
-				LOGGER.info("{} market - new exec report added : {}", marketExecutionReport.getMarket().getMarketCode() , executionReport.toString());
-				operation.getExecutionReports().add(executionReport);
-					operation.setStateResilient(new WarningState(operation.getState(), null, 
-							Messages.getString("CSBaseOperationEventHandlerOnMarketExecutionReport.0",  
-									marketExecutionReport.getMarket().getMarketCode(), 
-									marketExecutionReport.getLastPx(), 
-									marketExecutionReport.getExecBroker())), 
-								ErrorState.class);
+				if(marketExecutionReport.getOrdStatus() == OrdStatus.Filled.getFIXValue()) {
+					LOGGER.info("{} market - new exec report added : {}", marketExecutionReport.getMarket().getMarketCode() , executionReport.toString());
+					operation.getExecutionReports().add(executionReport);
+						operation.setStateResilient(new WarningState(operation.getState(), null, 
+								Messages.getString("CSBaseOperationEventHandlerOnMarketExecutionReport.0",  
+										marketExecutionReport.getMarket().getMarketCode(), 
+										marketExecutionReport.getLastPx(), 
+										marketExecutionReport.getExecBroker())), 
+									ErrorState.class);
+				} else  LOGGER.info("{} market - received execution report in state {} : {}", 
+						marketExecutionReport.getMarket().getMarketCode() , marketExecutionReport.getState() ,marketExecutionReport.toString());
 			}
 		} else LOGGER.info("{} market - received execution report in state NEW : {}", 
 					marketExecutionReport.getMarket().getMarketCode() , marketExecutionReport.toString());
