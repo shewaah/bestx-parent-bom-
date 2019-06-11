@@ -145,7 +145,7 @@ public class OnExecutionReportRunnable implements Runnable {
 			}
 		}
 
-		Order order = this.operation.getOrder();
+		Order order = this.operation.getLastAttempt().getMarketOrder();
 		Rfq rfq = this.operation.getRfq();
 		Attempt attempt = operation.getLastAttempt();
 		Thread.currentThread().setName(
@@ -161,10 +161,7 @@ public class OnExecutionReportRunnable implements Runnable {
 		marketExecutionReport.setInstrument(order.getInstrument());
 		marketExecutionReport.setMarket(counterMarket);
 		marketExecutionReport.setOrderQty(order.getQty());
-		if(lastPrice == null)
-			marketExecutionReport.setPrice(new Money(order.getCurrency(), BigDecimal.ZERO));
-		else
-			marketExecutionReport.setPrice(new Money(order.getCurrency(), lastPrice));
+		marketExecutionReport.setPrice(order.getLimit());
 		marketExecutionReport.setLastPx(lastPrice);
 		marketExecutionReport.setSide(order.getSide());
 
@@ -192,7 +189,7 @@ public class OnExecutionReportRunnable implements Runnable {
 		marketExecutionReport.setText(text);
 		marketExecutionReport.setAccruedInterestAmount(new Money(order.getInstrument().getCurrency(), 
 				accruedInterestAmount == null ? BigDecimal.ZERO : accruedInterestAmount));
-		marketExecutionReport.setAccruedInterestRate(null);
+//		marketExecutionReport.setAccruedInterestRate(null);
 		marketExecutionReport.setLastMkt(lastMkt);
 		
 		if (numDaysInterest != null) {

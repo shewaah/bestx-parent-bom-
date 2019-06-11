@@ -104,6 +104,7 @@ import it.softsolutions.marketlibraries.marketaxessfibuysidefix.messages.compone
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.messages.component.MDReqGrp;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.messages.component.Parties;
 import it.softsolutions.marketlibraries.quickfixjrootobjects.fields.PartyID;
+import it.softsolutions.marketlibraries.quickfixjrootobjects.fields.Price;
 import it.softsolutions.marketlibraries.quickfixjrootobjects.groups.RootNoPartyIDs;
 import it.softsolutions.marketlibraries.quickfixjrootobjects.groups.RootNoSecurityAltID;
 import it.softsolutions.tradestac2.api.TradeStacException;
@@ -509,6 +510,13 @@ public class MarketAxessHelper extends MarketPriceDiscoveryHelper {
 			}
 			try {
 				BigDecimal px = new BigDecimal(Double.toString(tsExecutionReport.getDouble(AvgPx.FIELD)));
+				if (px.scale() > 10)
+				px = px.setScale(10, RoundingMode.HALF_UP);
+				executionReport.setAveragePrice(px);
+			} catch (@SuppressWarnings("unused") FieldNotFound e) {
+			}
+			try {
+				BigDecimal px = new BigDecimal(Double.toString(tsExecutionReport.getDouble(Price.FIELD)));
 				if (px.scale() > 10)
 					px = px.setScale(10, RoundingMode.HALF_UP);
 				executionReport.setPrice(new Money(currency, px));

@@ -148,7 +148,7 @@ public class OnExecutionReportRunnable implements Runnable {
         marketExecutionReport.setInstrument(order.getInstrument());
         marketExecutionReport.setMarket(counterMarket);
         marketExecutionReport.setOrderQty(order.getQty());
-        marketExecutionReport.setPrice(new Money(order.getCurrency(), lastPrice));
+        marketExecutionReport.setPrice(order.getLimit());
         marketExecutionReport.setLastPx(lastPrice);
         marketExecutionReport.setSide(order.getSide());
         marketExecutionReport.setLastMkt(micCode);

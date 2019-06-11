@@ -182,8 +182,11 @@ public class CSBaseOperationEventHandler extends BaseOperationEventHandler {
 					return;
 				}
 				long executionReportId = SerialNumberServiceProvider.getSerialNumberService().getSerialNumber("EXEC_REP");
-				executionReport.setLastPx(executionReport.getPrice().getAmount());
-				marketExecutionReport.setLastPx(executionReport.getPrice().getAmount());
+		        executionReport.setLastPx(marketExecutionReport.getLastPx());
+		        executionReport.setAveragePrice(marketExecutionReport.getAveragePrice());
+		        executionReport.setPrice(operation.getOrder().getLimit());
+		        executionReport.setPriceType(operation.getOrder().getPriceType());
+//				marketExecutionReport.setLastPx(executionReport.getPrice().getAmount());
 				executionReport.setSequenceId(Long.toString(executionReportId));
 				// if marketExecutionReport has a broker inside use it, else use the one in lastAttempt execution proposal
 		        if(marketExecutionReport.getMarketMaker() != null) {

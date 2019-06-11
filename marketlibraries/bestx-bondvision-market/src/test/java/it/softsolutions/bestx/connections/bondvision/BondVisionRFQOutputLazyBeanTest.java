@@ -32,7 +32,7 @@ public class BondVisionRFQOutputLazyBeanTest {
 	@After
 	public void tearDown() throws Exception {
 	}
-
+	/*
 	@Test
 	public void testGetMsg() {
 		MarketOrder order = new MarketOrder();
@@ -47,7 +47,7 @@ public class BondVisionRFQOutputLazyBeanTest {
 		order.setMarketMarketMaker(mmm);
 		order.setFutSettDate(new Date());
 		
-		__TestableBondVisionRFQOutputLazyBean rfq = new __TestableBondVisionRFQOutputLazyBean(order, new BigDecimal(1000));
+		BondVisionRFQOutputLazyBean rfq = new BondVisionRFQOutputLazyBean(order, new BigDecimal(1000));
 		
 		XT2Msg rfqMsg = rfq._getMsg();
 		try {
@@ -61,7 +61,7 @@ public class BondVisionRFQOutputLazyBeanTest {
 		
 		order.setPriceDiscoveryType(PriceDiscoveryType.BBG_PRICEDISCOVERY);
 
-		rfq = new __TestableBondVisionRFQOutputLazyBean(order, new BigDecimal(1000));
+		rfq = new BondVisionRFQOutputLazyBean(order, new BigDecimal(1000));
 		
 		rfqMsg = rfq._getMsg();
 		try {
@@ -73,5 +73,5 @@ public class BondVisionRFQOutputLazyBeanTest {
 		}
 		
 	}
-
+*/
 }

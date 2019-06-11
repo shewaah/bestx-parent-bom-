@@ -239,8 +239,12 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 				} catch (SchedulerException e) {
 					LOGGER.warn("Error while stopping timer {}", ordCancelRejTimer, e);
 				}
-				executionReport.setLastPx(executionReport.getPrice().getAmount());
-				marketExecutionReport.setLastPx(executionReport.getPrice().getAmount());
+		        executionReport.setLastPx(marketExecutionReport.getLastPx());
+		        executionReport.setAveragePrice(marketExecutionReport.getAveragePrice());
+		        executionReport.setPrice(operation.getOrder().getLimit());
+		        executionReport.setPriceType(operation.getOrder().getPriceType());
+//				executionReport.setLastPx(executionReport.getPrice().getAmount());
+//				marketExecutionReport.setLastPx(executionReport.getPrice().getAmount());
 				executionReport.setSequenceId(Long.toString(executionReportId));
 
 				// MA market execution report has the MarketMaker code inside

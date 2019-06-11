@@ -139,9 +139,13 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
         }
         
         long executionReportId = serialNumberService.getSerialNumber("EXEC_REP");
-        
-        executionReport.setLastPx(executionReport.getPrice().getAmount());
-        marketExecutionReport.setLastPx(executionReport.getPrice().getAmount());
+        executionReport.setLastPx(marketExecutionReport.getLastPx());
+        executionReport.setAveragePrice(marketExecutionReport.getAveragePrice());
+        executionReport.setPrice(operation.getOrder().getLimit());
+        executionReport.setPriceType(operation.getOrder().getPriceType());
+      
+//        executionReport.setLastPx(executionReport.getPrice().getAmount());
+//        marketExecutionReport.setLastPx(executionReport.getPrice().getAmount());
         executionReport.setSequenceId(Long.toString(executionReportId));
 
 //        marketExecutionReport.setExecBroker(operation.getLastAttempt().getExecutionProposal().getMarketMarketMaker().getMarketMaker().getCode());

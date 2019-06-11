@@ -893,7 +893,7 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                     stmt.setNull(1, java.sql.Types.VARCHAR);
                 }
                 // " NumberOfDaysAccrued = ?" + // 2
-                if (accruedInterest != null) {
+                if (accruedInterestDays != null) {
                     stmt.setInt(2, accruedInterestDays);
                 } else {
                     stmt.setNull(2, java.sql.Types.INTEGER);

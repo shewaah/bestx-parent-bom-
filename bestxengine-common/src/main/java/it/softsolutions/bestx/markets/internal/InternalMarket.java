@@ -309,7 +309,7 @@ public class InternalMarket extends MarketConnection implements Connection, Conn
         marketFill.setActualQty(operation.getOrder().getQty());
         marketFill.setInstrument(operation.getOrder().getInstrument());
         marketFill.setLastPx(price);
-        marketFill.setPrice(new Money(operation.getOrder().getCurrency(), price));
+        marketFill.setPrice(operation.getOrder().getLimit());
         marketFill.setSide(operation.getOrder().getSide());
         marketFill.setMarket(marketFinder.getMarketByCode(MarketCode.INTERNALIZZAZIONE, null));
         List<MarketExecutionReport> marketExecutionReports = new ArrayList<MarketExecutionReport>();
