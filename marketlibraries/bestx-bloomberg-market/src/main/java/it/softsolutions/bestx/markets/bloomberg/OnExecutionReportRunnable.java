@@ -213,7 +213,7 @@ public class OnExecutionReportRunnable implements Runnable {
 				} catch (BestXException e1) {
 					executedPrice.setMarketMarketMaker(null);
 				}
-				executedPrice.setPrice(marketExecutionReport.getPrice());
+				executedPrice.setPrice(new Money(operation.getOrder().getCurrency(), marketExecutionReport.getLastPx()));
 				executedPrice.setPriceType(Proposal.PriceType.PRICE);
 				executedPrice.setQty(operation.getOrder().getQty());
 				// calculate status
