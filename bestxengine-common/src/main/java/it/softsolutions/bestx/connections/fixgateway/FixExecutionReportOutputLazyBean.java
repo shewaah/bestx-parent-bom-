@@ -245,8 +245,8 @@ public class FixExecutionReportOutputLazyBean extends FixOutputLazyBean {
         cumQty = actualQty;
         state = executionReport.getState();
         currency = executionReport.getPrice().getStringCurrency();
-        lastPx = executionReport.getPrice().getAmount();
-        price = lastPx;
+        lastPx = executionReport.getLastPx();  //BESTX-426 AMC 20190612
+        price = order.getLimit() == null ? null : order.getLimit().getAmount();  //BESTX-426 AMC 20190612
         avgPx = lastPx;
         if (executionReport.getFactor() != null && executionReport.getFactor().compareTo(BigDecimal.ZERO) != 0) {
            factor = executionReport.getFactor();

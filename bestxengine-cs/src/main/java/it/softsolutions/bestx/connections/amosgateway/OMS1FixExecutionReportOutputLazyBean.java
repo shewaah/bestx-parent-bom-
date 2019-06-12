@@ -216,7 +216,7 @@ public class OMS1FixExecutionReportOutputLazyBean extends FixExecutionReportOutp
 	        }
 	
 	        
-	        price = lastPx.setScale(6, RoundingMode.HALF_UP);
+//	        price = lastPx.setScale(6, RoundingMode.HALF_UP);  //BESTX-426 AMC 20190612
 	        avgPx = lastPx.setScale(6, RoundingMode.HALF_UP);
 	        settlementType = null;
            strSettlementType = "6";
