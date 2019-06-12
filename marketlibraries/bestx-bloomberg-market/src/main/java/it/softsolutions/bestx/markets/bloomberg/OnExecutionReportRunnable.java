@@ -239,7 +239,7 @@ public class OnExecutionReportRunnable implements Runnable {
 //								tempMM = marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), quotingDealer);
 								tempMM = marketMakerFinder.getMarketMarketMakerByTSOXCode(quotingDealer);
 								if(tempMM == null) {
-									LOGGER.info("IMPORTANT! Tradeweb returned dealer {} not configured in BestX!. Please configure it", quotingDealer);
+									LOGGER.info("IMPORTANT! Bloomberg returned dealer {} not configured in BestX!. Please configure it", quotingDealer);
 									price.setOriginatorID(quotingDealer);
 								} else {
 									price.setOriginatorID(quotingDealer);
