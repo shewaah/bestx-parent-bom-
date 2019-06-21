@@ -732,10 +732,10 @@ public class MarketAxessMarket extends MarketCommon implements TradeStacPreTrade
 			}
 			if(mmm != null) {
 				executionReport.setMarketMaker(mmm.getMarketMaker() == null ? null : mmm.getMarketMaker());
+				LOGGER.info("[MktMsg] orderID = {}, ExecutionReport received: original clOrdId={}, OrdStatus={}, ExecType={}, LastPrice={}, ExecutionBroker={}, text={}", 
+						operation.getOrder().getFixOrderId(), cleanClOrdId, ordStatus, execType, lastPrice, mmm.getMarketMaker(), cleanText);
 			}
 
-			LOGGER.info("[MktMsg] orderID = {}, ExecutionReport received: original clOrdId={}, OrdStatus={}, ExecType={}, LastPrice={}, ExecutionBroker={}, text={}", 
-					operation.getOrder().getFixOrderId(), cleanClOrdId, ordStatus, execType, lastPrice, mmm.getMarketMaker(), cleanText);
 			String orderId = operation.getOrder().getFixOrderId();
 			
 			LOGGER.debug("Execution report received for the order {}, registering statistics.", orderId);
