@@ -73,7 +73,7 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
     private TradeStacClientSession tradeStacClientSession;
     
     private String traderCode;
-    private String destinationMICCode;
+    private String destinationMICCode = "BMTF";
     /**
 	 * @return the destinationMICCode
 	 */
@@ -395,8 +395,8 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
         customFields.add(stagedOrderIsInquiry);
         Field<Integer> qtyType = new Field<Integer>(854, 0); 
         customFields.add(qtyType);
-//        Field<String> marketSegmentID = new Field<String>(854, "BMTF"); 
-//        customFields.add(marketSegmentID);
+        Field<String> marketSegmentID = new Field<String>(1300, this.getDestinationMICCode()); 
+        customFields.add(marketSegmentID);
                tsNewOrderSingle.setCustomFields(customFields);
 	
 //		tsNewOrderSingle.setTradeDate(tradeDate);
