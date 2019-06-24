@@ -166,11 +166,15 @@ public class FixExecutionReportOutputLazyBean extends FixOutputLazyBean {
     public FixExecutionReportOutputLazyBean(String sessionId, Order order, String orderId, ExecutionReport executionReport, int errorCode, String rejectReason, MICCodeService micCodeService) {
         this(sessionId, order, orderId);
         this.errorCode = errorCode;
-        if (executionReport.getExecutionReportId()!=null) {
-        	executionReportId = executionReport.getExecutionReportId();
-        } else {
-        	executionReportId = executionReport.getSequenceId();
+        if(executionReport == null) {
+        	LOGGER.error("executionReport variable is null");
+        	return;
         }
+    	if (executionReport.getExecutionReportId()!=null) {
+    		executionReportId = executionReport.getExecutionReportId();
+    	} else {
+    		executionReportId = executionReport.getSequenceId();
+    	}
         actualQty = executionReport.getActualQty();
         cumQty = actualQty;
         state = executionReport.getState();
@@ -235,6 +239,10 @@ public class FixExecutionReportOutputLazyBean extends FixOutputLazyBean {
      */
     public FixExecutionReportOutputLazyBean(String sessionId, Quote quote, Order order, String orderId, Attempt attempt, ExecutionReport executionReport, MICCodeService micCodeService) {
         this(sessionId, order, orderId);
+        if(executionReport == null) {
+        	LOGGER.error("executionReport variable is null");
+        	return;
+        }
         rejectReasonDescription = executionReport.getText();
         if (executionReport.getExecutionReportId()!=null) {
         	executionReportId = executionReport.getExecutionReportId();

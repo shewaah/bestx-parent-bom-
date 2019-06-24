@@ -14,13 +14,14 @@
 package it.softsolutions.bestx.finders;
 
 import static org.junit.Assert.assertEquals;
-import it.softsolutions.bestx.model.Commission;
-import it.softsolutions.bestx.model.Commission.CommissionType;
-import it.softsolutions.bestx.model.CommissionRow;
 
 import java.math.BigDecimal;
 
 import org.junit.Test;
+
+import it.softsolutions.bestx.model.Commission;
+import it.softsolutions.bestx.model.Commission.CommissionType;
+import it.softsolutions.bestx.model.CommissionRow;
 
 /**  
  *
@@ -43,7 +44,7 @@ public class CommissionFinderTest {
         BigDecimal maxQty = new BigDecimal(5000.0);
         Commission commission = new Commission(amount, commissionType);
         BigDecimal minimumFee = new BigDecimal(4.25);
-        BigDecimal minimumFeeMaxSize = new BigDecimal(128.68);
+        BigDecimal minimumFeeMaxSize = BigDecimal.valueOf(128.68);
         
         CommissionRow commissionRow = new CommissionRow(minQty, maxQty, commission, minimumFee, minimumFeeMaxSize);
         

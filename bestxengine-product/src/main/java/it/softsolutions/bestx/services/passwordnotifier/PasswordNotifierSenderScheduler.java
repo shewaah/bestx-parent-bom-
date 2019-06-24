@@ -106,7 +106,7 @@ public class PasswordNotifierSenderScheduler {
      * @param passwordNotifierService
      *            the passwordNotifierService to set
      */
-    public void setPasswordNotifierService(PasswordNotifierService passwordNotifierService) {
+    public static void setPasswordNotifierService(PasswordNotifierService passwordNotifierService) {
         PasswordNotifierSenderScheduler.passwordNotifierService = passwordNotifierService;
     }
 

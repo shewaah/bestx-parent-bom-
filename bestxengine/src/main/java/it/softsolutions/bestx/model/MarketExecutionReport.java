@@ -47,14 +47,7 @@ public class MarketExecutionReport extends ExecutionReport {
 	public void setOrdStatus(char ordStatus) {
 		this.ordStatus = ordStatus;
 	}
-	private String marketOrderId;
 	
-	public String getMarketOrderId() {
-		return marketOrderId;
-	}
-	public void setMarketOrderId(String marketOrderId) {
-		this.marketOrderId = marketOrderId;
-	}
 	private MarketMaker marketMaker;
 
 	public MarketMaker getMarketMaker() {

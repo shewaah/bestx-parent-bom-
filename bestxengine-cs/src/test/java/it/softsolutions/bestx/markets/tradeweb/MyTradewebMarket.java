@@ -68,10 +68,10 @@ public class MyTradewebMarket {
 	private OperationRegistry operationRegistry;
 	
 	private void init() throws Exception {
-		Messages messages = new Messages();
-		messages.setBundleName("messages");
-		messages.setLanguage("it");
-		messages.setCountry("IT");
+//		Messages messages = new Messages();
+//		messages.setBundleName("messages");
+//		messages.setLanguage("it");
+//		messages.setCountry("IT");
 
 		SSLog.init("SSLog.properties");
 

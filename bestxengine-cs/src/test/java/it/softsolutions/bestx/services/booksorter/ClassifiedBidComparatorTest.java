@@ -23,10 +23,10 @@ public class ClassifiedBidComparatorTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        Messages messages = new Messages();
-        messages.setBundleName("messages");
-        messages.setLanguage("it");
-        messages.setCountry("IT");
+//        Messages messages = new Messages();
+//        messages.setBundleName("messages");
+//        messages.setLanguage("it");
+//        messages.setCountry("IT");
     }
 
     @Test
@@ -34,13 +34,13 @@ public class ClassifiedBidComparatorTest {
         Market marketTW = getMarkets().get(MarketCode.TW);
 
         // price(p1) < price(p2) --> expect (+1)
-        ClassifiedProposal p1 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(101.35), ProposalSide.ASK, marketTW);
-        ClassifiedProposal p2 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(102.35), ProposalSide.ASK, marketTW);
+        ClassifiedProposal p1 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(101.35), ProposalSide.ASK, marketTW);
+        ClassifiedProposal p2 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(102.35), ProposalSide.ASK, marketTW);
         org.junit.Assert.assertEquals(+1, comparator.compare(p1, p2));
 
         // price(p1) > price(p2) --> expect (-1)
-        p1 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(102.35), ProposalSide.ASK, marketTW);
-        p2 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(101.35), ProposalSide.ASK, marketTW);
+        p1 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(102.35), ProposalSide.ASK, marketTW);
+        p2 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(101.35), ProposalSide.ASK, marketTW);
         org.junit.Assert.assertEquals(-1, comparator.compare(p1, p2));
     }
     
@@ -49,13 +49,13 @@ public class ClassifiedBidComparatorTest {
         Market marketTW = getMarkets().get(MarketCode.TW);
 
         // price(p1) = price(p2), p1 is counter --> expect (-1)
-        ClassifiedProposal p1 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(101.35), ProposalSide.ASK, ProposalType.COUNTER, marketTW);
-        ClassifiedProposal p2 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, marketTW);
+        ClassifiedProposal p1 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(101.35), ProposalSide.ASK, ProposalType.COUNTER, marketTW);
+        ClassifiedProposal p2 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, marketTW);
         org.junit.Assert.assertEquals(-1, comparator.compare(p1, p2));
 
         // price(p1) = price(p2), p2 is counter --> expect (+1)
-        p1 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, marketTW);
-        p2 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(101.35), ProposalSide.ASK, ProposalType.COUNTER, marketTW);
+        p1 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, marketTW);
+        p2 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(101.35), ProposalSide.ASK, ProposalType.COUNTER, marketTW);
         org.junit.Assert.assertEquals(+1, comparator.compare(p1, p2));
     }
 
@@ -66,13 +66,13 @@ public class ClassifiedBidComparatorTest {
         Date timestamp = new Date();
 
         // price(p1) = price(p2), both counter, p1 newer --> expect (-1)
-        ClassifiedProposal p1 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(101.35), ProposalSide.ASK, ProposalType.COUNTER, DateUtils.addSeconds(timestamp, 1), marketTW);
-        ClassifiedProposal p2 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(101.35), ProposalSide.ASK, ProposalType.COUNTER, timestamp, marketTW);
+        ClassifiedProposal p1 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(101.35), ProposalSide.ASK, ProposalType.COUNTER, DateUtils.addSeconds(timestamp, 1), marketTW);
+        ClassifiedProposal p2 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(101.35), ProposalSide.ASK, ProposalType.COUNTER, timestamp, marketTW);
         org.junit.Assert.assertEquals(-1, comparator.compare(p1, p2));
 
         // price(p1) = price(p2), both counter, p2 newer --> expect (+1)
-        p1 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(101.35), ProposalSide.ASK, ProposalType.COUNTER, timestamp, marketTW);
-        p2 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(101.35), ProposalSide.ASK, ProposalType.COUNTER, DateUtils.addSeconds(timestamp, 1), marketTW);
+        p1 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(101.35), ProposalSide.ASK, ProposalType.COUNTER, timestamp, marketTW);
+        p2 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(101.35), ProposalSide.ASK, ProposalType.COUNTER, DateUtils.addSeconds(timestamp, 1), marketTW);
         org.junit.Assert.assertEquals(+1, comparator.compare(p1, p2));
     }
     
@@ -85,15 +85,15 @@ public class ClassifiedBidComparatorTest {
         Venue venue2 = ClassifieProposalGeneratorHelper.getNewVenue("MM2", 2);
 
         // p1=p2, rank1 < rank2
-        ClassifiedProposal p1 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue1, marketTW);
-        ClassifiedProposal p2 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue2, marketTW);
+        ClassifiedProposal p1 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue1, marketTW);
+        ClassifiedProposal p2 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue2, marketTW);
         org.junit.Assert.assertEquals(-1, comparator.compare(p1, p2));
 
         // p1=p2, rank1 > rank2
         venue1 = ClassifieProposalGeneratorHelper.getNewVenue("MM1", 2);
         venue2 = ClassifieProposalGeneratorHelper.getNewVenue("MM2", 1);
-        p1 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue1, marketTW);
-        p2 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue2, marketTW);
+        p1 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue1, marketTW);
+        p2 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue2, marketTW);
         org.junit.Assert.assertEquals(+1, comparator.compare(p1, p2));
     }
     
@@ -108,15 +108,15 @@ public class ClassifiedBidComparatorTest {
         Venue venue2 = ClassifieProposalGeneratorHelper.getNewVenue("MM2", 2);
 
         // p1=p2, rank MM1 better than MM2, mkt1 is TW --> choose p1
-        ClassifiedProposal p1 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue1, marketTW);
-        ClassifiedProposal p2 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue2, marketRTFI);
+        ClassifiedProposal p1 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue1, marketTW);
+        ClassifiedProposal p2 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue2, marketRTFI);
         org.junit.Assert.assertEquals(-1, comparator.compare(p1, p2));
 
         // p1=p2, rank MM1 better than MM2, mkt2 is TW --> choose p2
         venue1 = ClassifieProposalGeneratorHelper.getNewVenue("MM1", 1);
         venue2 = ClassifieProposalGeneratorHelper.getNewVenue("MM2", 2);
-        p1 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue1, marketRTFI);
-        p2 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue2, marketTW);
+        p1 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue1, marketRTFI);
+        p2 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue2, marketTW);
         org.junit.Assert.assertEquals(+1, comparator.compare(p1, p2));
     }
     
@@ -129,13 +129,13 @@ public class ClassifiedBidComparatorTest {
         Venue venue1 = ClassifieProposalGeneratorHelper.getNewVenue("MM1", 1);  // same venue on different markets
 
         // p1=p2, mkt1 is TW --> choose p1
-        ClassifiedProposal p1 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue1, marketTW);
-        ClassifiedProposal p2 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue1, marketRTFI);
+        ClassifiedProposal p1 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue1, marketTW);
+        ClassifiedProposal p2 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue1, marketRTFI);
         org.junit.Assert.assertEquals(-1, comparator.compare(p1, p2));
 
         // p1=p2, mkt2 is TW --> choose p2
-        p1 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue1, marketRTFI);
-        p2 = ClassifieProposalGeneratorHelper.getProposal(new BigDecimal(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue1, marketTW);
+        p1 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue1, marketRTFI);
+        p2 = ClassifieProposalGeneratorHelper.getProposal(BigDecimal.valueOf(101.35), ProposalSide.ASK, ProposalType.TRADEABLE, timestamp, venue1, marketTW);
         org.junit.Assert.assertEquals(+1, comparator.compare(p1, p2));
     }
     

@@ -8,6 +8,7 @@ import it.softsolutions.bestx.Operation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,12 +25,14 @@ public class MultiOperationMatchingServer implements OperationMatchingServer, Ru
     private Thread this_thread;
     private OperationMatcher operationMatcher;
     private OperationMatchingServerListener listener;
-    public volatile int newOperations = 0;
+//    public volatile int newOperations = 0;
+    public AtomicInteger newOperations = new AtomicInteger(0);
 
     @Override
     public void addOperation(Operation operation) {
         matchingList.add(operation);
-        newOperations++;
+//        newOperations++;
+        newOperations.incrementAndGet();
         notify();
     }
 
@@ -57,14 +60,15 @@ public class MultiOperationMatchingServer implements OperationMatchingServer, Ru
     private void searchMatch() {
         int lastOperationIndex = matchingList.size() - 1;
         List<Operation> result = new ArrayList<Operation>();
-        while (newOperations > 0) {
+        while (newOperations.get() > 0) {
             Operation operationNew = matchingList.get(lastOperationIndex);
             if (operationMatcher.operationsMatch(operationNew)) {
                 result = operationMatcher.getOperationsMatched(operationNew);
                 removeOperations(result);
             }
             listener.onOperationsMatch(result);
-            newOperations--;
+//            newOperations--;
+            newOperations.decrementAndGet();
             lastOperationIndex--;
         }
     }

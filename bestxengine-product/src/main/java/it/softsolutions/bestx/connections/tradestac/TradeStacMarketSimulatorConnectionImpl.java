@@ -18,6 +18,7 @@ package it.softsolutions.bestx.connections.tradestac;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -217,7 +218,7 @@ public class TradeStacMarketSimulatorConnectionImpl extends AbstractTradeStacCon
 
 		String isinCode = null;
 		TSInstrument tsInstrument = tsMarketDataSnapshotFullRefresh.getTSInstrument();
-		if(tsInstrument.getSecurityIDSource() == null)
+		if(tsInstrument != null && tsInstrument.getSecurityIDSource() == null)
 			tsInstrument.setSecurityIDSource(SecurityIDSource.IsinNumber);
 		if (tsInstrument != null && tsInstrument.getSecurityIDSource() == SecurityIDSource.IsinNumber) {
 			isinCode = tsInstrument.getSecurityID();
@@ -602,7 +603,7 @@ public class TradeStacMarketSimulatorConnectionImpl extends AbstractTradeStacCon
 	@Override
 	public void requestInstrumentStatus() throws BestXException {
 		LOGGER.error("call of unimplemented method requestInstrumentStatus");
-		LOGGER.error(new BestXException().getStackTrace().toString());
+		LOGGER.error(Arrays.toString(new BestXException().getStackTrace()));
 	}
 
 	@Override

@@ -164,7 +164,8 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 			if(currentAttempt == null || currentAttempt.getMarketOrder() == null || currentAttempt.getMarketOrder().getMarket() == null) {
 				LOGGER.warn("Order {},  invalid market order when trying to start execution. currentAttempt.MarketOrder = {}", currentAttempt == null ? "null.null" : currentAttempt.getMarketOrder());
 				operation.setStateResilient(new WarningState(operation.getState(), null, 
-						"invalid market order when trying to start execution. currentAttempt.MarketOrder =" + (currentAttempt == null ? "null.null" : currentAttempt.getMarketOrder())), ErrorState.class);				
+						"invalid market order when trying to start execution. currentAttempt.MarketOrder =" + (currentAttempt == null ? "null.null" : currentAttempt.getMarketOrder())), ErrorState.class);
+				return;
 			}
 			switch (currentAttempt.getMarketOrder().getMarket().getMarketCode()) {
 			case BLOOMBERG:

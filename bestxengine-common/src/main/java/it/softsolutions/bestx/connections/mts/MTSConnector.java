@@ -570,7 +570,7 @@ public abstract class MTSConnector extends XT2BaseConnector implements MTSConnec
      * 
      * @return int the error code for a technical reject
      */
-    public int getTechnicalRejErrCode() {
+    public synchronized int getTechnicalRejErrCode() {
         return technicalRejErrCode;
     }
 
@@ -579,7 +579,7 @@ public abstract class MTSConnector extends XT2BaseConnector implements MTSConnec
      * 
      * @param technicalRejErrCode
      */
-    public void setTechnicalRejErrCode(int technicalRejErrCode) {
+    public synchronized void setTechnicalRejErrCode(int technicalRejErrCode) {
         this.technicalRejErrCode = technicalRejErrCode;
         BV_TECH_REJ_ERR_CODE = technicalRejErrCode;
         BV_TECH_REJ_DISTINCTIVE_MSG = "Error code " + BV_TECH_REJ_ERR_CODE + ".";

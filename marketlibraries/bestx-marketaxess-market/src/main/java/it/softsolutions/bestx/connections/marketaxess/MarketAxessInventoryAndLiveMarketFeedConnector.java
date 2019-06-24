@@ -149,10 +149,8 @@ public class MarketAxessInventoryAndLiveMarketFeedConnector extends Tradestac2Ma
 					for(String marketMakerCode : marketMakerCodes) {
 						sendClassifiedProposalReject(instrument, marketMakerCode, errMsg.substring(0, Math.min(199, len)));
 					}
-					try {
-						String isinCode = liteMarketDataRequest.getInstrument().getIsin();
-						marketAxessHelper.removeLiteMarketDataRequest(isinCode);
-					} catch(Exception e) {}
+					String isinCode = liteMarketDataRequest.getInstrument().getIsin();
+					marketAxessHelper.removeLiteMarketDataRequest(isinCode);
 					marketAxessHelper.removeLiteMarketDataRequest(requestId);
 				}
 			}

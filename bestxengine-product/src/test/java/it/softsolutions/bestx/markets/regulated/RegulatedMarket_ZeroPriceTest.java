@@ -79,7 +79,7 @@ public class RegulatedMarket_ZeroPriceTest
       for (int index = 1; index <= 5; index ++)
          proposalsPricesToZeroOrOverTheLimit.add(new RegulatedProposalInputLazyBean(fakeMsg, index));
       
-      Money orderPriceLimit = new Money("EUR", new BigDecimal(96.1));
+      Money orderPriceLimit = new Money("EUR", BigDecimal.valueOf(96.1));
       BigDecimal quantity = new BigDecimal(10000);
       String instrumentCurrency = "EUR";
       ClassifiedProposal result = null;
@@ -124,7 +124,7 @@ public class RegulatedMarket_ZeroPriceTest
       for (int index = 1; index <= 5; index ++)
          proposalsPricesOverTheLimit.add(new RegulatedProposalInputLazyBean(fakeMsg, index));
       
-      Money orderPriceLimit = new Money("EUR", new BigDecimal(96.1));
+      Money orderPriceLimit = new Money("EUR", BigDecimal.valueOf(96.1));
       BigDecimal quantity = new BigDecimal(10000);
       String instrumentCurrency = "EUR";
       ClassifiedProposal result = null;
@@ -168,7 +168,7 @@ public class RegulatedMarket_ZeroPriceTest
       for (int index = 1; index <= 5; index ++)
          proposalsPricesWithinLimit.add(new RegulatedProposalInputLazyBean(fakeMsg, index));
       
-      Money orderPriceLimit = new Money("EUR", new BigDecimal(96.1));
+      Money orderPriceLimit = new Money("EUR", BigDecimal.valueOf(96.1));
       BigDecimal quantity = new BigDecimal(10000);
       String instrumentCurrency = "EUR";
       ClassifiedProposal result = null;
@@ -199,7 +199,7 @@ public class RegulatedMarket_ZeroPriceTest
 
       __FakeXT2MessageBuilderForTLXAndMOT fakeBookBuilder = new __FakeXT2MessageBuilderForTLXAndMOT();
       XT2Msg fakeMsg = fakeBookBuilder.getMOTPricesWithDateAndTime();
-      Money orderPriceLimit = new Money("EUR", new BigDecimal(96.1));
+      Money orderPriceLimit = new Money("EUR", BigDecimal.valueOf(96.1));
       BigDecimal quantity = new BigDecimal(10000);
       
       ArrayList<RegulatedProposalInputLazyBean> proposals = new ArrayList<RegulatedProposalInputLazyBean>();

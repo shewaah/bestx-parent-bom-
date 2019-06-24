@@ -84,7 +84,7 @@ public class SimpleMarketProposalAggregator implements MarketProposalAggregator 
     	marketBookMap = new ConcurrentSkipListMap<String, BaseBook>();
     }
 
-    public static SimpleMarketProposalAggregator getInstance() {
+    public synchronized static SimpleMarketProposalAggregator getInstance() {
         if (instance == null) {
             instance = new SimpleMarketProposalAggregator();
         }

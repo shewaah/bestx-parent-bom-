@@ -46,7 +46,7 @@ public class StateDescriptionService {
      * Set JdbcTemplate
      * @param jdbcTemplate
      */
-    public void setJdbcTemplate(JdbcTemplate theJdbcTemplate) {
+    public static void setJdbcTemplate(JdbcTemplate theJdbcTemplate) {
         jdbcTemplate = theJdbcTemplate;
     }
 

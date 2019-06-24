@@ -142,6 +142,10 @@ public class CachedOperationRegistry implements OperationRegistry, ConfigurableO
 
 	@Override
 	public void removeOperationBinding(Operation operation, OperationIdType idType) {
+		if(operation == null) {
+        	LOGGER.error("operation variable is null");
+        	return;
+        }
 		LOGGER.debug("OperationID={}, removing operation bind for type: {}", operation.getId(), idType);
 		
 		operation.removeIdentifier(idType);

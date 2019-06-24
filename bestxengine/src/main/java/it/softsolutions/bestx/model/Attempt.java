@@ -33,7 +33,7 @@ public class Attempt {
     
     public static int maxAttemptNo = 10;
     @SuppressWarnings("unused")
-    private Long id;
+    private Long id = 0L;
     private ClassifiedProposal executionProposal;
 
     /** multiple quotes reported  in a RFCQ or other competitive trading protocol .

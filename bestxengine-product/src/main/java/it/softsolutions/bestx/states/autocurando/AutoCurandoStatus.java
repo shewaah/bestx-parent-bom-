@@ -16,6 +16,7 @@ package it.softsolutions.bestx.states.autocurando;
 
 import it.softsolutions.bestx.management.AutoCurandoStatusMBean;
 
+import org.apache.commons.collections.bag.SynchronizedBag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +43,7 @@ public enum AutoCurandoStatus implements AutoCurandoStatusMBean {
 	private int totalAutoCurandoOrdersNumber;
 
 	@Override
-	public String getAutoCurandoStatus() {
+	public synchronized String getAutoCurandoStatus() {
 		return autoCurandoStatus;
 	}
 

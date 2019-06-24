@@ -34,7 +34,7 @@ public class BV_RejectQuoteState extends BaseState implements OperationState {
 	@Override
 	public OperationState clone() throws CloneNotSupportedException {
 		// TODO Auto-generated method stub
-		return null;
+		throw new CloneNotSupportedException("clone not implemented");
 	}
 
 }

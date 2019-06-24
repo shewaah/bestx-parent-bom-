@@ -33,7 +33,7 @@ public class User implements UserIFC {
     private String surname;
     private Date passwordExpirationDate;
     private String userName;
-    private String password;
+//    private String password;
     private String description;
     private String specialist;
     private Integer isLocked;
@@ -156,7 +156,8 @@ public class User implements UserIFC {
      */
     @Override
 	public String getPassword() {
-        return password;
+//        return password;
+    	return "";
     }
 
     @Override

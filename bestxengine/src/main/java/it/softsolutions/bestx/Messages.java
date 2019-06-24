@@ -64,7 +64,7 @@ public class Messages {
      * 
      * @param bundleName
      */
-    public void setBundleName(String bundleName) {
+    public static void setBundleName(String bundleName) {
         Messages.bundleName = bundleName;
     }
 
@@ -73,7 +73,7 @@ public class Messages {
      * 
      * @param language
      */
-    public void setLanguage(String language) {
+    public static void setLanguage(String language) {
         Messages.language = language;
     }
 
@@ -82,7 +82,7 @@ public class Messages {
      * 
      * @param country
      */
-    public void setCountry(String country) {
+    public static void setCountry(String country) {
         Messages.country = country;
     }
 

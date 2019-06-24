@@ -50,7 +50,7 @@ public class BestXConfigurationPropertyLoader {
 	/**
 	 * @param jdbcTemplate the jdbcTemplate to set
 	 */
-	public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+	public static void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
 		BestXConfigurationPropertyLoader.jdbcTemplate = jdbcTemplate;
 	}
 
@@ -64,7 +64,7 @@ public class BestXConfigurationPropertyLoader {
 	/**
 	 * @param configurationTable the configurationTable to set
 	 */
-	public void setConfigurationTable(String configurationTable) {
+	public static void setConfigurationTable(String configurationTable) {
 		BestXConfigurationPropertyLoader.configurationTable = configurationTable;
 	}
 

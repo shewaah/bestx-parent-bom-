@@ -235,6 +235,9 @@ public class BondVisionMarket extends MarketCommon implements MarketBuySideConne
         default:
             break;
         }
+        
+        if(bookProposals == null)
+        	return result;
 
         for (ClassifiedProposal a : bookProposals) {
             if (a.getVenue().getCode().equalsIgnoreCase(proposal.getVenue().getCode())) {
@@ -1488,6 +1491,10 @@ public class BondVisionMarket extends MarketCommon implements MarketBuySideConne
 
 	@Override
     public void timerExpired(String jobName, String groupName) {
+		if(jobName == null) {
+			LOGGER.error("jobName is null");
+			return;
+		}
 		if (!jobName.contains(SimpleMarketProposalAggregator.TIMER_NAME_SEPARATOR) && !jobName.contains(getMarketCode().toString())) {
             LOGGER.info("Timeout reached on BondVision price retrieval but identifier was not BV: " + jobName);
             return;
@@ -1496,7 +1503,7 @@ public class BondVisionMarket extends MarketCommon implements MarketBuySideConne
 
         marketStatistics.timerExpired();
 
-        if (jobName != null && jobName.contains(SimpleMarketProposalAggregator.TIMER_NAME_SEPARATOR)) {
+        if (jobName.contains(SimpleMarketProposalAggregator.TIMER_NAME_SEPARATOR)) {
             marketStatistics.pricesResponseReceived(jobName.split(SimpleMarketProposalAggregator.TIMER_NAME_SEPARATOR)[1], 1);
         }	    
     }

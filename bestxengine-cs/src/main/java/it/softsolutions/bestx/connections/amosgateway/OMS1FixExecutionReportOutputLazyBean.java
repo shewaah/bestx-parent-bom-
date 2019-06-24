@@ -92,7 +92,12 @@ public class OMS1FixExecutionReportOutputLazyBean extends FixExecutionReportOutp
         accruedInterest = (executionReport != null && executionReport.getAccruedInterestAmount() != null ? executionReport.getAccruedInterestAmount().getAmount() : null);
         
         tipoConto = (executionReport != null) ? executionReport.getTipoConto() : null;
-        lastMkt = executionReport.getLastMkt() != null ? executionReport.getLastMkt() : "";
+        if(executionReport == null) {
+        	lastMkt = "";
+        }
+        else {
+        	lastMkt = executionReport.getLastMkt() != null ? executionReport.getLastMkt() : "";
+        }
         if(executionReport != null) {
         	execBroker = executionReport.getExecBroker();
         	executionReportId = executionReport.getExecutionReportId();
@@ -124,7 +129,8 @@ public class OMS1FixExecutionReportOutputLazyBean extends FixExecutionReportOutp
         strSettlementType = "6";
         executionReportId += "_CANCEL";
        
-        side = order.getSide();
+        if(order != null)
+        	side = order.getSide();
         if(shortSellSides.contains(side))
         	side = OrderSide.SELL;
         

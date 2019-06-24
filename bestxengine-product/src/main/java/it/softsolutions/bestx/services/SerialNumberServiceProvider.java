@@ -42,7 +42,7 @@ public class SerialNumberServiceProvider
 		return serialNumberService;
 	}
 
-	public void setSerialNumberService(SerialNumberService serialNumberService) {
+	public static void setSerialNumberService(SerialNumberService serialNumberService) {
 	    SerialNumberServiceProvider.serialNumberService = serialNumberService;
 	}
 }

@@ -368,6 +368,9 @@ public class OMS1CustomerAdapter extends CustomerAdapterStatistics implements Cu
         }
 
         statRejectExecutionReport.incrementAndGet();
+        if(source == null) {
+        	throw new BestXException("Operation is null");
+        }
         String fixSessionId = source.getIdentifier(OperationIdType.FIX_SESSION);
         LimitFileHelper.getInstance().getComment(order, rejectReason);
         if(errorCode == null)

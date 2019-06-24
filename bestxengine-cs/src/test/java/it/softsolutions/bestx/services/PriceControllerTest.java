@@ -52,17 +52,17 @@ public class PriceControllerTest
    
    @Test(expected = IllegalArgumentException.class)
    public void checkMaxDeviationNullProposals() throws BestXException {
-      PriceController.INSTANCE.checkMaxDeviation(new BigDecimal(100.2), null, new Customer());
+      PriceController.INSTANCE.checkMaxDeviation(BigDecimal.valueOf(100.2), null, new Customer());
    } 
 
    @Test(expected = IllegalArgumentException.class)
    public void checkMaxDeviationNullCustomer() throws BestXException {
-      PriceController.INSTANCE.checkMaxDeviation(new BigDecimal(100.2), new ArrayList<ClassifiedProposal>(), null);
+      PriceController.INSTANCE.checkMaxDeviation(BigDecimal.valueOf(100.2), new ArrayList<ClassifiedProposal>(), null);
    } 
 
    @Test(expected = BestXException.class)
    public void checkMaxDeviationInvalidPrice() throws BestXException {
-      BigDecimal orderPrice = new BigDecimal(-100.2);
+      BigDecimal orderPrice = BigDecimal.valueOf(-100.2);
       List<ClassifiedProposal> worstPriceDiscardedProposals = new ArrayList<ClassifiedProposal>();
       
       PriceController.INSTANCE.checkMaxDeviation(orderPrice, worstPriceDiscardedProposals, new Customer());
@@ -70,7 +70,7 @@ public class PriceControllerTest
    
    @Test(expected = BestXException.class)
    public void checkMaxDeviationInvalidProposals() throws BestXException{
-      BigDecimal orderPrice = new BigDecimal(100.2);
+      BigDecimal orderPrice = BigDecimal.valueOf(100.2);
       List<ClassifiedProposal> worstPriceDiscardedProposals = new ArrayList<ClassifiedProposal>();
       ClassifiedProposal noPriceProposal = new ClassifiedProposal();
       worstPriceDiscardedProposals.add(noPriceProposal);
@@ -79,7 +79,7 @@ public class PriceControllerTest
    
    @Test(expected = BestXException.class)
    public void checkMaxDeviationInvalidCustomerAttributes() throws BestXException{
-      BigDecimal orderPrice = new BigDecimal(100.2);
+      BigDecimal orderPrice = BigDecimal.valueOf(100.2);
       List<ClassifiedProposal> worstPriceDiscardedProposals = new ArrayList<ClassifiedProposal>();
       ClassifiedProposal noPriceProposal = new ClassifiedProposal();
       worstPriceDiscardedProposals.add(noPriceProposal);
@@ -90,7 +90,7 @@ public class PriceControllerTest
    
    @Test(expected = BestXException.class)
    public void checkMaxDeviationNullValueConfigured() throws BestXException{
-      BigDecimal orderPrice = new BigDecimal(100.2);
+      BigDecimal orderPrice = BigDecimal.valueOf(100.2);
       List<ClassifiedProposal> worstPriceDiscardedProposals = new ArrayList<ClassifiedProposal>();
       ClassifiedProposal noPriceProposal = new ClassifiedProposal();
       worstPriceDiscardedProposals.add(noPriceProposal);
@@ -103,7 +103,7 @@ public class PriceControllerTest
    
    @Test
    public void checkMaxDeviationNoProposals() throws BestXException{
-      BigDecimal orderPrice = new BigDecimal(100.2);
+      BigDecimal orderPrice = BigDecimal.valueOf(100.2);
       List<ClassifiedProposal> worstPriceDiscardedProposals = new ArrayList<ClassifiedProposal>();
       ClassifiedProposal validProposal = PriceController.INSTANCE.checkMaxDeviation(orderPrice, worstPriceDiscardedProposals, new Customer());
       assertEquals(null, validProposal);
@@ -111,11 +111,11 @@ public class PriceControllerTest
    
    @Test
    public void checkMaxDeviationAllRejected() throws BestXException {      
-      BigDecimal orderPrice = new BigDecimal(100.2);
+      BigDecimal orderPrice = BigDecimal.valueOf(100.2);
       List<ClassifiedProposal> worstPriceDiscardedProposals = new ArrayList<ClassifiedProposal>();
       
       ClassifiedProposal rejectedProposal = new ClassifiedProposal();
-      rejectedProposal.setPrice(new Money("EUR", new BigDecimal(90.02)));
+      rejectedProposal.setPrice(new Money("EUR", BigDecimal.valueOf(90.02)));
       rejectedProposal.setProposalState(ProposalState.REJECTED);
       //proposal price lesser than the limit, to be worse than the limit it should be and ASK
       //proposal
@@ -134,17 +134,17 @@ public class PriceControllerTest
    @Test
    public void checkMaxDeviationOneValidAsk() throws BestXException
    {
-      checkMaxDeviationOneValid(ProposalSide.ASK, new BigDecimal(90.02), new BigDecimal(100.01));
+      checkMaxDeviationOneValid(ProposalSide.ASK, BigDecimal.valueOf(90.02), BigDecimal.valueOf(100.01));
    }
 
    @Test
    public void checkMaxDeviationOneValidBid() throws BestXException
    {
-      checkMaxDeviationOneValid(ProposalSide.BID, new BigDecimal(130.02), new BigDecimal(100.04));
+      checkMaxDeviationOneValid(ProposalSide.BID, BigDecimal.valueOf(130.02), BigDecimal.valueOf(100.04));
    }
 
    private void checkMaxDeviationOneValid(ProposalSide proposalSide, BigDecimal proposalPrice, BigDecimal validProposalPrice) throws BestXException {
-      BigDecimal orderPrice = new BigDecimal(100.2);
+      BigDecimal orderPrice = BigDecimal.valueOf(100.2);
       List<ClassifiedProposal> worstPriceDiscardedProposals = new ArrayList<ClassifiedProposal>();
       
       ClassifiedProposal rejectedProposal = new ClassifiedProposal();
@@ -183,7 +183,7 @@ public class PriceControllerTest
    }
 
    private void checkMaxDeviationZeroPrice(ProposalSide proposalSide) throws BestXException {
-      BigDecimal orderPrice = new BigDecimal(100.2);
+      BigDecimal orderPrice = BigDecimal.valueOf(100.2);
       List<ClassifiedProposal> worstPriceDiscardedProposals = new ArrayList<ClassifiedProposal>();
       
       ClassifiedProposal rejectedProposal = new ClassifiedProposal();
@@ -209,16 +209,16 @@ public class PriceControllerTest
    
    @Test
    public void checkMaxDeviationCustomerDeviationZeroAsk() throws BestXException {      
-      checkMaxDeviationCustomerDeviationZero(ProposalSide.ASK, new BigDecimal(90.02));
+      checkMaxDeviationCustomerDeviationZero(ProposalSide.ASK, BigDecimal.valueOf(90.02));
    }
    
    @Test
    public void checkMaxDeviationCustomerDeviationZeroBid() throws BestXException {      
-      checkMaxDeviationCustomerDeviationZero(ProposalSide.BID, new BigDecimal(130.03));
+      checkMaxDeviationCustomerDeviationZero(ProposalSide.BID, BigDecimal.valueOf(130.03));
    }
    
    private void checkMaxDeviationCustomerDeviationZero(ProposalSide proposalSide, BigDecimal proposalPrice) throws BestXException {      
-      BigDecimal orderPrice = new BigDecimal(100.2);
+      BigDecimal orderPrice = BigDecimal.valueOf(100.2);
       List<ClassifiedProposal> worstPriceDiscardedProposals = new ArrayList<ClassifiedProposal>();
       
       ClassifiedProposal rejectedProposal = new ClassifiedProposal();
@@ -271,10 +271,10 @@ public class PriceControllerTest
    public void testGetBestProposalDeltaNoValidProposal() throws BestXException {
        List<ClassifiedProposal> worstPriceDiscardedProposals = new ArrayList<ClassifiedProposal>();
        
-       Messages messages = new Messages();
-       messages.setBundleName("messages");
-       messages.setLanguage("it");
-       messages.setCountry("IT");
+//       Messages messages = new Messages();
+//       messages.setBundleName("messages");
+//       messages.setLanguage("it");
+//       messages.setCountry("IT");
        
        ClassifiedProposal rejectedProposal = new ClassifiedProposal();
        rejectedProposal.setPrice(new Money("EUR", new BigDecimal(100.0)));
@@ -329,7 +329,8 @@ public class PriceControllerTest
        worstPriceDiscardedProposals.add(rejectedProposal);
        
        double deltaDeviation = PriceController.INSTANCE.getBestProposalDelta(orderPrice, worstPriceDiscardedProposals, new Customer());
-       assertTrue(expectedDeltaDeviation == deltaDeviation);
+//       assertTrue(expectedDeltaDeviation == deltaDeviation);
+       assertTrue(Math.abs(expectedDeltaDeviation - deltaDeviation) < .0000001);
    }
 // END getBestProposalDelta tests sequence
 }

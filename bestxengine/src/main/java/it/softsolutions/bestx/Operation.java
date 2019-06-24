@@ -443,7 +443,7 @@ public final class Operation implements OperationEventListener {
 	 * 
 	 * @return an OperationState object
 	 */
-	public OperationState getState() {
+	public synchronized OperationState getState() {
 		return currentState;
 	}
 

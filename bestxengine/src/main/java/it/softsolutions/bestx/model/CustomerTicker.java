@@ -83,8 +83,12 @@ public class CustomerTicker implements Serializable {
         if (o == null || !(o instanceof CustomerTicker)) {
             return false;
         }
-        if(((CustomerTicker) o).clientCode == null && clientCode == null)
+        if(((CustomerTicker) o).clientCode == null) {
+        	if(clientCode == null)
         	 return (((CustomerTicker) o).getTicker() == null && ticker == null);
+        	else
+        		return false;
+        }
         return ((CustomerTicker) o).clientCode.equalsIgnoreCase(clientCode) && ((CustomerTicker) o).getTicker().equalsIgnoreCase(ticker);
     }
 

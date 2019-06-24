@@ -40,7 +40,7 @@ public class PriceRequestContainer {
     private PriceRequestContainer() {
     }
 
-    public static PriceRequestContainer getInstance() {
+    public synchronized static PriceRequestContainer getInstance() {
         if (instance == null) {
             instance = new PriceRequestContainer();
         }

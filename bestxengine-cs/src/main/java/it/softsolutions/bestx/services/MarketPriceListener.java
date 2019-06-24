@@ -248,6 +248,11 @@ public class MarketPriceListener implements MarketPriceConnectionListener {
                     Collection<? extends ClassifiedProposal> currentProposals;
                     // 20091118 AMC se ripristino la proposta originale del MM devo farlo e poi riclassificare il book per non avere uno
                     // stato inconsistente delle proposte
+                    if(classifiedBook == null) {
+                    	String error = "ClassifiedBook is null";
+                    	LOGGER.error(error);
+                    	throw new Exception(error);
+                    }
                     if (OrderSide.BUY.equals(order.getSide())) {
                         currentProposals = classifiedBook.getAskProposals();
                     } else {

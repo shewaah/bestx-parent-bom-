@@ -49,7 +49,7 @@ public class FixOrderQueueMonitor implements Runnable{
         ackSent = new AtomicInteger(0);
     }
     
-    public static FixOrderQueueMonitor getInstance(long dumpIntervalMilliseconds){
+    public synchronized static FixOrderQueueMonitor getInstance(long dumpIntervalMilliseconds){
         if (instance == null){
             instance = new FixOrderQueueMonitor(dumpIntervalMilliseconds);
         }

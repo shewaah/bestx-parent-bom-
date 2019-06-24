@@ -14,8 +14,6 @@
 package it.softsolutions.bestx.services.financecalc;
 
 import static org.junit.Assert.assertEquals;
-import it.softsolutions.bestx.finders.db.SetHolidayFinder;
-import it.softsolutions.bestx.model.Holiday;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -23,11 +21,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import it.softsolutions.bestx.finders.db.SetHolidayFinder;
+import it.softsolutions.bestx.model.Holiday;
+import junit.framework.Assert;
 
 /** 
 
@@ -45,7 +45,8 @@ public class SettlementDateCalculatorTest
    private SimpleDateFormat fullDateFormat;
    private SettlementDateCalculator settlementDateCalculator;
    private SetHolidayFinder settlementHolidayFinder = null;
-   private List<Holiday> holidays = null;
+//   private List<Holiday> holidays = null;
+   private List<Holiday> holidays = new ArrayList<>();
 
    @Before
    public void setUp() throws Exception

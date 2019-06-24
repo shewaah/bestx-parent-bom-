@@ -65,6 +65,8 @@ public class TradewebDataHelper {
 		if (OrderSide.isBuy(marketOrder.getSide())) return 0; // is buy!
 		OrderSide ssi = marketOrder.getShortSellIndicator();
 		if(ssi == null && !OrderSide.isBuy(marketOrder.getSide())) return defaultShortSelling;
+		if(ssi == null)
+			return 0;
         switch (ssi) {
         case SELL_SHORT:
         	return 1;

@@ -29,7 +29,7 @@ public class BondTypesService {
 
     private static String[] enabledBondTypes;
 
-    public void setEnabledBondTypes(String[] enabledBondTypes) {
+    public static void setEnabledBondTypes(String[] enabledBondTypes) {
         BondTypesService.enabledBondTypes = enabledBondTypes;
     }
 

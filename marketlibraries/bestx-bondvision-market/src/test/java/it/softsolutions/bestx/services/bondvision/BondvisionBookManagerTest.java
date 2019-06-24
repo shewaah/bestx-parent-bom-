@@ -127,7 +127,7 @@ public class BondvisionBookManagerTest {
 
 		TSMDFullGrp tsMDFullGrp = new TSMDFullGrp();
 		List<TSMDFullGrp.TSNoMDEntries> tsNoMDEntriesList = new ArrayList<TSMDFullGrp.TSNoMDEntries>();
-		TSNoMDEntryTypes entryType = new TSNoMDEntryTypes(MDEntryType.Bid);
+//		TSNoMDEntryTypes entryType = new TSNoMDEntryTypes(MDEntryType.Bid);
 
 		TSMDFullGrp.TSNoMDEntries entry1 = new TSMDFullGrp.TSNoMDEntries();
 		TSMDFullGrp.TSNoMDEntries entry2 = new TSMDFullGrp.TSNoMDEntries();

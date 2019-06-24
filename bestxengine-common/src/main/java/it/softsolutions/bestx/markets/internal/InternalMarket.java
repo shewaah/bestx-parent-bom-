@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,14 +69,22 @@ public class InternalMarket extends MarketConnection implements Connection, Conn
     private CmfConnection cmfConnection;
     private ConnectionListener connectionListener;
     private ConnectionHelper connectionHelper;
-    private volatile long statTrades;
-    private volatile long statTotalRequestAcks;
-    private volatile long statTotalRequestNacks;
-    private volatile long statTotalRequestReplies;
-    private volatile long statFailedRequestAcks;
-    private volatile long statFailedRequestNacks;
-    private volatile long statFailedRequestReplies;
-    private volatile long statExceptions;
+    private AtomicLong statTrades = new AtomicLong();
+//    private volatile long statTrades;
+//    private volatile long statTotalRequestAcks;
+    private AtomicLong statTotalRequestAcks = new AtomicLong();
+    private AtomicLong statTotalRequestNacks = new AtomicLong();
+    private AtomicLong statTotalRequestReplies = new AtomicLong();
+//    private volatile long statTotalRequestNacks;
+//    private volatile long statTotalRequestReplies;
+//    private volatile long statFailedRequestAcks;
+    private AtomicLong statFailedRequestAcks = new AtomicLong();
+//    private volatile long statFailedRequestNacks;
+    private AtomicLong statFailedRequestNacks = new AtomicLong();
+    private AtomicLong statFailedRequestReplies = new AtomicLong();
+//    private volatile long statFailedRequestReplies;
+//    private volatile long statExceptions;
+    private AtomicLong statExceptions = new AtomicLong();
     private volatile boolean statConnected;
 
     private Date statStart;
@@ -133,7 +142,7 @@ public class InternalMarket extends MarketConnection implements Connection, Conn
         long currentTime = DateService.currentTimeMillis();
         long startTime = statStart.getTime();
         // avoid div per zero
-        return (double) (statTotalRequestAcks + statTotalRequestNacks + statTotalRequestReplies) / (currentTime - startTime + 1) * 1000.0;
+        return (double) (statTotalRequestAcks.get() + statTotalRequestNacks.get() + statTotalRequestReplies.get()) / (currentTime - startTime + 1) * 1000.0;
     }
 
     public double getAvgOutputPerSecond() {
@@ -142,43 +151,51 @@ public class InternalMarket extends MarketConnection implements Connection, Conn
         }
         long currentTime = DateService.currentTimeMillis();
         long startTime = statStart.getTime();
-        return (double) statTrades / (currentTime - startTime + 1) * 1000.0; // avoid div per zero
+        return (double) statTrades.get() / (currentTime - startTime + 1) * 1000.0; // avoid div per zero
     }
 
     public double getPctOfFailedInput() {
-        long totInput = statTotalRequestAcks + statTotalRequestNacks + statTotalRequestReplies;
+        long totInput = statTotalRequestAcks.get() + statTotalRequestNacks.get() + statTotalRequestReplies.get();
         if (totInput > 0) {
-            return (double) (statFailedRequestAcks + statFailedRequestNacks + statFailedRequestReplies) / totInput * 100;
+            return (double) (statFailedRequestAcks.get() + statFailedRequestNacks.get() + statFailedRequestReplies.get()) / totInput * 100;
         } else {
             return 0.0;
         }
     }
 
     public long getOutTrades() {
-        return statTrades;
+        return statTrades.get();
     }
 
     public long getInRequestAcks() {
-        return statTotalRequestAcks;
+        return statTotalRequestAcks.get();
     }
 
     public long getInRequestNacks() {
-        return statTotalRequestNacks;
+        return statTotalRequestNacks.get();
     }
 
     public long getInRequestReplies() {
-        return statTotalRequestReplies;
+        return statTotalRequestReplies.get();
     }
 
     public void resetStats() {
-        statTrades = 0L;
-        statTotalRequestAcks = 0L;
-        statTotalRequestNacks = 0L;
-        statTotalRequestReplies = 0L;
-        statFailedRequestAcks = 0L;
-        statFailedRequestNacks = 0L;
-        statFailedRequestReplies = 0L;
-        statExceptions = 0L;
+//        statTrades = 0L;
+    	statTrades.set(0L);
+//        statTotalRequestAcks = 0L;
+        statTotalRequestAcks.set(0L);
+//        statTotalRequestNacks = 0L;
+        statTotalRequestNacks.set(0L);
+//        statTotalRequestReplies = 0L;
+        statTotalRequestReplies.set(0L);
+//        statFailedRequestAcks = 0L;
+        statFailedRequestAcks.set(0L);
+//        statFailedRequestNacks = 0L;
+        statFailedRequestNacks.set(0L);
+//        statFailedRequestReplies = 0L;
+        statFailedRequestReplies.set(0L);
+        statExceptions.set(0L);
+//        statExceptions = 0L;
         statLastStartup = DateService.newLocalDate();
         statStart = DateService.newLocalDate();
     }
@@ -241,7 +258,7 @@ public class InternalMarket extends MarketConnection implements Connection, Conn
     }
 
     public long getNumberOfExceptions() {
-        return statExceptions;
+        return statExceptions.get();
     }
 
     private void checkBuySideConnection() throws BestXException {
@@ -321,7 +338,8 @@ public class InternalMarket extends MarketConnection implements Connection, Conn
     public void onRequestReply(final String orderId, final int errorCode, final String errorMessage) {
         LOGGER.info("Reply from CMF interface for order: {} - error: {}", orderId, errorCode);
 
-        statTotalRequestReplies++;
+//        statTotalRequestReplies++;
+        statTotalRequestReplies.incrementAndGet();
         // If the CMF replies with a -3 it means that there is no connection to the Bloomberg server, we've to manage this event and put the
         // order in the WarningState
         if (errorCode == -3) {
@@ -338,12 +356,14 @@ public class InternalMarket extends MarketConnection implements Connection, Conn
             } catch (OperationNotExistingException e) {
                 LOGGER.error("An CMF autoexecution without valid order was found: order id (" + orderId + ")." + " : " + e.getMessage(), e);
             } catch (BestXException e) {
-                statExceptions++;
+            	statExceptions.incrementAndGet();
+//                statExceptions++;
                 LOGGER.error("Error occurred while retrieving operation by order id (" + orderId + ")." + " : " + e.getMessage(), e);
             }
         } else if (orderId == null) {
             LOGGER.error("Reply without Order ID arrived! Discard it.");
-            statFailedRequestReplies++;
+            statFailedRequestReplies.incrementAndGet();
+//            statFailedRequestReplies++;
             return;
         }
     }
@@ -351,10 +371,12 @@ public class InternalMarket extends MarketConnection implements Connection, Conn
     @Override
     public void onRequestAck(final String orderId, String ticketNum, String traderId) {
         LOGGER.info("Acknowledge from CMF interface for order: {}", orderId);
-        statTotalRequestAcks++;
+//       statTotalRequestAcks++;
+        statTotalRequestAcks.incrementAndGet();
         if (orderId == null) {
             LOGGER.error("Acknowledge without Order ID arrived! Discard it.");
-            statFailedRequestAcks++;
+            statFailedRequestAcks.incrementAndGet();
+//            statFailedRequestAcks++;
             return;
         }
         try {
@@ -373,7 +395,8 @@ public class InternalMarket extends MarketConnection implements Connection, Conn
         } catch (OperationNotExistingException e) {
             LOGGER.error("An CMF autoexecution without valid order was found: order id (" + orderId + ")." + " : " + e.getMessage(), e);
         } catch (BestXException e) {
-            statExceptions++;
+        	statExceptions.incrementAndGet();
+//            statExceptions++;
             LOGGER.error("Error occurred while retrieving operation by order id (" + orderId + ")." + " : " + e.getMessage(), e);
         }
 
@@ -382,10 +405,12 @@ public class InternalMarket extends MarketConnection implements Connection, Conn
     @Override
     public void onRequestNack(final String orderId) {
         LOGGER.info("Not-acknowledge from CMF interface for order: " + orderId);
-        statTotalRequestNacks++;
+//        statTotalRequestNacks++;
+        statTotalRequestNacks.incrementAndGet();
         if (orderId == null) {
             LOGGER.error("Not-acknowledge without Order ID arrived! Discard it.");
-            statFailedRequestNacks++;
+//            statFailedRequestNacks++;
+            statFailedRequestNacks.incrementAndGet();
             return;
         }
         try {
@@ -397,11 +422,14 @@ public class InternalMarket extends MarketConnection implements Connection, Conn
                 }
             });
         } catch (OperationNotExistingException e) {
-            statFailedRequestNacks++;
+        	statFailedRequestNacks.incrementAndGet();
+//            statFailedRequestNacks++;
             LOGGER.error("An CMF not-acknowledge without valid order was found: order id (" + orderId + ")." + " : " + e.getMessage(), e);
         } catch (BestXException e) {
-            statFailedRequestNacks++;
-            statExceptions++;
+        	statFailedRequestNacks.incrementAndGet();
+//            statFailedRequestNacks++;
+            statExceptions.incrementAndGet();
+//            statExceptions++;
             LOGGER.error("Error occurred while retrieving operation by order id (" + orderId + ")." + " : " + e.getMessage(), e);
         }
     }
@@ -469,7 +497,8 @@ public class InternalMarket extends MarketConnection implements Connection, Conn
         } catch (OperationNotExistingException e) {
             LOGGER.error("An CMF autoexecution without valid order was found: order id (" + orderId + ")." + " : " + e.getMessage(), e);
         } catch (BestXException e) {
-            statExceptions++;
+        	statExceptions.incrementAndGet();
+//            statExceptions++;
             LOGGER.error("Error occurred while retrieving operation by order id (" + orderId + ")." + " : " + e.getMessage(), e);
         }
     }
@@ -498,7 +527,8 @@ public class InternalMarket extends MarketConnection implements Connection, Conn
         } catch (OperationNotExistingException e) {
             LOGGER.error("An CMF pending accept without valid order was found: order id (" + orderId + ")." + " : " + e.getMessage(), e);
         } catch (BestXException e) {
-            statExceptions++;
+        	statExceptions.incrementAndGet();
+//            statExceptions++;
             LOGGER.error("Error occurred while retrieving operation by order id (" + orderId + ")." + " : " + e.getMessage(), e);
         }
     }
@@ -557,7 +587,8 @@ public class InternalMarket extends MarketConnection implements Connection, Conn
         } catch (OperationNotExistingException e) {
             LOGGER.error("An CMF pending accept without valid order was found: order id (" + orderId + ")." + " : " + e.getMessage(), e);
         } catch (BestXException e) {
-            statExceptions++;
+        	statExceptions.incrementAndGet();
+//            statExceptions++;
             LOGGER.error("Error occurred while retrieving operation by order id (" + orderId + ")." + " : " + e.getMessage(), e);
         }
     }
@@ -593,7 +624,8 @@ public class InternalMarket extends MarketConnection implements Connection, Conn
         } catch (OperationNotExistingException e) {
             LOGGER.error("An CMF pending expire without valid order was found: order id (" + orderId + ")." + " : " + e.getMessage(), e);
         } catch (BestXException e) {
-            statExceptions++;
+        	statExceptions.incrementAndGet();
+//            statExceptions++;
             LOGGER.error("Error occurred while retrieving operation by order id (" + orderId + ")." + " : " + e.getMessage(), e);
         }
     }
@@ -615,14 +647,16 @@ public class InternalMarket extends MarketConnection implements Connection, Conn
         } catch (OperationNotExistingException e) {
             LOGGER.error("An CMF pending reject without valid order was found: order id (" + orderId + ")." + " : " + e.getMessage(), e);
         } catch (BestXException e) {
-            statExceptions++;
+        	statExceptions.incrementAndGet();
+//            statExceptions++;
             LOGGER.error("Error occurred while retrieving operation by order id (" + orderId + ")." + " : " + e.getMessage(), e);
         }
     }
 
     public void sendTrade(Operation source, Trader trader, String btsAcc, Order order, Money price, String tsn, String orderId, String status, String reisChoice) throws BestXException {
         LOGGER.info("Send Trade to CMF - {}", order);
-        statTrades++;
+//        statTrades++;
+        statTrades.incrementAndGet();
         operationRegistry.bindOperation(source, OperationIdType.BTS_TSN, tsn);
 
         cmfConnection.sendRequest(tsn, trader.getTraderName(), btsAcc, order.getInstrument().getIsin(), order.getQty(), price.getAmount(), status, reisChoice, order.getSide(), orderId, "000"

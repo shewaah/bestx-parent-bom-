@@ -224,6 +224,7 @@ public class ExecutionReport implements Cloneable {
 
     @Override
     public ExecutionReport clone() throws CloneNotSupportedException {
+    	super.clone();
         ExecutionReport cloned = new ExecutionReport();
         copyFields(this, cloned);
         Date transactTime = getTransactTime();

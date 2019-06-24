@@ -226,7 +226,7 @@ public class BookHelper {
          if (lastMarketCodes == null && ProposalState.VALID == prop.getProposalState())
             return prop;
          index++; // contains the index of the current proposal in the list sideProposals
-         if (lastMarketCodes.contains(prop.getMarket().getMarketCode()) && ProposalState.VALID == prop.getProposalState()) {
+         if (lastMarketCodes != null && lastMarketCodes.contains(prop.getMarket().getMarketCode()) && ProposalState.VALID == prop.getProposalState()) {
             // now I am ready to look for next MarketCode from now on
             for (ClassifiedProposal newProp : sideProposals.subList(index, sideProposals.size() - 1)) {
                if (!lastMarketCodes.contains(newProp.getMarket().getMarketCode()) && ProposalState.VALID == newProp.getProposalState())

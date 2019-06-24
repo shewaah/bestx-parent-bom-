@@ -72,7 +72,11 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
 
     
     public CSExecutionStrategyServiceFactory() {
-    	instance = this;
+    	setInstance(this);
+    }
+    
+    private static void setInstance(CSExecutionStrategyServiceFactory obj) {
+    	instance = obj;
     }
 
     @Override

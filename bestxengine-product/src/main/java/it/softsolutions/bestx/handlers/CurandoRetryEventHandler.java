@@ -324,7 +324,12 @@ public class CurandoRetryEventHandler extends BaseOperationEventHandler implemen
                   }
                   else {
                      limitPrice = currentAttempt.getExecutionProposal() == null ? null : currentAttempt.getExecutionProposal().getPrice();
-                     LOGGER.debug("No i-th best - Use proposal as market order limit price: {}", limitPrice.getAmount().toString());
+                     if(limitPrice == null) {
+                    	 LOGGER.error("No i-th best - limitPrice is null");
+                     }
+                     else {
+                    	 LOGGER.debug("No i-th best - Use proposal as market order limit price: {}", limitPrice.getAmount().toString());
+                     }
                   }
                }
                else LOGGER.debug("Use less wide between i best proposal and best widened by {} as market order limit price: {}", customerMaxWideSpread, limitPrice.getAmount().toString());

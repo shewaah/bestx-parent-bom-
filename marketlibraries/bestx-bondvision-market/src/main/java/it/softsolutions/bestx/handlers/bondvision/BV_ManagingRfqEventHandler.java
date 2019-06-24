@@ -85,8 +85,10 @@ public class BV_ManagingRfqEventHandler extends BaseOperationEventHandler
 		if(jobName.equalsIgnoreCase(getDefaultTimerJobName())) {
 
 			ClassifiedProposal counter = attempt.getExecutablePrice(Attempt.BEST) == null ? null : attempt.getExecutablePrice(Attempt.BEST).getClassifiedProposal();
-			counter.setProposalState(Proposal.ProposalState.REJECTED);
-			counter.setReason(Messages.getString("DiscardTriedInEarlierAttemptProposalClassifier.0"));
+			if(counter != null) {
+				counter.setProposalState(Proposal.ProposalState.REJECTED);
+				counter.setReason(Messages.getString("DiscardTriedInEarlierAttemptProposalClassifier.0"));
+			}
 			operation.setStateResilient(new BV_RejectedState(Messages.getString("BV_RFQ_TIMEOUT_WITHOUT_ANSWER")), ErrorState.class);
 		}
 	}

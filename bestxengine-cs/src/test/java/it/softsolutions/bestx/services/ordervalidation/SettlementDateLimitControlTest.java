@@ -44,10 +44,10 @@ public class SettlementDateLimitControlTest {
     @Before
     public void setUp() throws Exception {
         // Messages singleton initialization
-        Messages messages = new Messages();
-        messages.setBundleName("messages");
-        messages.setLanguage("it");
-        messages.setCountry("IT");
+//        Messages messages = new Messages();
+//        messages.setBundleName("messages");
+//        messages.setLanguage("it");
+//        messages.setCountry("IT");
 
         SettlementLimitDao settlementLimitDao = new FakeSettlementLimitDao();
         SetHolidayFinder settlementHolidayFinder = new SetHolidayFinder();

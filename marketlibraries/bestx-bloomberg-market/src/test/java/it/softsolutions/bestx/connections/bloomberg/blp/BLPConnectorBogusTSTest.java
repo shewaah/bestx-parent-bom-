@@ -274,7 +274,7 @@ public class BLPConnectorBogusTSTest{
       
       // send snapshot request
       Instrument instrument = instrumentFinder.getInstrumentByIsin(ISIN_CODE);
-      tsMarketDataRequest = null;
+//      tsMarketDataRequest = null;
       blpConnector.requestInstrumentPriceSnapshot(instrument , MARKET_MAKER_CODE);
       
       // Snapshot Request Verification
@@ -304,7 +304,7 @@ public class BLPConnectorBogusTSTest{
       assertTrue(askSide);
       
       // Send Snapshot Response
-      bidProposal = askProposal = null;
+//      bidProposal = askProposal = null;
       tsClient.sentSnapshotPrice(BID_PRICE, BID_QTY, ASK_PRICE, ASK_QTY, BID_UTC_TIME, ASK_UTC_TIME);
       //  Bid Proposal Response
       assertNotNull(bidProposal);
@@ -348,7 +348,7 @@ public class BLPConnectorBogusTSTest{
       
       // send snapshot request
       Instrument instrument = instrumentFinder.getInstrumentByIsin(ISIN_CODE);
-      tsMarketDataRequest = null;
+//      tsMarketDataRequest = null;
       blpConnector.requestInstrumentPriceSnapshot(instrument , MARKET_MAKER_CODE);
       
       // Snapshot Request Verification
@@ -378,7 +378,7 @@ public class BLPConnectorBogusTSTest{
       assertTrue(askSide);
       
       // Send Snapshot Response
-      bidProposal = askProposal = null;
+//      bidProposal = askProposal = null;
       tsClient.sentSnapshotPrice(ZERO_PRICE, BID_QTY, ZERO_PRICE, ASK_QTY, BID_UTC_TIME, ASK_UTC_TIME);
       //  Bid Proposal Response
       assertNotNull(bidProposal);
@@ -423,7 +423,7 @@ public class BLPConnectorBogusTSTest{
       
       // send snapshot request
       Instrument instrument = instrumentFinder.getInstrumentByIsin(ISIN_CODE);
-      tsMarketDataRequest = null;
+//      tsMarketDataRequest = null;
       blpConnector.requestInstrumentPriceSnapshot(instrument , MARKET_MAKER_CODE);
       
       // Snapshot Request Verification
@@ -453,7 +453,7 @@ public class BLPConnectorBogusTSTest{
       assertTrue(askSide);
       
       // Send Snapshot Response
-      bidProposal = askProposal = null;
+//      bidProposal = askProposal = null;
       tsClient.sentMarketDataReject();
       //  Bid Proposal Response
       assertNotNull(bidProposal);
@@ -500,7 +500,7 @@ public class BLPConnectorBogusTSTest{
       
       // send snapshot request
       Instrument instrument = instrumentFinder.getInstrumentByIsin(ISIN_CODE);
-      tsMarketDataRequest = null;
+//      tsMarketDataRequest = null;
       blpConnector.requestInstrumentPriceSnapshot(instrument , MARKET_MAKER_UNKNOWN);
       
       // Snapshot Request Verification
@@ -558,7 +558,7 @@ public class BLPConnectorBogusTSTest{
       
       // send snapshot request
       Instrument instrument = instrumentFinder.getInstrumentByIsin(ISIN_CODE);
-      tsMarketDataRequest = null;
+//      tsMarketDataRequest = null;
       blpConnector.requestInstrumentPriceSnapshot(instrument , MARKET_MAKER_CODE);
       
       // Snapshot Request Verification

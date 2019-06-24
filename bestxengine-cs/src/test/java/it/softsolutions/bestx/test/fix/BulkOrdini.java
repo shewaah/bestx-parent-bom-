@@ -88,7 +88,7 @@ public class BulkOrdini {
     protected static FIXClient fixClient;
 
     
-    public void init() throws FIXClientException, InterruptedException {
+    public synchronized void init() throws FIXClientException, InterruptedException {
         fixClient = new FIXClientImpl();
         
         semaphore = new Semaphore(0);

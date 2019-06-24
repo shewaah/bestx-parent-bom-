@@ -89,13 +89,15 @@ public class ConnectionHelper implements Connection, ConnectionListener, Runnabl
     public void onDisconnection(Connection source, String reason) {
         LOGGER.info("Received disconnection event from '{}' - Reason: {}", connection.getConnectionName(), reason);
         if (isInRunMethod) {
-            connectRetry = 0;
-            connected = false;
-            if (errorCondition) {
-                errorCondition = false;
-                action = Action.CONNECT;
-            }
-            notify();
+        	synchronized (this) {
+        		connectRetry = 0;
+        		connected = false;
+        		if (errorCondition) {
+        			errorCondition = false;
+        			action = Action.CONNECT;
+        		}
+        		notify();
+        	}
         } else {
             synchronized (this) {
                 connectRetry = 0;

@@ -57,7 +57,7 @@ public abstract class ExecutionStrategyServiceFactory implements ApplicationCont
 		return instance;
 	}
 	
-	public void setInstance(ExecutionStrategyServiceFactory newInstance) {
+	public static void setInstance(ExecutionStrategyServiceFactory newInstance) {
 		instance = newInstance;
 	}
 }

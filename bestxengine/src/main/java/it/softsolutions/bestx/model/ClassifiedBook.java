@@ -98,6 +98,9 @@ public class ClassifiedBook implements Book {
             break;
         }
 
+        if(sideProposals == null)
+        	return null;
+        
         for (ClassifiedProposal prop : sideProposals) {
             if (prop.getProposalState() == ProposalState.VALID) {
                 return prop;
@@ -120,6 +123,9 @@ public class ClassifiedBook implements Book {
         default:
             break;
         }
+        
+        if(sideProposals == null)
+        	return result;
 
         for (ClassifiedProposal prop : sideProposals) {
             if (prop.getProposalState() == ProposalState.VALID) {

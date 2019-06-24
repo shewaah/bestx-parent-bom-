@@ -128,7 +128,7 @@ private final Log logger = LogFactory.getLog(BV_AcceptQuoteEventHandler.class);
 		  marketExecutionReport.setTipoConto(ExecutionReport.CONTO_TERZI);
 */
         executionReport.setCounterPart(marketExecutionReport.getExecBroker());
-        executionReport.setMarketOrderID(marketExecutionReport.getMarketOrderId());
+        executionReport.setMarketOrderID(marketExecutionReport.getMarketOrderID());
         logger.info("BV market - new exec report added : " + executionReport.toString());
         operation.getExecutionReports().add(executionReport);
         operation.setStateResilient(new BV_ExecutedState(), ErrorState.class);

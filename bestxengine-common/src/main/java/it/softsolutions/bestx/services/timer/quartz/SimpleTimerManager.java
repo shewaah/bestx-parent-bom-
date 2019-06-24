@@ -104,7 +104,7 @@ public class SimpleTimerManager implements TimerManager {
         LOGGER.debug("Scheduler started");
     }
 
-    public static SimpleTimerManager getInstance() throws SchedulerException {
+    public synchronized static SimpleTimerManager getInstance() throws SchedulerException {
         if (instance == null) {
             instance = new SimpleTimerManager();
         }

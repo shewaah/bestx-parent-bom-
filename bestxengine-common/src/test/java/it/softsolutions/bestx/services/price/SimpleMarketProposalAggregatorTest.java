@@ -1,6 +1,24 @@
 package it.softsolutions.bestx.services.price;
 
 import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.connections.MarketPriceConnection;
@@ -13,34 +31,18 @@ import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.MarketMaker;
 import it.softsolutions.bestx.model.MarketMarketMaker;
 import it.softsolutions.bestx.model.Order;
-import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.Proposal.ProposalSide;
 import it.softsolutions.bestx.model.Proposal.ProposalState;
+import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.Venue;
 import it.softsolutions.bestx.model.Venue.VenueType;
 import it.softsolutions.jsscommon.Money;
-
-import java.io.File;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 public class SimpleMarketProposalAggregatorTest {
-
+	private static final Logger LOGGER = LoggerFactory.getLogger(SimpleMarketProposalAggregatorTest.class);
 	private SimpleMarketProposalAggregator aggregator = null;
 	private __FakeMarketPriceConnectionListener priceListener = null;
 	private Map<String, Market> markets = null;
@@ -238,8 +240,14 @@ public class SimpleMarketProposalAggregatorTest {
 						}
 					}
 					MarketPriceConnection marketPriceConnection = marketPriceConnections.get(proposalMarket);
-					ClassifiedProposal proposal = getProposal(markets.get(proposalMarket), proposalMMM, proposalSide, new Money(proposalCurrency, new BigDecimal(proposalPrice)));
-					aggregator.onProposal(instrument, proposal, marketPriceConnection, proposalErrorCode, proposalErrorMsg, isLastProposal);
+					ClassifiedProposal proposal;
+					try {
+						proposal = getProposal(markets.get(proposalMarket), proposalMMM, proposalSide, new Money(proposalCurrency, new BigDecimal(proposalPrice)));
+						aggregator.onProposal(instrument, proposal, marketPriceConnection, proposalErrorCode, proposalErrorMsg, isLastProposal);
+					}
+					catch(Exception e) {
+						LOGGER.error("Exception occurred {}", e);
+					}
 				}
 				
 				//

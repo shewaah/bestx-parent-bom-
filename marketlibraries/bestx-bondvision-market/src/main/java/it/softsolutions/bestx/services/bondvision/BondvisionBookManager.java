@@ -85,7 +85,7 @@ public class BondvisionBookManager {
 		this.marketMakerFinder = marketMakerFinder;
 	}
 
-	public static BondvisionBookManager getInstance() {
+	public synchronized static BondvisionBookManager getInstance() {
 		if(instance == null)
 			instance = new BondvisionBookManager();
 		return instance;

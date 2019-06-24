@@ -137,6 +137,8 @@ public class BaseBook implements Cloneable, Book {
         }
 
         Proposal deleteThis = null;
+        if(proposals == null)
+        	return;
         for (Proposal prop : proposals) {
             if (prop.getMarketMarketMaker().getMarketSpecificCode().equals(marketMarketMakerCode)) {
                 LOGGER.debug("Market maker {} older proposal {} will be removed from the book for the instrument {}", marketMarketMakerCode, prop, instrument.getIsin());
@@ -166,6 +168,8 @@ public class BaseBook implements Cloneable, Book {
         }
 
         ClassifiedProposal oldProposal = null;
+        if(proposals == null)
+        	return oldProposal;
         for (Proposal prop : proposals) {
             if (prop.getMarketMarketMaker().getMarketSpecificCode().equals(marketMarketMakerCode)) {
                 LOGGER.debug("Market maker {} proposal available in the book for the instrument {}, proposal found {}", marketMarketMakerCode, instrument.getIsin(), prop);
@@ -193,8 +197,11 @@ public class BaseBook implements Cloneable, Book {
     public void checkSides() throws CloneNotSupportedException {
 
     	// AMC BXSUP-1959 20151027 Since we received from Reuters a book with both sides lacking one or more MM, do the process for both sides
-        int askSize = askProposals.size();
-        int bidSize = bidProposals.size();
+    	int askSize = 0, bidSize = 0;
+    	if(askProposals != null)
+    		askSize = askProposals.size();
+    	if(bidProposals != null)
+    		bidSize = bidProposals.size();
 
         int delta = askSize - bidSize;
     	while (delta != 0) {

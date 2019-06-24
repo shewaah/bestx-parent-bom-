@@ -89,7 +89,7 @@ public class FormalTimeInForceValidatorTest {
         Order order = new Order();
         order.setTimeInForce(TimeInForce.GOOD_TILL_CANCEL);
         order.setType(OrderType.LIMIT);
-        Money limitPrice = new Money("EUR", new BigDecimal(100.2));
+        Money limitPrice = new Money("EUR", BigDecimal.valueOf(100.2));
         order.setLimit(limitPrice);
         
         OrderResult orderResult = formalTimeInForceValidator.validateOrder(null, order);
@@ -101,7 +101,7 @@ public class FormalTimeInForceValidatorTest {
         Order order = new Order();
         order.setTimeInForce(TimeInForce.DAY_OR_SESSION);
         order.setType(OrderType.LIMIT);
-        Money limitPrice = new Money("EUR", new BigDecimal(100.2));
+        Money limitPrice = new Money("EUR", BigDecimal.valueOf(100.2));
         order.setLimit(limitPrice);
         
         OrderResult orderResult = formalTimeInForceValidator.validateOrder(null, order);

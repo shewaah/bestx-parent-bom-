@@ -29,7 +29,7 @@ public class InstrumentParam {
         PortfolioID, SystematicInternalization, DirtyPrice
     }
 
-    private Long id;
+    private Long id = 0L;
     private String isin;
     private InstrumentParam.Type type;
     private String key;

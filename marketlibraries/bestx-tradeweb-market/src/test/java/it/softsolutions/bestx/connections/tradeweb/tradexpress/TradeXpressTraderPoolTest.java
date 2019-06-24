@@ -157,7 +157,8 @@ public class TradeXpressTraderPoolTest {
 				break;
 		}
 		System.out.println("Selected trader is " + trader);
-		assertEquals(traderPool.get(trader), traderPool.get(traderPool.getLessLoadedTraderCode()));
+		if(traderPool != null)
+			assertEquals(traderPool.get(trader), traderPool.get(traderPool.getLessLoadedTraderCode()));
 	}
 	
 	private int getMin(AtomicInteger array []) {
