@@ -52,10 +52,10 @@ public class MyTradeXpressConnection {
     private static TradeXpressConnectionImpl tradeXpressConnection;
 
     private void init() throws Exception{
-    	Messages messages = new Messages();
-		messages.setBundleName("messages");
-		messages.setLanguage("it");
-		messages.setCountry("IT");
+//    	Messages messages = new Messages();
+//		messages.setBundleName("messages");
+//		messages.setLanguage("it");
+//		messages.setCountry("IT");
 		
 		TradeStacClient tradestacClient = new TradeStacClient();
 		

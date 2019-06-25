@@ -50,10 +50,10 @@ public class MyTSOXConnection {
     private static TSOXConnection tsoxConnection;
 
     private void init() {
-    	Messages messages = new Messages();
-		messages.setBundleName("messages");
-		messages.setLanguage("it");
-		messages.setCountry("IT");
+//    	Messages messages = new Messages();
+//    	messages.setBundleName("messages");
+//    	messages.setLanguage("it");
+//    	messages.setCountry("IT");
 		
         tsoxConnection = new RBLD_TSOXConnection();
         tsoxConnection.setTsoxConnectionListener(new InnerTSOXConnectionListener());

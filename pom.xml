@@ -31,9 +31,9 @@
         <ibm-mq-api.version>8.0.0.5</ibm-mq-api.version>
         <findbugs-maven-plugin.version>3.0.3</findbugs-maven-plugin.version>
         <!-- FindBugs flags -->
-        <findbugs.skip>false</findbugs.skip>
+        <findbugs.skip>true</findbugs.skip>
         <!-- FindBugs rank -->
-        <findbugs.rank>10</findbugs.rank>
+        <findbugs.rank>15</findbugs.rank>
     </properties>
 
     <modules>

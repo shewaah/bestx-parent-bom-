@@ -56,10 +56,10 @@ public class MDSConnectionTest {
 	
 	@BeforeClass
 	public static void setUp() throws Exception {
-    	Messages messages = new Messages();
-		messages.setBundleName("messages");
-		messages.setLanguage("it");
-		messages.setCountry("IT");
+//    	Messages messages = new Messages();
+//		messages.setBundleName("messages");
+//		messages.setLanguage("it");
+//		messages.setCountry("IT");
 		
 		SSLog.init("SSLog.properties");
 

@@ -65,10 +65,10 @@ public class MyMDSConnectionImpl {
 	        "XS0215153296", "XS0225369403", "XS0451037062", "XS0544720641" };
 
 	public void init() throws Exception {
-		Messages messages = new Messages();
-		messages.setBundleName("messages");
-		messages.setLanguage("it");
-		messages.setCountry("IT");
+//		Messages messages = new Messages();
+//		messages.setBundleName("messages");
+//		messages.setLanguage("it");
+//		messages.setCountry("IT");
 
 		SSLog.init("SSLog.properties");
 
