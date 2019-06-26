@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.softsolutions.bestx.connections.fixgateway.FixGatewayConnector;
 import it.softsolutions.bestx.exceptions.ObjectNotInitializedException;
 import it.softsolutions.bestx.exceptions.OperationAlreadyExistingException;
 import it.softsolutions.bestx.exceptions.OperationNotExistingException;
@@ -36,6 +37,7 @@ import it.softsolutions.bestx.management.ConfigurableOperationRegistryMBean;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.timer.quartz.JobExecutionDispatcher;
 import it.softsolutions.bestx.services.timer.quartz.TimerEventListener;
+import it.softsolutions.xt2.protocol.XT2Msg;
 
 /**
  * 
@@ -443,6 +445,67 @@ public class CachedOperationRegistry implements OperationRegistry, ConfigurableO
       
       return operations;
       
+
    }   
+   
+	private FixGatewayConnector connector;
+
+	public FixGatewayConnector getConnector() {
+		return connector;
+	}
+
+	public void setConnector(FixGatewayConnector connector) {
+		this.connector = connector;
+	}
+
+	public String createNewOrder(String isin, String date, String settlementDate) {
+		XT2Msg msg = new XT2Msg();
+	/*
+	 * SourceMarketName=Oms1FixGateway
+_Subject_=/FIX/ORDER/1561556666416_DE0001135275
+Currency=EUR
+HandlInst=1
+UserSessionName=QSDBX
+TimeInForce=0
+Side=1
+OrderQty=20000.0 // type = 3 (d)
+ClOrdID=1561556666416
+OrdType=1
+SettlmntTyp=6
+Symbol=DE0001135275
+IDSource=4
+Account=1994
+$IBMessTy___=7 // type = 0 (i)
+SecurityID=DE0001135275
+FutSettDate=20190628
+TransactTime=20190626-08:00:00.000
+SessionId=FIX.4.2:SOFT1->OMS1	
+	 */
+		// msg.setValue(fieldName, value);
+		msg.setSourceMarketName("Oms1FixGateway");
+		long timestamp = System.currentTimeMillis();
+		msg.setSubject("/FIX/ORDER/" + timestamp + "_" + isin);
+		msg.setValue("Currency", "EUR");
+		msg.setValue("HandlInst", "1");
+		msg.setValue("UserSessionName", "QSDBX");
+		msg.setValue("TimeInForce", "0");
+		msg.setValue("Side", "1");
+		msg.setValue("OrderQty", 20000.0);
+		msg.setValue("ClOrdID", Long.toString(timestamp));
+		msg.setValue("OrdType", "1");
+		msg.setValue("SettlmntTyp", "6");
+		msg.setValue("Symbol", isin);
+		msg.setValue("IDSource", "4");
+		msg.setValue("Account", "1994");
+		msg.setValue("$IBMessTy___", 7);
+		msg.setValue("SecurityID", isin);
+		msg.setValue("FutSettDate", settlementDate);
+		msg.setValue("TransactTime", date + "-08:00:00.000");
+		msg.setValue("SessionId", "FIX.4.2:SOFT1->OMS1");
+		msg.setName("ORDER");
+		connector.onNotification(msg);
+		
+		return Long.toString(timestamp);
+	}
    
 }
