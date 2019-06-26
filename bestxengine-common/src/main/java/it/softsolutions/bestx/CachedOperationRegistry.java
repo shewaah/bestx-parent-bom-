@@ -83,6 +83,11 @@ public class CachedOperationRegistry implements OperationRegistry, ConfigurableO
             throw new OperationNotExistingException("Id type: " + idType + ", id: " + id);
         }
     }
+    
+    @Override
+    public String getSimpleOrderOperationById(String id) throws OperationNotExistingException, BestXException {
+    	return this.getExistingOperationById(OperationIdType.ORDER_ID, id).toString();
+    }
 
     @Override
 	public Operation getExistingOrNewOperationById(OperationIdType idType, String id) throws BestXException {

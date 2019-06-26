@@ -66,6 +66,9 @@ public interface OperationRegistry {
      */
     Operation getExistingOperationById(OperationIdType idType, String id) throws OperationNotExistingException, BestXException;
 
+    String getSimpleOrderOperationById(String id) throws OperationNotExistingException, BestXException;
+    
+    
     /**
      * Retrieves an operation bound to the given id, or creates a new one if it doesn't exist already
      * 

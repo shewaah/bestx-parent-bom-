@@ -252,4 +252,14 @@ public class SimpleOperationRegistry implements OperationRegistry, TimerEventLis
       }
       return operations;
    }
+
+@Override
+public String getSimpleOrderOperationById(String id) throws OperationNotExistingException, BestXException {
+	// TODO Auto-generated method stub
+	return null;
 }
+   
+   
+}
+
+
