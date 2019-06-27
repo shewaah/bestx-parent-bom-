@@ -13,81 +13,93 @@
  */
 package it.softsolutions.bestx.automatictest;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.softsolutions.bestx.BestXException;
-import it.softsolutions.bestx.CachedOperationRegistry;
 import it.softsolutions.bestx.OperationIdType;
+import it.softsolutions.bestx.OperationRegistry;
 import it.softsolutions.bestx.connections.fixgateway.FixGatewayConnector;
-import it.softsolutions.bestx.exceptions.OperationNotExistingException;
 import it.softsolutions.xt2.protocol.XT2Msg;
 
 /**
  * 
- * Purpose: this class is mainly for ...
+ * This class allows to test the system from a JMX interface by allowing to
+ * create a new order and then retrieving its status.
  * 
- * Project Name : bestxengine-common First created by: davide.rossoni Creation date: 19/feb/2013
- * 
- **/
+ * @author Robert Gonzalez & Alberto Acquafresca
+ *
+ */
 public class AutomaticTest implements AutomaticTestMBean{
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AutomaticTest.class);
 
-   
-   
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+    
 	private FixGatewayConnector connector;
 	
-	private CachedOperationRegistry cachedOperationRegistry;
+	private OperationRegistry operationRegistry;
 
-	public FixGatewayConnector getConnector() {
+    public FixGatewayConnector getConnector() {
 		return connector;
-	}
-
-	public CachedOperationRegistry getCachedOperationRegistry() {
-		return cachedOperationRegistry;
-	}
-
-	public void setCachedOperationRegistry(CachedOperationRegistry cachedOperationRegistry) {
-		this.cachedOperationRegistry = cachedOperationRegistry;
 	}
 
 	public void setConnector(FixGatewayConnector connector) {
 		this.connector = connector;
 	}
-	
-    @Override
-    public String getSimpleOrderOperationById(String id) throws OperationNotExistingException, BestXException {
-    	return cachedOperationRegistry.getExistingOperationById(OperationIdType.ORDER_ID, id).toString();
+
+	public OperationRegistry getOperationRegistry() {
+		return operationRegistry;
+	}
+
+	public void setOperationRegistry(OperationRegistry operationRegistry) {
+		this.operationRegistry = operationRegistry;
+	}
+
+	@Override
+    public String getSimpleOrderOperationById(String id) {
+		try {
+		LOGGER.info("Getting information of order: " + id);
+    	String ret = operationRegistry.getExistingOperationById(OperationIdType.ORDER_ID, id).toString();
+    	LOGGER.info("Information from order " + id + ": " + ret);
+    	return ret;
+		} catch (Exception e) {
+			LOGGER.error("Error getting information from order " + id + ": " + e.getMessage());
+			e.printStackTrace();
+			return "ERROR: " + e.getMessage();
+		}
     }
 
-
+	@Override
+	public String createNewOrder(String isin) {
+		LocalDate today = LocalDate.now();
+		
+		LocalDate todayPlusTwo = LocalDate.from(today);
+		
+	    int addedDays = 0;
+	    while (addedDays < 2) {
+	    	todayPlusTwo = todayPlusTwo.plusDays(1);
+	    	// Add Italy holidays?
+	        if (!(todayPlusTwo.getDayOfWeek() == DayOfWeek.SATURDAY ||
+	        		todayPlusTwo.getDayOfWeek() == DayOfWeek.SUNDAY)) {
+	            ++addedDays;
+	        }
+	    }
+	    
+		return this.createNewOrder(isin, formatter.format(today), formatter.format(todayPlusTwo));
+	}
+	
 	public String createNewOrder(String isin, String date, String settlementDate) {
+		LOGGER.info("Creating new order for ISIN: " + isin);
 		XT2Msg msg = new XT2Msg();
-	/*
-	 * SourceMarketName=Oms1FixGateway
-_Subject_=/FIX/ORDER/1561556666416_DE0001135275
-Currency=EUR
-HandlInst=1
-UserSessionName=QSDBX
-TimeInForce=0
-Side=1
-OrderQty=20000.0 // type = 3 (d)
-ClOrdID=1561556666416
-OrdType=1
-SettlmntTyp=6
-Symbol=DE0001135275
-IDSource=4
-Account=1994
-$IBMessTy___=7 // type = 0 (i)
-SecurityID=DE0001135275
-FutSettDate=20190628
-TransactTime=20190626-08:00:00.000
-SessionId=FIX.4.2:SOFT1->OMS1	
-	 */
-		// msg.setValue(fieldName, value);
-		msg.setSourceMarketName("Oms1FixGateway");
+
+		// UNIX Timestamp is used to create order ID
 		long timestamp = System.currentTimeMillis();
+		
+		msg.setSourceMarketName("Oms1FixGateway");
 		msg.setSubject("/FIX/ORDER/" + timestamp + "_" + isin);
 		msg.setValue("Currency", "EUR");
 		msg.setValue("HandlInst", "1");
@@ -109,6 +121,7 @@ SessionId=FIX.4.2:SOFT1->OMS1
 		msg.setName("ORDER");
 		connector.onNotification(msg);
 		
+		LOGGER.info("New order created and sent: " + timestamp);
 		return Long.toString(timestamp);
 	}
    

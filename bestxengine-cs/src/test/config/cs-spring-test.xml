@@ -556,7 +556,7 @@
 	</bean>
 	
     <bean id="defaultAutomaticTest" class="it.softsolutions.bestx.automatictest.AutomaticTest" >
-        <property name="cachedOperationRegistry"><ref bean="defaultOperationRegistry"></ref></property>
+        <property name="operationRegistry"><ref bean="defaultOperationRegistry"></ref></property>
 		<property name="connector"><ref bean="fixGatewayConnector"></ref></property>
 	</bean>	
 

@@ -13,9 +13,6 @@
  */
 package it.softsolutions.bestx.automatictest;
 
-import it.softsolutions.bestx.BestXException;
-import it.softsolutions.bestx.exceptions.OperationNotExistingException;
-
 // TODO: Auto-generated Javadoc
 /**
  * Purpose: Main interface for interface components for communicating with operations.
@@ -33,10 +30,8 @@ public interface AutomaticTestMBean {
      *
      * @param id the id
      * @return the simple order operation by id
-     * @throws OperationNotExistingException the operation not existing exception
-     * @throws BestXException the best X exception
      */
-    String getSimpleOrderOperationById(String id) throws OperationNotExistingException, BestXException;
+    String getSimpleOrderOperationById(String id);
     
     /**
      * Creates the new order.
@@ -44,8 +39,15 @@ public interface AutomaticTestMBean {
      * @param isin the isin
      * @param date the date
      * @param settlementDate the settlement date
-     * @return the string
+     * @return the id of the order
      */
     String createNewOrder(String isin, String date, String settlementDate);
   
+    /**
+     * Creates the new order.
+     *
+     * @param isin the isin
+     * @return the id of the order
+     */
+    String createNewOrder(String isin);
 }
