@@ -41,13 +41,17 @@ public interface AutomaticTestMBean {
      * @param settlementDate the settlement date
      * @return the id of the order
      */
-    String createNewOrder(String isin, String date, String settlementDate);
+    String createNewOrder(String isin, String date, String settlementDate, int quantity, String currency);
   
     /**
      * Creates the new order.
+     * 
+     * It calculates the dates automatically by setting:
+     * * The date of the order to today
+     * * The date of the order to today + 2 working days (skipping Sat and Sun)
      *
      * @param isin the isin
      * @return the id of the order
      */
-    String createNewOrder(String isin);
+    String createNewOrder(String isin, int quantity, String currency);
 }

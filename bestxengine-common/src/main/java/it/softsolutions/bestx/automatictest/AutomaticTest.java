@@ -73,12 +73,15 @@ public class AutomaticTest implements AutomaticTestMBean{
 		}
     }
 
+	// This is just a convenience method in order to avoid to set up the date
+	// in the call when we want to use the current date.
 	@Override
-	public String createNewOrder(String isin) {
+	public String createNewOrder(String isin, int quantity, String currency) {
 		LocalDate today = LocalDate.now();
 		
 		LocalDate todayPlusTwo = LocalDate.from(today);
 		
+		// This code adds two days skipping Saturday and Sunday.
 	    int addedDays = 0;
 	    while (addedDays < 2) {
 	    	todayPlusTwo = todayPlusTwo.plusDays(1);
@@ -89,10 +92,14 @@ public class AutomaticTest implements AutomaticTestMBean{
 	        }
 	    }
 	    
-		return this.createNewOrder(isin, formatter.format(today), formatter.format(todayPlusTwo));
+		return this.createNewOrder(isin, formatter.format(today), formatter.format(todayPlusTwo), quantity, currency);
 	}
 	
-	public String createNewOrder(String isin, String date, String settlementDate) {
+	// This code creates a new order by emulating the reception of a XT2 message from the FIX GW.
+	// Then it inserts the order in the "customOrders" queue of the FixGatewayConnector bean
+	// so that it can be processed by the system.
+	@Override
+	public String createNewOrder(String isin, String date, String settlementDate, int quantity, String currency) {
 		LOGGER.info("Creating new order for ISIN: " + isin);
 		XT2Msg msg = new XT2Msg();
 
@@ -101,12 +108,14 @@ public class AutomaticTest implements AutomaticTestMBean{
 		
 		msg.setSourceMarketName("Oms1FixGateway");
 		msg.setSubject("/FIX/ORDER/" + timestamp + "_" + isin);
-		msg.setValue("Currency", "EUR");
+		if (currency == null || currency.length() != 3) throw new IllegalArgumentException("Invalid currency");
+		msg.setValue("Currency", currency);
 		msg.setValue("HandlInst", "1");
 		msg.setValue("UserSessionName", "QSDBX");
 		msg.setValue("TimeInForce", "0");
 		msg.setValue("Side", "1");
-		msg.setValue("OrderQty", 20000.0);
+		if (quantity <= 0) throw new IllegalArgumentException("Invalid quantity. Must be > 0");
+		msg.setValue("OrderQty", (double) quantity);
 		msg.setValue("ClOrdID", Long.toString(timestamp));
 		msg.setValue("OrdType", "1");
 		msg.setValue("SettlmntTyp", "6");
