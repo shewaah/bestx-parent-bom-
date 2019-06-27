@@ -87,6 +87,7 @@
                 <entry key="it.softsolutions.bestx.cs:name=GRDLiteService" value-ref="grdLiteService" />
                 <entry key="it.softsolutions.bestx.cs:name=OperationRestore" value-ref="operationRestore" />
                 <entry key="it.softsolutions.bestx.cs:name=DealerRankingService" value-ref="rankingLoaderManager" />
+                <entry key="it.softsolutions.bestx.cs:name=AutomaticTest" value-ref="defaultAutomaticTest" />
                 <entry key="it.softsolutions.bestx.cs:name=OperationRegistry" value-ref="defaultOperationRegistry" />
                 <entry key="it.softsolutions.bestx.cs:name=InstrumentFinder" value-ref="dbBasedInstrumentFinder" />
 				<entry key="it.softsolutions.bestx.cs:name=OrdersEndOfDayService" value-ref="ordersEndOfDayService" />
@@ -552,8 +553,12 @@
     <bean id="defaultOperationRegistry" class="it.softsolutions.bestx.CachedOperationRegistry" init-method="init">
         <property name="operationFactory"><ref bean="defaultOperationFactory"></ref></property>
         <property name="operationPersistenceManager"><ref bean="operationPersistenceManager"></ref></property>
-		<property name="connector"><ref bean="fixGatewayConnector"></ref></property>
 	</bean>
+	
+    <bean id="defaultAutomaticTest" class="it.softsolutions.bestx.automatictest.AutomaticTest" >
+        <property name="cachedOperationRegistry"><ref bean="defaultOperationRegistry"></ref></property>
+		<property name="connector"><ref bean="fixGatewayConnector"></ref></property>
+	</bean>	
 
 	<!-- FACTORIES & REGISTRIES -->
     <bean id="defaultOperationFactory" class="it.softsolutions.bestx.Operation$DefaultOperationFactory">
