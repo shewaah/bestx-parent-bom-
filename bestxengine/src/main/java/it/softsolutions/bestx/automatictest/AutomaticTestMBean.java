@@ -54,4 +54,7 @@ public interface AutomaticTestMBean {
      * @return the id of the order
      */
     String createNewOrder(String isin, int quantity, String currency);
+    
+    
+    String getOrderStatus(String id);
 }

@@ -19,6 +19,7 @@ import java.time.format.DateTimeFormatter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import it.softsolutions.bestx.OperationIdType;
 import it.softsolutions.bestx.OperationRegistry;
@@ -42,6 +43,8 @@ public class AutomaticTest implements AutomaticTestMBean{
 	private FixGatewayConnector connector;
 	
 	private OperationRegistry operationRegistry;
+	
+	private JdbcTemplate jdbcTemplate;
 
     public FixGatewayConnector getConnector() {
 		return connector;
@@ -57,6 +60,14 @@ public class AutomaticTest implements AutomaticTestMBean{
 
 	public void setOperationRegistry(OperationRegistry operationRegistry) {
 		this.operationRegistry = operationRegistry;
+	}
+
+	public JdbcTemplate getJdbcTemplate() {
+		return jdbcTemplate;
+	}
+
+	public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+		this.jdbcTemplate = jdbcTemplate;
 	}
 
 	@Override
@@ -132,6 +143,15 @@ public class AutomaticTest implements AutomaticTestMBean{
 		
 		LOGGER.info("New order created and sent: " + timestamp);
 		return Long.toString(timestamp);
+	}
+
+	@Override
+	public String getOrderStatus(String id) {
+		String ret = this.jdbcTemplate.queryForObject("SELECT cso.DescrizioneStato " + 
+				"FROM TabHistoryOrdini tho " + 
+				"JOIN CodiciStatiOrdine cso ON (tho.Stato = cso.CodiceStato) " + 
+				"WHERE NumOrdine = " + id, String.class);
+		return ret;
 	}
    
 }
