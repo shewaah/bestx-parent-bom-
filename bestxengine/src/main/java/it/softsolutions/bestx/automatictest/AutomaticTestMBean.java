@@ -55,6 +55,35 @@ public interface AutomaticTestMBean {
      */
     String createNewOrder(String isin, int quantity, String currency);
     
-    
+    /**
+     * Returns the current status of the order.
+     * 
+     * @param id The ID of the order returned by createNewOrder
+     * @return A human-readable description of the current state.
+     */
     String getOrderStatus(String id);
+    
+    /**
+     * Returns the status history of the order along with the timestamp of every change.
+     * 
+     * @param id The ID of the order returned by createNewOrder
+     * @return A JSON string with all the information
+     */
+    String getOrderHistory(String id);
+    
+    /**
+     * Returns the prices associated with a single operation for all attempts.
+     * 
+     * @param id The ID of the order returned by createNewOrder
+     * @return A JSON string with all the information
+     */
+    String getPriceBook(String id);
+    
+    /**
+     * Returns the market status of the orderfor all attempts.
+     * 
+     * @param id The ID of the order returned by createNewOrder
+     * @return A JSON string with all the information
+     */
+    String getMarketStatus(String id);
 }

@@ -16,10 +16,14 @@ package it.softsolutions.bestx.automatictest;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import com.google.gson.Gson;
 
 import it.softsolutions.bestx.OperationIdType;
 import it.softsolutions.bestx.OperationRegistry;
@@ -45,6 +49,8 @@ public class AutomaticTest implements AutomaticTestMBean{
 	private OperationRegistry operationRegistry;
 	
 	private JdbcTemplate jdbcTemplate;
+	
+	private Gson gson = new Gson();
 
     public FixGatewayConnector getConnector() {
 		return connector;
@@ -150,8 +156,55 @@ public class AutomaticTest implements AutomaticTestMBean{
 		String ret = this.jdbcTemplate.queryForObject("SELECT cso.DescrizioneStato " + 
 				"FROM TabHistoryOrdini tho " + 
 				"JOIN CodiciStatiOrdine cso ON (tho.Stato = cso.CodiceStato) " + 
-				"WHERE NumOrdine = " + id, String.class);
+				"WHERE NumOrdine = ?", String.class, Long.parseLong(id.trim()));
 		return ret;
 	}
-   
+
+	@Override
+	public String getOrderHistory(String id) {
+
+		String sql = "SELECT ths.Attempt, ths.SaveTime, ths.Stato, ths.DescrizioneEvento" + 
+				" FROM TabHistoryStati ths" + 
+				" WHERE ths.NumOrdine = ?" + 
+				" ORDER BY ths.SaveTime ASC";
+		
+		List<Map<String,Object>> res = this.jdbcTemplate.queryForList(sql, Long.parseLong(id.trim()));
+		
+		return this.gson.toJson(res);
+	}
+
+	@Override
+	public String getPriceBook(String id) {
+		String sql = "SELECT" + 
+				" ask.Attempt, mt.MarketName, ask.BankCode," + 
+				" ask.Price \"AskPrice\", ask.Qty \"AskQty\"," + 
+				" bid.Price \"BidPrice\", bid.Qty \"BidQty\"," + 
+				" ask.FlagScartato \"AskFlagScartato\", bid.FlagScartato \"BidFlagScartato\"" + 
+				" FROM PriceTable ask" + 
+				" JOIN PriceTable bid ON (" + 
+				" ask.NumOrdine = bid.NumOrdine AND" + 
+				" ask.Attempt = bid.Attempt AND" + 
+				" ask.MarketId = bid.MarketId AND" + 
+				" ask.BankCode = bid.BankCode AND" + 
+				" ask.Side = 1 AND bid.Side = 0" + 
+				" )" + 
+				" JOIN MarketTable mt on ask.MarketId = mt.MarketId" + 
+				" WHERE ask.NumOrdine = ?" + 
+				" ORDER BY ask.Attempt, ask.MarketId, ask.BankCode";
+		List<Map<String,Object>> res = this.jdbcTemplate.queryForList(sql, Long.parseLong(id.trim()));
+		
+		return this.gson.toJson(res);
+	
+	}
+
+	@Override
+	public String getMarketStatus(String id) {
+		String sql = "SELECT tsm.Attempt, tsm.MarketCode, tsm.Disabled, tsm.DownCause" + 
+				" FROM TentativiStatoMercato AS tsm" + 
+				" WHERE tsm.NumOrdine = ?";
+		List<Map<String,Object>> res = this.jdbcTemplate.queryForList(sql, Long.parseLong(id.trim()));
+		
+		return this.gson.toJson(res);
+	}
+	
 }
