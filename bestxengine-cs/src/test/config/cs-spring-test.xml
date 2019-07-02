@@ -87,7 +87,7 @@
                 <entry key="it.softsolutions.bestx.cs:name=GRDLiteService" value-ref="grdLiteService" />
                 <entry key="it.softsolutions.bestx.cs:name=OperationRestore" value-ref="operationRestore" />
                 <entry key="it.softsolutions.bestx.cs:name=DealerRankingService" value-ref="rankingLoaderManager" />
-                <entry key="it.softsolutions.bestx.cs:name=AutomaticTest" value-ref="defaultAutomaticTest" />
+                <entry key="it.softsolutions.bestx.cs.test:name=OrderAutomaticTest" value-ref="defaultAutomaticTest" />
                 <entry key="it.softsolutions.bestx.cs:name=OperationRegistry" value-ref="defaultOperationRegistry" />
                 <entry key="it.softsolutions.bestx.cs:name=InstrumentFinder" value-ref="dbBasedInstrumentFinder" />
 				<entry key="it.softsolutions.bestx.cs:name=OrdersEndOfDayService" value-ref="ordersEndOfDayService" />
