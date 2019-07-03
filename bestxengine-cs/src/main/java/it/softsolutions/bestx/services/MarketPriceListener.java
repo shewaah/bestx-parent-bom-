@@ -488,7 +488,9 @@ public class MarketPriceListener implements MarketPriceConnectionListener {
                         try {
                             priceForgeVenue = venueFinder.getMarketMakerVenue(priceForgeMM);
                         } catch (BestXException e) {
-                            LOGGER.error("{} Error while finding the venue corresponding to the price forge market maker {} and finding out if it is in the customer policy ({}).", logStart, priceForgeMM, venues, e);
+                            LOGGER.error(logStart + " Error while finding the venue corresponding to the price forge market maker " + priceForgeMM
+                                  + " and finding out if it is in the customer policy (" + venues
+                                  + ").", e);
                         }
                         Market priceForgeMarket = marketFinder.getMarketByCode(priceForgeMktCode, null);
                         sortedBook = fixPriceForgeBookPosition(sortedBook, priceForgeVenue, order, priceForgeMarket, priceForgeMM);
@@ -504,7 +506,7 @@ public class MarketPriceListener implements MarketPriceConnectionListener {
 
                     listener.onPricesResult(priceService, priceResult);
                 } catch (Exception e) {
-                    LOGGER.error("Exception while processing prices: {}", e.getMessage(), e);
+                    LOGGER.error("Exception while processing prices: " + e.getMessage(), e);
                 }
             }
 
@@ -571,7 +573,7 @@ public class MarketPriceListener implements MarketPriceConnectionListener {
                                 askProps.add(lastIdx, newAskProp);
                             }
                         } catch (Exception e) {
-                            LOGGER.error("{} Error while building the empty ASK proposal.", logStart, e);
+                            LOGGER.error(logStart + " Error while building the empty ASK proposal.", e);
                         }
 
                         ClassifiedProposal newBidProp = null;
@@ -584,7 +586,7 @@ public class MarketPriceListener implements MarketPriceConnectionListener {
                                 bidProps.add(lastIdx, newBidProp);
                             }
                         } catch (Exception e) {
-                            LOGGER.error("{} Error while building the empty BID proposal.", logStart, e);
+                            LOGGER.error(logStart + " Error while building the empty BID proposal.", e);
                         }
                     }
                 }
@@ -737,7 +739,9 @@ public class MarketPriceListener implements MarketPriceConnectionListener {
                 try {
                 	SimpleTimerManager.getInstance().stopJob(timerName, marketPriceConnection.getClass().getSimpleName());
                 } catch (SchedulerException e) {
-                    LOGGER.error("Order {}, cannot stop the timer {}/{}", order.getFixOrderId(), timerName, marketPriceConnection.getClass().getSimpleName(), e);
+                    LOGGER.error("Order " +order.getFixOrderId()
+                          + ", cannot stop the timer " +timerName
+                          + "/" + marketPriceConnection.getClass().getSimpleName(), e);
                 }
 
                 onMarketBookComplete(marketPriceConnection, book);
