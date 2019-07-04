@@ -197,7 +197,7 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
 
         // trading capacity
         // ClientTradingCapacity (23082)
-        if(tradingMode == TradingMode.ON_MTF /*||  BESTX-395  tradingMode == TradingMode.ON_EUMTF*/) {  // Requires change to tradestc-tw-adapter  TradingMode
+        if(tradingMode == TradingMode.ON_MTF || tradingMode == TradingMode.ON_EUMTF) {  // BESTX-395
 	        Character clientTradingCapacity = TradewebDataHelper.convertTradingCapacity(marketOrder);
 	        if(clientTradingCapacity == null)
 	        	clientTradingCapacity = defaultTradingCapacity; //defaultTradingCapacity='P';
@@ -265,7 +265,7 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
 	        tsNoPartyBestDealer.setPartyRole(PartyRole.ExecutingFirm);
         }
         List<TSNoPartyID> tsNoPartyIDsList = new ArrayList<TSNoPartyID>();
-        if(tradingMode == TradingMode.ON_MTF) {
+        if(tradingMode == TradingMode.ON_MTF || tradingMode == TradingMode.ON_EUMTF) {
             // ## Execution within firm #### is BESTX
             TSNoPartyID tsNoPartyExecutionWithinFirm = new TSNoPartyID();
            	tsNoPartyExecutionWithinFirm.setPartyID(this.bestxAlgoID ); // increments
