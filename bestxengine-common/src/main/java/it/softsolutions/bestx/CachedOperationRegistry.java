@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.softsolutions.bestx.connections.fixgateway.FixGatewayConnector;
 import it.softsolutions.bestx.exceptions.ObjectNotInitializedException;
 import it.softsolutions.bestx.exceptions.OperationAlreadyExistingException;
 import it.softsolutions.bestx.exceptions.OperationNotExistingException;
@@ -36,6 +37,7 @@ import it.softsolutions.bestx.management.ConfigurableOperationRegistryMBean;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.timer.quartz.JobExecutionDispatcher;
 import it.softsolutions.bestx.services.timer.quartz.TimerEventListener;
+import it.softsolutions.xt2.protocol.XT2Msg;
 
 /**
  * 
@@ -83,6 +85,7 @@ public class CachedOperationRegistry implements OperationRegistry, ConfigurableO
             throw new OperationNotExistingException("Id type: " + idType + ", id: " + id);
         }
     }
+    
 
     @Override
 	public Operation getExistingOrNewOperationById(OperationIdType idType, String id) throws BestXException {
@@ -437,7 +440,6 @@ public class CachedOperationRegistry implements OperationRegistry, ConfigurableO
       LOGGER.info("getOperationsByStates execution time (millis): " + (System.currentTimeMillis() - startTime));
       
       return operations;
-      
    }   
    
 }
