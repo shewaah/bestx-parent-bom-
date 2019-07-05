@@ -246,9 +246,14 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
          * ExecID  : is the dealer's contract number
          * 
          */
-        tsoxConnectionListener.onExecutionReport(sessionID.toString(),
-                        tsExecutionReport.getClOrdID(),
-                        tsExecutionReport);
+        char execType = tsExecutionReport.getExecType().getFIXValue();
+        // when RFQ with traders has been closed for any reason, free the trader pool counter  
+      if (quickfix.field.ExecType.REJECTED == execType) {
+         tsoxConnectionListener.onOrderReject(sessionID.toString(), tsExecutionReport.getClOrdID(), tsExecutionReport.getText());
+      }
+      else {
+         tsoxConnectionListener.onExecutionReport(sessionID.toString(), tsExecutionReport.getClOrdID(), tsExecutionReport);
+      }
     }
 
     /*
