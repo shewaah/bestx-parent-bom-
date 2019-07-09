@@ -389,7 +389,7 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
         tsNewOrderSingle.setPrice(price);
         tsNewOrderSingle.setPriceType(priceType);
         tsNewOrderSingle.setText(text);
-        tsNewOrderSingle.setOrderCapacity(defaultCapacity);
+//        tsNewOrderSingle.setOrderCapacity(defaultCapacity);
         tsNewOrderSingle.setHandlInst(HandlInst.AutoRoute);  // required for scenario FI 1
         
         // set custom fields
@@ -400,8 +400,8 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
         customFields.add(stagedOrderIsInquiry);
         Field<Integer> qtyType = new Field<Integer>(854, 0); 
         customFields.add(qtyType);
-        Field<String> marketSegmentID = new Field<String>(1300, this.getDestinationMICCode()); 
-        customFields.add(marketSegmentID);
+//        Field<String> marketSegmentID = new Field<String>(1300, this.getDestinationMICCode()); 
+//        customFields.add(marketSegmentID);
                tsNewOrderSingle.setCustomFields(customFields);
 	
 //		tsNewOrderSingle.setTradeDate(tradeDate);
