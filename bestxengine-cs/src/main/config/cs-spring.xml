@@ -661,6 +661,12 @@
         <property name="curandoTimerRetriever"><ref bean="curandoTimerRetriever"></ref></property>
 		<property name="modality"><value>${Modality.Initial}</value></property>
 	</bean>
+	
+	<!-- MODALITY CONTROLLER -->
+	<bean id="modalityController" class="it.softsolutions.bestx.configuration.ModalityController">
+		<!-- STRATEGY -->
+        <property name="modality"><ref bean="csStrategy"></ref></property>		
+	</bean>
 
 	<!-- VALIDATION FOR ORDERS -->
     <bean id="csOrderValidationService" class="it.softsolutions.bestx.services.CSOrderValidationService">

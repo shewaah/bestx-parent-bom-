@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Messages;
+import it.softsolutions.bestx.Modality;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.RegulatedMktIsinsLoader;
@@ -70,10 +71,10 @@ public class ManualExecutionWaitingPriceEventHandler extends WaitingPriceEventHa
     public ManualExecutionWaitingPriceEventHandler(Operation operation, PriceService priceService, TitoliIncrociabiliService titoliIncrociabiliService, CustomerFinder customerFinder,
             SerialNumberService serialNumberService, RegulatedMktIsinsLoader regulatedMktIsinsLoader,
             List<String> regulatedMarketPolicies, long waitingPriceDelay, int maxAttemptNo, long marketPriceTimeout,
-            MarketSecurityStatusService marketSecurityStatusService, ExecutionDestinationService executionDestinationService, boolean rejectWhenBloombergIsBest, boolean doNotExecute, BookDepthValidator bookDepthValidator, OperationStateAuditDao operationStateAuditDao) throws BestXException {
+            MarketSecurityStatusService marketSecurityStatusService, ExecutionDestinationService executionDestinationService, boolean rejectWhenBloombergIsBest, boolean doNotExecute, BookDepthValidator bookDepthValidator, OperationStateAuditDao operationStateAuditDao, Modality modality) throws BestXException {
 
         super(operation, priceService, titoliIncrociabiliService, customerFinder, serialNumberService, regulatedMktIsinsLoader, 
-                regulatedMarketPolicies, waitingPriceDelay, maxAttemptNo, marketPriceTimeout, marketSecurityStatusService, executionDestinationService, rejectWhenBloombergIsBest, doNotExecute, bookDepthValidator, null, operationStateAuditDao, 2/*ignored*/);
+                regulatedMarketPolicies, waitingPriceDelay, maxAttemptNo, marketPriceTimeout, marketSecurityStatusService, executionDestinationService, rejectWhenBloombergIsBest, doNotExecute, bookDepthValidator, null, operationStateAuditDao, 2/*ignored*/, modality);
     }
 
     @Override
