@@ -659,6 +659,7 @@
         <property name="priceDecimals"><value>${PriceDiscovery.PriceDecimals}</value></property>
         <property name="pobExMaxSize"><value>${Marketaxess.MaxPOBEXEntries}</value></property>
         <property name="curandoTimerRetriever"><ref bean="curandoTimerRetriever"></ref></property>
+		<property name="modality"><value>${Modality.Initial}</value></property>
 	</bean>
 
 	<!-- VALIDATION FOR ORDERS -->

@@ -120,7 +120,7 @@ import it.softsolutions.bestx.states.autocurando.AutoCurandoStatus;
  * Project Name : bestxengine-cs First created by: ruggero.rizzo Creation date: 06/lug/2012
  * 
  **/
-public class CSStrategy implements Strategy, SystemStateSelector {
+public class CSStrategy implements Strategy, SystemStateSelector, Modality {
 
    private static final Logger LOGGER = LoggerFactory.getLogger(CSStrategy.class);
    private static final long LIMIT_FILE_MINIMUM_PD_INTERVAL = 15;
@@ -201,6 +201,7 @@ public class CSStrategy implements Strategy, SystemStateSelector {
    private int priceDecimals;
    private int pobExMaxSize;
    private int targetPriceMaxLevel;
+   private Modality.Type modality;
 
    public long getBondVisionExecTimeout() {
 	   return bondVisionExecTimeout;
@@ -1469,4 +1470,14 @@ public class CSStrategy implements Strategy, SystemStateSelector {
    public void setCurandoTimerRetriever(CurandoTimerRetriever curandoTimerRetriever) {
       this.curandoTimerRetriever = curandoTimerRetriever;
    }
+
+    @Override
+	public synchronized void setModality(Type modality) {
+	   	this.modality = modality;
+	}
+
+	@Override
+	public synchronized Type getModality() {
+		return this.modality;
+	}
 }
