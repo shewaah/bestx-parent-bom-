@@ -31,11 +31,11 @@ import it.softsolutions.bestx.OperationState;
 public class MonitorState extends BaseState implements Cloneable {
 	
 	public MonitorState () {
-        super(OperationState.Type.WaitingPrice, null);
+        super(OperationState.Type.Monitor, null);
 	}
 
 	public MonitorState (String comment) {
-        super(OperationState.Type.WaitingPrice, null);
+        super(OperationState.Type.Monitor, null);
 		setComment(comment);
 	}
 
@@ -47,4 +47,9 @@ public class MonitorState extends BaseState implements Cloneable {
 	@Override
 	public void validate() throws BestXException {
 	}
+	
+    @Override
+    public boolean mustSaveBook() {
+        return true;
+    }	
 }
