@@ -57,6 +57,7 @@ import it.softsolutions.bestx.handlers.LimitFileNoPriceEventHandler;
 import it.softsolutions.bestx.handlers.ManualExecutionWaitingPriceEventHandler;
 import it.softsolutions.bestx.handlers.ManualManageEventHandler;
 import it.softsolutions.bestx.handlers.ManualWaitingFillEventHandler;
+import it.softsolutions.bestx.handlers.MonitorEventHandler;
 import it.softsolutions.bestx.handlers.MultipleQuotesHandler;
 import it.softsolutions.bestx.handlers.OrderReceivedEventHandler;
 import it.softsolutions.bestx.handlers.OrderRejectableEventHandler;
@@ -742,6 +743,9 @@ public class CSStrategy implements Strategy, SystemStateSelector, Modality {
 		// marketConnectionRegistry.getMarketConnection(MarketCode.BLOOMBERG),
 		// bbgWaitFillMSec, bbgFillPollingMSec);
 		// break;
+		case Monitor:
+			handler = new MonitorEventHandler(operation);
+			break;
 		case UnreconciledTrade:
 			handler = new UnreconciledTradeEventHandler(operation, marketMakerFinder, serialNumberService);
 			break;

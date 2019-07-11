@@ -64,6 +64,7 @@ import it.softsolutions.bestx.services.serial.SerialNumberService;
 import it.softsolutions.bestx.states.CurandoState;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.LimitFileNoPriceState;
+import it.softsolutions.bestx.states.MonitorState;
 import it.softsolutions.bestx.states.OrderNotExecutableState;
 import it.softsolutions.bestx.states.SendAutoNotExecutionReportState;
 import it.softsolutions.bestx.states.WarningState;
@@ -324,14 +325,18 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 
 		/* BXMNT-327 */
 		if (!bookDepthValidator.isBookDepthValid(currentAttempt, customerOrder) && !customerOrder.isLimitFile() && !operation.isNotAutoExecute()) { // market order action +++
-			try {
-				ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
-				operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("RejectInsufficientBookDepth.0", bookDepthValidator.getMinimumRequiredBookDepth())), ErrorState.class);
-			}
-			catch (BestXException e) {
-				LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
-				String errorMessage = e.getMessage();
-				operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
+			if (modality.getModality()== Modality.Type.MONITOR) {
+				operation.setStateResilient(new MonitorState(), ErrorState.class);
+			} else {				
+				try {
+					ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
+					operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("RejectInsufficientBookDepth.0", bookDepthValidator.getMinimumRequiredBookDepth())), ErrorState.class);
+				}
+				catch (BestXException e) {
+					LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
+					String errorMessage = e.getMessage();
+					operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
+				}
 			}
 			return;
 		}
@@ -396,12 +401,13 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 					.getClass().getName());
 			// normal flow
 			
+			// [BESTX-458] Monitor Modality management
 			if (modality.getModality()== Modality.Type.MONITOR) {
 				// send not execution report
 				try {
 					ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
-					// TODO 
-					String message = "A valid price is available on <MTF MIC>"; // (where MTF MIC is one of the MIC code used as destinations by BestX!, and precisely the one where BestX! would direct the MarketOrder if the state were the standard Execution)
+					String message = "A valid price is available on " + executionProposal.getMarket().getMicCode();
+					// (where MTF MIC is one of the MIC code used as destinations by BestX!, and precisely the one where BestX! would direct the MarketOrder if the state were the standard Execution)
 					// TODO operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("RejectWhenBloombergBest.0")), ErrorState.class);
 					operation.setStateResilient(new SendAutoNotExecutionReportState(message), ErrorState.class);
 				} catch (BestXException e) {
@@ -434,7 +440,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		} else if (priceResult.getState() == PriceResult.PriceResultState.INCOMPLETE) {
 			
 			if (modality.getModality()== Modality.Type.MONITOR) {
-				// switch to monitor state
+				operation.setStateResilient(new MonitorState(), ErrorState.class);
 			} else {
 				LOGGER.warn("Order {} , Price result is INCOMPLETE, setting to Warning state", operation.getOrder().getFixOrderId());
 				checkOrderAndsetNotAutoExecuteOrder(operation, doNotExecute);
@@ -445,7 +451,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 				|| priceResult.getState() == PriceResult.PriceResultState.ERROR) {
 			
 			if (modality.getModality()== Modality.Type.MONITOR) {
-				// switch to monitor state
+				operation.setStateResilient(new MonitorState(), ErrorState.class);
 			} else {				
 				if(!operation.isNotAutoExecute() && (BondTypesService.isUST(operation.getOrder().getInstrument()) || doRejectThisBestOnBloomberg)) { 
 					// it is an executable UST order and there are no prices on consolidated book
