@@ -26,10 +26,10 @@ import org.slf4j.LoggerFactory;
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.CustomerAttributes;
 import it.softsolutions.bestx.Messages;
-import it.softsolutions.bestx.Modality;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.RegulatedMktIsinsLoader;
+import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.dao.OperationStateAuditDao;
 import it.softsolutions.bestx.exceptions.CustomerRevokeReceivedException;
 import it.softsolutions.bestx.exceptions.MarketNotAvailableException;
@@ -105,7 +105,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 	protected boolean doNotExecute;
 	private int targetPriceMaxLevel;
 	
-	private Modality modality;
+	private ApplicationStatus applicationStatus;
 
 	/**
 	 * Constructor.
@@ -135,7 +135,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 	public WaitingPriceEventHandler(Operation operation, PriceService priceService, TitoliIncrociabiliService titoliIncrociabiliService, CustomerFinder customerFinder,
 			SerialNumberService serialNumberService, RegulatedMktIsinsLoader regulatedMktIsinsLoader, List<String> regulatedMarketPolicies, long waitingPriceDelay, int maxAttemptNo,
 			long marketPriceTimeout, MarketSecurityStatusService marketSecurityStatusService, ExecutionDestinationService executionDestinationService, boolean rejectOrderWhenBloombergIsBest,
-			boolean doNotExecute, BookDepthValidator bookDepthValidator, List<String> internalMMcodes, OperationStateAuditDao operationStateAuditDao, int targetPriceMaxLevel, Modality modality) throws BestXException{
+			boolean doNotExecute, BookDepthValidator bookDepthValidator, List<String> internalMMcodes, OperationStateAuditDao operationStateAuditDao, int targetPriceMaxLevel, ApplicationStatus applicationStatus) throws BestXException{
 		super(operation);
 		this.priceService = priceService;
 		String priceServiceName = priceService.getPriceServiceName();
@@ -166,8 +166,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		this.operationStateAuditDao = operationStateAuditDao;
 		this.doNotExecute = doNotExecute;
 		this.targetPriceMaxLevel = targetPriceMaxLevel;
-		
-		this.modality = modality;
+		this.applicationStatus = applicationStatus;
 	}
 
 	@Override
@@ -325,7 +324,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 
 		/* BXMNT-327 */
 		if (!bookDepthValidator.isBookDepthValid(currentAttempt, customerOrder) && !customerOrder.isLimitFile() && !operation.isNotAutoExecute()) { // market order action +++
-			if (modality.getModality()== Modality.Type.MONITOR) {
+			if (applicationStatus.getType() == ApplicationStatus.Type.INITIAL_MONITORING) {
 				operation.setStateResilient(new MonitorState(), ErrorState.class);
 			} else {				
 				try {
@@ -402,7 +401,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			// normal flow
 			
 			// [BESTX-458] Monitor Modality management
-			if (modality.getModality()== Modality.Type.MONITOR) {
+			if (applicationStatus.getType() == ApplicationStatus.Type.INITIAL_MONITORING) {
 				// send not execution report
 				try {
 					ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
@@ -439,7 +438,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			}
 		} else if (priceResult.getState() == PriceResult.PriceResultState.INCOMPLETE) {
 			
-			if (modality.getModality()== Modality.Type.MONITOR) {
+			if (applicationStatus.getType() == ApplicationStatus.Type.INITIAL_MONITORING) {
 				operation.setStateResilient(new MonitorState(), ErrorState.class);
 			} else {
 				LOGGER.warn("Order {} , Price result is INCOMPLETE, setting to Warning state", operation.getOrder().getFixOrderId());
@@ -450,7 +449,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		} else if (priceResult.getState() == PriceResult.PriceResultState.NULL 
 				|| priceResult.getState() == PriceResult.PriceResultState.ERROR) {
 			
-			if (modality.getModality()== Modality.Type.MONITOR) {
+			if (applicationStatus.getType() == ApplicationStatus.Type.INITIAL_MONITORING) {
 				operation.setStateResilient(new MonitorState(), ErrorState.class);
 			} else {				
 				if(!operation.isNotAutoExecute() && (BondTypesService.isUST(operation.getOrder().getInstrument()) || doRejectThisBestOnBloomberg)) { 

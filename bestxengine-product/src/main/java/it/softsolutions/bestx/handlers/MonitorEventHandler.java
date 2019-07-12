@@ -35,17 +35,18 @@ public class MonitorEventHandler extends BaseOperationEventHandler  {
    private static final long serialVersionUID = -1L;
    private static final Logger LOGGER = LoggerFactory.getLogger(MonitorEventHandler.class);
    
-   private final long timeoutInMilliseconds = 10000;
-    
-   /**
+   private long timeoutInMilliseconds;
+
+/**
     * Instantiates a new monitor event handler.
     *
     * @param operation the operation
     * @throws BestXException the best X exception
     */
-   public MonitorEventHandler(Operation operation)
+   public MonitorEventHandler(Operation operation, long monitorTimeout)
          throws BestXException{
       super(operation);
+      this.timeoutInMilliseconds = monitorTimeout;
    }
 
    @Override
