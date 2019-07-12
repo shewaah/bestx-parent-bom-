@@ -23,6 +23,7 @@ import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OrderHelper;
+import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Order;
@@ -44,12 +45,12 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
    static final Logger LOGGER = LoggerFactory.getLogger(CSLimitFileExecutionStrategyService.class);
 
    @Deprecated
-   public CSLimitFileExecutionStrategyService(ExecutionStrategyServiceCallback executionStrategyServiceCallback, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest){
-      super(executionStrategyServiceCallback, priceResult, rejectOrderWhenBloombergIsBest);
+   public CSLimitFileExecutionStrategyService(ExecutionStrategyServiceCallback executionStrategyServiceCallback, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus){
+      super(executionStrategyServiceCallback, priceResult, rejectOrderWhenBloombergIsBest, applicationStatus);
    }
 
-   public CSLimitFileExecutionStrategyService(Operation operation, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest){
-      super(operation, priceResult, rejectOrderWhenBloombergIsBest);
+   public CSLimitFileExecutionStrategyService(Operation operation, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus){
+      super(operation, priceResult, rejectOrderWhenBloombergIsBest, applicationStatus);
    }
 
    @Override
