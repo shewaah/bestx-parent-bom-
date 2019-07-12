@@ -20,6 +20,7 @@ import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.CustomerAttributes;
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
+import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Order;
@@ -48,12 +49,12 @@ public class CSNormalExecutionStrategyService extends CSExecutionStrategyService
      *            : flag to reject or not orders if the best execution is on Bloomberg
      */
     @Deprecated
-    public CSNormalExecutionStrategyService(ExecutionStrategyServiceCallback executionStrategyServiceCallback, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest) {
-    	super(executionStrategyServiceCallback, priceResult, rejectOrderWhenBloombergIsBest);  
+    public CSNormalExecutionStrategyService(ExecutionStrategyServiceCallback executionStrategyServiceCallback, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus) {
+    	super(executionStrategyServiceCallback, priceResult, rejectOrderWhenBloombergIsBest, applicationStatus);  
     }
 
-    public CSNormalExecutionStrategyService(Operation operation, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest) {
-    	super(operation, priceResult, rejectOrderWhenBloombergIsBest);  
+    public CSNormalExecutionStrategyService(Operation operation, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus) {
+    	super(operation, priceResult, rejectOrderWhenBloombergIsBest, applicationStatus);  
     }
 
     /** 

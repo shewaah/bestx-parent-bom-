@@ -18,6 +18,7 @@ package it.softsolutions.bestx.services.executionstrategy;
 import java.util.List;
 
 import it.softsolutions.bestx.Operation;
+import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.bestexec.BookClassifier;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.model.Market.MarketCode;
@@ -41,6 +42,7 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
 	private MarketFinder marketFinder;
 	private BookClassifier bookClassifier;
 	private BookSorterImpl bookSorter;
+	private ApplicationStatus applicationStatus;
 
 
 	public BookClassifier getBookClassifier() {
@@ -70,8 +72,17 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
 		this.marketFinder = marketFinder;
 	}
 
+	
     
-    public CSExecutionStrategyServiceFactory() {
+    public ApplicationStatus getApplicationStatus() {
+		return applicationStatus;
+	}
+
+	public void setApplicationStatus(ApplicationStatus applicationStatus) {
+		this.applicationStatus = applicationStatus;
+	}
+
+	public CSExecutionStrategyServiceFactory() {
     	setInstance(this);
     }
     
@@ -84,14 +95,14 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
             PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest) {
       switch (priceDiscoveryType) {
       case LIMIT_FILE_PRICEDISCOVERY: {
-         CSLimitFileExecutionStrategyService execService = new CSLimitFileExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest);
+         CSLimitFileExecutionStrategyService execService = new CSLimitFileExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest, this.applicationStatus);
          execService.setMarketFinder(marketFinder);
          execService.setBookClassifier(bookClassifier);
          execService.setBookSorter(bookSorter);
          return execService;
       }
       case NORMAL_PRICEDISCOVERY: {
-         CSNormalExecutionStrategyService execService = new CSNormalExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest);
+         CSNormalExecutionStrategyService execService = new CSNormalExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest, this.applicationStatus);
          execService.setMarketFinder(marketFinder);
          execService.setBookClassifier(bookClassifier);
          execService.setBookSorter(bookSorter);
@@ -99,7 +110,7 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
       }
           // AMC 20160801 probably not needed
       case ONLY_PRICEDISCOVERY: {
-         CSNormalExecutionStrategyService execService = new CSNormalExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest);
+         CSNormalExecutionStrategyService execService = new CSNormalExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest, this.applicationStatus);
          execService.setMarketFinder(marketFinder);
           execService.setBookClassifier(bookClassifier);
          execService.setBookSorter(bookSorter);

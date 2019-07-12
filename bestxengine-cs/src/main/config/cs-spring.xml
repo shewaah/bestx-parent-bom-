@@ -661,7 +661,6 @@
         <property name="pobExMaxSize"><value>${Marketaxess.MaxPOBEXEntries}</value></property>
         <property name="curandoTimerRetriever"><ref bean="curandoTimerRetriever"></ref></property>
 		<property name="applicationStatus" ref="applicationStatus" />
-		<property name="monitorTimeout" value="${ApplicationStatus.Monitor.Timeout}" />
 	</bean>
 	
 	<!-- The application status contains global status used by the application -->
@@ -990,6 +989,7 @@
 				<value>BLOOMBERG</value>
     		</list>
     	</property>
+    	<property name="applicationStatus" ref="applicationStatus" />
     </bean>
 
 
