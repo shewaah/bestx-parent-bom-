@@ -219,8 +219,6 @@
             discriminator-value="it.softsolutions.bestx.states.marketaxess.MA_CancelledState" />      
         <subclass name="it.softsolutions.bestx.states.ParkedOrderState"
 			discriminator-value="it.softsolutions.bestx.states.ParkedOrderState" />
-        <subclass name="it.softsolutions.bestx.states.MonitorState"
-			discriminator-value="it.softsolutions.bestx.states.MonitorState" />
                   
 	</class>
 
