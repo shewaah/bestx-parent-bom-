@@ -34,7 +34,7 @@ public interface OperationState extends Cloneable {
         InternalAcceptBestIfStillValid, InternalReceiveExecutableQuote, Rejected, RejectQuote, Revocation, SendAutoNotExecutionReport, SendExecutionReport, SendNotExecutionReport, 
         SendOrder, SendReports, SendRfq, InternalSendRfqToBest, StandbyBook, StandbyNoBook, Standby, StandbyWithBook, StandbyWithoutBook, StartExecution, InternalSendRfqToInternal, 
         StartMagnetExecution, UnreconciledTrade, ValidateByPunctualFilter, WaitFillAfterCancel, WaitFillAfterRevocation, WaitingFill, WaitingPrice, Warning, InternalGetExecutableQuote, 
-        RejectQuoteAndAutoNotExecutionReport, LimitFileNoPrice, PriceDiscovery, LimitFileParkedOrder, Monitor
+        RejectQuoteAndAutoNotExecutionReport, LimitFileNoPrice, PriceDiscovery, LimitFileParkedOrder
     }
 
     /**
