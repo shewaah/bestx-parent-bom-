@@ -30,6 +30,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.connections.CustomerConnection;
 import it.softsolutions.bestx.connections.OperatorConsoleConnection;
 import it.softsolutions.bestx.dao.BestXConfigurationDao;
@@ -123,7 +124,7 @@ import it.softsolutions.bestx.states.autocurando.AutoCurandoStatus;
  * 06/lug/2012
  * 
  **/
-public class CSStrategy implements Strategy, SystemStateSelector, Modality {
+public class CSStrategy implements Strategy, SystemStateSelector {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CSStrategy.class);
 	private static final long LIMIT_FILE_MINIMUM_PD_INTERVAL = 15;
@@ -204,7 +205,8 @@ public class CSStrategy implements Strategy, SystemStateSelector, Modality {
 	private int priceDecimals;
 	private int pobExMaxSize;
 	private int targetPriceMaxLevel;
-	private Modality.Type modality;
+	private ApplicationStatus applicationStatus;
+	private long monitorTimeout = 10000;
 
 	public long getBondVisionExecTimeout() {
 		return bondVisionExecTimeout;
@@ -714,7 +716,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, Modality {
 					titoliIncrociabiliService, customerFinder, serialNumberService, regulatedMktIsinsLoader,
 					regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout,
 					marketSecurityStatusService, executionDestinationService, rejectWhenBloombergIsBest,
-					doNotExecuteMEW, bookDepthValidator, operationStateAuditDao, this);
+					doNotExecuteMEW, bookDepthValidator, operationStateAuditDao, this.applicationStatus);
 			break;
 		case WaitingPrice:
 			Boolean doNotExecuteWP = CSConfigurationPropertyLoader
@@ -728,7 +730,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, Modality {
 					titoliIncrociabiliService, customerFinder, serialNumberService, regulatedMktIsinsLoader,
 					regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout,
 					marketSecurityStatusService, executionDestinationService, rejectWhenBloombergIsBest, doNotExecuteWP,
-					bookDepthValidator, internalMMcodesList, operationStateAuditDao, targetPriceMaxLevel, this);
+					bookDepthValidator, internalMMcodesList, operationStateAuditDao, targetPriceMaxLevel, this.applicationStatus);
 
 			if (CSExecutionReportHelper.isPOBex(operation)) {
 				CSSendPOBExEventHandler customerHandler = new CSSendPOBExEventHandler(operation, orderBookDepth,
@@ -744,7 +746,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, Modality {
 		// bbgWaitFillMSec, bbgFillPollingMSec);
 		// break;
 		case Monitor:
-			handler = new MonitorEventHandler(operation);
+			handler = new MonitorEventHandler(operation, this.monitorTimeout);
 			break;
 		case UnreconciledTrade:
 			handler = new UnreconciledTradeEventHandler(operation, marketMakerFinder, serialNumberService);
@@ -1488,13 +1490,22 @@ public class CSStrategy implements Strategy, SystemStateSelector, Modality {
 		this.curandoTimerRetriever = curandoTimerRetriever;
 	}
 
-	@Override
-	public synchronized void setModality(Type modality) {
-		this.modality = modality;
+	public ApplicationStatus getApplicationStatus() {
+		return applicationStatus;
 	}
 
-	@Override
-	public synchronized Type getModality() {
-		return this.modality;
+	public void setApplicationStatus(ApplicationStatus applicationStatus) {
+		this.applicationStatus = applicationStatus;
 	}
+
+	public long getMonitorTimeout() {
+		return monitorTimeout;
+	}
+
+	public void setMonitorTimeout(long monitorTimeout) {
+		this.monitorTimeout = monitorTimeout;
+	}
+
+	
+	
 }

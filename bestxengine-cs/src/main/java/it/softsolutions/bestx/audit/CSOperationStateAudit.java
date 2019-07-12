@@ -647,6 +647,15 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             }
         }
         break;
+        case Monitor: // [BESTX-458]
+			operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(),
+					operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);
+			auditMarketStatus(order.getFixOrderId(), attemptNo);
+			if (operation.getLastAttempt().getSortedBook() != null) {
+				operationStateAuditDao.saveNewBook(order.getFixOrderId(), attemptNo,
+						operation.getLastAttempt().getSortedBook());
+			}
+            break;
         default:
             break;
         }
