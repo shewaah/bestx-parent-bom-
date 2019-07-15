@@ -152,8 +152,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		if (this.applicationStatus.getType() == ApplicationStatus.Type.INITIAL_MONITORING) {
 			try {
 				ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
-				// TODO BESTX-458 - Message internationalization
-				String msg = "A valid price is available on " + currentAttempt.getMarketOrder().getMarket().getMicCode();
+				String msg = Messages.getString("Monitor.RejectMessage", currentAttempt.getMarketOrder().getMarket().getMicCode());
 				operation.setStateResilient(new SendAutoNotExecutionReportState(msg), ErrorState.class);
 			} catch (BestXException e) {
 				LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
