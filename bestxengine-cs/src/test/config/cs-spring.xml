@@ -905,7 +905,9 @@
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardYieldProposalClassifier"></bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.SubstituteCounterProposalClassifier"></bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnavailableVenueProposalClassifier"></bean>
-                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroProposalClassifier"></bean>
+                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroProposalClassifier">
+                	<property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
+                </bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardOldProposalClassifier">
                     <property name="configValue"><value>12</value></property>
 				</bean>
@@ -938,11 +940,15 @@
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardSpreadProposalClassifier"></bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardYieldProposalClassifier"></bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnavailableVenueProposalClassifier"></bean>
-                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroProposalClassifier"></bean>
+                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroProposalClassifier">
+                	<property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
+                </bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardOldProposalClassifier">
                     <property name="configValue"><value>12</value></property>
 				</bean>
-                <bean class="it.softsolutions.bestx.services.proposalclassifiers.TagInsufficientQtyProposalClassifier"></bean>
+                <bean class="it.softsolutions.bestx.services.proposalclassifiers.TagInsufficientQtyProposalClassifier">
+                	<property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
+                </bean>
 			</list>
 		</property>
 		<property name="bookClassifierList">

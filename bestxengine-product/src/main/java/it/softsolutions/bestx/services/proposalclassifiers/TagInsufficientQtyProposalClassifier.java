@@ -41,13 +41,14 @@ import it.softsolutions.bestx.model.Venue;
  * Project Name : bestxengine-cs First created by: Creation date: 14-10-2016
  * 
  **/
-public class TagInsufficientQtyProposalClassifier implements ProposalClassifier {
+public class TagInsufficientQtyProposalClassifier extends BaseMarketMakerClassifier implements ProposalClassifier {
 
 	@Override
 	public ClassifiedProposal getClassifiedProposal(ClassifiedProposal proposal, Order order, List<Attempt> previousAttempts, Set<Venue> venues, ClassifiedBook book) {
-		if(order.getQty() == null) {
+		if(!isCompositePriceMarketMaker(proposal) && order.getQty() == null) {
 			return proposal;
-		} else if (proposal.getQty() == null || proposal.getQty().compareTo(BigDecimal.ZERO) == 0 || (proposal.getMarket().getMarketCode() == MarketCode.BLOOMBERG && proposal.getQty().compareTo(BigDecimal.ONE) <= 0)) {
+		} else if (!isCompositePriceMarketMaker(proposal) && 
+		   (proposal.getQty() == null || proposal.getQty().compareTo(BigDecimal.ZERO) == 0 || (proposal.getMarket().getMarketCode() == MarketCode.BLOOMBERG && proposal.getQty().compareTo(BigDecimal.ONE) <= 0))) {
 			proposal.setProposalState(Proposal.ProposalState.REJECTED);
 			proposal.setProposalSubState(ProposalSubState.ZERO_QUANTITY);
 			proposal.setReason(Messages.getString("DiscardZeroProposalClassifier.1"));
@@ -56,6 +57,11 @@ public class TagInsufficientQtyProposalClassifier implements ProposalClassifier 
 			proposal.setProposalState(Proposal.ProposalState.REJECTED);
 			proposal.setProposalSubState(ProposalSubState.PRICE_NOT_VALID);
 			proposal.setReason(Messages.getString("DiscardZeroProposalClassifier.0"));
+		} else if (isCompositePriceMarketMaker(proposal) && 
+            (proposal.getQty() == null || proposal.getQty().compareTo(BigDecimal.ZERO) <= 0 || (proposal.getMarket().getMarketCode() == MarketCode.BLOOMBERG && proposal.getQty().compareTo(BigDecimal.ONE) <= 0))) {
+         //Composite price with zero or less quantity
+         proposal.setProposalState(Proposal.ProposalState.VALID);
+         proposal.setProposalSubState(ProposalSubState.QUANTITY_NOT_VALID);
 		} else if (proposal.getQty().compareTo(order.getQty()) < 0 && 
 						(Proposal.ProposalSide.ASK.equals(proposal.getSide()) && Rfq.OrderSide.BUY.equals(order.getSide())
 								|| Proposal.ProposalSide.BID.equals(proposal.getSide()) && Rfq.OrderSide.SELL.equals(order.getSide()))
