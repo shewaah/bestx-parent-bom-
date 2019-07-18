@@ -1170,21 +1170,6 @@
         <property name="tradeStacPreTradeConnection"><ref bean="marketAxessPreTradeConnector"/></property>
         <property name="tradeConnection"><ref bean="autoExecutionTradeConnector"/></property>
 	</bean>
-    <!-- bean id="simulatedMarketAxessConnector" class="it.softsolutions.bestx.connections.tradestac.TradeStacMarketSimulatorConnectionImpl" init-method="init">
-        <property name="marketCode"><value>MARKETAXESS</value></property>
-        <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
-        <property name="marketMakerFinder"><ref bean="dbBasedMarketMakerFinder"/></property>
-        <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
-        <property name="venueFinder"><ref bean="dbBasedVenueFinder"/></property>
-        <property name="tradeStacPreTradeConnectionListener"><ref bean="marketAxessMarket"/></property>
-        <property name="tradeStacConnectionListener"><ref bean="marketAxessMarket"/></property>
-		<property name="connectionName"><value>UNIVERSAL-MARKET-SESSION</value></property>
-        <property name="tradeStacClientSession">
-            <bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
-        </property>
-        <property name="fixConfigFileName"><value>fix-tradestac-simulated-marketaxess.properties</value></property>
-    </bean>
-      -->
 	
     <bean id="marketAxessPreTradeConnector" class="it.softsolutions.bestx.connections.marketaxess.MarketAxessInventoryAndLiveMarketFeedConnector" init-method="init">
          <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
@@ -1211,6 +1196,7 @@
 		</property>
 		<property name="tolerance"><value>${Marketaxess.Order.Tolerance}</value></property>
 		<property name="numCompetitiveQuotes"><value>${Marketaxess.Order.NumCompetitiveQuotes}</value></property>
+		<property name="includeDealers"><value>${Marketaxess.Order.MinDealers}</value></property>
 		<property name="minTimeDelay"><value>${Marketaxess.Order.MinTimeDelay}</value></property>
 		<property name="validSeconds"><value>${Marketaxess.Order.ValidSeconds}</value></property>
 		<property name="traderPartyID"><value>${Marketaxess.Order.TraderPartyID}</value></property>
