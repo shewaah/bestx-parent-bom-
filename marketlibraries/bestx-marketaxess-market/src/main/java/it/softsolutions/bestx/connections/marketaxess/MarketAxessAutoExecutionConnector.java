@@ -221,6 +221,21 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 	private double tolerance;
 
 	private SessionID sessionID;
+	private int includeDealers;
+
+	/**
+	 * @return the includeDealers
+	 */
+	public int getIncludeDealers() {
+		return includeDealers;
+	}
+
+	/**
+	 * @param includeDealers the  to set
+	 */
+	public void setIncludeDealers(int includeDealers) {
+		this.includeDealers = includeDealers;
+	}
 
 	/* (non-Javadoc)
 	 * @see it.softsolutions.bestx.connections.marketaxess.MarketAxessMBean#getTolerance()
@@ -301,8 +316,9 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 			newOrderSingle.set(new PriceType(PriceType.PERCENTAGE));
 			newOrderSingle.setField(new MKTXTargetLevel(price.toString()));
 			newOrderSingle.set(new OrdType(OrdType.LIMIT));
-		} else
-			newOrderSingle.set(new OrdType(OrdType.MARKET));
+      }
+//    else
+//       newOrderSingle.set(new OrdType(OrdType.MARKET));
 		
 		// TDR: BESTX-394
 		if(marketSegmentID == null || marketSegmentID.isEmpty()) {
@@ -311,6 +327,7 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 			newOrderSingle.setField(new MarketSegmentID(marketSegmentID));
 		}
 
+		// Start of configuration managed fields BESTX-441
 		// MaxTimeDelay required if MinTimeDelay is specified
 		if(this.minTimeDelay > 0) {
 			newOrderSingle.setField(new MinTimeDelay(this.minTimeDelay));
@@ -318,10 +335,14 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 		}
 		if(this.validSeconds > 0)
 			newOrderSingle.setField(new ValidSeconds(this.validSeconds)); //ValidSeconds.FIELD
-		
-		newOrderSingle.setField(new NumCompetitiveQuotes(this.numCompetitiveQuotes));
+		if(this.includeDealers > 0)
+			newOrderSingle.setField(new IncludeDealers(this.includeDealers));
+		if(this.numCompetitiveQuotes > 0)
+			newOrderSingle.setField(new NumCompetitiveQuotes(this.numCompetitiveQuotes));
+
 		if(this.tolerance > 0.0)
 			newOrderSingle.setField(new Tolerance(this.tolerance));
+		// End of configuration managed fields BESTX-441
 		
 		newOrderSingle.set(new Currency(marketOrder.getCurrency()));
 		newOrderSingle.setField(new Notes(clOrdID));
@@ -329,10 +350,6 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 		Group originator = createGroupForTrader();
 		//newOrderSingle.addGroup(originator);
 
-		newOrderSingle.setField(new IncludeDealers(2));
-		//SP-for test purpose
-      //newOrderSingle.setField(new IncludeDealers(1));
-		
 		
 		//MIFID II
 		//TradingCapacity
@@ -366,7 +383,7 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 		newOrderSingle.setField(new MKTXESCBStblty(MKTXESCBStblty.INVESTMENT_OPERATIONS));
 		
 		// da usare se si preferisce usare il solo dealer best
-		String dealerCode = marketOrder.getMarketMarketMaker() != null ? marketOrder.getMarketMarketMaker().getMarketSpecificCode() : null;
+//		String dealerCode = marketOrder.getMarketMarketMaker() != null ? marketOrder.getMarketMarketMaker().getMarketSpecificCode() : null;
 
 		// da usare se si vogliono aggiungere tutti i dealer che hanno fornito un prezzo alla PD
 		// group
