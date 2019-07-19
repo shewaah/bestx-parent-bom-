@@ -205,8 +205,8 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 		tradeStacTradeConnectionListener.onOrderReject(sessionID.toString(), requestID, reason);
 	}
 
-	private int minTimeDelay;
-	private int validSeconds;
+	private int minTimeDelay = 0;
+	private int validSeconds = 0;
 	private String traderPartyID;
 	private int numCompetitiveQuotes = 1;
 
@@ -218,10 +218,10 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 		this.numCompetitiveQuotes = numCompetitiveQuotes;
 	}
 
-	private double tolerance;
+	private double tolerance = 0.0;
 
 	private SessionID sessionID;
-	private int includeDealers;
+	private int includeDealers = 0;
 
 	/**
 	 * @return the includeDealers
