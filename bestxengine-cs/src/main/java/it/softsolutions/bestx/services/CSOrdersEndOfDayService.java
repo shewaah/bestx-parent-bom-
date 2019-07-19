@@ -274,39 +274,46 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
     public void timerExpired(final String jobName, final String groupName) {
     	LOGGER.info("End of day for: {}-{}", jobName, groupName);
     	List<String> ordersList = null;
-    	try {
-    	if (jobName != null) {
-    		if (jobName.equals(ORDERS_END_OF_DAY_ID)) {
-    			long begin = DateService.currentTimeMillis();
-    			ordersList = operationStateAuditDao.getEndOfDayOrdersToClose();
-    			long end =  DateService.currentTimeMillis();
-    			LOGGER.info("EndOfday: gets {}; Time {} ms", ORDERS_END_OF_DAY_ID, end-begin);
-    		} else if (jobName.equals(LIMIT_FILE_US_AND_GLOBAL_END_OF_DAY_ID)) {
-    			long begin = DateService.currentTimeMillis();
-    			ordersList = operationStateAuditDao.getLimitFilesEndOfDayOrdersToClose(true);
-    			long end =  DateService.currentTimeMillis();
-    			LOGGER.info("EndOfday: gets {}; Time {} ms", LIMIT_FILE_US_AND_GLOBAL_END_OF_DAY_ID, end-begin);
-    		} else if (jobName.equals(LIMIT_FILE_NON_US_AND_GLOBAL_END_OF_DAY_ID)) {
-    			long begin = DateService.currentTimeMillis();
-    			ordersList = operationStateAuditDao.getLimitFilesEndOfDayOrdersToClose(false);
-    			long end =  DateService.currentTimeMillis();
-    			LOGGER.info("EndOfday: gets {}; Time {} ms", LIMIT_FILE_NON_US_AND_GLOBAL_END_OF_DAY_ID, end-begin);
-    		} else {
-    			LOGGER.warn("Unexpected timer: {}", jobName);
-    		}
-
-    		if((ordersList != null) && (ordersList.size() != 0)){
-    			List<Operation> operationsList = getOperations(ordersList, jobName, groupName);
-    			if((operationsList != null) && (operationsList.size() > 0)){
-    				onTimerExpired(operationsList, jobName, groupName);
+    	// TDR BESTX-465: to avoid deadlock on DB
+    	Boolean done = false;
+    	if(jobName != null) {
+    		while(!done) {
+    			try {
+    				if (jobName.equals(ORDERS_END_OF_DAY_ID)) {
+    					long begin = DateService.currentTimeMillis();
+    					ordersList = operationStateAuditDao.getEndOfDayOrdersToClose();
+    					long end =  DateService.currentTimeMillis();
+    					LOGGER.info("EndOfday: gets {}; Time {} ms", ORDERS_END_OF_DAY_ID, end-begin);
+    				} else if (jobName.equals(LIMIT_FILE_US_AND_GLOBAL_END_OF_DAY_ID)) {
+    					long begin = DateService.currentTimeMillis();
+    					ordersList = operationStateAuditDao.getLimitFilesEndOfDayOrdersToClose(true);
+    					long end =  DateService.currentTimeMillis();
+    					LOGGER.info("EndOfday: gets {}; Time {} ms", LIMIT_FILE_US_AND_GLOBAL_END_OF_DAY_ID, end-begin);
+    				} else if (jobName.equals(LIMIT_FILE_NON_US_AND_GLOBAL_END_OF_DAY_ID)) {
+    					long begin = DateService.currentTimeMillis();
+    					ordersList = operationStateAuditDao.getLimitFilesEndOfDayOrdersToClose(false);
+    					long end =  DateService.currentTimeMillis();
+    					LOGGER.info("EndOfday: gets {}; Time {} ms", LIMIT_FILE_NON_US_AND_GLOBAL_END_OF_DAY_ID, end-begin);
+    				} else {
+    					LOGGER.warn("Unexpected timer: {}", jobName);
+    				}
+    				done = true;
+    				if((ordersList != null) && (ordersList.size() != 0)){
+    					List<Operation> operationsList = getOperations(ordersList, jobName, groupName);
+    					if((operationsList != null) && (operationsList.size() > 0)){
+    						onTimerExpired(operationsList, jobName, groupName);
+    					}
+    				}
+    			} catch (org.springframework.dao.DeadlockLoserDataAccessException ex) {
+    				LOGGER.warn("Exception was raised when trying to get orders for {} End Of Day: retrying ", jobName, ex);
+    			} catch (Exception e) {
+    				LOGGER.warn("Exception was raised when trying to get orders for {} End Of Day ", jobName, e);
+    				done = true;
     			}
     		}
     	} else {
-    		LOGGER.warn("A job with a null name has been triggered!");
-    	}
-    	} catch (Exception e) {
-    		LOGGER.warn("Exception was raised when trying to get orders for {} End Of Day ", jobName, e);
-    	}
+			LOGGER.warn("A job with a null name has been triggered!");
+		}
     }
 
     /** @param ordersList
