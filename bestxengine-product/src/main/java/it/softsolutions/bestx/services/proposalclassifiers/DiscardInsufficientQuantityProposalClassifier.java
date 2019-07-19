@@ -28,7 +28,6 @@ import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedBook;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Market.MarketCode;
-import it.softsolutions.bestx.model.Proposal.ProposalSubState;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
@@ -46,11 +45,7 @@ public class DiscardInsufficientQuantityProposalClassifier extends BaseMarketMak
 
 	@Override
 	public ClassifiedProposal getClassifiedProposal(ClassifiedProposal proposal, Order order, List<Attempt> previousAttempts, Set<Venue> venues, ClassifiedBook book) {
-		if(order.getQty() == null) { //AMC 20160816
-         if(isCompositePriceMarketMaker(proposal)) {
-            proposal.setProposalState(Proposal.ProposalState.VALID);
-            proposal.setProposalSubState(ProposalSubState.QUANTITY_NOT_VALID);
-         }
+		if(order.getQty() == null || isCompositePriceMarketMaker(proposal)) {
 			return proposal;
 		}
 		if (!((order.getInstrument().getInstrumentAttributes() != null && order.getInstrument().getInstrumentAttributes().getPortfolio().isInternalizable())
@@ -58,15 +53,9 @@ public class DiscardInsufficientQuantityProposalClassifier extends BaseMarketMak
 		        || proposal.getMarket().getMarketCode() == MarketCode.MTSPRIME)) {
 			if (order.getSide() == OrderSide.BUY && proposal.getSide() == Proposal.ProposalSide.ASK || order.getSide() == OrderSide.SELL && proposal.getSide() == Proposal.ProposalSide.BID) {
 				if (proposal.getQty().compareTo(order.getQty()) < 0) {
-				   if(isCompositePriceMarketMaker(proposal)) {
-		            proposal.setProposalState(Proposal.ProposalState.VALID);
-		            proposal.setProposalSubState(ProposalSubState.QUANTITY_NOT_VALID);
-               }
-               else {
-                  proposal.setProposalState(Proposal.ProposalState.REJECTED);
-                  LOGGER.info("Discarding Proposal with insufficient quantity " + proposal.toString());
-                  proposal.setReason(Messages.getString("DiscardInsufficientQuantityProposalClassifier.0"));
-               }
+					proposal.setProposalState(Proposal.ProposalState.REJECTED);
+					LOGGER.info("Discarding Proposal with insufficient quantity " + proposal.toString());
+					proposal.setReason(Messages.getString("DiscardInsufficientQuantityProposalClassifier.0"));
 				}
 			}
 		}
