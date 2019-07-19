@@ -20,6 +20,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**  
 *
@@ -31,7 +33,8 @@ import org.apache.commons.lang3.StringUtils;
 * 
 **/
 public class BaseMarketMakerClassifier {
-   
+   private static final Logger LOGGER = LoggerFactory.getLogger(BaseMarketMakerClassifier.class);
+
    private String marketMakerCompositeCodes;
 
    private Set<String> marketMakerCompositeCodesSet;
@@ -59,7 +62,13 @@ public class BaseMarketMakerClassifier {
    }
 
    protected boolean isCompositePriceMarketMaker(ClassifiedProposal proposal) {
-      return isCompositePriceMarketMaker(proposal.getMarketMarketMaker().getMarketMaker().getCode());
+      if (proposal != null && proposal.getMarketMarketMaker() != null && proposal.getMarketMarketMaker().getMarketMaker() != null) {
+         return isCompositePriceMarketMaker(proposal.getMarketMarketMaker().getMarketMaker().getCode());
+      }
+      else {
+         LOGGER.error("Unable to get market maker code for composite price check. proposal: " + proposal, new Exception());
+         return false;
+      }
    }
 
 }

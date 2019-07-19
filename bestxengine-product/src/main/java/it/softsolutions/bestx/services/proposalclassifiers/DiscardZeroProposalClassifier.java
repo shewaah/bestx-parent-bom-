@@ -40,8 +40,8 @@ import it.softsolutions.bestx.model.Venue;
  **/
 public class DiscardZeroProposalClassifier extends BaseMarketMakerClassifier implements ProposalClassifier {
 
-	@Override
-	public ClassifiedProposal getClassifiedProposal(ClassifiedProposal proposal, Order order, List<Attempt> previousAttempts, Set<Venue> venues, ClassifiedBook book) {
+   @Override
+   public ClassifiedProposal getClassifiedProposal(ClassifiedProposal proposal, Order order, List<Attempt> previousAttempts, Set<Venue> venues, ClassifiedBook book) {
       if (!isCompositePriceMarketMaker(proposal) && proposal.getQty().compareTo(BigDecimal.ZERO) < 0) {
          proposal.setProposalState(Proposal.ProposalState.DROPPED);
          proposal.setReason(Messages.getString("DiscardZeroProposalClassifier.1"));
@@ -52,7 +52,6 @@ public class DiscardZeroProposalClassifier extends BaseMarketMakerClassifier imp
                proposal.setProposalState(Proposal.ProposalState.REJECTED);
                proposal.setProposalSubState(ProposalSubState.ZERO_QUANTITY);
                proposal.setReason(Messages.getString("DiscardZeroProposalClassifier.1"));
-               // }
             }
       else if (proposal.getPrice().getAmount().compareTo(BigDecimal.ZERO) == 0
             || (proposal.getMarket().getMarketCode() == MarketCode.BLOOMBERG && proposal.getPrice().getAmount().compareTo(BigDecimal.ONE) <= 0)) {
@@ -60,14 +59,8 @@ public class DiscardZeroProposalClassifier extends BaseMarketMakerClassifier imp
                proposal.setProposalSubState(ProposalSubState.PRICE_NOT_VALID);
                proposal.setReason(Messages.getString("DiscardZeroProposalClassifier.0"));
             }
-      else if (isCompositePriceMarketMaker(proposal) && 
-            (proposal.getQty() == null || proposal.getQty().compareTo(BigDecimal.ZERO) <= 0 || (proposal.getMarket().getMarketCode() == MarketCode.BLOOMBERG && proposal.getQty().compareTo(BigDecimal.ONE) <= 0))) {
-         //Composite price with zero or less quantity
-         proposal.setProposalState(Proposal.ProposalState.VALID);
-         proposal.setProposalSubState(ProposalSubState.QUANTITY_NOT_VALID);
-      }
-		return proposal;
-	}
+      return proposal;
+   }
 
    @Override
 	public ClassifiedProposal getClassifiedProposal(ClassifiedProposal proposal, OrderSide orderSide, BigDecimal qty, Date futSettDate, List<Attempt> previousAttempts, Set<Venue> venues) {
