@@ -37,7 +37,7 @@ public class BaseMarketMakerClassifier {
 
    private String marketMakerCompositeCodes;
 
-   private Set<String> marketMakerCompositeCodesSet;
+   private Set<String> marketMakerCompositeCodesSet = new HashSet<>();
 
    public String getMarketMakerCompositeCodes() {
       return marketMakerCompositeCodes;
