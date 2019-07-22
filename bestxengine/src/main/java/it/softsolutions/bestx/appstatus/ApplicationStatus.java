@@ -9,11 +9,11 @@ public class ApplicationStatus {
 	
 	private ApplicationStatus.Type type = ApplicationStatus.Type.NORMAL; // Default
 
-	public ApplicationStatus.Type getType() {
+	public synchronized ApplicationStatus.Type getType() {
 		return type;
 	}
 
-	public void setType(ApplicationStatus.Type type) {
+	public synchronized void setType(ApplicationStatus.Type type) {
 		this.type = type;
 	}
 	
