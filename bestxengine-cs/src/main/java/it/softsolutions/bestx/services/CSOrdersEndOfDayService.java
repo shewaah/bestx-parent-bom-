@@ -14,10 +14,8 @@
 
 package it.softsolutions.bestx.services;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -32,6 +30,7 @@ import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationIdType;
 import it.softsolutions.bestx.OperationRegistry;
 import it.softsolutions.bestx.ThreadPoolExecutor;
+import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.dao.OperationStateAuditDao;
 import it.softsolutions.bestx.dao.sql.SqlCSOperationStateAuditDao;
 import it.softsolutions.bestx.exceptions.ObjectNotInitializedException;
@@ -40,6 +39,7 @@ import it.softsolutions.bestx.services.timer.quartz.JobExecutionDispatcher;
 import it.softsolutions.bestx.services.timer.quartz.SimpleTimerManager;
 import it.softsolutions.bestx.services.timer.quartz.TimerEventListener;
 
+// TODO: Auto-generated Javadoc
 /**
  * 
  * Purpose: This class implements the service that must manage the end of day automatic processing of the magnet orders. On initialization
@@ -52,27 +52,82 @@ import it.softsolutions.bestx.services.timer.quartz.TimerEventListener;
  **/
 public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndOfDayServiceMBean {
 	
+	/** The Constant MONITOR_TO_EXECUTION_ID. */
+	public static final String MONITOR_TO_EXECUTION_ID = "MONITOR_TO_EXECUTION";
+	
+	/** The Constant EXECUTION_TO_MONITOR_ID. */
+	public static final String EXECUTION_TO_MONITOR_ID = "EXECUTION_TO_MONITOR";
+    
+    /** The Constant ORDERS_END_OF_DAY_ID. */
     public static final String ORDERS_END_OF_DAY_ID = "ORDERS_END_OF_DAY";
+    
+    /** The Constant LIMIT_FILES_NO_PRICE_TIMER_ID. */
     public static final String LIMIT_FILES_NO_PRICE_TIMER_ID = "LIMIT_FILES_NO_PRICE_TIMER_ID";
+    
+    /** The Constant LIMIT_FILE_NON_US_AND_GLOBAL_END_OF_DAY_ID. */
     public static final String LIMIT_FILE_NON_US_AND_GLOBAL_END_OF_DAY_ID = "LIMIT_FILE_NON_US_AND_GLOBALEND_OF_DAY_ID";
+    
+    /** The Constant LIMIT_FILE_US_AND_GLOBAL_END_OF_DAY_ID. */
     public static final String LIMIT_FILE_US_AND_GLOBAL_END_OF_DAY_ID = "LIMIT_FILE_US_AND_GLOBAL_END_OF_DAY_ID";
     
+    /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(CSOrdersEndOfDayService.class);
 
+    /** The orders end of day hour. */
     private Integer ordersEndOfDayHour;
+    
+    /** The orders end of day minute. */
     private Integer ordersEndOfDayMinute;
+    
+    /** The limit file non US end of day hour. */
     private Integer limitFileNonUSEndOfDayHour;
+    
+    /** The limit file non US end of day minute. */
     private Integer limitFileNonUSEndOfDayMinute;
+    
+    /** The limit file US end of day hour. */
     private Integer limitFileUSEndOfDayHour;
+    
+    /** The limit file US end of day minute. */
     private Integer limitFileUSEndOfDayMinute;
+    
+    /** The orders end of day restart delay. */
     private Integer ordersEndOfDayRestartDelay; // seconds to wait in case of restart, before trigegring endofday (to wait for all the
                                                 // services to be up and running)
+    
+    /** The monitor to execution hour. */
+                                                private Integer monitorToExecutionHour; // [BESTX-458] hour in which the behavior of the application is swtiched from monitor to execution
+    
+    /** The monitor to execution minute. */
+    private Integer monitorToExecutionMinute; // [BESTX-458] minute in which the behavior of the application is swtiched from monitor to execution
+    
+    /** The execution to monitor hour. */
+    private Integer executionToMonitorHour;// [BESTX-458] hour in which the behavior of the application is swtiched from execution to monitor
+    
+    /** The execution to monitor minute. */
+    private Integer executionToMonitorMinute;// [BESTX-458] minute in which the behavior of the application is swtiched from execution to monitor
+    
+    /** The operation state audit dao. */
     private SqlCSOperationStateAuditDao operationStateAuditDao;
+    
+    /** The operation registry. */
     private OperationRegistry operationRegistry;
+    
+    /** The executor. */
     private Executor executor;
+    
+    /** The expire time. */
     private static long expireTime;
+    
+    /** The debug mode. */
     private boolean debugMode = false;
+    
+    /** The application status. */
+    private ApplicationStatus applicationStatus; // [BESTX-458] reference to applicationstatus bean, in order to manage/know if the application is in execution or monitoring modality
 
+    /**
+     * Inits the.
+     */
     public void init() {
         LOGGER.info("Initializing end of day timer service.");
         checkPrerequisites();
@@ -87,8 +142,7 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
         Calendar expireCalendar = setUpEndOfDayTimer(calendar, ordersEndOfDayRestartDelay, ORDERS_END_OF_DAY_ID);
         if(expireCalendar != null && expireCalendar.compareTo(calendar) != 0)
             LOGGER.info("End of day standard rescheduled at {}", expireCalendar.getTime().toString());
-
-       
+    
         calendar.set(year, month, day, limitFileNonUSEndOfDayHour, limitFileNonUSEndOfDayMinute, 0);
         LOGGER.info("End of day non US Limit Files scheduled for {}", calendar.getTime().toString());
         expireCalendar = setUpEndOfDayTimer(calendar, ordersEndOfDayRestartDelay, LIMIT_FILE_NON_US_AND_GLOBAL_END_OF_DAY_ID);
@@ -100,11 +154,83 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
         expireCalendar = setUpEndOfDayTimer(calendar, ordersEndOfDayRestartDelay, LIMIT_FILE_US_AND_GLOBAL_END_OF_DAY_ID);
         if(expireCalendar != null && expireCalendar.compareTo(calendar) != 0)
             LOGGER.info("End of day US Limit Files rescheduled at {}", expireCalendar.getTime().toString());
+        
+        // [BESTX-458] Add timers in order to schedulate the switch between monitor and execution modalities
+        boolean startInExecutionModality = true;
+        if (monitorToExecutionHour != null && monitorToExecutionMinute != null) {
+        	calendar.set(year, month, day, monitorToExecutionHour, monitorToExecutionMinute, 0);
+            LOGGER.info("Monitor modality switching to Execution scheduled for {}", calendar.getTime().toString());
+            
+            // setupTimer bind the timer for this service
+            try {           	
+                long expireTime_ = calendar.getTimeInMillis();
+                // Calendar expireCalendar = calendar;
+                // calculating time remained from now to the EndOfDay time
+                long now = Calendar.getInstance().getTimeInMillis();
+                long timeToExpire = expireTime_ - now;
+                if (timeToExpire > 0) {
+                	String timerName = MONITOR_TO_EXECUTION_ID;
+                    SimpleTimerManager simpleTimerManager = SimpleTimerManager.getInstance();
+                    JobDetail newJob = simpleTimerManager.createNewJob(timerName, CSOrdersEndOfDayService.class.getSimpleName(), false, false, false);
+                    //this timer is not repeatable
+                    Trigger trigger = simpleTimerManager.createNewTrigger(timerName, CSOrdersEndOfDayService.class.getSimpleName(), false, timeToExpire);
+                    simpleTimerManager.scheduleJobWithTrigger(newJob, trigger, false);
+                    LOGGER.info("Monitor to execution switch rescheduled at {}", expireCalendar.getTime().toString());
+                    startInExecutionModality = false;
+                }
+                else
+                {
+                	startInExecutionModality = true;
+                }
+            } catch (SchedulerException e) {
+                LOGGER.error("Error while scheduling price discovery wait timer!", e);
+            }
+        }
+        if (executionToMonitorHour != null && executionToMonitorMinute != null) {
+        	calendar.set(year, month, day, executionToMonitorHour, executionToMonitorMinute, 0);
+            LOGGER.info("Execution modality switching to Monitor scheduled for {}", calendar.getTime().toString());
+            
+            // setupTimer bind the timer for this service
+            try {           	
+                long expireTime_ = calendar.getTimeInMillis();
+                // Calendar expireCalendar = calendar;
+                // calculating time remained from now to the EndOfDay time
+                long now = Calendar.getInstance().getTimeInMillis();
+                long timeToExpire = expireTime_ - now;
+                if (timeToExpire > 0) {
+                	String timerName = EXECUTION_TO_MONITOR_ID;
+                    SimpleTimerManager simpleTimerManager = SimpleTimerManager.getInstance();
+                    JobDetail newJob = simpleTimerManager.createNewJob(timerName, CSOrdersEndOfDayService.class.getSimpleName(), false, false, false);
+                    //this timer is not repeatable
+                    Trigger trigger = simpleTimerManager.createNewTrigger(timerName, CSOrdersEndOfDayService.class.getSimpleName(), false, timeToExpire);
+                    simpleTimerManager.scheduleJobWithTrigger(newJob, trigger, false);
+                    LOGGER.info("Monitor to execution switch rescheduled at {}", expireCalendar.getTime().toString());
+                } else {
+                	startInExecutionModality = false;
+                }
+            } catch (SchedulerException e) {
+                LOGGER.error("Error while scheduling price discovery wait timer!", e);
+            }
+        }     
+        
+        if (startInExecutionModality) {
+        	applicationStatus.setType(ApplicationStatus.Type.NORMAL);
+        } else {
+        	applicationStatus.setType(ApplicationStatus.Type.INITIAL_MONITORING);
+        }
 
         JobExecutionDispatcher.INSTANCE.addTimerEventListener(CSOrdersEndOfDayService.class.getSimpleName(), this);
         LOGGER.info("Initialization done.");
     }
 
+    /**
+     * Sets the up end of day timer.
+     *
+     * @param calendar the calendar
+     * @param ordersEndOfDayRestartDelay the orders end of day restart delay
+     * @param timerName the timer name
+     * @return the calendar
+     */
     private Calendar setUpEndOfDayTimer(Calendar calendar, Integer ordersEndOfDayRestartDelay, String timerName) {
         // getting the current time
         expireTime = calendar.getTimeInMillis();
@@ -132,6 +258,11 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
         return expireCalendar;
     }
 
+    /**
+     * Check prerequisites.
+     *
+     * @throws ObjectNotInitializedException the object not initialized exception
+     */
     private void checkPrerequisites() throws ObjectNotInitializedException {
         if (ordersEndOfDayHour == null) {
             throw new ObjectNotInitializedException("OrdersEndOfDayHour not set");
@@ -270,6 +401,9 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
         return (timeToExpire < 0);
     }
 
+    /* (non-Javadoc)
+     * @see it.softsolutions.bestx.services.timer.quartz.TimerEventListener#timerExpired(java.lang.String, java.lang.String)
+     */
     @Override
     public void timerExpired(final String jobName, final String groupName) {
     	LOGGER.info("End of day for: {}-{}", jobName, groupName);
@@ -291,7 +425,16 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
     			ordersList = operationStateAuditDao.getLimitFilesEndOfDayOrdersToClose(false);
     			long end =  DateService.currentTimeMillis();
     			LOGGER.info("EndOfday: gets {}; Time {} ms", LIMIT_FILE_NON_US_AND_GLOBAL_END_OF_DAY_ID, end-begin);
+    		} else if (jobName.equals(EXECUTION_TO_MONITOR_ID)) {
+   	        	applicationStatus.setType(ApplicationStatus.Type.INITIAL_MONITORING);
+   	        	LOGGER.info("Switching to Monitoring state from Execution state");
+   	        	return;
+    		} else if (jobName.equals(MONITOR_TO_EXECUTION_ID)) {
+    			applicationStatus.setType(ApplicationStatus.Type.NORMAL);
+    			LOGGER.info("Switching to Execution state from Monitoringstate");
+    			return;
     		} else {
+    			    		
     			LOGGER.warn("Unexpected timer: {}", jobName);
     		}
 
@@ -309,10 +452,14 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
     	}
     }
 
-    /** @param ordersList
-	 * 	@param jobName
-	 * 	@param groupName  
-	 */
+    /**
+     * Gets the operations.
+     *
+     * @param ordersList the orders list
+     * @param jobName the job name
+     * @param groupName the group name
+     * @return the operations
+     */
     private List<Operation> getOperations(List<String> ordersList, final String jobName, final String groupName) {
     	List<Operation> operationsList = new ArrayList<Operation>();
     	long begin = 0;
@@ -343,35 +490,46 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
     }
 
 
-    private void onTimerExpired(List<Operation> operationsList, final String jobName, final String groupName) {
-    	for (final Operation operation : operationsList) {
-    		operation.setStopped(true);
-    		executor.execute(new Runnable() {
+	/**
+	 * On timer expired.
+	 *
+	 * @param operationsList the operations list
+	 * @param jobName the job name
+	 * @param groupName the group name
+	 */
+	private void onTimerExpired(List<Operation> operationsList, final String jobName, final String groupName) {
+		for (final Operation operation : operationsList) {
+			operation.setStopped(true);
+			executor.execute(new Runnable() {
 
-    			@Override
+				@Override
 				public void run() {
-    				LOGGER.debug("EndOfDay for operation {} - job {}, start handling - ThreadName {}", operation.getOrder().getFixOrderId(), jobName, Thread.currentThread().getId());
-    				long begin = DateService.currentTimeMillis();
+					LOGGER.debug("EndOfDay for operation {} - job {}, start handling - ThreadName {}",
+							operation.getOrder().getFixOrderId(), jobName, Thread.currentThread().getId());
+					long begin = DateService.currentTimeMillis();
 
-    				operation.onTimerExpired(jobName, groupName);
-    				long end = DateService.currentTimeMillis();
-    				LOGGER.debug("EndOfDay for operation {} - job {}, end managing it. Passing another order. Time {} - ThreadName {}", operation.getOrder().getFixOrderId(), jobName, end-begin,
-    						Thread.currentThread().getId());
-    			}
-    		});
-    		if (LOGGER.isDebugEnabled() && executor instanceof ThreadPoolExecutor) {
-    			ThreadPoolExecutor ex = (ThreadPoolExecutor) executor;
-    			LOGGER.debug("End of day for operation {} - job {}, end managing it. Passing another order. Executor active {} - queue {}", operation.getId(), jobName, ex.getActiveCount(),
-    					ex.getPoolSize());
-    		}
-    		else {
-    			LOGGER.debug("End of day for operation {} - job {}, end managing it. Passing another order.", operation.getId(), jobName);
-    		}
-    	}
-    }
-
+					operation.onTimerExpired(jobName, groupName);
+					long end = DateService.currentTimeMillis();
+					LOGGER.debug(
+							"EndOfDay for operation {} - job {}, end managing it. Passing another order. Time {} - ThreadName {}",
+							operation.getOrder().getFixOrderId(), jobName, end - begin, Thread.currentThread().getId());
+				}
+			});
+			if (LOGGER.isDebugEnabled() && executor instanceof ThreadPoolExecutor) {
+				ThreadPoolExecutor ex = (ThreadPoolExecutor) executor;
+				LOGGER.debug(
+						"End of day for operation {} - job {}, end managing it. Passing another order. Executor active {} - queue {}",
+						operation.getId(), jobName, ex.getActiveCount(), ex.getPoolSize());
+			} else {
+				LOGGER.debug("End of day for operation {} - job {}, end managing it. Passing another order.",
+						operation.getId(), jobName);
+			}
+		}
+	}
     
     /**
+     * Gets the limit file non US end of day hour.
+     *
      * @return the limitFileNonUSEndOfDayHour
      */
     public Integer getLimitFileNonUSEndOfDayHour() {
@@ -379,6 +537,8 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
     }
 
     /**
+     * Sets the limit file non US end of day hour.
+     *
      * @param limitFileNonUSEndOfDayHour the limitFileNonUSEndOfDayHour to set
      */
     public void setLimitFileNonUSEndOfDayHour(Integer limitFileNonUSEndOfDayHour) {
@@ -386,6 +546,8 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
     }
 
     /**
+     * Gets the limit file non US end of day minute.
+     *
      * @return the limitFileNonUSEndOfDayMinute
      */
     public Integer getLimitFileNonUSEndOfDayMinute() {
@@ -393,6 +555,8 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
     }
 
     /**
+     * Sets the limit file non US end of day minute.
+     *
      * @param limitFileNonUSEndOfDayMinute the limitFileNonUSEndOfDayMinute to set
      */
     public void setLimitFileNonUSEndOfDayMinute(Integer limitFileNonUSEndOfDayMinute) {
@@ -400,6 +564,8 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
     }
 
     /**
+     * Gets the limit file US end of day hour.
+     *
      * @return the limitFileUSEndOfDayHour
      */
     public Integer getLimitFileUSEndOfDayHour() {
@@ -407,6 +573,8 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
     }
 
     /**
+     * Sets the limit file US end of day hour.
+     *
      * @param limitFileUSEndOfDayHour the limitFileUSEndOfDayHour to set
      */
     public void setLimitFileUSEndOfDayHour(Integer limitFileUSEndOfDayHour) {
@@ -414,6 +582,8 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
     }
 
     /**
+     * Gets the limit file US end of day minute.
+     *
      * @return the limitFileUSEndOfDayMinute
      */
     public Integer getLimitFileUSEndOfDayMinute() {
@@ -421,12 +591,17 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
     }
 
     /**
+     * Sets the limit file US end of day minute.
+     *
      * @param limitFileUSEndOfDayMinute the limitFileUSEndOfDayMinute to set
      */
     public void setLimitFileUSEndOfDayMinute(Integer limitFileUSEndOfDayMinute) {
         this.limitFileUSEndOfDayMinute = limitFileUSEndOfDayMinute;
     }
 
+	/* (non-Javadoc)
+	 * @see it.softsolutions.bestx.services.CSOrdersEndOfDayServiceMBean#invokeTimerExpired_Orders()
+	 */
 	@Override
 	public void invokeTimerExpired_Orders() {
 		//if (debugMode) {
@@ -436,6 +611,9 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
 //		}
 	}
 
+	/* (non-Javadoc)
+	 * @see it.softsolutions.bestx.services.CSOrdersEndOfDayServiceMBean#invokeTimerExpired_LimitFile_USandGlobal()
+	 */
 	@Override
 	public void invokeTimerExpired_LimitFile_USandGlobal() {
 	//	if (debugMode) {
@@ -445,6 +623,9 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
 //		}
 	}
 
+	/* (non-Javadoc)
+	 * @see it.softsolutions.bestx.services.CSOrdersEndOfDayServiceMBean#invokeTimerExpired_LimitFile_Non_USandGlobal()
+	 */
 	@Override
 	public void invokeTimerExpired_LimitFile_Non_USandGlobal() {
 		//if (debugMode) {
@@ -454,13 +635,41 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
 //		}
 	}
 
+	/**
+	 * Gets the debug mode.
+	 *
+	 * @return the debug mode
+	 */
 	public boolean getDebugMode() {
 		return debugMode;
 	}
 
+	/**
+	 * Sets the debug mode.
+	 *
+	 * @param debugMode the new debug mode
+	 */
 	public void setDebugMode(boolean debugMode) {
 		this.debugMode = debugMode;
 	}
+	
+	/**
+	 * Gets the application status.
+	 *
+	 * @return the application status
+	 */
+	public ApplicationStatus getApplicationStatus() {
+		return applicationStatus;
+	}
+
+	/**
+	 * Sets the application status.
+	 *
+	 * @param applicationStatus the new application status
+	 */
+	public void setApplicationStatus(ApplicationStatus applicationStatus) {
+		this.applicationStatus = applicationStatus;
+	}	
 	
 	
 }
