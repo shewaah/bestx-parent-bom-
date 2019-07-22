@@ -78,6 +78,7 @@ import quickfix.FieldNotFound;
 import quickfix.Group;
 import quickfix.Message;
 import quickfix.SessionID;
+import quickfix.field.MarketSegmentID;
 import quickfix.field.OrderCapacity;
 import quickfix.field.PartyID;
 
@@ -102,6 +103,7 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
    private Integer investmentDecisionQualifier = null;
    static final Logger LOGGER = LoggerFactory.getLogger(MarketAxessMarket.class);
    private boolean addBlockedDealers = false;
+   private String marketSegmentID = null;
 	
    public boolean isAddBlockedDealers() {
 	   return addBlockedDealers;
@@ -301,6 +303,13 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 			newOrderSingle.set(new OrdType(OrdType.LIMIT));
 		} else
 			newOrderSingle.set(new OrdType(OrdType.MARKET));
+		
+		// TDR: BESTX-394
+		if(marketSegmentID == null || marketSegmentID.isEmpty()) {
+			LOGGER.warn("MarketSegmentID is missed!");
+		} else {
+			newOrderSingle.setField(new MarketSegmentID(marketSegmentID));
+		}
 
 		// MaxTimeDelay required if MinTimeDelay is specified
 		if(this.minTimeDelay > 0) {
@@ -512,10 +521,17 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
    public char getDefaultShortSelling() {
       return defaultShortSelling;
    }
-
    
    public void setDefaultShortSelling(char defaultShortSelling) {
-      this.defaultShortSelling = defaultShortSelling;
+	   this.defaultShortSelling = defaultShortSelling;
    }
-   
+
+   public String getMarketSegmentID() {
+	   return marketSegmentID;
+   }
+
+   public void setMarketSegmentID(String marketSegmentID) {
+	   this.marketSegmentID = marketSegmentID;
+   }
+
 }
