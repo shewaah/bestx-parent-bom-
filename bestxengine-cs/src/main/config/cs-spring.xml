@@ -1248,6 +1248,11 @@
         <property name="limitFileNonUSEndOfDayMinute"><value>${LimitFileNonUSEndOfDay.minute}</value></property>
         <property name="limitFileUSEndOfDayHour"><value>${LimitFileUSEndOfDay.hour}</value></property>
         <property name="limitFileUSEndOfDayMinute"><value>${LimitFileUSEndOfDay.minute}</value></property>
+        <property name="monitorToExecutionHour"><value>${Status.MonitorToExecution.hour}</value></property>
+        <property name="monitorToExecutionMinute"><value>${Status.MonitorToExecution.minute}</value></property>
+        <property name="executionToMonitorHour"><value>${Status.ExecutionToMonitor.hour}</value></property>
+        <property name="executionToMonitorMinute"><value>${Status.ExecutionToMonitor.minute}</value></property>
+		<property name="applicationStatus" ref="applicationStatus" />
 	</bean>
     <bean id="defaultBookProposalBuilder" class="it.softsolutions.bestx.services.BookProposalBuilder" init-method="init">
         <property name="marketFinder"><ref bean="dbBasedMarketFinder"></ref></property>
