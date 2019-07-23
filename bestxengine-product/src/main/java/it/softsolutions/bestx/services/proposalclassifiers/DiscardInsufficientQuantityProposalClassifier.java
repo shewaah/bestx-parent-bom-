@@ -40,13 +40,14 @@ import it.softsolutions.bestx.model.Venue;
  * Project Name : bestxengine-product First created by: Creation date: 19-ott-2012
  * 
  **/
-public class DiscardInsufficientQuantityProposalClassifier implements ProposalClassifier {
+public class DiscardInsufficientQuantityProposalClassifier extends BaseMarketMakerClassifier implements ProposalClassifier {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DiscardInsufficientQuantityProposalClassifier.class);
 
 	@Override
 	public ClassifiedProposal getClassifiedProposal(ClassifiedProposal proposal, Order order, List<Attempt> previousAttempts, Set<Venue> venues, ClassifiedBook book) {
-		if(order.getQty() == null)  //AMC 20160816
+		if(order.getQty() == null || isCompositePriceMarketMaker(proposal)) {
 			return proposal;
+		}
 		if (!((order.getInstrument().getInstrumentAttributes() != null && order.getInstrument().getInstrumentAttributes().getPortfolio().isInternalizable())
 		        || proposal.getMarket().getMarketCode() == MarketCode.MOT || proposal.getMarket().getMarketCode() == MarketCode.TLX || proposal.getMarket().getMarketCode() == MarketCode.HIMTF
 		        || proposal.getMarket().getMarketCode() == MarketCode.MTSPRIME)) {

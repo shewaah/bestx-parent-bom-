@@ -1,7 +1,5 @@
-/target/
-
-/.settings/
-
-/.project
-
-/.classpath
+**/target/
+**/.settings/
+**/.project
+**/.classpath
+/bestxengine-cs/log/

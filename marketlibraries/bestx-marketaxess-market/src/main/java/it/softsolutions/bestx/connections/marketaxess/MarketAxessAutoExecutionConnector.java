@@ -78,6 +78,7 @@ import quickfix.FieldNotFound;
 import quickfix.Group;
 import quickfix.Message;
 import quickfix.SessionID;
+import quickfix.field.MarketSegmentID;
 import quickfix.field.OrderCapacity;
 import quickfix.field.PartyID;
 
@@ -102,6 +103,7 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
    private Integer investmentDecisionQualifier = null;
    static final Logger LOGGER = LoggerFactory.getLogger(MarketAxessMarket.class);
    private boolean addBlockedDealers = false;
+   private String marketSegmentID = null;
 	
    public boolean isAddBlockedDealers() {
 	   return addBlockedDealers;
@@ -203,8 +205,8 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 		tradeStacTradeConnectionListener.onOrderReject(sessionID.toString(), requestID, reason);
 	}
 
-	private int minTimeDelay;
-	private int validSeconds;
+	private int minTimeDelay = 0;
+	private int validSeconds = 0;
 	private String traderPartyID;
 	private int numCompetitiveQuotes = 1;
 
@@ -216,9 +218,24 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 		this.numCompetitiveQuotes = numCompetitiveQuotes;
 	}
 
-	private double tolerance;
+	private double tolerance = 0.0;
 
 	private SessionID sessionID;
+	private int includeDealers = 0;
+
+	/**
+	 * @return the includeDealers
+	 */
+	public int getIncludeDealers() {
+		return includeDealers;
+	}
+
+	/**
+	 * @param includeDealers the  to set
+	 */
+	public void setIncludeDealers(int includeDealers) {
+		this.includeDealers = includeDealers;
+	}
 
 	/* (non-Javadoc)
 	 * @see it.softsolutions.bestx.connections.marketaxess.MarketAxessMBean#getTolerance()
@@ -299,9 +316,18 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 			newOrderSingle.set(new PriceType(PriceType.PERCENTAGE));
 			newOrderSingle.setField(new MKTXTargetLevel(price.toString()));
 			newOrderSingle.set(new OrdType(OrdType.LIMIT));
-		} else
-			newOrderSingle.set(new OrdType(OrdType.MARKET));
+		}
+//		else
+//			newOrderSingle.set(new OrdType(OrdType.MARKET));
+		
+		// TDR: BESTX-394
+		if(marketSegmentID == null || marketSegmentID.isEmpty()) {
+			LOGGER.warn("MarketSegmentID is missed!");
+		} else {
+			newOrderSingle.setField(new MarketSegmentID(marketSegmentID));
+		}
 
+		// Start of configuration managed fields BESTX-441
 		// MaxTimeDelay required if MinTimeDelay is specified
 		if(this.minTimeDelay > 0) {
 			newOrderSingle.setField(new MinTimeDelay(this.minTimeDelay));
@@ -309,10 +335,14 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 		}
 		if(this.validSeconds > 0)
 			newOrderSingle.setField(new ValidSeconds(this.validSeconds)); //ValidSeconds.FIELD
-		
-		newOrderSingle.setField(new NumCompetitiveQuotes(this.numCompetitiveQuotes));
+		if(this.includeDealers > 0)
+			newOrderSingle.setField(new IncludeDealers(this.includeDealers));
+		if(this.numCompetitiveQuotes > 0)
+			newOrderSingle.setField(new NumCompetitiveQuotes(this.numCompetitiveQuotes));
+
 		if(this.tolerance > 0.0)
 			newOrderSingle.setField(new Tolerance(this.tolerance));
+		// End of configuration managed fields BESTX-441
 		
 		newOrderSingle.set(new Currency(marketOrder.getCurrency()));
 		newOrderSingle.setField(new Notes(clOrdID));
@@ -320,10 +350,6 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 		Group originator = createGroupForTrader();
 		//newOrderSingle.addGroup(originator);
 
-		newOrderSingle.setField(new IncludeDealers(2));
-		//SP-for test purpose
-      //newOrderSingle.setField(new IncludeDealers(1));
-		
 		
 		//MIFID II
 		//TradingCapacity
@@ -357,7 +383,7 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 		newOrderSingle.setField(new MKTXESCBStblty(MKTXESCBStblty.INVESTMENT_OPERATIONS));
 		
 		// da usare se si preferisce usare il solo dealer best
-		String dealerCode = marketOrder.getMarketMarketMaker() != null ? marketOrder.getMarketMarketMaker().getMarketSpecificCode() : null;
+//		String dealerCode = marketOrder.getMarketMarketMaker() != null ? marketOrder.getMarketMarketMaker().getMarketSpecificCode() : null;
 
 		// da usare se si vogliono aggiungere tutti i dealer che hanno fornito un prezzo alla PD
 		// group
@@ -512,10 +538,17 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
    public char getDefaultShortSelling() {
       return defaultShortSelling;
    }
-
    
    public void setDefaultShortSelling(char defaultShortSelling) {
-      this.defaultShortSelling = defaultShortSelling;
+	   this.defaultShortSelling = defaultShortSelling;
    }
-   
+
+   public String getMarketSegmentID() {
+	   return marketSegmentID;
+   }
+
+   public void setMarketSegmentID(String marketSegmentID) {
+	   this.marketSegmentID = marketSegmentID;
+   }
+
 }

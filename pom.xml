@@ -5,7 +5,7 @@
     <groupId>it.softsolutions.bestx</groupId>
     <artifactId>bestxengine-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.3.11-SNAPSHOT</version>
+    <version>4.3.11-NEUTRONSTAR-190717-SNAPSHOT</version>
 
     <name>BestX! Engine Develop</name>
     <description>Comprising all the modules in bestengine installation for CS</description>
@@ -31,7 +31,7 @@
         <ibm-mq-api.version>8.0.0.5</ibm-mq-api.version>
         <findbugs-maven-plugin.version>3.0.3</findbugs-maven-plugin.version>
         <!-- FindBugs flags -->
-        <findbugs.skip>true</findbugs.skip>
+		<findbugs.skip>false</findbugs.skip>
         <!-- FindBugs rank -->
         <findbugs.rank>15</findbugs.rank>
     </properties>
@@ -369,30 +369,84 @@
                 <artifactId>bestx-marketaxess-market</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-			    <groupId>com.google.code.findbugs</groupId>
-			    <artifactId>annotations</artifactId>
-			    <version>3.0.1</version>
-			    <scope>compile</scope>
-			</dependency>
-			<dependency>
-		   		<groupId>net.jcip</groupId>
-		   		<artifactId>jcip-annotations</artifactId>
-		   		<version>1.0</version>
-		   		<scope>compile</scope>
-		 	</dependency>
-		 	<dependency>
-		   		<groupId>com.google.code.findbugs</groupId>
-		   		<artifactId>jsr305</artifactId>
-		   		<version>3.0.1</version>
-		   		<scope>compile</scope>
-		 	</dependency>
         </dependencies>
     </dependencyManagement>
 
     <build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>findbugs-maven-plugin</artifactId>
+				<version>${findbugs-maven-plugin.version}</version>
+				<configuration>
+					<skip>${findbugs.skip}</skip>
+					<!-- Enables analysis which takes more memory but finds more bugs. If 
+						you run out of memory, changes the value of the effort element to 'Low'. -->
+					<effort>Default</effort>
+					<!-- High, Default, Low, Ignore -->
+					<threshold>Default</threshold>
+					<maxRank>${findbugs.rank}</maxRank>
+					<!-- Produces XML report -->
+					<xmlOutput>true</xmlOutput>
+					<!-- Configures the directory in which the XML report is created -->
+					<findbugsXmlOutputDirectory>${project.build.directory}/findbugs</findbugsXmlOutputDirectory>
+					<!-->omitVisitors>BadAppletConstructor,CallToUnsupportedMethod,CheckExpectedWarnings,CovariantArrayAssignment,EmptyZipFileEntry,InefficientIndexOf,InefficientInitializationInsideLoop,InefficientMemberAccess,InefficientToArray,PublicSemaphores,UselessSubclassMethod</omitVisitors -->
+				</configuration>
+				<executions>
+					<!-- Ensures that FindBugs inspects source code when project is compiled. -->
+					<execution>
+						<id>analyze-compile</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
         <pluginManagement>
             <plugins>
+				<!-- Ignore/Execute plugin execution -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<!-- copy-dependency plugin -->
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-dependency-plugin</artifactId>
+										<versionRange>${maven-dependency-plugin.versionRange}</versionRange>
+										<goals>
+											<goal>copy-dependencies</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.codehaus.mojo</groupId>
+										<artifactId>findbugs-maven-plugin</artifactId>
+										<versionRange>${findbugs-maven-plugin.version}</versionRange>
+										<goals>
+											<goal>check</goal>
+											<goal>compile</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<execute />
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
                 <plugin>
                     <groupId>org.basepom.maven</groupId>
                     <artifactId>duplicate-finder-maven-plugin</artifactId>
@@ -489,81 +543,6 @@
                         </additionalClasspathElements>
                     </configuration>
                 </plugin>
-                <!-- Ignore/Execute plugin execution -->
-                <plugin>
-                    <groupId>org.eclipse.m2e</groupId>
-                    <artifactId>lifecycle-mapping</artifactId>
-                    <version>1.0.0</version>
-                    <configuration>
-                        <lifecycleMappingMetadata>
-                            <pluginExecutions>
-                                <!-- copy-dependency plugin -->
-                                <pluginExecution>
-                                    <pluginExecutionFilter>
-                                        <groupId>org.apache.maven.plugins</groupId>
-                                        <artifactId>maven-dependency-plugin</artifactId>
-                                        <versionRange>[1.0.0,)</versionRange>
-                                        <goals>
-                                            <goal>copy-dependencies</goal>
-                                        </goals>
-                                    </pluginExecutionFilter>
-                                    <action>
-                                        <ignore />
-                                    </action>
-                                </pluginExecution>
-                            <pluginExecution>
-                                    <pluginExecutionFilter>
-                                        <groupId>org.codehaus.mojo</groupId>
-                                        <artifactId>findbugs-maven-plugin</artifactId>
-                                        <versionRange>${findbugs-maven-plugin.version}</versionRange>
-                                        <goals>
-                                            <goal>check</goal>
-                                            <goal>compile</goal>
-                                        </goals>
-                                    </pluginExecutionFilter>
-                                    <action>
-                                        <execute />
-                                    </action>
-                                </pluginExecution>
-                            </pluginExecutions>
-                        </lifecycleMappingMetadata>
-                    </configuration>
-                </plugin>
-                <!-- Ignore/Execute plugin execution -->
-                <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>findbugs-maven-plugin</artifactId>
-            <version>${findbugs-maven-plugin.version}</version>
-            <configuration>
-                <skip>${findbugs.skip}</skip>
-                <!--
-                    Enables analysis which takes more memory but finds more bugs.
-                    If you run out of memory, changes the value of the effort element
-                    to 'Low'.
-                -->
-                <effort>Default</effort>
-                <!-- High, Default, Low, Ignore -->
-                <threshold>Default</threshold>
-                <findbugs.rank>${findbugs.rank}</findbugs.rank>
-                <!-- Produces XML report -->
-                <xmlOutput>true</xmlOutput>
-                <!-- Configures the directory in which the XML report is created -->
-                <findbugsXmlOutputDirectory>${project.build.directory}/findbugs</findbugsXmlOutputDirectory>
-                <omitVisitors>BadAppletConstructor,CallToUnsupportedMethod,CheckExpectedWarnings,CovariantArrayAssignment,EmptyZipFileEntry,InefficientIndexOf,InefficientInitializationInsideLoop,InefficientMemberAccess,InefficientToArray,PublicSemaphores,UselessSubclassMethod</omitVisitors>
-            </configuration>
-            <executions>
-                <!-- 
-                    Ensures that FindBugs inspects source code when project is compiled. 
-                -->
-                <execution>
-                    <id>analyze-compile</id>
-                    <phase>compile</phase>
-                    <goals>
-                        <goal>check</goal>
-                    </goals>
-                </execution>
-            </executions>
-           </plugin>
             </plugins>
         </pluginManagement>
     </build>

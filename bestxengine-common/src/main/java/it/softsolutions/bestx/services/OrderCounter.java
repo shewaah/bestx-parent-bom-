@@ -14,9 +14,9 @@
 package it.softsolutions.bestx.services;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -54,7 +54,7 @@ public class OrderCounter {
 		Calendar calendar = Calendar.getInstance();
 		ResultSet rs = null;
 		ResultSet countResSet = null;
-		Statement stm = null;
+		PreparedStatement stm = null;
 		try {
 			if (searchDate != null) {
 				calendar.setTime(searchDate);
@@ -67,30 +67,67 @@ public class OrderCounter {
 			conn = ds.getConnection();
 			conn.setReadOnly(true);
 
-			stm = conn.createStatement();
-			String orderCountSql = "SELECT count(*) FROM TabHistoryOrdini tho WITH (NOLOCK) "
+//			stm = conn.createStatement();
+			final String orderCountSql;
+/*			String orderCountSql = "SELECT count(*) FROM TabHistoryOrdini tho WITH (NOLOCK) "
 					+ " JOIN Rfq_Order ro WITH (NOLOCK) ON tho.NumOrdine = ro.FixOrderId "
-					+ " WHERE tho.Stato NOT IN ('OrderRevocatedState', 'StateExecuted', 'OrderNotExecutedState')";
+					+ " WHERE tho.Stato NOT IN ('OrderRevocatedState', 'StateExecuted', 'OrderNotExecutedState')";*/
 
 			if (limitFile) {
 				// only limit file orders
-				orderCountSql += " AND ro.TimeInForce ='"
+				if(searchDate == null) {
+					orderCountSql = "SELECT count(*) FROM TabHistoryOrdini tho WITH (NOLOCK) "
+							+ " JOIN Rfq_Order ro WITH (NOLOCK) ON tho.NumOrdine = ro.FixOrderId "
+							+ " WHERE tho.Stato NOT IN ('OrderRevocatedState', 'StateExecuted', 'OrderNotExecutedState') AND ro.TimeInForce ='?' AND ro.OrderType = '?'";
+					stm = conn.prepareStatement(orderCountSql);
+					stm.setString(1, it.softsolutions.bestx.model.Order.TimeInForce.GOOD_TILL_CANCEL.toString());
+					stm.setString(2, Order.OrderType.LIMIT.toString());
+				}
+				else {
+					orderCountSql = "SELECT count(*) FROM TabHistoryOrdini tho WITH (NOLOCK) "
+							+ " JOIN Rfq_Order ro WITH (NOLOCK) ON tho.NumOrdine = ro.FixOrderId "
+							+ " WHERE tho.Stato NOT IN ('OrderRevocatedState', 'StateExecuted', 'OrderNotExecutedState') AND ro.TimeInForce ='?' AND ro.OrderType = '?'"
+							+ " AND ro.TransactionTime >= convert(datetime, '?',121 AND ro.TransactionTime < convert(datetime, '?',121)";
+					stm = conn.prepareStatement(orderCountSql);
+					stm.setString(1, it.softsolutions.bestx.model.Order.TimeInForce.GOOD_TILL_CANCEL.toString());
+					stm.setString(2, Order.OrderType.LIMIT.toString());
+					stm.setString(3, df.format(searchDate).toString());
+					stm.setString(4, df.format(endSearchDate).toString());
+				}
+/*				orderCountSql += " AND ro.TimeInForce ='"
 						+ it.softsolutions.bestx.model.Order.TimeInForce.GOOD_TILL_CANCEL
 						+ "' AND ro.OrderType = '" + Order.OrderType.LIMIT
-						+ "' ";
+						+ "' ";*/
 			} else {
-				orderCountSql += "AND ro.TimeInForce !='"
+				if(searchDate != null) {
+					orderCountSql = "SELECT count(*) FROM TabHistoryOrdini tho WITH (NOLOCK) "
+							+ " JOIN Rfq_Order ro WITH (NOLOCK) ON tho.NumOrdine = ro.FixOrderId "
+							+ " WHERE tho.Stato NOT IN ('OrderRevocatedState', 'StateExecuted', 'OrderNotExecutedState') AND ro.TimeInForce ='?'";
+					stm = conn.prepareStatement(orderCountSql);
+					stm.setString(1, it.softsolutions.bestx.model.Order.TimeInForce.GOOD_TILL_CANCEL.toString());
+				}
+				else {
+					orderCountSql = "SELECT count(*) FROM TabHistoryOrdini tho WITH (NOLOCK) "
+							+ " JOIN Rfq_Order ro WITH (NOLOCK) ON tho.NumOrdine = ro.FixOrderId "
+							+ " WHERE tho.Stato NOT IN ('OrderRevocatedState', 'StateExecuted', 'OrderNotExecutedState') AND ro.TimeInForce ='?'"
+							+ " AND ro.TransactionTime >= convert(datetime, '?',121 AND ro.TransactionTime < convert(datetime, '?',121)";
+				}
+				stm = conn.prepareStatement(orderCountSql);
+				stm.setString(1, it.softsolutions.bestx.model.Order.TimeInForce.GOOD_TILL_CANCEL.toString());
+				stm.setString(2, df.format(searchDate).toString());
+				stm.setString(3, df.format(endSearchDate).toString());
+/*				orderCountSql += "AND ro.TimeInForce !='"
 						+ it.softsolutions.bestx.model.Order.TimeInForce.GOOD_TILL_CANCEL
-						+ "' ";
+						+ "' ";*/
 			}
-			if (searchDate != null) {
+/*			if (searchDate != null) {
 				orderCountSql += " AND ro.TransactionTime >= convert(datetime, '"
 						+ df.format(searchDate)
 						+ "',121)"
 						+ " AND ro.TransactionTime < convert(datetime, '"
 						+ df.format(endSearchDate) + "',121)";
-			}
-			countResSet = stm.executeQuery(orderCountSql);
+			}*/
+			countResSet = stm.executeQuery();
 			int numOrders = 0;
 			if (countResSet.next()) {
 				numOrders = countResSet.getInt(1);

@@ -208,7 +208,7 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 				// set quotes
 				addQuotesToAttempt(currentAttempt, marketExecutionReport);
 				if(isCancelBestXInitiative)
-					operation.setStateResilient(new MA_CancelledState("No answer received after the configuration numebr of seconds. Order has been automatically cancelled by BestX!"),
+					operation.setStateResilient(new MA_CancelledState("No answer received after the configuration number of seconds. Order has been automatically cancelled by BestX!"),
 							ErrorState.class);
 				else 
 					operation.setStateResilient(new MA_CancelledState(), ErrorState.class);

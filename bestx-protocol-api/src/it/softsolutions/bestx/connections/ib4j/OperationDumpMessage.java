@@ -108,7 +108,8 @@ public class OperationDumpMessage extends IBcsMessage {
         setValue("executionReport" + index + "Side", executionReport.getSide().name());
         setValue("executionReport" + index + "OrderQty", executionReport.getOrderQty());
         setValue("executionReport" + index + "ActualQty", executionReport.getActualQty());
-        setValue("executionReport" + index + "Price", executionReport.getPrice() != null ? executionReport.getPrice().getAmount().toString() : null);
+        setValue("executionReport" + index + "LimitPrice", executionReport.getPrice() != null ? executionReport.getPrice().getAmount().toString() : null);
+        setValue("executionReport" + index + "LastPx", executionReport.getLastPx() != null ? executionReport.getLastPx().toString() : null);
         setValue("executionReport" + index + "Ticket", executionReport.getTicket());
         setValue("executionReport" + index + "TransactTime", executionReport.getTransactTime() != null ? DateFormatUtils.format(executionReport.getTransactTime(), "yyyyMMdd HH:mm:ss.SSS") : null);
     }

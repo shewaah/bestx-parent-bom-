@@ -715,13 +715,12 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         String res = null;
         if (executionReports == null 
                         || executionReports.isEmpty()
-                        || executionReports.get(executionReports.size() - 1).getPrice() == null
-                        || executionReports.get(executionReports.size() - 1).getPrice().getAmount() == null
+                        || executionReports.get(executionReports.size() - 1).getLastPx() == null
                         ) {
             return res;
         }
         try {
-            res = df.format(executionReports.get(executionReports.size() - 1).getPrice().getAmount());
+            res = df.format(executionReports.get(executionReports.size() - 1).getLastPx());
         } catch (NullPointerException e) {
         }
         return res;

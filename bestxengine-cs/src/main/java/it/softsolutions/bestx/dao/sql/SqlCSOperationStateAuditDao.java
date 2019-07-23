@@ -615,8 +615,8 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                     stmt.setNull(2, java.sql.Types.INTEGER);
                 }
                 // " PrezzoMedio," + // 3
-                if (executionReport != null && executionReport.getPrice() != null) {
-                    stmt.setBigDecimal(3, executionReport.getPrice().getAmount());
+                if (executionReport != null && executionReport.getLastPx() != null) {
+                    stmt.setBigDecimal(3, executionReport.getLastPx());
                 } else {
                     stmt.setNull(3, java.sql.Types.DECIMAL);
                 }
@@ -1113,8 +1113,8 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 // " QuantitaEseguita = ?," + // 3
                 stmt.setBigDecimal(3, executionReport.getActualQty());
                 // " PrezzoEseguito = ?," + // 4
-                if (executionReport.getPrice() != null) {
-                    stmt.setBigDecimal(4, executionReport.getPrice().getAmount());
+                if (executionReport.getLastPx() != null) {
+                    stmt.setBigDecimal(4, executionReport.getLastPx());
                 } else {
                     stmt.setNull(4, java.sql.Types.DECIMAL);
                 }
@@ -1479,8 +1479,8 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 // "Counterpart, " + // 12
                 stmt.setString(12, fill.getCounterPart());
                 // Price) //13
-                if (fill.getPrice() != null) {
-                    stmt.setBigDecimal(13, fill.getPrice().getAmount());
+                if (fill.getLastPx() != null) {
+                    stmt.setBigDecimal(13, fill.getLastPx());
                 } else {
                     LOGGER.error("Order {}, the price is NULL!!", order.getFixOrderId());
                     stmt.setNull(13, java.sql.Types.DECIMAL);
@@ -1576,8 +1576,8 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                     stmt.setNull(4, java.sql.Types.DECIMAL);
                 }
                 // " ExecutionPrice," + // 5
-                if (trade.getPrice() != null) {
-                    stmt.setBigDecimal(5, trade.getPrice().getAmount());
+                if (trade.getLastPx() != null) {
+                    stmt.setBigDecimal(5, trade.getLastPx());
                 } else {
                     stmt.setNull(5, java.sql.Types.DECIMAL);
                 }

@@ -16,6 +16,7 @@
 package it.softsolutions.bestx.api;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.Statement;
 
 import org.joda.time.format.DateTimeFormat;
@@ -325,8 +326,10 @@ public class BestxProtocol implements BestxProtocolMBean {
 	//FIXME da rendere congruente con gli altri accessi a DB
 	public void setNoteToOrder (String orderNumber, String note, Connection conn) throws Exception {	
 		try {
-			String sql = "UPDATE TabHistoryOrdini SET note = '" + note.replaceAll("\'", "\'\'") + "' WHERE NumOrdine = '" + orderNumber + "'";
-			Statement stm = conn.createStatement();			
+			final String sql = "UPDATE TabHistoryOrdini SET note = '?' WHERE NumOrdine = '?'";
+			PreparedStatement stm = conn.prepareStatement(sql);
+			stm.setString(1, note.replaceAll("\'", "\'\'"));
+			stm.setString(2, orderNumber);
 			logger.debug(sql);
 			stm.executeUpdate(sql);
 			stm.close();
