@@ -172,7 +172,7 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
 	        boolean startInExecutionModality = true;
 	        if (monitorToExecutionHour != null && monitorToExecutionMinute != null) {
 	        	calendar.set(year, month, day, monitorToExecutionHour, monitorToExecutionMinute, 0);
-	            LOGGER.info("Monitor modality switching to Execution scheduled for {}", calendar.getTime().toString());
+	            LOGGER.info("Monitor modality switching to Execution defined for {}", calendar.getTime().toString());
 	            
 	            // setupTimer bind the timer for this service
 	            try {           	
@@ -188,11 +188,12 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
 	                    //this timer is not repeatable
 	                    Trigger trigger = simpleTimerManager.createNewTrigger(timerName, CSOrdersEndOfDayService.class.getSimpleName(), false, timeToExpire);
 	                    simpleTimerManager.scheduleJobWithTrigger(newJob, trigger, false);
-	                    LOGGER.info("Monitor to execution switch rescheduled at {}", expireCalendar.getTime().toString());
+	                    LOGGER.info("Monitor modality switching to Execution scheduled for {}", expireCalendar.getTime().toString());
 	                    startInExecutionModality = false;
 	                }
 	                else
 	                {
+	                	LOGGER.info("Skipping monitor modality switching to execution ");
 	                	startInExecutionModality = true;
 	                }
 	            } catch (SchedulerException e) {
@@ -201,7 +202,7 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
 	        }
 	        if (executionToMonitorHour != null && executionToMonitorMinute != null) {
 	        	calendar.set(year, month, day, executionToMonitorHour, executionToMonitorMinute, 0);
-	            LOGGER.info("Execution modality switching to Monitor scheduled for {}", calendar.getTime().toString());
+	            LOGGER.info("Execution modality switching to Monitor defined for {}", calendar.getTime().toString());
 	            
 	            // setupTimer bind the timer for this service
 	            try {           	
@@ -217,8 +218,9 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
 	                    //this timer is not repeatable
 	                    Trigger trigger = simpleTimerManager.createNewTrigger(timerName, CSOrdersEndOfDayService.class.getSimpleName(), false, timeToExpire);
 	                    simpleTimerManager.scheduleJobWithTrigger(newJob, trigger, false);
-	                    LOGGER.info("Monitor to execution switch rescheduled at {}", expireCalendar.getTime().toString());
+	                    LOGGER.info("Execution modality switching to Monitor scheduled for  {}", expireCalendar.getTime().toString());
 	                } else {
+	                	LOGGER.info("Skipping execution modality switching to monitor");
 	                	startInExecutionModality = false;
 	                }
 	            } catch (SchedulerException e) {
@@ -287,7 +289,45 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
         if (executor == null) {
             throw new ObjectNotInitializedException("Executor not set");
         }
-    }
+        
+        // [BESTX-458] monitor/execution modality time switching verification. 
+		if (monitorToExecutionHour != null || monitorToExecutionMinute != null || executionToMonitorHour != null
+				|| executionToMonitorMinute != null) {
+
+			if (monitorToExecutionHour == null || monitorToExecutionMinute == null || executionToMonitorHour == null
+					|| executionToMonitorMinute == null) {
+				throw new ObjectNotInitializedException(
+						"Some but not all the properties of monitor and execution modality switch are set");
+			}
+
+			if (monitorToExecutionHour < 0 || monitorToExecutionHour > 23) {
+				throw new ObjectNotInitializedException("Monitor to execution modality switching hour must be valid");
+			}
+			if (executionToMonitorHour < 0 || executionToMonitorHour > 23) {
+				throw new ObjectNotInitializedException("Execution to monitor modality switching hour must be valid");
+			}
+			if (monitorToExecutionMinute < 0 || monitorToExecutionMinute > 59) {
+				throw new ObjectNotInitializedException("Monitor to execution modality switching minute must be valid");
+			}
+			if (executionToMonitorMinute < 0 || executionToMonitorMinute > 59) {
+				throw new ObjectNotInitializedException("Execution to monitor modality switching minute must be valid");
+			}
+
+			Calendar calendarMonitorToExecution = Calendar.getInstance();
+			Calendar calendarExecutionToMonitor = Calendar.getInstance();
+			int year = Calendar.getInstance().get(Calendar.YEAR);
+			int month = Calendar.getInstance().get(Calendar.MONTH);
+			int day = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+
+			calendarMonitorToExecution.set(year, month, day, monitorToExecutionHour, monitorToExecutionMinute, 0);
+			calendarExecutionToMonitor.set(year, month, day, executionToMonitorHour, executionToMonitorMinute, 0);
+
+			if (calendarMonitorToExecution.after(calendarExecutionToMonitor)) {
+				throw new ObjectNotInitializedException(
+						"Monitor to execution modality switching time can not be after the execution to monitor modality switching time");
+			}
+		}
+	}
 
     /**
      * Gets the orders end of day hour.
