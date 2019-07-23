@@ -18,7 +18,7 @@ public class ApplicationStatusController implements ApplicationStatusControllerM
 	}
 
 	@Override
-	public void establishNormalApplicationStatusType() {
+	public void establishMonitorApplicationStatusType() {
 		this.applicationStatus.setType(ApplicationStatus.Type.MONITOR);
 	}
 

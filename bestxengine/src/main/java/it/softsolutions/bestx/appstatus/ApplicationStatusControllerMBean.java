@@ -4,7 +4,7 @@ public interface ApplicationStatusControllerMBean {
 
 	void establishExecutionApplicationStatusType();
 
-	void establishNormalApplicationStatusType();
+	void establishMonitorApplicationStatusType();
 
 	String retrieveCurrentApplicationStatusType();
 	
