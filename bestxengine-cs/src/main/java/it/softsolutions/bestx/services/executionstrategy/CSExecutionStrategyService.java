@@ -149,7 +149,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	@Override
 	public void startExecution(Operation operation, Attempt currentAttempt, SerialNumberService serialNumberService) {
 		// [BESTX-458] If we are in a Monitor Application Status stop the execution and go back
-		if (this.applicationStatus.getType() == ApplicationStatus.Type.INITIAL_MONITORING) {
+		if (this.applicationStatus.getType() == ApplicationStatus.Type.MONITOR) {
 			try {
 				ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
 				String msg = Messages.getString("Monitor.RejectMessage", currentAttempt.getMarketOrder().getMarket().getMicCode());

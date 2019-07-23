@@ -225,9 +225,9 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
         }     
         
         if (startInExecutionModality) {
-        	applicationStatus.setType(ApplicationStatus.Type.NORMAL);
+        	applicationStatus.setType(ApplicationStatus.Type.EXECUTION);
         } else {
-        	applicationStatus.setType(ApplicationStatus.Type.INITIAL_MONITORING);
+        	applicationStatus.setType(ApplicationStatus.Type.MONITOR);
         }
 
         JobExecutionDispatcher.INSTANCE.addTimerEventListener(CSOrdersEndOfDayService.class.getSimpleName(), this);
@@ -437,11 +437,11 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
     			long end =  DateService.currentTimeMillis();
     			LOGGER.info("EndOfday: gets {}; Time {} ms", LIMIT_FILE_NON_US_AND_GLOBAL_END_OF_DAY_ID, end-begin);
     		} else if (jobName.equals(EXECUTION_TO_MONITOR_ID)) {
-   	        	applicationStatus.setType(ApplicationStatus.Type.INITIAL_MONITORING);
+   	        	applicationStatus.setType(ApplicationStatus.Type.MONITOR);
    	        	LOGGER.info("Switching to Monitoring state from Execution state");
    	        	return;
     		} else if (jobName.equals(MONITOR_TO_EXECUTION_ID)) {
-    			applicationStatus.setType(ApplicationStatus.Type.NORMAL);
+    			applicationStatus.setType(ApplicationStatus.Type.EXECUTION);
     			LOGGER.info("Switching to Execution state from Monitoringstate");
     			return;
     		} else {

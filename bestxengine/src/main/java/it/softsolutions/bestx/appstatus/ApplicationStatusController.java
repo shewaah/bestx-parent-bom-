@@ -13,11 +13,13 @@ public class ApplicationStatusController implements ApplicationStatusControllerM
 	}
 	
 	@Override
+	public void establishExecutionApplicationStatusType() {
+		this.applicationStatus.setType(ApplicationStatus.Type.EXECUTION);
+	}
+
+	@Override
 	public void establishNormalApplicationStatusType() {
-		this.applicationStatus.setType(ApplicationStatus.Type.NORMAL);
-		
-		// A list of existing operations must be retrieved and for each a
-		// ApplicationStatusChange callback must be called
+		this.applicationStatus.setType(ApplicationStatus.Type.MONITOR);
 	}
 
 	@Override
