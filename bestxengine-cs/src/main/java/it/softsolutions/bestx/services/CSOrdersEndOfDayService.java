@@ -155,7 +155,7 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
         if(expireCalendar != null && expireCalendar.compareTo(calendar) != 0)
             LOGGER.info("End of day US Limit Files rescheduled at {}", expireCalendar.getTime().toString());
         
-        // [BESTX-458] Add timers in order to schedulate the switch between monitor and execution modalities
+        // [BESTX-458] Add timers in order to schedule the switch between monitor and execution modalities
         try {
         	SimpleTimerManager.getInstance().stopJob(MONITOR_TO_EXECUTION_ID, CSOrdersEndOfDayService.class.getSimpleName());
         } catch (SchedulerException e) {
@@ -166,70 +166,73 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
         } catch (SchedulerException e) {
         	LOGGER.error("Error when trying to delete EXECUTION to MONITOR job: ", e);
         }
-        	
-        boolean startInExecutionModality = true;
-        if (monitorToExecutionHour != null && monitorToExecutionMinute != null) {
-        	calendar.set(year, month, day, monitorToExecutionHour, monitorToExecutionMinute, 0);
-            LOGGER.info("Monitor modality switching to Execution scheduled for {}", calendar.getTime().toString());
-            
-            // setupTimer bind the timer for this service
-            try {           	
-                long expireTime_ = calendar.getTimeInMillis();
-                // Calendar expireCalendar = calendar;
-                // calculating time remained from now to the EndOfDay time
-                long now = Calendar.getInstance().getTimeInMillis();
-                long timeToExpire = expireTime_ - now;
-                if (timeToExpire > 0) {
-                	String timerName = MONITOR_TO_EXECUTION_ID;
-                    SimpleTimerManager simpleTimerManager = SimpleTimerManager.getInstance();
-                    JobDetail newJob = simpleTimerManager.createNewJob(timerName, CSOrdersEndOfDayService.class.getSimpleName(), false, false, false);
-                    //this timer is not repeatable
-                    Trigger trigger = simpleTimerManager.createNewTrigger(timerName, CSOrdersEndOfDayService.class.getSimpleName(), false, timeToExpire);
-                    simpleTimerManager.scheduleJobWithTrigger(newJob, trigger, false);
-                    LOGGER.info("Monitor to execution switch rescheduled at {}", expireCalendar.getTime().toString());
-                    startInExecutionModality = false;
-                }
-                else
-                {
-                	startInExecutionModality = true;
-                }
-            } catch (SchedulerException e) {
-                LOGGER.error("Error while scheduling price discovery wait timer!", e);
-            }
-        }
-        if (executionToMonitorHour != null && executionToMonitorMinute != null) {
-        	calendar.set(year, month, day, executionToMonitorHour, executionToMonitorMinute, 0);
-            LOGGER.info("Execution modality switching to Monitor scheduled for {}", calendar.getTime().toString());
-            
-            // setupTimer bind the timer for this service
-            try {           	
-                long expireTime_ = calendar.getTimeInMillis();
-                // Calendar expireCalendar = calendar;
-                // calculating time remained from now to the EndOfDay time
-                long now = Calendar.getInstance().getTimeInMillis();
-                long timeToExpire = expireTime_ - now;
-                if (timeToExpire > 0) {
-                	String timerName = EXECUTION_TO_MONITOR_ID;
-                    SimpleTimerManager simpleTimerManager = SimpleTimerManager.getInstance();
-                    JobDetail newJob = simpleTimerManager.createNewJob(timerName, CSOrdersEndOfDayService.class.getSimpleName(), false, false, false);
-                    //this timer is not repeatable
-                    Trigger trigger = simpleTimerManager.createNewTrigger(timerName, CSOrdersEndOfDayService.class.getSimpleName(), false, timeToExpire);
-                    simpleTimerManager.scheduleJobWithTrigger(newJob, trigger, false);
-                    LOGGER.info("Monitor to execution switch rescheduled at {}", expireCalendar.getTime().toString());
-                } else {
-                	startInExecutionModality = false;
-                }
-            } catch (SchedulerException e) {
-                LOGGER.error("Error while scheduling price discovery wait timer!", e);
-            }
-        }     
         
-        if (startInExecutionModality) {
-        	applicationStatus.setType(ApplicationStatus.Type.EXECUTION);
-        } else {
-        	applicationStatus.setType(ApplicationStatus.Type.MONITOR);
+        if ((monitorToExecutionHour != null && monitorToExecutionMinute != null) ||
+        		(executionToMonitorHour != null && executionToMonitorMinute != null)) {
+	        boolean startInExecutionModality = true;
+	        if (monitorToExecutionHour != null && monitorToExecutionMinute != null) {
+	        	calendar.set(year, month, day, monitorToExecutionHour, monitorToExecutionMinute, 0);
+	            LOGGER.info("Monitor modality switching to Execution scheduled for {}", calendar.getTime().toString());
+	            
+	            // setupTimer bind the timer for this service
+	            try {           	
+	                long expireTime_ = calendar.getTimeInMillis();
+	                // Calendar expireCalendar = calendar;
+	                // calculating time remained from now to the EndOfDay time
+	                long now = Calendar.getInstance().getTimeInMillis();
+	                long timeToExpire = expireTime_ - now;
+	                if (timeToExpire > 0) {
+	                	String timerName = MONITOR_TO_EXECUTION_ID;
+	                    SimpleTimerManager simpleTimerManager = SimpleTimerManager.getInstance();
+	                    JobDetail newJob = simpleTimerManager.createNewJob(timerName, CSOrdersEndOfDayService.class.getSimpleName(), false, false, false);
+	                    //this timer is not repeatable
+	                    Trigger trigger = simpleTimerManager.createNewTrigger(timerName, CSOrdersEndOfDayService.class.getSimpleName(), false, timeToExpire);
+	                    simpleTimerManager.scheduleJobWithTrigger(newJob, trigger, false);
+	                    LOGGER.info("Monitor to execution switch rescheduled at {}", expireCalendar.getTime().toString());
+	                    startInExecutionModality = false;
+	                }
+	                else
+	                {
+	                	startInExecutionModality = true;
+	                }
+	            } catch (SchedulerException e) {
+	                LOGGER.error("Error while scheduling price discovery wait timer!", e);
+	            }
+	        }
+	        if (executionToMonitorHour != null && executionToMonitorMinute != null) {
+	        	calendar.set(year, month, day, executionToMonitorHour, executionToMonitorMinute, 0);
+	            LOGGER.info("Execution modality switching to Monitor scheduled for {}", calendar.getTime().toString());
+	            
+	            // setupTimer bind the timer for this service
+	            try {           	
+	                long expireTime_ = calendar.getTimeInMillis();
+	                // Calendar expireCalendar = calendar;
+	                // calculating time remained from now to the EndOfDay time
+	                long now = Calendar.getInstance().getTimeInMillis();
+	                long timeToExpire = expireTime_ - now;
+	                if (timeToExpire > 0) {
+	                	String timerName = EXECUTION_TO_MONITOR_ID;
+	                    SimpleTimerManager simpleTimerManager = SimpleTimerManager.getInstance();
+	                    JobDetail newJob = simpleTimerManager.createNewJob(timerName, CSOrdersEndOfDayService.class.getSimpleName(), false, false, false);
+	                    //this timer is not repeatable
+	                    Trigger trigger = simpleTimerManager.createNewTrigger(timerName, CSOrdersEndOfDayService.class.getSimpleName(), false, timeToExpire);
+	                    simpleTimerManager.scheduleJobWithTrigger(newJob, trigger, false);
+	                    LOGGER.info("Monitor to execution switch rescheduled at {}", expireCalendar.getTime().toString());
+	                } else {
+	                	startInExecutionModality = false;
+	                }
+	            } catch (SchedulerException e) {
+	                LOGGER.error("Error while scheduling price discovery wait timer!", e);
+	            }
+	        }     
+	        
+	        if (startInExecutionModality) {
+	        	applicationStatus.setType(ApplicationStatus.Type.EXECUTION);
+	        } else {
+	        	applicationStatus.setType(ApplicationStatus.Type.MONITOR);
+	        }
         }
-
+        
         JobExecutionDispatcher.INSTANCE.addTimerEventListener(CSOrdersEndOfDayService.class.getSimpleName(), this);
         LOGGER.info("Initialization done.");
     }
