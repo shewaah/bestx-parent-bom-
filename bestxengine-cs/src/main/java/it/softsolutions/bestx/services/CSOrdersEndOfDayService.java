@@ -92,20 +92,20 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
     private Integer limitFileUSEndOfDayMinute;
     
     /** The orders end of day restart delay. */
-    private Integer ordersEndOfDayRestartDelay; // seconds to wait in case of restart, before trigegring endofday (to wait for all the
+    private Integer ordersEndOfDayRestartDelay; // seconds to wait in case of restart, before triggering endofday (to wait for all the
                                                 // services to be up and running)
     
     /** The monitor to execution hour. */
-                                                private Integer monitorToExecutionHour; // [BESTX-458] hour in which the behavior of the application is swtiched from monitor to execution
+    private Integer monitorToExecutionHour; // [BESTX-458] hour in which the behavior of the application is switched from monitor to execution
     
     /** The monitor to execution minute. */
-    private Integer monitorToExecutionMinute; // [BESTX-458] minute in which the behavior of the application is swtiched from monitor to execution
+    private Integer monitorToExecutionMinute; // [BESTX-458] minute in which the behavior of the application is switched from monitor to execution
     
     /** The execution to monitor hour. */
-    private Integer executionToMonitorHour;// [BESTX-458] hour in which the behavior of the application is swtiched from execution to monitor
+    private Integer executionToMonitorHour;// [BESTX-458] hour in which the behavior of the application is switched from execution to monitor
     
     /** The execution to monitor minute. */
-    private Integer executionToMonitorMinute;// [BESTX-458] minute in which the behavior of the application is swtiched from execution to monitor
+    private Integer executionToMonitorMinute;// [BESTX-458] minute in which the behavior of the application is switched from execution to monitor
     
     /** The operation state audit dao. */
     private SqlCSOperationStateAuditDao operationStateAuditDao;
@@ -498,6 +498,7 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
 	 * @param groupName the group name
 	 */
 	private void onTimerExpired(List<Operation> operationsList, final String jobName, final String groupName) {
+		
 		for (final Operation operation : operationsList) {
 			operation.setStopped(true);
 			executor.execute(new Runnable() {
@@ -669,7 +670,41 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
 	 */
 	public void setApplicationStatus(ApplicationStatus applicationStatus) {
 		this.applicationStatus = applicationStatus;
-	}	
+	}
+
+	public Integer getMonitorToExecutionHour() {
+		return monitorToExecutionHour;
+	}
+
+	public void setMonitorToExecutionHour(Integer monitorToExecutionHour) {
+		this.monitorToExecutionHour = monitorToExecutionHour;
+	}
+
+	public Integer getMonitorToExecutionMinute() {
+		return monitorToExecutionMinute;
+	}
+
+	public void setMonitorToExecutionMinute(Integer monitorToExecutionMinute) {
+		this.monitorToExecutionMinute = monitorToExecutionMinute;
+	}
+
+	public Integer getExecutionToMonitorHour() {
+		return executionToMonitorHour;
+	}
+
+	public void setExecutionToMonitorHour(Integer executionToMonitorHour) {
+		this.executionToMonitorHour = executionToMonitorHour;
+	}
+
+	public Integer getExecutionToMonitorMinute() {
+		return executionToMonitorMinute;
+	}
+
+	public void setExecutionToMonitorMinute(Integer executionToMonitorMinute) {
+		this.executionToMonitorMinute = executionToMonitorMinute;
+	}
+	
+	
 	
 	
 }
