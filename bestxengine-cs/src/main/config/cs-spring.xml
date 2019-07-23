@@ -1174,6 +1174,7 @@
 		<property name="defaultTradingCapacity"><value>${MarketAxess.defaultCapacity}</value></property>
 		<property name="defaultShortSelling"><value>${MarketAxess.defaultShortSell}</value></property>
         <property name="fixConfigFileName"><value>fix-tradestac-marketaxess-buyside-trade.properties</value></property>
+        <property name="marketSegmentID"><value>${MarketAxess.destinationMICCode}</value></property>
  	</bean>
 	
 
