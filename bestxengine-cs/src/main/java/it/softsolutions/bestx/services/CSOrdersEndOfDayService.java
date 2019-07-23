@@ -156,6 +156,17 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
             LOGGER.info("End of day US Limit Files rescheduled at {}", expireCalendar.getTime().toString());
         
         // [BESTX-458] Add timers in order to schedulate the switch between monitor and execution modalities
+        try {
+        	SimpleTimerManager.getInstance().stopJob(MONITOR_TO_EXECUTION_ID, CSOrdersEndOfDayService.class.getSimpleName());
+        } catch (SchedulerException e) {
+        	LOGGER.error("Error when trying to delete MONITOR to EXECUTION job: ", e);
+        }
+        try {
+        	SimpleTimerManager.getInstance().stopJob(EXECUTION_TO_MONITOR_ID, CSOrdersEndOfDayService.class.getSimpleName());
+        } catch (SchedulerException e) {
+        	LOGGER.error("Error when trying to delete EXECUTION to MONITOR job: ", e);
+        }
+        	
         boolean startInExecutionModality = true;
         if (monitorToExecutionHour != null && monitorToExecutionMinute != null) {
         	calendar.set(year, month, day, monitorToExecutionHour, monitorToExecutionMinute, 0);
