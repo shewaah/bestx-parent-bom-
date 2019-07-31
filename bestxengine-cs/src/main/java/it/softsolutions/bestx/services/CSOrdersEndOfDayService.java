@@ -277,7 +277,9 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
     	// TDR BESTX-465: to avoid deadlock on DB
     	Boolean done = false;
     	if(jobName != null) {
-    		while(!done) {
+    	   int count = 0;
+    		while(!done && count < 5) {
+    		   count++;
     			try {
     				if (jobName.equals(ORDERS_END_OF_DAY_ID)) {
     					long begin = DateService.currentTimeMillis();
@@ -307,10 +309,13 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
     			} catch (org.springframework.dao.DeadlockLoserDataAccessException ex) {
     				LOGGER.warn("Exception was raised when trying to get orders for {} End Of Day: retrying ", jobName, ex);
     			} catch (Exception e) {
-    				LOGGER.warn("Exception was raised when trying to get orders for {} End Of Day ", jobName, e);
+    				LOGGER.error("Exception was raised when trying to get orders for {} End Of Day ", jobName, e);
     				done = true;
     			}
     		}
+         if (count >= 5) {
+            LOGGER.warn("The max number of attempts for timerExpired has been reached: {}", count);
+         }
     	} else {
 			LOGGER.warn("A job with a null name has been triggered!");
 		}
