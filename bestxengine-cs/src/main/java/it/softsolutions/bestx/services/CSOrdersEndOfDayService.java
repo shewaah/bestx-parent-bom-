@@ -308,6 +308,12 @@ public class CSOrdersEndOfDayService implements TimerEventListener, CSOrdersEndO
     				}
     			} catch (org.springframework.dao.DeadlockLoserDataAccessException ex) {
     				LOGGER.warn("Exception was raised when trying to get orders for {} End Of Day: retrying ", jobName, ex);
+               try {
+                  Thread.sleep(500);
+               }
+               catch (InterruptedException e) {
+                  LOGGER.error("Error while sleeping", e);
+               }
     			} catch (Exception e) {
     				LOGGER.error("Exception was raised when trying to get orders for {} End Of Day ", jobName, e);
     				done = true;
