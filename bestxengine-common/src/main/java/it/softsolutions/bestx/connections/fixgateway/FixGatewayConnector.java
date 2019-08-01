@@ -68,7 +68,10 @@ public class FixGatewayConnector extends XT2BaseConnector implements FixGatewayC
     // [DR20131224] Se dovesse arrivare un blocco di più di 1024 ordini, i restanti resterebbero nella coda InfoBus tra l'OMS1 FixGateway e BestX 
     private BlockingQueue<XT2Msg> customerOrders = new LinkedBlockingQueue<XT2Msg>(1024);
     private CustomerOrdersConsumer customerOrdersConsumer;
-   
+
+    private BlockingQueue<XT2Msg> customerReplies = new LinkedBlockingQueue<XT2Msg>(1024);
+    private CustomerRepliesConsumer customerRepliesConsumer;
+
     private FixOrderQueueMonitor fixOrderQueueMonitor;
     private long dumpMonitorStatisticsInterval;
     
@@ -86,6 +89,12 @@ public class FixGatewayConnector extends XT2BaseConnector implements FixGatewayC
         new Thread(fixOrderQueueMonitor).start();
         customerOrdersConsumer = new CustomerOrdersConsumer();
         new Thread(customerOrdersConsumer).start();
+
+        customerRepliesConsumer = new CustomerRepliesConsumer();
+        Thread customerRepliesThread = new Thread(customerRepliesConsumer);
+        customerRepliesThread.setDaemon(true);
+        customerRepliesThread.setName("FixGWConnector-CustomerRepliesConsumer");
+        customerRepliesThread.start();
         
         try {
         	pendingJobs = CommonMetricRegistry.INSTANCE.getMonitorRegistry().counter(MetricRegistry.name(FixGatewayConnector.class, "pending-jobs"));
@@ -266,30 +275,12 @@ public class FixGatewayConnector extends XT2BaseConnector implements FixGatewayC
 
         if (messageType == FixMessageTypes.TRADE_RESP) {
             LOGGER.debug("Execution report received");
-            if (listener == null) {
-                LOGGER.error("No listener available!");
-            } else {
-                int errorCode;
-                try {
-                    errorCode = msg.getInt(FixMessageFields.FIX_ErrorCode);
-                } catch (Exception e) {
-                    LOGGER.error("An error occurred while trying to get error code from message: {}, assuming error: {}", msg, e);
-                    errorCode = 1000;
-                }
-                // 20110907 - Ruggero
-                // for tlx, in the exec report, tag 37 (OrderID) we send the market order id, thus this field
-                // will be sent back to us on the exec rep ack. This way we cannot find the operation because
-                // it has been bound the the BestX order id, which is sent back to us in the ClORdID field.
-                // String orderId = msg.getString(FixMessageFields.FIX_OrderID);
-                String orderId = msg.getString(FixMessageFields.FIX_ClOrdID);
-                String executionReportId = msg.getString(FixMessageFields.FIX_ExecID);
-                LOGGER.debug("Execution report reply error: {}", errorCode);
-                if (errorCode == 0) {
-                    listener.onFixTradeAcknowledged(FixGatewayConnector.this, orderId, executionReportId);
-                } else {
-                    String errorMsg = msg.getString(FixMessageFields.FIX_ErrorMsg);
-                    listener.onFixTradeNotAcknowledged(FixGatewayConnector.this, orderId, executionReportId, errorCode, errorMsg);
-                }
+            try {
+               pendingJobs.inc();
+               customerReplies.put(msg);
+            }
+            catch (InterruptedException e) {
+               LOGGER.error("Exception while putting the new Execution report [{}] in the queue", msg, e);
             }
         } else {
             super.onPublish(msg);
@@ -474,5 +465,76 @@ public class FixGatewayConnector extends XT2BaseConnector implements FixGatewayC
 			}
 		}
 	}
+	
+   class CustomerRepliesConsumer implements Runnable {
+
+      private boolean stop;
+
+      public CustomerRepliesConsumer(){}
+
+      @Override
+      public void run() {
+         stop = false;
+         while (!stop) {
+            XT2Msg msg = null;
+            try {
+               msg = customerReplies.take();
+               pendingJobs.dec();
+               LOGGER.debug("Handling a new reply msg = {}", msg);
+               LOGGER.debug("Replies in queue = {}", customerReplies.size());
+               FixMessageTypes messageType = FixMessageTypes.valueOf(msg.getName());
+
+               switch (messageType) {
+                  case TRADE_RESP: {
+                     LOGGER.debug("Execution report received");
+                     if (listener == null) {
+                        LOGGER.error("No listener available!");
+                     }
+                     else {
+                        int errorCode;
+                        try {
+                           errorCode = msg.getInt(FixMessageFields.FIX_ErrorCode);
+                        }
+                        catch (Exception e) {
+                           LOGGER.error("An error occurred while trying to get error code from message: {}, assuming error: {}", msg, e);
+                           errorCode = 1000;
+                        }
+                        // 20110907 - Ruggero
+                        // for tlx, in the exec report, tag 37 (OrderID) we send the market order id, thus this field
+                        // will be sent back to us on the exec rep ack. This way we cannot find the operation because
+                        // it has been bound the the BestX order id, which is sent back to us in the ClORdID field.
+                        // String orderId = msg.getString(FixMessageFields.FIX_OrderID);
+                        String orderId = msg.getString(FixMessageFields.FIX_ClOrdID);
+                        String executionReportId = msg.getString(FixMessageFields.FIX_ExecID);
+                        LOGGER.debug("Execution report reply error: {}", errorCode);
+                        if (errorCode == 0) {
+                           listener.onFixTradeAcknowledged(FixGatewayConnector.this, orderId, executionReportId);
+                        }
+                        else {
+                           String errorMsg = msg.getString(FixMessageFields.FIX_ErrorMsg);
+                           listener.onFixTradeNotAcknowledged(FixGatewayConnector.this, orderId, executionReportId, errorCode, errorMsg);
+                        }
+                     }
+                     break;
+                  }
+                  default:
+                     LOGGER.error("Message type not managed by CustomerOrdersConsumer {1}!", messageType);
+               }
+            }
+            catch (InterruptedException e2) {
+               LOGGER.error("Error while getting an order from the queue", e2);
+               try {
+                  Thread.sleep(500);
+               }
+               catch (InterruptedException e) {
+                  LOGGER.error("Error while sleeping", e);
+               }
+            }
+            catch (Exception e) {
+               LOGGER.error("Error: " + e.getMessage() + " on message " + msg, e);
+            }
+         }
+      }
+   }
    
 }
