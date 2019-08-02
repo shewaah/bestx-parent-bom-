@@ -326,13 +326,13 @@ public class BestxProtocol implements BestxProtocolMBean {
 	//FIXME da rendere congruente con gli altri accessi a DB
 	public void setNoteToOrder (String orderNumber, String note, Connection conn) throws Exception {	
 		try {
-			final String sql = "UPDATE TabHistoryOrdini SET note = '?' WHERE NumOrdine = '?'";
-			PreparedStatement stm = conn.prepareStatement(sql);
-			stm.setString(1, note.replaceAll("\'", "\'\'"));
-			stm.setString(2, orderNumber);
-			logger.debug(sql);
-			stm.executeUpdate(sql);
-			stm.close();
+			final String sql = "UPDATE TabHistoryOrdini SET note = ? WHERE NumOrdine = ?";
+         try (PreparedStatement stm = conn.prepareStatement(sql)) {
+            stm.setString(1, note.replaceAll("\'", "\'\'"));
+            stm.setString(2, orderNumber);
+            logger.debug(sql);
+            stm.executeUpdate();
+         }
 		} catch (Exception e) {
 			logger.info("Exception in updateing the note of order {}", orderNumber, e);
 		}
