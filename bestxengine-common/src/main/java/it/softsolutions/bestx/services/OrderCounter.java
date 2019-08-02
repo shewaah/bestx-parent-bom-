@@ -78,7 +78,7 @@ public class OrderCounter {
 				if(searchDate == null) {
 					orderCountSql = "SELECT count(*) FROM TabHistoryOrdini tho WITH (NOLOCK) "
 							+ " JOIN Rfq_Order ro WITH (NOLOCK) ON tho.NumOrdine = ro.FixOrderId "
-							+ " WHERE tho.Stato NOT IN ('OrderRevocatedState', 'StateExecuted', 'OrderNotExecutedState') AND ro.TimeInForce ='?' AND ro.OrderType = '?'";
+							+ " WHERE tho.Stato NOT IN ('OrderRevocatedState', 'StateExecuted', 'OrderNotExecutedState') AND ro.TimeInForce = ? AND ro.OrderType = ?";
 					stm = conn.prepareStatement(orderCountSql);
 					stm.setString(1, it.softsolutions.bestx.model.Order.TimeInForce.GOOD_TILL_CANCEL.toString());
 					stm.setString(2, Order.OrderType.LIMIT.toString());
@@ -86,8 +86,8 @@ public class OrderCounter {
 				else {
 					orderCountSql = "SELECT count(*) FROM TabHistoryOrdini tho WITH (NOLOCK) "
 							+ " JOIN Rfq_Order ro WITH (NOLOCK) ON tho.NumOrdine = ro.FixOrderId "
-							+ " WHERE tho.Stato NOT IN ('OrderRevocatedState', 'StateExecuted', 'OrderNotExecutedState') AND ro.TimeInForce ='?' AND ro.OrderType = '?'"
-							+ " AND ro.TransactionTime >= convert(datetime, '?',121 AND ro.TransactionTime < convert(datetime, '?',121)";
+							+ " WHERE tho.Stato NOT IN ('OrderRevocatedState', 'StateExecuted', 'OrderNotExecutedState') AND ro.TimeInForce = ? AND ro.OrderType = ?"
+							+ " AND ro.TransactionTime >= convert(datetime, ?, 121) AND ro.TransactionTime < convert(datetime, ?, 121)";
 					stm = conn.prepareStatement(orderCountSql);
 					stm.setString(1, it.softsolutions.bestx.model.Order.TimeInForce.GOOD_TILL_CANCEL.toString());
 					stm.setString(2, Order.OrderType.LIMIT.toString());
@@ -99,23 +99,23 @@ public class OrderCounter {
 						+ "' AND ro.OrderType = '" + Order.OrderType.LIMIT
 						+ "' ";*/
 			} else {
-				if(searchDate != null) {
+				if(searchDate == null) {
 					orderCountSql = "SELECT count(*) FROM TabHistoryOrdini tho WITH (NOLOCK) "
 							+ " JOIN Rfq_Order ro WITH (NOLOCK) ON tho.NumOrdine = ro.FixOrderId "
-							+ " WHERE tho.Stato NOT IN ('OrderRevocatedState', 'StateExecuted', 'OrderNotExecutedState') AND ro.TimeInForce ='?'";
+							+ " WHERE tho.Stato NOT IN ('OrderRevocatedState', 'StateExecuted', 'OrderNotExecutedState') AND ro.TimeInForce != ?";
 					stm = conn.prepareStatement(orderCountSql);
 					stm.setString(1, it.softsolutions.bestx.model.Order.TimeInForce.GOOD_TILL_CANCEL.toString());
 				}
 				else {
 					orderCountSql = "SELECT count(*) FROM TabHistoryOrdini tho WITH (NOLOCK) "
 							+ " JOIN Rfq_Order ro WITH (NOLOCK) ON tho.NumOrdine = ro.FixOrderId "
-							+ " WHERE tho.Stato NOT IN ('OrderRevocatedState', 'StateExecuted', 'OrderNotExecutedState') AND ro.TimeInForce ='?'"
-							+ " AND ro.TransactionTime >= convert(datetime, '?',121 AND ro.TransactionTime < convert(datetime, '?',121)";
+							+ " WHERE tho.Stato NOT IN ('OrderRevocatedState', 'StateExecuted', 'OrderNotExecutedState') AND ro.TimeInForce != ?"
+							+ " AND ro.TransactionTime >= convert(datetime, ?, 121) AND ro.TransactionTime < convert(datetime, ?, 121)";
+	            stm = conn.prepareStatement(orderCountSql);
+	            stm.setString(1, it.softsolutions.bestx.model.Order.TimeInForce.GOOD_TILL_CANCEL.toString());
+	            stm.setString(2, df.format(searchDate).toString());
+	            stm.setString(3, df.format(endSearchDate).toString());
 				}
-				stm = conn.prepareStatement(orderCountSql);
-				stm.setString(1, it.softsolutions.bestx.model.Order.TimeInForce.GOOD_TILL_CANCEL.toString());
-				stm.setString(2, df.format(searchDate).toString());
-				stm.setString(3, df.format(endSearchDate).toString());
 /*				orderCountSql += "AND ro.TimeInForce !='"
 						+ it.softsolutions.bestx.model.Order.TimeInForce.GOOD_TILL_CANCEL
 						+ "' ";*/
