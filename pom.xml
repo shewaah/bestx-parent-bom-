@@ -29,7 +29,7 @@
         <!-- third party -->
         <quickfix.version>1.6.4</quickfix.version>
         <ibm-mq-api.version>8.0.0.5</ibm-mq-api.version>
-        <findbugs-maven-plugin.version>3.0.3</findbugs-maven-plugin.version>
+        <findbugs-maven-plugin.version>3.0.4</findbugs-maven-plugin.version>
         <!-- FindBugs flags -->
 		<findbugs.skip>false</findbugs.skip>
         <!-- FindBugs rank -->
