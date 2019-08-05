@@ -49,12 +49,12 @@ public class CSNormalExecutionStrategyService extends CSExecutionStrategyService
      *            : flag to reject or not orders if the best execution is on Bloomberg
      */
     @Deprecated
-    public CSNormalExecutionStrategyService(ExecutionStrategyServiceCallback executionStrategyServiceCallback, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus) {
-    	super(executionStrategyServiceCallback, priceResult, rejectOrderWhenBloombergIsBest, applicationStatus);  
+    public CSNormalExecutionStrategyService(ExecutionStrategyServiceCallback executionStrategyServiceCallback, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus, int minimumRequiredBookDepth) {
+    	super(executionStrategyServiceCallback, priceResult, rejectOrderWhenBloombergIsBest, applicationStatus, minimumRequiredBookDepth);  
     }
 
-    public CSNormalExecutionStrategyService(Operation operation, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus) {
-    	super(operation, priceResult, rejectOrderWhenBloombergIsBest, applicationStatus);  
+    public CSNormalExecutionStrategyService(Operation operation, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus, int minimumRequiredBookDepth) {
+    	super(operation, priceResult, rejectOrderWhenBloombergIsBest, applicationStatus, minimumRequiredBookDepth);  
     }
 
     /** 

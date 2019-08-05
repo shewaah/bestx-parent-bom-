@@ -45,12 +45,12 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
    static final Logger LOGGER = LoggerFactory.getLogger(CSLimitFileExecutionStrategyService.class);
 
    @Deprecated
-   public CSLimitFileExecutionStrategyService(ExecutionStrategyServiceCallback executionStrategyServiceCallback, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus){
-      super(executionStrategyServiceCallback, priceResult, rejectOrderWhenBloombergIsBest, applicationStatus);
+   public CSLimitFileExecutionStrategyService(ExecutionStrategyServiceCallback executionStrategyServiceCallback, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus, int minimumRequiredBookDepth){
+      super(executionStrategyServiceCallback, priceResult, rejectOrderWhenBloombergIsBest, applicationStatus, minimumRequiredBookDepth);
    }
 
-   public CSLimitFileExecutionStrategyService(Operation operation, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus){
-      super(operation, priceResult, rejectOrderWhenBloombergIsBest, applicationStatus);
+   public CSLimitFileExecutionStrategyService(Operation operation, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus, int minimumRequiredBookDepth){
+      super(operation, priceResult, rejectOrderWhenBloombergIsBest, applicationStatus, minimumRequiredBookDepth);
    }
 
    @Override

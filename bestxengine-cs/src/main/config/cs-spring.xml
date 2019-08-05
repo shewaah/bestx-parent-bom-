@@ -990,6 +990,7 @@
     		</list>
     	</property>
     	<property name="applicationStatus" ref="applicationStatus" />
+    	<property name="minimumRequiredBookDepth"><value>${Execution.minimumRequiredBookDepth}</value></property>
     </bean>
 
 

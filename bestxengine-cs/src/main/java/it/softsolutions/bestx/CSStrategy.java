@@ -708,7 +708,7 @@ public class CSStrategy implements Strategy, SystemStateSelector {
 
             handler = new ManualExecutionWaitingPriceEventHandler(operation, getPriceService(operation.getOrder()), titoliIncrociabiliService, customerFinder, serialNumberService,
                   regulatedMktIsinsLoader, regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout, marketSecurityStatusService,
-                  executionDestinationService, rejectWhenBloombergIsBest, doNotExecuteMEW, bookDepthValidator, operationStateAuditDao);
+                  executionDestinationService, rejectWhenBloombergIsBest, doNotExecuteMEW, bookDepthValidator, operationStateAuditDao, applicationStatus);
          break;
          case WaitingPrice:
             Boolean doNotExecuteWP = CSConfigurationPropertyLoader.getBooleanProperty(CSConfigurationPropertyLoader.LIMITFILE_DONOTEXECUTE, false);
@@ -718,7 +718,7 @@ public class CSStrategy implements Strategy, SystemStateSelector {
 
             handler = new WaitingPriceEventHandler(operation, getPriceService(operation.getOrder()), titoliIncrociabiliService, customerFinder, serialNumberService, regulatedMktIsinsLoader,
                   regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout, marketSecurityStatusService, executionDestinationService,
-                  rejectWhenBloombergIsBest, doNotExecuteWP, bookDepthValidator, internalMMcodesList, operationStateAuditDao, targetPriceMaxLevel);
+                  rejectWhenBloombergIsBest, doNotExecuteWP, bookDepthValidator, internalMMcodesList, operationStateAuditDao, targetPriceMaxLevel, applicationStatus);
             
             if (CSExecutionReportHelper.isPOBex(operation)) {
                CSSendPOBExEventHandler customerHandler = new CSSendPOBExEventHandler(operation, orderBookDepth, priceDecimals, priceDiscoveryConnection, serialNumberService, pobExMaxSize);
