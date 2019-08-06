@@ -425,7 +425,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("EventPriceTimeout.0", priceResult.getReason())), ErrorState.class);
 		} else if (priceResult.getState() == PriceResult.PriceResultState.NULL 
 				|| priceResult.getState() == PriceResult.PriceResultState.ERROR) {
-			if(!operation.isNotAutoExecute() && (BondTypesService.isUST(operation.getOrder().getInstrument()) || doRejectThisBestOnBloomberg)) { 
+			if(!operation.isNotAutoExecute() && (applicationStatus.getType()==ApplicationStatus.Type.EXECUTION &&(BondTypesService.isUST(operation.getOrder().getInstrument())) || doRejectThisBestOnBloomberg)) { 
 				// it is an executable UST order and there are no prices on consolidated book
 				csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
 			}
