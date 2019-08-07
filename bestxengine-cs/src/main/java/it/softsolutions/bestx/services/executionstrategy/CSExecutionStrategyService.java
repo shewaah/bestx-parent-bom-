@@ -25,6 +25,7 @@ import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationIdType;
+import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.bestexec.BookClassifier;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.handlers.ExecutionReportHelper;
@@ -80,6 +81,8 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	protected ArrayList<Market> marketsToTry;
 	protected BookClassifier bookClassifier;
 	protected BookSorterImpl bookSorter;
+	protected ApplicationStatus applicationStatus;
+	protected int minimumRequiredBookDepth = 3;
 
 
 	public BookClassifier getBookClassifier() {
@@ -117,6 +120,26 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		return allMarketsToTry;
 	}
 
+	
+	
+	public ApplicationStatus getApplicationStatus() {
+		return applicationStatus;
+	}
+
+	public void setApplicationStatus(ApplicationStatus applicationStatus) {
+		this.applicationStatus = applicationStatus;
+	}
+
+	
+	
+	public int getMinimumRequiredBookDepth() {
+		return minimumRequiredBookDepth;
+	}
+
+	public void setMinimumRequiredBookDepth(int minimumRequiredBookDepth) {
+		this.minimumRequiredBookDepth = minimumRequiredBookDepth;
+	}
+
 	@Override
 	public abstract void manageAutomaticUnexecution(Order order, Customer customer) throws BestXException;
 
@@ -136,7 +159,25 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	 */
 	@Override
 	public void startExecution(Operation operation, Attempt currentAttempt, SerialNumberService serialNumberService) {
-
+		// [BESTX-458] If we are in a Monitor Application Status stop the execution and go back
+		if (this.applicationStatus.getType() == ApplicationStatus.Type.MONITOR) {
+			try {
+				ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
+				String msg;
+				if (currentAttempt.getMarketOrder() == null) {
+					msg = Messages.getString("RejectInsufficientBookDepth.0", 3 /*TODO bookDepthValidator.getMinimumRequiredBookDepth()*/);
+				} else  {
+					msg = Messages.getString("Monitor.RejectMessage", currentAttempt.getMarketOrder().getMarket().getMicCode());
+				}
+				operation.setStateResilient(new SendAutoNotExecutionReportState(msg), ErrorState.class);
+			} catch (BestXException e) {
+				LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
+				String errorMessage = e.getMessage();
+				operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
+			}
+			return;
+		}
+		
 		// manage custom strategy to execute UST on Tradeweb with no MMM specified and limit price as specified in client order
 		if(BondTypesService.isUST(operation.getOrder().getInstrument())) { // BESTX-382
 			// override execution proposal every time
@@ -233,7 +274,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	}
 
 	@Deprecated
-	public CSExecutionStrategyService(ExecutionStrategyServiceCallback executionStrategyServiceCallback, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest) {
+	public CSExecutionStrategyService(ExecutionStrategyServiceCallback executionStrategyServiceCallback, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus, int minimumRequiredBookDepth) {
 		if (executionStrategyServiceCallback == null) {
 			throw new IllegalArgumentException("executionStrategyServiceCallback is null");
 		}
@@ -241,9 +282,11 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		//        this.executionStrategyServiceCallback = executionStrategyServiceCallback;
 		this.priceResult = priceResult;
 		this.rejectOrderWhenBloombergIsBest = rejectOrderWhenBloombergIsBest;
+		this.applicationStatus = applicationStatus;
+		this.minimumRequiredBookDepth = minimumRequiredBookDepth;
 	}
 
-	public CSExecutionStrategyService(Operation operation, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest) {
+	public CSExecutionStrategyService(Operation operation, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus, int minimumRequiredBookDepth) {
 		if (operation == null) {
 			throw new IllegalArgumentException("operation is null");
 		}
@@ -251,6 +294,8 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		this.operation = operation;
 		this.priceResult = priceResult;
 		this.rejectOrderWhenBloombergIsBest = rejectOrderWhenBloombergIsBest;
+		this.applicationStatus = applicationStatus;
+		this.minimumRequiredBookDepth = minimumRequiredBookDepth;
 	}
 
 	/**

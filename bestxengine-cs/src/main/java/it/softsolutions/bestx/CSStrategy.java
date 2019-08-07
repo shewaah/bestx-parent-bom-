@@ -30,6 +30,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.connections.CustomerConnection;
 import it.softsolutions.bestx.connections.OperatorConsoleConnection;
 import it.softsolutions.bestx.dao.BestXConfigurationDao;
@@ -201,6 +202,7 @@ public class CSStrategy implements Strategy, SystemStateSelector {
    private int priceDecimals;
    private int pobExMaxSize;
    private int targetPriceMaxLevel;
+   private ApplicationStatus applicationStatus;
 
    public long getBondVisionExecTimeout() {
 	   return bondVisionExecTimeout;
@@ -706,7 +708,7 @@ public class CSStrategy implements Strategy, SystemStateSelector {
 
             handler = new ManualExecutionWaitingPriceEventHandler(operation, getPriceService(operation.getOrder()), titoliIncrociabiliService, customerFinder, serialNumberService,
                   regulatedMktIsinsLoader, regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout, marketSecurityStatusService,
-                  executionDestinationService, rejectWhenBloombergIsBest, doNotExecuteMEW, bookDepthValidator, operationStateAuditDao);
+                  executionDestinationService, rejectWhenBloombergIsBest, doNotExecuteMEW, bookDepthValidator, operationStateAuditDao, applicationStatus);
          break;
          case WaitingPrice:
             Boolean doNotExecuteWP = CSConfigurationPropertyLoader.getBooleanProperty(CSConfigurationPropertyLoader.LIMITFILE_DONOTEXECUTE, false);
@@ -716,7 +718,7 @@ public class CSStrategy implements Strategy, SystemStateSelector {
 
             handler = new WaitingPriceEventHandler(operation, getPriceService(operation.getOrder()), titoliIncrociabiliService, customerFinder, serialNumberService, regulatedMktIsinsLoader,
                   regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout, marketSecurityStatusService, executionDestinationService,
-                  rejectWhenBloombergIsBest, doNotExecuteWP, bookDepthValidator, internalMMcodesList, operationStateAuditDao, targetPriceMaxLevel);
+                  rejectWhenBloombergIsBest, doNotExecuteWP, bookDepthValidator, internalMMcodesList, operationStateAuditDao, targetPriceMaxLevel, applicationStatus);
             
             if (CSExecutionReportHelper.isPOBex(operation)) {
                CSSendPOBExEventHandler customerHandler = new CSSendPOBExEventHandler(operation, orderBookDepth, priceDecimals, priceDiscoveryConnection, serialNumberService, pobExMaxSize);
@@ -1469,4 +1471,13 @@ public class CSStrategy implements Strategy, SystemStateSelector {
    public void setCurandoTimerRetriever(CurandoTimerRetriever curandoTimerRetriever) {
       this.curandoTimerRetriever = curandoTimerRetriever;
    }
+
+	public ApplicationStatus getApplicationStatus() {
+		return applicationStatus;
+	}
+
+	public void setApplicationStatus(ApplicationStatus applicationStatus) {
+		this.applicationStatus = applicationStatus;
+	}
+   
 }

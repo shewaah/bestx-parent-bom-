@@ -51,13 +51,13 @@ public class CSBookDepthController extends BookDepthValidator {
             throw new IllegalArgumentException("currentAttempt cannot be null");
         }
         
-        if (order.isLimitFile()) {
-            LOGGER.info("Order {}, consider book as valid because order is LimitFile", order.getFixOrderId());
-            return true;
-        }
+//        if (order.isLimitFile()) {
+//            LOGGER.info("Order {}, consider book as valid because order is LimitFile", order.getFixOrderId());
+////            return true;
+//        }
         
-		if(BondTypesService.isUST(order.getInstrument()))
-			return true; // BESTX-382
+//		if(BondTypesService.isUST(order.getInstrument()))
+//			return true; // BESTX-382
 
         if (this.minimumRequiredBookDepth > 0) {//this.minimumRequiredBookDepth = 0
             if (currentAttempt.getSortedBook() != null) {

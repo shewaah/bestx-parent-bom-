@@ -92,6 +92,7 @@
 				<entry key="it.softsolutions.bestx.cs:name=OrdersEndOfDayService" value-ref="ordersEndOfDayService" />
 				<entry key="it.softsolutions.bestx.cs:name=BusinessValuesMonitor" value-ref="businessValuesMonitor" />
 				<entry key="it.softsolutions.bestx.cs:name=CSStrategy" value-ref="csStrategy" />
+				<entry key="it.softsolutions.bestx.cs:name=ApplicationStatusController" value-ref="applicationStatusController" />
 				<!-- entry key="bean:name=hibernateStatsMBean"><ref local="hibernateStats"></ref></entry -->
 			</map>
 		</property>
@@ -659,8 +660,18 @@
         <property name="priceDecimals"><value>${PriceDiscovery.PriceDecimals}</value></property>
         <property name="pobExMaxSize"><value>${Marketaxess.MaxPOBEXEntries}</value></property>
         <property name="curandoTimerRetriever"><ref bean="curandoTimerRetriever"></ref></property>
+		<property name="applicationStatus" ref="applicationStatus" />
 	</bean>
-
+	
+	<!-- The application status contains global status used by the application -->
+	<bean id="applicationStatus" class="it.softsolutions.bestx.appstatus.ApplicationStatus">
+		<property name="type" value="${ApplicationStatus.Type:EXECUTION}" />
+	</bean>
+	
+	<bean id="applicationStatusController" class="it.softsolutions.bestx.appstatus.ApplicationStatusController">
+		<property name="applicationStatus" ref="applicationStatus" />
+	</bean>
+	
 	<!-- VALIDATION FOR ORDERS -->
     <bean id="csOrderValidationService" class="it.softsolutions.bestx.services.CSOrderValidationService">
 		<property name="formalValidatorList">
@@ -978,6 +989,8 @@
 				<value>BLOOMBERG</value>
     		</list>
     	</property>
+    	<property name="applicationStatus" ref="applicationStatus" />
+    	<property name="minimumRequiredBookDepth"><value>${Execution.minimumRequiredBookDepth}</value></property>
     </bean>
 
 
@@ -1238,6 +1251,11 @@
         <property name="limitFileNonUSEndOfDayMinute"><value>${LimitFileNonUSEndOfDay.minute}</value></property>
         <property name="limitFileUSEndOfDayHour"><value>${LimitFileUSEndOfDay.hour}</value></property>
         <property name="limitFileUSEndOfDayMinute"><value>${LimitFileUSEndOfDay.minute}</value></property>
+        <property name="monitorToExecutionHour"><value>${Status.MonitorToExecution.hour:#{null}}</value></property>
+        <property name="monitorToExecutionMinute"><value>${Status.MonitorToExecution.minute:#{null}}</value></property>
+        <property name="executionToMonitorHour"><value>${Status.ExecutionToMonitor.hour:#{null}}</value></property>
+        <property name="executionToMonitorMinute"><value>${Status.ExecutionToMonitor.minute:#{null}}</value></property>
+		<property name="applicationStatus" ref="applicationStatus" />
 	</bean>
     <bean id="defaultBookProposalBuilder" class="it.softsolutions.bestx.services.BookProposalBuilder" init-method="init">
         <property name="marketFinder"><ref bean="dbBasedMarketFinder"></ref></property>

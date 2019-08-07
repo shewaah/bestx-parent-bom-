@@ -29,6 +29,7 @@ import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.RegulatedMktIsinsLoader;
+import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.dao.OperationStateAuditDao;
 import it.softsolutions.bestx.exceptions.CustomerRevokeReceivedException;
 import it.softsolutions.bestx.exceptions.MarketNotAvailableException;
@@ -102,6 +103,8 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 	private OperationStateAuditDao operationStateAuditDao;
 	protected boolean doNotExecute;
 	private int targetPriceMaxLevel;
+	
+	private ApplicationStatus applicationStatus;
 
 	/**
 	 * Constructor.
@@ -131,7 +134,8 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 	public WaitingPriceEventHandler(Operation operation, PriceService priceService, TitoliIncrociabiliService titoliIncrociabiliService, CustomerFinder customerFinder,
 			SerialNumberService serialNumberService, RegulatedMktIsinsLoader regulatedMktIsinsLoader, List<String> regulatedMarketPolicies, long waitingPriceDelay, int maxAttemptNo,
 			long marketPriceTimeout, MarketSecurityStatusService marketSecurityStatusService, ExecutionDestinationService executionDestinationService, boolean rejectOrderWhenBloombergIsBest,
-			boolean doNotExecute, BookDepthValidator bookDepthValidator, List<String> internalMMcodes, OperationStateAuditDao operationStateAuditDao, int targetPriceMaxLevel) throws BestXException{
+			boolean doNotExecute, BookDepthValidator bookDepthValidator, List<String> internalMMcodes, OperationStateAuditDao operationStateAuditDao, int targetPriceMaxLevel,
+			ApplicationStatus applicationStatus) throws BestXException{
 		super(operation);
 		this.priceService = priceService;
 		String priceServiceName = priceService.getPriceServiceName();
@@ -162,6 +166,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		this.operationStateAuditDao = operationStateAuditDao;
 		this.doNotExecute = doNotExecute;
 		this.targetPriceMaxLevel = targetPriceMaxLevel;
+		this.applicationStatus = applicationStatus;
 	}
 
 	@Override
@@ -318,17 +323,20 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		LOGGER.debug("Order {}, No customer revoke received.", operation.getOrder().getFixOrderId());
 
 		/* BXMNT-327 */
-		if (!bookDepthValidator.isBookDepthValid(currentAttempt, customerOrder) && !customerOrder.isLimitFile() && !operation.isNotAutoExecute()) { // market order action +++
-			try {
-				ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
-				operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("RejectInsufficientBookDepth.0", bookDepthValidator.getMinimumRequiredBookDepth())), ErrorState.class);
+		if (!bookDepthValidator.isBookDepthValid(currentAttempt, customerOrder) && !customerOrder.isLimitFile()
+				&& !operation.isNotAutoExecute()) { // market order action +++
+			if (!BondTypesService.isUST(operation.getOrder().getInstrument()) || this.applicationStatus.getType() == ApplicationStatus.Type.MONITOR) {
+				try {
+					ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
+					operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("RejectInsufficientBookDepth.0", bookDepthValidator.getMinimumRequiredBookDepth())), ErrorState.class);
+				}
+				catch (BestXException e) {
+					LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
+					String errorMessage = e.getMessage();
+					operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
+				}
+				return;
 			}
-			catch (BestXException e) {
-				LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
-				String errorMessage = e.getMessage();
-				operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
-			}
-			return;
 		}
 
 		MarketCode mktCode = null;
@@ -417,7 +425,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("EventPriceTimeout.0", priceResult.getReason())), ErrorState.class);
 		} else if (priceResult.getState() == PriceResult.PriceResultState.NULL 
 				|| priceResult.getState() == PriceResult.PriceResultState.ERROR) {
-			if(!operation.isNotAutoExecute() && (BondTypesService.isUST(operation.getOrder().getInstrument()) || doRejectThisBestOnBloomberg)) { 
+			if(!operation.isNotAutoExecute() && (applicationStatus.getType()==ApplicationStatus.Type.EXECUTION &&(BondTypesService.isUST(operation.getOrder().getInstrument())) || doRejectThisBestOnBloomberg)) { 
 				// it is an executable UST order and there are no prices on consolidated book
 				csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
 			}
@@ -625,5 +633,15 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			operation.setStateResilient(new CurandoState(), ErrorState.class);
 		}
 	}
+
+	public ApplicationStatus getApplicationStatus() {
+		return applicationStatus;
+	}
+
+	public void setApplicationStatus(ApplicationStatus applicationStatus) {
+		this.applicationStatus = applicationStatus;
+	}
+	
+	
 
 }
