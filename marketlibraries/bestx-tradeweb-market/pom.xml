@@ -30,6 +30,12 @@
         <dependency>
             <groupId>it.softsolutions.tradestac</groupId>
             <artifactId>tradestac-tw-adapter</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>it.softsolutions.tradestac</groupId>
+					<artifactId>tradestac-core</artifactId>
+				</exclusion>
+			</exclusions>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
