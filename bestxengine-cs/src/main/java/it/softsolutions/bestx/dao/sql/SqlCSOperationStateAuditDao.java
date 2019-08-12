@@ -46,7 +46,6 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import it.softsolutions.bestx.Messages;
-import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.dao.OperationStateAuditDao;
 import it.softsolutions.bestx.exceptions.SaveBookException;
@@ -180,13 +179,15 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
         parameters.put("@MARKETCODE", marketCode.name());
         parameters.put("@DISABLED", disabled?1:0);
         parameters.put("@DOWN_CAUSE", disabledComment != null ? disabledComment : "");
-        TransactionStatus status = this.transactionManager.getTransaction(def);
+        TransactionStatus status = null;
          try {
+          status = this.transactionManager.getTransaction(def);
         	 jdbcCallSaveMarketAttemptStatus.execute(parameters);
         	 this.transactionManager.commit(status);
         } catch(Exception e) {
         	 LOGGER.info("Exception {} got when trying to saveMarketAttemptStatus - If status is Curando or SendNotExecutionReportState this could be OK", e.getMessage());
-        	 this.transactionManager.rollback(status);
+        	 //this.transactionManager.rollback(status);
+             quietRollBack(status);
         }
         LOGGER.info("[AUDIT],StoreTime={},Stop saveMarketAttemptStatus", (DateService.currentTimeMillis() - t0));
     }
@@ -212,8 +213,11 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                         ") VALUES (?,?,?,?,?,?,?,?,?)";
         LOGGER.debug("Start saveNewState to TabHistoryStati - orderId={}, previousState={}, currentState={}, attemptNo={}, comment={}", orderId, previousState, currentState, attemptNo, comment);
         long t0 = DateService.currentTimeMillis();
-        TransactionStatus status = this.transactionManager.getTransaction(def);
+         TransactionStatus status = null;
+         try {
+            status = this.transactionManager.getTransaction(def);
         jdbcTemplate.update(sql, new PreparedStatementSetter() {
+   
             @Override
             public void setValues(PreparedStatement stmt) throws SQLException {
                 // "NumOrdine," + // 1
@@ -221,7 +225,8 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 // " SaveTime," + // 2
                 if (currentState != null && currentState.getEnteredTime() != null) {
                     stmt.setTimestamp(2, new java.sql.Timestamp(currentState.getEnteredTime().getTime()));
-                } else {
+                  }
+                  else {
                     LOGGER.error("Order {}, the current state entered time is null, the database field SaveTime cannot be null! Setting now as the SaveTime.", orderId);
                     Date today = DateService.newLocalDate();
                     stmt.setTimestamp(2, new java.sql.Timestamp(today.getTime()));
@@ -232,13 +237,15 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 // " StatoPrecedente," + // 4
                 if (previousState != null) {
                     stmt.setString(4, previousState.getClass().getSimpleName());
-                } else {
+                  }
+                  else {
                     stmt.setNull(4, java.sql.Types.VARCHAR);
                 }
                 // " DescrizioneEvento," + // 5
                 if (comment != null) {
                     stmt.setString(5, comment);
-                } else {
+                  }
+                  else {
                     stmt.setNull(5, java.sql.Types.VARCHAR);
                 }
                 // " IdEvento," + // 6
@@ -253,6 +260,13 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
         });
         this.transactionManager.commit(status);
         LOGGER.info("[AUDIT],StoreTime={},Stop saveNewState", (DateService.currentTimeMillis() - t0));
+         }
+         catch (Exception e) {
+            LOGGER.error("saveNewState TabHistoryStati: " + e.getMessage(), e);
+            quietRollBack(status);
+            throw e;
+         }
+
         //[RR20140910] CRSBXTEM-119 save the last price discovery starting time
         switch (currentState.getType()) {
             case CurandoRetry:
@@ -262,13 +276,17 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 t0 = DateService.currentTimeMillis();
                 LOGGER.info("[AUDIT],UpdateTime={},Start update TabHistoryOrdini/LastUpdateTime", (DateService.currentTimeMillis() - t0));
                 String update = "UPDATE TabHistoryOrdini SET LastUpdateTime=? WHERE NumOrdine=?";
+                  status = null;
+                  try {
                 status = this.transactionManager.getTransaction(def);
                 jdbcTemplate.update(update, new PreparedStatementSetter() {
+      
                     @Override
                     public void setValues(PreparedStatement stmt) throws SQLException {
                         if (currentState != null && currentState.getEnteredTime() != null) {
                             stmt.setTimestamp(1, new java.sql.Timestamp(currentState.getEnteredTime().getTime()));
-                        } else {
+                           }
+                           else {
                             LOGGER.error("Order {}, the current state entered time is null, the database field LastUpdateTime cannot be null! Setting now as the LastUpdateTime.", orderId);
                             Date today = DateService.newLocalDate();
                             stmt.setTimestamp(1, new java.sql.Timestamp(today.getTime()));
@@ -278,6 +296,12 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 });
                 this.transactionManager.commit(status);
                 LOGGER.info("[AUDIT],UpdateTime={},Stop update TabHistoryOrdini/LastUpdateTime", (DateService.currentTimeMillis() - t0));
+                  }
+                  catch (Exception e) {
+                     LOGGER.error("saveNewState TabHistoryOrdini: " + e.getMessage(), e);
+                     quietRollBack(status);
+                     throw e;
+                  }
                 break;
             default:
                 break;
@@ -345,8 +369,11 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
             semaphore.acquire();
                      
             long t0 = DateService.currentTimeMillis();
-            TransactionStatus status = this.transactionManager.getTransaction(def);
+            TransactionStatus status = null;
+            try {
+               status = this.transactionManager.getTransaction(def);
 	        jdbcTemplate.batchUpdate(sqlInsertIntoPriceTable, new BatchPreparedStatementSetter() {
+   
 	            @Override
 	            public void setValues(PreparedStatement stmt, int j) throws SQLException {
 	                ClassifiedProposal proposal = classifiedProposals.get(j);
@@ -358,28 +385,32 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 	                if (proposal != null && proposal.getMarket() != null && proposal.getMarket().getMarketId() != null) {
 	                    stmt.setInt(3, proposal.getMarket().getMarketId().intValue());
 	                   LOGGER.trace("param3 MarketId {}", proposal.getMarket().getMarketId().intValue());
-	                } else {
+                     }
+                     else {
 	                    stmt.setInt(3, -1); // Primary key can't be null
 	                   LOGGER.trace("param3 MarketId {}", -1);
 	                }
 	                if (proposal != null && proposal.getVenue() != null && proposal.getVenue().getCode() != null) {
 	                    stmt.setString(4, proposal.getVenue().getCode());
 	                   LOGGER.trace("param4 BankCode {}", proposal.getVenue().getCode());
-	                } else {
+                     }
+                     else {
 	                    stmt.setNull(4, java.sql.Types.VARCHAR);
 	                   LOGGER.trace("param4 BankCode null");
 	                }
 	                if(proposal != null && proposal.getSide() != null) {
 	                   stmt.setString(5, proposal.getSide().getFixCode());
 	                   LOGGER.trace("param5 Side {}", proposal.getSide().getFixCode());
-	                } else {
+                     }
+                     else {
 	                    stmt.setString(5, "1");
 	                	LOGGER.error("param5: Side not found in proposal {}", (proposal != null) ? proposal.toString(): "null");
 	                }
 	                if (instrument != null) {
 	                    stmt.setString(6, instrument.getIsin());
 	                   LOGGER.trace("param6 isin {}", instrument.getIsin());
-	                } else {
+                     }
+                     else {
 	                    stmt.setNull(6, java.sql.Types.VARCHAR);
 	                   LOGGER.trace("param6 isin null");
 	                }
@@ -387,28 +418,32 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 	                if (proposal != null && proposal.getPrice() != null && proposal.getPrice().getAmount() != null) {
 	                    stmt.setBigDecimal(7, proposal.getPrice().getAmount());
 	                   LOGGER.trace("param7 price {}", proposal.getPrice().getAmount());
-	                } else {
+                     }
+                     else {
 	                    stmt.setNull(7, java.sql.Types.DECIMAL);
 	                   LOGGER.trace("param7 price null");
 	                }
 	                if (proposal != null && proposal.getQty() != null) {
 	                    stmt.setFloat(8, proposal.getQty().floatValue());
 	                   LOGGER.trace("param8 qty {}", proposal.getQty().floatValue());
-	                } else {
+                     }
+                     else {
 	                    stmt.setNull(8, java.sql.Types.FLOAT);
 	                   LOGGER.trace("param8 qty null");
 	                }
 	                if (proposal != null && proposal.getTimestamp() != null) {
 	                    stmt.setTimestamp(9, new java.sql.Timestamp(proposal.getTimestamp().getTime()));
 	                   LOGGER.trace("param9 arrivalTime {}", new java.sql.Timestamp(proposal.getTimestamp().getTime()));
-	                } else {
+                     }
+                     else {
 	                    stmt.setNull(9, java.sql.Types.TIMESTAMP);
 	                   LOGGER.trace("param9 arrivalTime null");
 	                }
 	                if (proposal != null && proposal.getPrice() != null && proposal.getPrice().getAmount() != null) {
 	                    stmt.setFloat(10, proposal.getPrice().getAmount().floatValue());
 	                   LOGGER.trace("param10 FinalPrice {}", proposal.getPrice().getAmount().floatValue());
-	                } else {
+                     }
+                     else {
 	                    stmt.setNull(10, java.sql.Types.FLOAT);
 	                   LOGGER.trace("param10 FinalPrice null");
 	                }
@@ -417,24 +452,28 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 	                if (proposal != null && proposal.getProposalState() == Proposal.ProposalState.DROPPED) {
 	                    stmt.setInt(12, 2);
 	                   LOGGER.trace("param12 FlagScartato 2");
-	                } else if (proposal != null && proposal.getProposalState() == Proposal.ProposalState.REJECTED) {
+                     }
+                     else if (proposal != null && proposal.getProposalState() == Proposal.ProposalState.REJECTED) {
 	                    stmt.setInt(12, 1);
 	                   LOGGER.trace("param12 FlagScartato 1");
-	                } else {
+                     }
+                     else {
 	                    stmt.setInt(12, 0);
 	                   LOGGER.trace("param12 FlagScartato 0");
 	                }
 	                if (proposal != null && proposal.getReason() != null) {
 	                    stmt.setString(13, proposal.getReason());
 	                   LOGGER.trace("param13 Note {}", proposal.getReason());
-	                } else {
+                     }
+                     else {
 	                    stmt.setNull(13, java.sql.Types.VARCHAR);
 	                   LOGGER.trace("param13 Note null");
 	                }
 	                if (proposal != null && proposal.getMarketMarketMaker() != null) {
 	                    stmt.setString(14, proposal.getMarketMarketMaker().getMarketSpecificCode());
 	                   LOGGER.trace("param14 MarketBankCode {}", proposal.getMarketMarketMaker().getMarketSpecificCode());
-	                } else {
+                     }
+                     else {
 	                    stmt.setString(14, ""); // Primary key can't be null
 	                   LOGGER.trace("param14 MarketBankCode empty");
 	                }
@@ -449,14 +488,16 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 	                if (proposal != null && proposal.getCommissionType() == CommissionType.TICKER) {
 	                    stmt.setBoolean(19, true);
 	                   LOGGER.trace("param19 commissioniTick true");
-	                } else {
+                     }
+                     else {
 	                    stmt.setBoolean(19, false);
 	                   LOGGER.trace("param19 commissioniTick false");
 	                }
 	                if (proposal != null && proposal.getPriceTelQuel() != null) {
 	                    stmt.setBigDecimal(20, proposal.getPriceTelQuel().getAmount());
 	                   LOGGER.trace("param20 PrezzoTelQuel {}", proposal.getPriceTelQuel().getAmount());
-	                } else {
+                     }
+                     else {
 	                    stmt.setNull(20, java.sql.Types.DECIMAL);
 	                   LOGGER.trace("param20 PrezzoTelQuel null");
 	                }
@@ -465,7 +506,8 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 	                if (proposal != null && proposal.getPrice() != null && proposal.getPrice().getAmount() != null) {
 	                    stmt.setBigDecimal(22, proposal.getPrice().getAmount());
 	                   LOGGER.trace("param22 ControvaloreConBollo {}", proposal.getPrice().getAmount());
-	                } else {
+                     }
+                     else {
 	                    stmt.setNull(22, java.sql.Types.DECIMAL);
 	                   LOGGER.trace("param22 ControvaloreConBollo null");
 	                }
@@ -478,12 +520,17 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 	        });
 	        this.transactionManager.commit(status);
 	        long sTime = (DateService.currentTimeMillis() - t0);
-	        
 	        // [CRSBXTEM-160] Modifica della velocità di scodamento degli ordini LF
 	        SqlCSOperationStateAuditDao.lastSaveTimeMillis.set(sTime);
 	        
             LOGGER.info("[AUDIT],StoreTime={},Stop saveProposals for {} proposals, orderId = {}", sTime, classifiedProposals.size(), orderId);	        
 	        
+            }
+            catch (Exception e) {
+               LOGGER.error("saveProposals: " + e.getMessage(), e);
+               quietRollBack(status);
+               throw e;
+            }
         } finally {
             // release the orderID-related resource
             semaphore.release();
@@ -496,6 +543,7 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
         // earlier stage and then re-save it in the normal order flow, thus we must go for a MERGE in order to let 
         // the database decide if it is an INSERT or an UPDATE
     	if(lastSavedAttempt < attemptNo) {
+    	   TransactionStatus status = null;
 	        long t0 = DateService.currentTimeMillis();
 	        LOGGER.debug("OrderID={}, saving attempt #{} - Attempt for the order {} - tsn={}, ticketNum={}", orderId, attemptNo, (attempt != null && attempt.getMarketOrder() != null ? attempt
 	                        .getMarketOrder().toString() : null), tsn, ticketNum);
@@ -553,12 +601,12 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 	        parameters.put("@CUSTOMER_ATTEMPT", customerAttempt);
 	        parameters.put("@CUSTOMER_FAKE", customerFake);
 	       	parameters.put("@REFERENCE_PRICE_BANK_CODE", referencePriceBankCode);
-	       	TransactionStatus status = this.transactionManager.getTransaction(def);
+	       	status = this.transactionManager.getTransaction(def);
 	        jdbcCallSaveNewAttempt.execute(parameters);
 	        this.transactionManager.commit(status);
 	        } catch(Exception e) {
 	      	 LOGGER.info("Exception got when trying to saveNewAttempt", e);
-	      	 e.printStackTrace();
+             quietRollBack(status);
 	        }
 	        LOGGER.info("[AUDIT],StoreTime={},Stop saveNewAttempt", (DateService.currentTimeMillis() - t0));
     	} else {
@@ -592,52 +640,64 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                         " AND Attempt = ?"; // 13
         LOGGER.debug("Start updateAttempt - SQL[{}]", sql);
         long t0 = DateService.currentTimeMillis();
-        TransactionStatus status = this.transactionManager.getTransaction(def);
+         TransactionStatus status = null;
+         try {
+            status = this.transactionManager.getTransaction(def);
         jdbcTemplate.update(sql, new PreparedStatementSetter() {
+   
             @Override
 			public void setValues(PreparedStatement stmt) throws SQLException {
                 // " Tsn," + // 1
                 if (tsn != null) {
                     stmt.setString(1, tsn);
-                } else {
+                  }
+                  else {
                     stmt.setNull(1, java.sql.Types.VARCHAR);
                 }
                 // " MarketId," + // 2
                 if (executionReport != null) {
                     if (executionReport.getMarket() != null) {
                         stmt.setLong(2, executionReport.getMarket().getMarketId());
-                    } else {
+                     }
+                     else {
                         stmt.setNull(2, java.sql.Types.INTEGER);
                     }
-                } else if (attempt.getExecutionProposal() != null && attempt.getExecutionProposal().getMarket() != null) {
+                  }
+                  else if (attempt.getExecutionProposal() != null && attempt.getExecutionProposal().getMarket() != null) {
                     stmt.setLong(2, attempt.getExecutionProposal().getMarket().getMarketId());
-                } else {
+                  }
+                  else {
                     stmt.setNull(2, java.sql.Types.INTEGER);
                 }
                 // " PrezzoMedio," + // 3
-                if (executionReport != null && executionReport.getPrice() != null) {
-                    stmt.setBigDecimal(3, executionReport.getPrice().getAmount());
-                } else {
+                  if (executionReport != null && executionReport.getLastPx() != null) {
+                     stmt.setBigDecimal(3, executionReport.getLastPx());
+                  }
+                  else {
                     stmt.setNull(3, java.sql.Types.DECIMAL);
                 }
                 // " Trader," + // 4
                 if (executionReport != null && executionReport.getExecBroker() != null) {
                     stmt.setString(4, executionReport.getExecBroker());
-                } else if (attempt.getExecutionProposal() != null && attempt.getExecutionProposal().getVenue() != null && attempt.getExecutionProposal().getVenue().getMarketMaker() != null) {
+                  }
+                  else if (attempt.getExecutionProposal() != null && attempt.getExecutionProposal().getVenue() != null && attempt.getExecutionProposal().getVenue().getMarketMaker() != null) {
                     stmt.setString(4, attempt.getExecutionProposal().getVenue().getMarketMaker().getCode());
-                } else {
+                  }
+                  else {
                     stmt.setNull(4, java.sql.Types.VARCHAR);
                 }
                 // " TicketNum," + // 5
                 if (ticketNum != null) {
                     stmt.setString(5, ticketNum);
-                } else {
+                  }
+                  else {
                     stmt.setNull(5, java.sql.Types.VARCHAR);
                 }
                 // " CustomerPrice," + // 6
                 if (executionReport != null && executionReport.getLastPx() != null) {
                     stmt.setBigDecimal(6, executionReport.getLastPx());
-                } else {
+                  }
+                  else {
                     stmt.setNull(6, java.sql.Types.DECIMAL);
                 }
                 // " CustomerSpread," + // 7
@@ -645,16 +705,19 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 // " BestBankCode," + // 8
                 if (executionReport != null && executionReport.getExecBroker() != null) {
                     stmt.setString(8, executionReport.getExecBroker());
-                } else if (attempt.getExecutionProposal() != null && attempt.getExecutionProposal().getMarketMarketMaker() != null
+                  }
+                  else if (attempt.getExecutionProposal() != null && attempt.getExecutionProposal().getMarketMarketMaker() != null
                                 && attempt.getExecutionProposal().getMarketMarketMaker().getMarketMaker() != null) {
                     stmt.setString(8, attempt.getExecutionProposal().getMarketMarketMaker().getMarketMaker().getCode());
-                } else {
+                        }
+                  else {
                     stmt.setNull(8, java.sql.Types.VARCHAR);
                 }
                 // " CounterPrice," + // 9
                 if (attempt.getExecutablePrice(0) != null && attempt.getExecutablePrice(0).getClassifiedProposal() != null && attempt.getExecutablePrice(0).getClassifiedProposal().getPrice() != null) {
                     stmt.setBigDecimal(9, attempt.getExecutablePrice(0).getClassifiedProposal().getPrice().getAmount());
-                } else {
+                  }
+                  else {
                     stmt.setNull(9, java.sql.Types.DECIMAL);
                 }
                 // " CustomerFake" + // 10
@@ -669,6 +732,12 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
         });
         this.transactionManager.commit(status);
         LOGGER.info("[AUDIT],StoreTime={},Stop updateAttempt", (DateService.currentTimeMillis() - t0));
+    }
+         catch (Exception e) {
+            LOGGER.error("updateAttempt: " + e.getMessage(), e);
+            quietRollBack(status);
+            throw e;
+         }
     }
 
     /*
@@ -709,8 +778,11 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                         ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         LOGGER.debug("Start saveNewOrder - SQL[{}]", sql);
         long t0 = DateService.currentTimeMillis();
-        TransactionStatus status = this.transactionManager.getTransaction(def);
+        TransactionStatus status = null;
+         try {
+            status = this.transactionManager.getTransaction(def);
         int res = jdbcTemplate.update(sql, new PreparedStatementSetter() {
+   
             @Override
 			public void setValues(PreparedStatement stmt) throws SQLException {
                 // " NumOrdine," + // 1
@@ -718,28 +790,33 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 // " ISIN," + // 2
                 if (order.getInstrument() != null && order.getInstrument().getIsin() != null) {
                     stmt.setString(2, order.getInstrument().getIsin());
-                } else if (order.getInstrumentCode() != null) {
+                  }
+                  else if (order.getInstrumentCode() != null) {
                     stmt.setString(2, order.getInstrumentCode());
-                } else {
+                  }
+                  else {
                     stmt.setNull(2, java.sql.Types.VARCHAR);
                 }
                 // stmt.setString(2, order.getInstrument().getIsin());
                 // " DescrizioneStrumento," + // 3
                 if (order.getInstrument() != null && order.getInstrument().getDescription() != null) {
                     stmt.setString(3, order.getInstrument().getDescription());
-                } else {
+                  }
+                  else {
                     stmt.setNull(3, java.sql.Types.VARCHAR);
                 }
                 // " Cliente," + // 4
                 if (order.getCustomer() != null) {
                     stmt.setString(4, order.getCustomer().getFixId());
-                } else {
+                  }
+                  else {
                     stmt.setNull(4, java.sql.Types.VARCHAR);
                 }
                 // " TipoOrdine," + // 5
                 if (order.getType() != null) {
                     stmt.setString(5, order.getType().getFixCode());
-                } else {
+                  }
+                  else {
                     stmt.setNull(5, java.sql.Types.VARCHAR);
                 }
                 // " Lato," + // 6
@@ -750,7 +827,8 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 // " Prezzo," + // 7
                 if (order.getLimit() != null) {
                     stmt.setBigDecimal(7, order.getLimit().getAmount());
-                } else {
+                  }
+                  else {
                     stmt.setNull(7, java.sql.Types.DECIMAL);
                 }
                 // " Quantita," + // 8
@@ -758,25 +836,29 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 // " Valuta," + // 9
                 if (order.getCurrency() != null) {
                     stmt.setString(9, order.getCurrency());
-                } else {
+                  }
+                  else {
                     stmt.setNull(9, java.sql.Types.VARCHAR);
                 }
                 // " DataValuta," + // 10
                 if (order.getFutSettDate() != null) {
                     stmt.setDate(10, new java.sql.Date(order.getFutSettDate().getTime()));
-                } else {
+                  }
+                  else {
                     stmt.setNull(10, java.sql.Types.DATE);
                 }
                 // " DataOraRicezione," + // 11
                 if (receiveTime != null) {
                     stmt.setTimestamp(11, new java.sql.Timestamp(receiveTime.getTime()));
-                } else {
+                  }
+                  else {
                     stmt.setNull(11, java.sql.Types.TIMESTAMP);
                 }
                 // " Note," + // 12
                 if (order.getText() != null) {
                     stmt.setString(12, order.getText());
-                } else {
+                  }
+                  else {
                     stmt.setString(12, "");
                 }
                 // " Viewed," + // 13
@@ -792,7 +874,8 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 // " CustomerOrderId," + // 18
                 if (order.getCustomerOrderId() != null) {
                     stmt.setString(18, order.getCustomerOrderId());
-                } else {
+                  }
+                  else {
                     stmt.setNull(18, java.sql.Types.VARCHAR);
                 }
                 // " MeetingOrder" + // 19
@@ -804,19 +887,22 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 // " ExecutionDestination" + //22
                 if (order.getExecutionDestination() != null) {
                     stmt.setString(22, order.getExecutionDestination());
-                } else {
+                  }
+                  else {
                     stmt.setNull(22, java.sql.Types.VARCHAR);
                 }
                 //23 TicketOwner 
                 if (order.getTicketOwner()!= null) {
                     stmt.setString(23, order.getTicketOwner());
-                } else {
+                  }
+                  else {
                     stmt.setNull(23, java.sql.Types.VARCHAR);
                 }
                 //effective time dei limit files
                 if (order.getEffectiveTime() != null) {
                    stmt.setTimestamp(24, new java.sql.Timestamp(order.getEffectiveTime().getTime()));
-                } else {
+                  }
+                  else {
                    stmt.setNull(24, java.sql.Types.TIMESTAMP);
                 }
             }
@@ -824,6 +910,12 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
         this.transactionManager.commit(status);
         LOGGER.info("[AUDIT],StoreTime={},Stop saveNewOrder", (DateService.currentTimeMillis() - t0));
         LOGGER.debug("res = {}", res);
+    }
+         catch (Exception e) {
+            LOGGER.error("saveNewOrder: " + e.getMessage(), e);
+            quietRollBack(status);
+            throw e;
+         }
     }
 
     /*
@@ -841,14 +933,18 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                         " WHERE NumOrdine = ?"; // 4
         LOGGER.debug("Start updateRevokeState - SQL[{}]", sql);
         long t0 = DateService.currentTimeMillis();
-        TransactionStatus status = this.transactionManager.getTransaction(def);
+         TransactionStatus status = null;
+         try {
+            status = this.transactionManager.getTransaction(def);
         jdbcTemplate.update(sql, new PreparedStatementSetter() {
+   
             @Override
 			public void setValues(PreparedStatement stmt) throws SQLException {
                 // " NumRevoca = ?," + // 1
                 if (revokeNumber != null) {
                     stmt.setString(1, revokeNumber);
-                } else {
+                  }
+                  else {
                     stmt.setNull(1, java.sql.Types.VARCHAR);
                 }
                 // " Revocato = ?," + // 2
@@ -856,7 +952,8 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 // " OraRevoca = ?," + // 3
                 if (revokeTime != null) {
                     stmt.setTimestamp(3, new java.sql.Timestamp(revokeTime.getTime()));
-                } else {
+                  }
+                  else {
                     stmt.setNull(3, java.sql.Types.TIMESTAMP);
                 }
                 // " WHERE NumOrdine = ?"; // 4
@@ -865,6 +962,12 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
         });
         this.transactionManager.commit(status);
         LOGGER.info("[AUDIT],StoreTime={},Stop updateRevokeState", (DateService.currentTimeMillis() - t0));
+    }
+         catch (Exception e) {
+            LOGGER.error("updateRevokeState: " + e.getMessage(), e);
+            quietRollBack(status);
+            throw e;
+         }
     }
 
     /*
@@ -882,26 +985,32 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                         " WHERE NumOrdine = ?"; // 4
         LOGGER.debug("Start updateOrderFill - SQL[{}]", sql);
         long t0 = DateService.currentTimeMillis();
-        TransactionStatus status = this.transactionManager.getTransaction(def);
+         TransactionStatus status = null;
+         try {
+            status = this.transactionManager.getTransaction(def);
         jdbcTemplate.update(sql, new PreparedStatementSetter() {
+   
         	@Override
             public void setValues(PreparedStatement stmt) throws SQLException {
                 // " TicketNum = ?" + // 1
                 if (ticketNum != null) {
                     stmt.setString(1, ticketNum);
-                } else {
+                  }
+                  else {
                     stmt.setNull(1, java.sql.Types.VARCHAR);
                 }
                 // " NumberOfDaysAccrued = ?" + // 2
-                if (accruedInterest != null) {
+                  if (accruedInterestDays != null) {
                     stmt.setInt(2, accruedInterestDays);
-                } else {
+                  }
+                  else {
                     stmt.setNull(2, java.sql.Types.INTEGER);
                 }
                 // " AccruedInterestAmt = ?" + // 3
                 if (accruedInterest != null) {
                     stmt.setBigDecimal(3, accruedInterest.getAmount());
-                } else {
+                  }
+                  else {
                     stmt.setNull(3, java.sql.Types.FLOAT);
                 }
                 // " WHERE NumOrdine = ?"; // 4
@@ -911,6 +1020,12 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
         this.transactionManager.commit(status);
         LOGGER.info("[AUDIT],StoreTime={},Stop updateOrderFill", (DateService.currentTimeMillis() - t0));
     }
+         catch (Exception e) {
+            LOGGER.error("updateOrderFill: " + e.getMessage(), e);
+            quietRollBack(status);
+            throw e;
+         }
+    }
     
     @Override
     public void updateOrderNextExecutionTime(final Order order, final Date nextExecutionTime) {
@@ -918,8 +1033,11 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
              " WHERE NumOrdine = ?"; // 2
        LOGGER.debug("Start updateOrderNextExecutionTime - SQL[{}]", sql);
        long t0 = DateService.currentTimeMillis();
-       TransactionStatus status = this.transactionManager.getTransaction(def);
+         TransactionStatus status = null;
+         try {
+            status = this.transactionManager.getTransaction(def);
        int row = jdbcTemplate.update(sql, new PreparedStatementSetter() {
+   
           @Override
           public void setValues(PreparedStatement stmt) throws SQLException {
              // " LimitFileNextExecutionTime = ?" + // 1
@@ -935,6 +1053,12 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
        });
        this.transactionManager.commit(status);
        LOGGER.info("[AUDIT],StoreTime={},Stop updateOrderNextExecutionTime", (DateService.currentTimeMillis() - t0));
+    }
+         catch (Exception e) {
+            LOGGER.error("updateOrderNextExecutionTime: " + e.getMessage(), e);
+            quietRollBack(status);
+            throw e;
+         }
     }
     
 
@@ -961,8 +1085,11 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 
         LOGGER.debug("Start updateOrder - SQL[{}]", sql);
         long startTime = DateService.currentTimeMillis();
-        TransactionStatus status = this.transactionManager.getTransaction(def);
+         TransactionStatus status = null;
+         try {
+            status = this.transactionManager.getTransaction(def);
         int res = jdbcTemplate.update(sql, new PreparedStatementSetter() {
+   
         	@Override
             public void setValues(PreparedStatement stmt) throws SQLException {
                 // " StatoGestione = ?," + // 2
@@ -975,7 +1102,8 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 // " DescrizioneEvento = ?," + // 3
                 if (event != null) {
                     stmt.setString(3, event);
-                } else {
+                  }
+                  else {
                     stmt.setNull(3, java.sql.Types.VARCHAR);
                 }
                 // " Azioni = ?," + // 4
@@ -983,13 +1111,15 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 // " isCurando = ?," + // 5
                 if (currentState instanceof CurandoState) {
                     stmt.setBoolean(5, true);
-                } else {
+                  }
+                  else {
                     stmt.setBoolean(5, false);
                 }
                 // " MeetingOrder = ?" + // 6
                 if (order.isMatchingOrder()) {
                     stmt.setBoolean(6, true);
-                } else {
+                  }
+                  else {
                     stmt.setBoolean(6, false);
                 }
                 // " viewed = ?"; // 7
@@ -1004,12 +1134,14 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 stmt.setString(11, order.getExecutionDestination());
                 if (notes != null) {
                     stmt.setString(12, notes);
-                } else {
+                  }
+                  else {
                     stmt.setString(12, "");
                 }
                 if (order.getBestPriceDeviationFromLimit() != null) {
                     stmt.setDouble(13, order.getBestPriceDeviationFromLimit());
-                } else {
+                  }
+                  else {
                     stmt.setNull(13, java.sql.Types.DECIMAL);
                 }
                 stmt.setString(14, order.getFixOrderId());
@@ -1019,6 +1151,12 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
         LOGGER.info("[AUDIT],StoreTime={},Stop updateOrder", (DateService.currentTimeMillis() - startTime));
         LOGGER.debug("res = {}", res);
     }
+         catch (Exception e) {
+            LOGGER.error("updateOrder: " + e.getMessage(), e);
+            quietRollBack(status);
+            throw e;
+         }
+    }
 
     @Transactional
     @Override
@@ -1027,13 +1165,17 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                         " WHERE NumOrdine = ?"; // 2
         LOGGER.debug("Update best and limit prices delta for order {}: {} - SQL[{}]", order.getFixOrderId(), bestAndLimitDelta, sql);
         long startTime = DateService.currentTimeMillis();
-        TransactionStatus status = this.transactionManager.getTransaction(def);
+         TransactionStatus status = null;
+         try {
+            status = this.transactionManager.getTransaction(def);
         jdbcTemplate.update(sql, new PreparedStatementSetter() {
+   
         	@Override
             public void setValues(PreparedStatement stmt) throws SQLException {
                 if (bestAndLimitDelta == null) {
                     stmt.setNull(1, java.sql.Types.DECIMAL);
-                } else {
+                  }
+                  else {
                     stmt.setDouble(1, bestAndLimitDelta);
                 }
                 stmt.setString(2, order.getFixOrderId());
@@ -1041,6 +1183,12 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
         });
         this.transactionManager.commit(status);
         LOGGER.info("[AUDIT],StoreTime={},Stop update limit and best delta for order {} to {}", (DateService.currentTimeMillis() - startTime), order.getFixOrderId(), bestAndLimitDelta);
+    }
+         catch (Exception e) {
+            LOGGER.error("updateOrderBestAndLimitDelta: " + e.getMessage(), e);
+            quietRollBack(status);
+            throw e;
+         }
     }
 
     /*
@@ -1055,8 +1203,11 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                         " WHERE NumOrdine = ?"; // 2
         LOGGER.debug("Start updateOrderPropName - SQL[{}]", sql);
         long t0 = DateService.currentTimeMillis();
-        TransactionStatus status = this.transactionManager.getTransaction(def);
+         TransactionStatus status = null;
+         try {
+            status = this.transactionManager.getTransaction(def);
         jdbcTemplate.update(sql, new PreparedStatementSetter() {
+   
         	@Override
             public void setValues(PreparedStatement stmt) throws SQLException {
                 // " PropName = ?" + // 1
@@ -1067,6 +1218,12 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
         });
         this.transactionManager.commit(status);
         LOGGER.info("[AUDIT],StoreTime={},Stop updateOrderPropName", (DateService.currentTimeMillis() - t0));
+    }
+         catch (Exception e) {
+            LOGGER.error("updateOrderPropName: " + e.getMessage(), e);
+            quietRollBack(status);
+            throw e;
+         }
     }
 
     /*
@@ -1090,8 +1247,11 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                         " WHERE NumOrdine = ?"; // 12
         LOGGER.debug("Start finalizeOrder - SQL[{}]", sql);
         long t0 = DateService.currentTimeMillis();
-        TransactionStatus status = this.transactionManager.getTransaction(def);
+         TransactionStatus status = null;
+         try {
+            status = this.transactionManager.getTransaction(def);
         jdbcTemplate.update(sql, new PreparedStatementSetter() {
+   
         	@Override
             public void setValues(PreparedStatement stmt) throws SQLException {
                 LOGGER.debug("Fields that are NOT NULL in the DB : NumOrdine, Lato, Final (the last one is not in the update)");
@@ -1100,75 +1260,92 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 // " OraEvasione = ?," + // 1
                 if (fulfillingTime != null) {
                     stmt.setTimestamp(1, new java.sql.Timestamp(fulfillingTime.getTime()));
-                } else {
+                  }
+                  else {
                     LOGGER.error("Null timestamp: {}", executionReport.toString());
                     stmt.setNull(1, java.sql.Types.TIMESTAMP);
                 }
                 // " MarketId = ?," + // 2
                 if (executionReport.getMarket() != null) {
                     stmt.setLong(2, executionReport.getMarket().getMarketId());
-                } else {
+                  }
+                  else {
                     stmt.setNull(2, java.sql.Types.INTEGER);
                 }
                 // " QuantitaEseguita = ?," + // 3
                 stmt.setBigDecimal(3, executionReport.getActualQty());
                 // " PrezzoEseguito = ?," + // 4
-                if (executionReport.getPrice() != null) {
-                    stmt.setBigDecimal(4, executionReport.getPrice().getAmount());
-                } else {
+                  if (executionReport.getLastPx() != null) {
+                     stmt.setBigDecimal(4, executionReport.getLastPx());
+                  }
+                  else {
                     stmt.setNull(4, java.sql.Types.DECIMAL);
                 }
                 // " Rateo = ?," + // 5
                 if (executionReport.getAccruedInterestRate() != null) {
                     stmt.setBigDecimal(5, executionReport.getAccruedInterestRate());
-                } else {
+                  }
+                  else {
                     stmt.setNull(5, java.sql.Types.DECIMAL);
                 }
                 // " PrezzoRiferimento = ?," + // 6
                 if (lastAttempt.getExecutionProposal() != null && lastAttempt.getExecutionProposal().getPrice() != null) {
                     stmt.setBigDecimal(6, lastAttempt.getExecutionProposal().getPrice().getAmount());
-                } else {
+                  }
+                  else {
                     stmt.setNull(6, java.sql.Types.DECIMAL);
                 }
                 // " BancaRiferimento = ?," + // 7
                 if (lastAttempt.getExecutionProposal() != null && lastAttempt.getExecutionProposal().getMarketMarketMaker() != null) {
                     stmt.setString(7, lastAttempt.getExecutionProposal().getMarketMarketMaker().getMarketMaker().getCode());
-                } else {
+                  }
+                  else {
                     stmt.setNull(7, java.sql.Types.VARCHAR);
                 }
                 // " AccruedInterestAmt = ?," + // 9
                 if (executionReport.getAccruedInterestAmount() != null) {//stmt.setString(7, "PIPPO")
                     stmt.setBigDecimal(8, executionReport.getAccruedInterestAmount().getAmount());
-                } else {
+                  }
+                  else {
                     stmt.setNull(8, java.sql.Types.DECIMAL);
                 }
                 // " Commissioni = ?," + // 9
                 if (executionReport.getCommission() != null) {
                     stmt.setBigDecimal(9, executionReport.getCommission());
-                } else {
+                  }
+                  else {
                     stmt.setNull(9, java.sql.Types.DECIMAL);
                 }
                 // " commissioniTick = ?," + // 10
                 if (executionReport.getCommission() != null && executionReport.getCommissionType() != null && CommissionType.TICKER.equals(executionReport.getCommissionType())) {
                     stmt.setBoolean(10, true);
-                } else {
+                  }
+                  else {
                     stmt.setBoolean(10, false);
                 }
                 if (executionReport.getAmountCommission() != null) {
                     stmt.setBigDecimal(11, executionReport.getAmountCommission());
-                } else {
+                  }
+                  else {
                     stmt.setNull(11, java.sql.Types.DECIMAL);
                 }
                 // " WHERE NumOrdine = ?"; // 12
                 if(order != null && order.getFixOrderId() != null) {
                 	stmt.setString(12, order.getFixOrderId());
-                } else {
+                  }
+                  else {
                     stmt.setNull(12, java.sql.Types.VARCHAR);
                 }
             }
         });
         this.transactionManager.commit(status);
         LOGGER.info("[AUDIT],StoreTime={},Stop finalizeOrder", (DateService.currentTimeMillis() - t0));
+    }
+         catch (Exception e) {
+            LOGGER.error("finalizeOrder: " + e.getMessage(), e);
+            quietRollBack(status);
+            throw e;
+         }
     }
 
     /*
@@ -1189,7 +1366,9 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                         + TLX_START_MAGNET_STATE + "'";
         LOGGER.debug(sql);
         String descStato = null;
-        TransactionStatus status = this.transactionManager.getTransaction(def);
+         TransactionStatus status = null;
+         try {
+            status = this.transactionManager.getTransaction(def);
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql);
         if (rowSet.next()) {
             descStato = rowSet.getString("DescrizioneEvento");
@@ -1206,6 +1385,7 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                             + Messages.getString("ORDER_DESCRIPTION", numberFormat.format(price.doubleValue()), numberFormat.format(order.getQty().doubleValue()), order.getSide().name());
             LOGGER.debug("Adding description: {}", orderDescription);
             jdbcTemplate.update(updateHistStati, new PreparedStatementSetter() {
+   
             	@Override
                 public void setValues(PreparedStatement stmt) throws SQLException {
                     // DescrizioneEvento = ? // 1
@@ -1217,16 +1397,24 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 }
             });
             this.transactionManager.commit(status);
-        } else {
+            }
+            else {
             LOGGER.debug("TabHistoryStati : status not found for order {}", orderId);
         }
+         }
+         catch (Exception e) {
+            LOGGER.error("updateOrderStatusDescription TabHistoryStati: " + e.getMessage(), e);
+            quietRollBack(status);
+            throw e;
+         }
 
         sql = "SELECT CONVERT(varchar(500) ,DescrizioneEvento)  DescrizioneEvento" + " FROM TabHistoryOrdini" + " WHERE NumOrdine = '" + order.getFixOrderId() + "' ";
         LOGGER.debug(sql);
         descStato = null;
-        rowSet = null;
+         status = null;
+         try {
          status = this.transactionManager.getTransaction(def);
-        rowSet = jdbcTemplate.queryForRowSet(sql);
+            SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql);
         if (rowSet.next()) {
             descStato = rowSet.getString("DescrizioneEvento");
         }
@@ -1240,6 +1428,7 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                             + Messages.getString("ORDER_DESCRIPTION", numberFormat.format(price.doubleValue()), numberFormat.format(order.getQty().doubleValue()), order.getSide().name());
             LOGGER.debug("Adding description : {}", orderDescription);
             jdbcTemplate.update(updateHistOrdini, new PreparedStatementSetter() {
+   
             	@Override
                 public void setValues(PreparedStatement stmt) throws SQLException {
                     // DescrizioneEvento = ? // 1
@@ -1248,11 +1437,18 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                     stmt.setString(2, orderId);
                 }
             });
-        } else {
+            }
+            else {
             LOGGER.info("TabHistoryOrdini : status not found for order ", orderId);
         }
         this.transactionManager.commit(status);
         LOGGER.debug("Order {} processed for status description modify.", orderId);
+    }
+         catch (Exception e) {
+            LOGGER.error("updateOrderStatusDescription TabHistoryOrdini: " + e.getMessage(), e);
+            quietRollBack(status);
+            throw e;
+         }
     }
 
     private String concatActions(OperationStateAuditDao.Action[] actions) {
@@ -1276,16 +1472,25 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
     @Override
     public synchronized void addOrderCount() {
         counter++;
-        TransactionStatus status = this.transactionManager.getTransaction(def);
+         TransactionStatus status = null;
+         try {
+            status = this.transactionManager.getTransaction(def);
         if (isFirst) {
             String sql = "INSERT INTO WorkingDates (" + " workingDate," + " receivedOrders)" + " VALUES(" + strDate + "," + counter + ")";
             jdbcTemplate.update(sql);
             isFirst = false;
-        } else {
+            }
+            else {
             String sql = "UPDATE WorkingDates SET" + " receivedOrders = " + counter + " WHERE workingDate = " + strDate;
             jdbcTemplate.update(sql);
         }
         this.transactionManager.commit(status);
+    }
+         catch (Exception e) {
+            LOGGER.error("addOrderCount: " + e.getMessage(), e);
+            quietRollBack(status);
+            throw e;
+         }
     }
 
     // @Override
@@ -1327,7 +1532,9 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                         "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         LOGGER.debug("Start saveNewFill - SQL[{}]", sql);
         long t0 = DateService.currentTimeMillis();
-        TransactionStatus status = this.transactionManager.getTransaction(def);
+        TransactionStatus status = null;
+        try {
+         status = this.transactionManager.getTransaction(def);
         jdbcTemplate.update(sql, new PreparedStatementSetter() {
         	@Override
             public void setValues(PreparedStatement stmt) throws SQLException {
@@ -1338,7 +1545,8 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 // "ISIN, " + //3
                 if (order.getInstrument() != null) {
                     stmt.setString(3, order.getInstrument().getIsin());
-                } else {
+               }
+               else {
                     LOGGER.error("Order {}, the instrument is NULL!!", order.getFixOrderId());
                     stmt.setNull(3, java.sql.Types.VARCHAR);
                 }
@@ -1349,7 +1557,8 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 // "Price, " + //6
                 if (fill.getLastPx() != null) {
                     stmt.setDouble(6, fill.getLastPx().doubleValue());
-                } else {
+               }
+               else {
                     LOGGER.error("Order {}, no price available!!", order.getFixOrderId());
                     stmt.setNull(6, java.sql.Types.VARCHAR);
                 }
@@ -1375,7 +1584,8 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 Date ts = fill.getFutSettDate();
                 if (ts == null) {
                     stmt.setDate(16, null);
-                } else {
+               }
+               else {
                     stmt.setDate(16, new java.sql.Date(ts.getTime()));
                 }
                 // "TransactTime, " + //17
@@ -1389,6 +1599,12 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
             }
         });
         this.transactionManager.commit(status);
+      }
+      catch (Exception e) {
+         LOGGER.error("saveNewFill: " + e.getMessage(), e);
+         quietRollBack(status);
+         throw e;
+      }
         LOGGER.info("[AUDIT],StoreTime={},Stop saveNewFill", (DateService.currentTimeMillis() - t0));
     }
 
@@ -1424,8 +1640,11 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                         "values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
         LOGGER.debug("Start savePriceFill - SQL[{}]", sql);
         long t0 = DateService.currentTimeMillis();
-        TransactionStatus status = this.transactionManager.getTransaction(def);
+         TransactionStatus status = null;
+         try {
+            status = this.transactionManager.getTransaction(def);
         jdbcTemplate.update(sql, new PreparedStatementSetter() {
+   
         	@Override
             public void setValues(PreparedStatement stmt) throws SQLException {
                 // " NumOrdine," + // 1
@@ -1435,7 +1654,8 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 // "ISIN, " + //3
                 if (order.getInstrument() != null) {
                     stmt.setString(3, order.getInstrument().getIsin());
-                } else {
+                  }
+                  else {
                     LOGGER.error("Order {}, the instrument is NULL!!", order.getFixOrderId());
                     stmt.setNull(3, java.sql.Types.VARCHAR);
                 }
@@ -1446,7 +1666,8 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 // "Side, " + //6
                 if (fill.getSide() != null) {
                     stmt.setString(6, fill.getSide().getFixCode());
-                } else {
+                  }
+                  else {
                     LOGGER.error("Order {}, the side is NULL!!", order.getFixOrderId());
                     stmt.setNull(6, java.sql.Types.VARCHAR);
                 }
@@ -1456,14 +1677,16 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 // Es 20090305-10:58:01
                 if (fill.getTransactTime() != null) {
                     stmt.setString(8,  DateService.format(dateTimeForDb, fill.getTransactTime()));
-                } else {
+                  }
+                  else {
                     LOGGER.error("Order {}, the timestamp is NULL!!", order.getFixOrderId());
                     stmt.setNull(8, java.sql.Types.VARCHAR);
                 }
                 // "SourceMarket, " + //9
                 if (fill.getMarket() != null && fill.getMarket().getMarketCode() != null) {
                     stmt.setString(9, fill.getMarket().getMarketCode().name());
-                } else {
+                  }
+                  else {
                     LOGGER.error("Order {}, the source market is NULL!!", order.getFixOrderId());
                     stmt.setNull(9, java.sql.Types.VARCHAR);
                 }
@@ -1472,16 +1695,18 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 // "MarketId, " + //11
                 if (fill.getMarket() != null && fill.getMarket().getMarketId() != null) {
                     stmt.setInt(11, fill.getMarket().getMarketId().intValue());
-                } else {
+                  }
+                  else {
                     LOGGER.error("Order {}, the market id is NULL!!", order.getFixOrderId());
                     stmt.setNull(11, java.sql.Types.INTEGER);
                 }
                 // "Counterpart, " + // 12
                 stmt.setString(12, fill.getCounterPart());
                 // Price) //13
-                if (fill.getPrice() != null) {
-                    stmt.setBigDecimal(13, fill.getPrice().getAmount());
-                } else {
+                  if (fill.getLastPx() != null) {
+                     stmt.setBigDecimal(13, fill.getLastPx());
+                  }
+                  else {
                     LOGGER.error("Order {}, the price is NULL!!", order.getFixOrderId());
                     stmt.setNull(13, java.sql.Types.DECIMAL);
                 }
@@ -1489,6 +1714,12 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
         });
         this.transactionManager.commit(status);
         LOGGER.info("[AUDIT],StoreTime={},Stop saveNewFill", (DateService.currentTimeMillis() - t0));
+    }
+         catch (Exception e) {
+            LOGGER.error("savePriceFill: " + e.getMessage(), e);
+            quietRollBack(status);
+            throw e;
+         }
     }
 
     /*
@@ -1505,14 +1736,18 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                         " AND Attempt = ?"; // 3
         LOGGER.debug("Start updateMatchingOrderAttempt - SQL[{}]", sql);
         long t0 = DateService.currentTimeMillis();
-        TransactionStatus status = this.transactionManager.getTransaction(def);
+         TransactionStatus status = null;
+         try {
+            status = this.transactionManager.getTransaction(def);
         jdbcTemplate.update(sql, new PreparedStatementSetter() {
+   
         	@Override
             public void setValues(PreparedStatement stmt) throws SQLException {
                 // " MatchOrderNumber," + // 1
                 if (matchingOrderId != null) {
                     stmt.setString(1, matchingOrderId);
-                } else {
+                  }
+                  else {
                     stmt.setNull(1, java.sql.Types.VARCHAR);
                 }
                 // " NumOrdine," + // 2
@@ -1524,6 +1759,12 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
         this.transactionManager.commit(status);
         LOGGER.info("[AUDIT],StoreTime={},Stop updateMatchingOrderAttempt", (DateService.currentTimeMillis() - t0));
     }
+         catch (Exception e) {
+            LOGGER.error("updateMatchingOrderAttempt: " + e.getMessage(), e);
+            quietRollBack(status);
+            throw e;
+         }
+    }
 
     /*
      * (non-Javadoc)
@@ -1533,9 +1774,10 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
     @Transactional
     @Override
     public void addBloombergTrade(final TradeFill trade) {
-    	TransactionStatus status = this.transactionManager.getTransaction(def);
-        String sqlSel = "SELECT Id FROM BloombergTrades WHERE ISIN = '" 
-                        + trade.getInstrument().getIsin() + "' AND Ticket = '" + trade.getTicket() + "'";
+      TransactionStatus status = null;
+      try {
+         status = this.transactionManager.getTransaction(def);
+         String sqlSel = "SELECT Id FROM BloombergTrades WHERE ISIN = '" + trade.getInstrument().getIsin() + "' AND Ticket = '" + trade.getTicket() + "'";
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sqlSel);
         if (rowSet.next()) {
             return;
@@ -1560,61 +1802,76 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 // " ISIN," + // 2
                 if (trade.getInstrument() != null) {
                     stmt.setString(2, trade.getInstrument().getIsin());
-                } else {
+               }
+               else {
                     stmt.setNull(2, java.sql.Types.VARCHAR);
                 }
                 // " Currency," + // 3
                 if (trade.getPrice() != null) {
                     stmt.setString(3, trade.getPrice().getStringCurrency());
-                } else {
+               }
+               else {
                     stmt.setNull(3, java.sql.Types.VARCHAR);
                 }
                 // " ActualQuantity," + // 4
                 if (trade.getActualQty() != null) {
                     stmt.setBigDecimal(4, trade.getActualQty());
-                } else {
+               }
+               else {
                     stmt.setNull(4, java.sql.Types.DECIMAL);
                 }
                 // " ExecutionPrice," + // 5
-                if (trade.getPrice() != null) {
-                    stmt.setBigDecimal(5, trade.getPrice().getAmount());
-                } else {
+               if (trade.getLastPx() != null) {
+                  stmt.setBigDecimal(5, trade.getLastPx());
+               }
+               else {
                     stmt.setNull(5, java.sql.Types.DECIMAL);
                 }
                 // " TransactionTime," + // 6
                 if (trade.getTransactTime() != null) {
                     stmt.setTimestamp(6, new Timestamp(trade.getTransactTime().getTime()));
-                } else {
+               }
+               else {
                     stmt.setNull(6, java.sql.Types.TIMESTAMP);
                 }
                 // " Lato," + // 7
                 if (trade.getSide() != null) {
                     stmt.setString(7, trade.getSide().getFixCode());
-                } else {
+               }
+               else {
                     stmt.setNull(7, java.sql.Types.VARCHAR);
                 }
                 // " Ticket," + // 8
                 if (trade.getTicket() != null) {
                     stmt.setString(8, trade.getTicket());
-                } else {
+               }
+               else {
                     stmt.setNull(8, java.sql.Types.VARCHAR);
                 }
                 // " BankCode," + // 9
                 if (trade.getMarketMaker() != null) {
                     stmt.setString(9, trade.getMarketMaker().getCode());
-                } else {
+               }
+               else {
                     stmt.setNull(9, java.sql.Types.VARCHAR);
                 }
                 // " SettlementDate" + // 10
                 if (trade.getFutSettDate() != null) {
                     stmt.setDate(10, new java.sql.Date(trade.getFutSettDate().getTime()));
-                } else {
+               }
+               else {
                     stmt.setNull(10, java.sql.Types.DATE);
                 }
             }
         });
         this.transactionManager.commit(status);
     }
+      catch (Exception e) {
+         LOGGER.error("addBloombergTrade: " + e.getMessage(), e);
+         quietRollBack(status);
+         throw e;
+      }
+   }
 
     /*
      * (non-Javadoc)
@@ -1630,8 +1887,12 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                         " WHERE Id = ?"; // 2
         LOGGER.debug("Start assignBloombergTradeToOrder - SQL[{}]", sql);
         long t0 = DateService.currentTimeMillis();
-        TransactionStatus status = this.transactionManager.getTransaction(def);
+         TransactionStatus status = null;
+         try {
+            status = this.transactionManager.getTransaction(def);
+   
         jdbcTemplate.update(sql, new PreparedStatementSetter() {
+   
         	@Override
             public void setValues(PreparedStatement stmt) throws SQLException {
                 // " NumOrdine = ?" + // 1
@@ -1642,6 +1903,12 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
         });
         this.transactionManager.commit(status);
         LOGGER.info("[AUDIT],StoreTime={},Stop assignBloombergTradeToOrder", (DateService.currentTimeMillis() - t0));
+    }
+         catch (Exception e) {
+            LOGGER.error("assignBloombergTradeToOrder: " + e.getMessage(), e);
+            quietRollBack(status);
+            throw e;
+         }
     }
 
     /*
@@ -1656,8 +1923,11 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
         final String sql = "UPDATE TabHistoryOrdini SET ExecutionDestination = ? " + " WHERE NumOrdine = ?"; // 2
         LOGGER.debug("Start updateOrderExecutionDestination - SQL[" + sql + "]");
         long t0 = DateService.currentTimeMillis();
-        TransactionStatus status = this.transactionManager.getTransaction(def);
+         TransactionStatus status = null;
+         try {
+            status = this.transactionManager.getTransaction(def);
         jdbcTemplate.update(sql, new PreparedStatementSetter() {
+   
         	@Override
             public void setValues(PreparedStatement stmt) throws SQLException {
                 // " PropName = ?" +/ 1
@@ -1668,6 +1938,12 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
         });
         this.transactionManager.commit(status);
         LOGGER.info("[AUDIT],StoreTime={},Stop updateOrderExecutionDestination", (DateService.currentTimeMillis() - t0));
+    }
+         catch (Exception e) {
+            LOGGER.error("updateOrderExecutionDestination: " + e.getMessage(), e);
+            quietRollBack(status);
+            throw e;
+         }
     }
 
     /*
@@ -1682,8 +1958,12 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
         final String sql = "UPDATE TabHistoryOrdini SET DataValuta = ? " + " WHERE NumOrdine = ?"; // 2
         LOGGER.debug("Start updateOrderSettlementDate - SQL[{}]", sql);
         long t0 = DateService.currentTimeMillis();
-        TransactionStatus status = this.transactionManager.getTransaction(def);
+         TransactionStatus status = null;
+         try {
+            status = this.transactionManager.getTransaction(def);
+   
         jdbcTemplate.update(sql, new PreparedStatementSetter() {
+   
         	@Override
             public void setValues(PreparedStatement stmt) throws SQLException {
                 // " DataValuta = ?" +/ 1
@@ -1694,6 +1974,12 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
         });
         this.transactionManager.commit(status);
         LOGGER.info("[AUDIT],StoreTime={},Stop updateOrderSettlementDate", (DateService.currentTimeMillis() - t0));
+    }
+         catch (Exception e) {
+            LOGGER.error("updateOrderSettlementDate: " + e.getMessage(), e);
+            quietRollBack(status);
+            throw e;
+         }
     }
 
     @Override
@@ -1793,7 +2079,9 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
    public void updateTabHistoryOperatorCode(String orderId, String operatorCode) {
       final String sql = "UPDATE TabHistoryOrdini SET OperatorCode = ? WHERE NumOrdine = ?";
       LOGGER.debug("Start updateTabHistoryOperatorCode - SQL[{}]", sql);
-      TransactionStatus status = this.transactionManager.getTransaction(def);
+      TransactionStatus status = null;
+      try {
+         status = this.transactionManager.getTransaction(def);
       jdbcTemplate.update(sql, new PreparedStatementSetter() {
        @Override
           public void setValues(PreparedStatement stmt) throws SQLException {
@@ -1803,4 +2091,23 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
       });
       this.transactionManager.commit(status);
    }
+      catch (Exception e) {
+         LOGGER.error("updateTabHistoryOperatorCode: " + e.getMessage(), e);
+         quietRollBack(status);
+         throw e;
+      }
+   }
+
+   private void quietRollBack(TransactionStatus status) {
+      try {
+         if (status != null) {
+            LOGGER.debug("Rolling back transaction");
+            this.transactionManager.rollback(status);
+         }
+      }
+      catch (Exception e) {
+         LOGGER.error("Error while trying to roll back the transaction: " + e.getMessage(), e);
+      }
+   }
+
 }
