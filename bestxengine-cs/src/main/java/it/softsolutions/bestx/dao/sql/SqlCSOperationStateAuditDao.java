@@ -681,7 +681,7 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
     @Transactional
     @Override
 	public void saveNewOrder(final Order order, final OperationState currentState, final String propName, final String propCode, final String operatorCode, final String event,
-                    final OperationStateAuditDao.Action[] availableActions, final Date receiveTime, final String sessionId) {
+                    final OperationStateAuditDao.Action[] availableActions, final Date receiveTime, final String sessionId, boolean notAutoExecute) {
         final String sql = "INSERT INTO TabHistoryOrdini (" + " NumOrdine," + // 1
                         " ISIN," + // 2
                         " DescrizioneStrumento," + // 3
@@ -705,8 +705,10 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                         " SessionId," + // 21
                         " ExecutionDestination," + // 22
                         " TicketOwner," + // 23
-                        " LimitFileNextExecutionTime" + //24
-                        ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                        " LimitFileNextExecutionTime," + //24
+                        " TimeInForce," + // 25
+                        " NotAutoExecute" + // 26
+                        ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         LOGGER.debug("Start saveNewOrder - SQL[{}]", sql);
         long t0 = DateService.currentTimeMillis();
         TransactionStatus status = this.transactionManager.getTransaction(def);
@@ -819,6 +821,14 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 } else {
                    stmt.setNull(24, java.sql.Types.TIMESTAMP);
                 }
+                // " TimeInForce" + // 25
+                if (order.getTimeInForce() != null) {
+                	stmt.setString(25, order.getTimeInForce().toString());
+                } else {
+                	stmt.setNull(25, java.sql.Types.VARCHAR);
+                }
+                // " NotAutoExecute" + // 26
+                stmt.setBoolean(26, notAutoExecute);
             }
         });
         this.transactionManager.commit(status);
@@ -942,7 +952,7 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
     @Transactional
     @Override
     public synchronized void updateOrder(final Order order, final OperationState currentState, final boolean handlingState, final boolean filter262Passed, final String event,
-                    final OperationStateAuditDao.Action[] availableActions, final String notes) {
+                    final OperationStateAuditDao.Action[] availableActions, final String notes, boolean notAutoExecute) {
         final String sql = "UPDATE TabHistoryOrdini SET" + " Stato = ?," + // 1
                         // " StatoGestione = ?," + // 2
                         " Filter262Passed = ?," + // 2
@@ -957,7 +967,9 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                         " ExecutionDestination = ?" + // 11
                         ", Note = ?" + // 12
                         ", BestAndLimitDelta = ?" + // 13
-                        " WHERE NumOrdine = ?"; // 14
+                        ", TimeInForce = ?" + // 14
+                        ", NotAutoExecute = ?" + // 15
+                        " WHERE NumOrdine = ?"; // 16
 
         LOGGER.debug("Start updateOrder - SQL[{}]", sql);
         long startTime = DateService.currentTimeMillis();
@@ -1012,7 +1024,16 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
                 } else {
                     stmt.setNull(13, java.sql.Types.DECIMAL);
                 }
-                stmt.setString(14, order.getFixOrderId());
+                // ", TimeInForce = ?" + // 14
+                if (order.getTimeInForce() != null) {
+                	stmt.setString(14, order.getTimeInForce().toString());
+                } else {
+                	stmt.setNull(14, java.sql.Types.VARCHAR);
+                }
+                // ", NotAutoExecute = ?" + // 15
+                stmt.setBoolean(15, notAutoExecute);
+                // 16 "NumOrdine"
+                stmt.setString(16, order.getFixOrderId());
             }
         });
         this.transactionManager.commit(status);

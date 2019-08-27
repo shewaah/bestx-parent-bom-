@@ -688,7 +688,7 @@ public class SqlOperationStateAuditDao implements OperationStateAuditDao {
     */
    @Override
    public void saveNewOrder(final Order order, final OperationState currentState, final String propName, final String propCode, final String operatorCode, final String event,
-         final OperationStateAuditDao.Action[] availableActions, final Date receiveTime, final String sessionId) {
+         final OperationStateAuditDao.Action[] availableActions, final Date receiveTime, final String sessionId, boolean notAutoExecute) {
       final String sql = "INSERT INTO TabHistoryOrdini (" + " NumOrdine," + // 1
             " ISIN," + // 2
             " DescrizioneStrumento," + // 3
@@ -959,7 +959,7 @@ public class SqlOperationStateAuditDao implements OperationStateAuditDao {
    // Stefano 20080701 - synchronized to prevent deadlock on audit tables
    @Override
    public synchronized void updateOrder(final Order order, final OperationState currentState, final boolean handlingState, final boolean filter262Passed, final String event,
-         final OperationStateAuditDao.Action[] availableActions, final String notes) {
+         final OperationStateAuditDao.Action[] availableActions, final String notes, boolean notAutoExecute) {
       final String sql = "UPDATE TabHistoryOrdini SET" + " Stato = ?," + // 1
       // " StatoGestione = ?," + // 2
             " Filter262Passed = ?," + // 2

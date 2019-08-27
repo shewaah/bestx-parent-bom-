@@ -23,7 +23,6 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
-import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.exceptions.SaveBookException;
 import it.softsolutions.bestx.model.Attempt;
@@ -90,8 +89,9 @@ public interface OperationStateAuditDao {
 	 * @param availableActions
 	 * @param receiveTime
 	 * @param sessionId
+	 * @param notAutoExecute
 	 */
-	void saveNewOrder(Order order, OperationState currentState, String propName, String propCode, String operatorCode, String event, OperationStateAuditDao.Action[] availableActions, Date receiveTime, String sessionId);
+	void saveNewOrder(Order order, OperationState currentState, String propName, String propCode, String operatorCode, String event, OperationStateAuditDao.Action[] availableActions, Date receiveTime, String sessionId, boolean notAutoExecute);
 	
 	/**
 	 * Update ProposalName by OrderID
@@ -118,8 +118,9 @@ public interface OperationStateAuditDao {
 	 * @param event
 	 * @param availableActions
 	 * @param notes
+	 * @param notAutoExecute
 	 */
-	void updateOrder(Order order, OperationState currentState, boolean handlingState, boolean filter262Passed, String event, OperationStateAuditDao.Action[] availableActions, String notes);
+	void updateOrder(Order order, OperationState currentState, boolean handlingState, boolean filter262Passed, String event, OperationStateAuditDao.Action[] availableActions, String notes, boolean notAutoExecute);
 	
 	/**
 	 * Update Order Fill

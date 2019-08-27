@@ -315,7 +315,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             //if there is a Text field, we must remove the prefix, it must only be sent to the customer through execution reports
             orderText = LimitFileHelper.getInstance().removePrefix(orderText);
         }
-        operationStateAuditDao.updateOrder(order, operation.getState(), false, order.isLaw262Passed(), cleanComment, availableActions, orderText);
+        operationStateAuditDao.updateOrder(order, operation.getState(), false, order.isLaw262Passed(), cleanComment, availableActions, orderText, operation.isNotAutoExecute());
 
         // Step 2. further processing
         furtherProcessing(operation, oldState, newState);
@@ -505,7 +505,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             String comment = getComment(false, marketCode, newStateType, newState.getComment());
             operationStateAuditDao.addOrderCount();
             operationStateAuditDao.saveNewOrder(order, operation.getState(), mifidConfig.getPropName(), mifidConfig.getPropCode(), "", comment, new Action[0],
-                            order.getTransactTime(), operation.getIdentifier(OperationIdType.FIX_SESSION));
+                            order.getTransactTime(), operation.getIdentifier(OperationIdType.FIX_SESSION), operation.isNotAutoExecute());
             operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);
         }
         break;
@@ -748,7 +748,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
 
         if (oldState.getType() == OperationState.Type.BusinessValidation) {
             LOGGER.debug("Updating order coming from BusinessValidationState.");
-            operationStateAuditDao.updateOrder(order, operation.getState(), false, order.isLaw262Passed(), comment, null, orderText);
+            operationStateAuditDao.updateOrder(order, operation.getState(), false, order.isLaw262Passed(), comment, null, orderText, operation.isNotAutoExecute());
         }
         // In queste 2 chiamate potrebbe non esserci sempre tutta la catena (potremmo avere NullPointerException)
         String proposalMarketMaker = getProposalMarketMakerCode(operation.getLastAttempt());
