@@ -27,10 +27,11 @@ import it.softsolutions.bestx.model.Market;
 public interface OperationState extends Cloneable {
 
     // [RR20120903] rimosso CurandoPopup, pare non essere usato
+	//BESTX-483 TDR 20190828
     public enum Type {
         AcceptQuote, BusinessValidation, Cancelled, CurandoAuto, CurandoRetry, Curando, DifferentDatesExecuted, Error, Executed, MarketExecuted, Filling, FormalValidationOK, FormalValidationKO, 
         Initial, InternalInCurando, InternalRejectInternalAndAcceptBestState, InternalAcceptInternalAndRejectBestState, MagnetNotExecution, ManageCounter, ManualExecutionWaitingPrice, 
-        ManualManage, ManualWaitingFill, MatchFound, NotExecuted, OrderNotExecutable, OrderNotExecuted, OrderReceived, OrderRejectable, OrderRevocated, ReceiveQuote, InternalReceiveInternalQuote, 
+        ManualManage, ManualWaitingFill, MatchFound, NotExecuted, OrderNotExecutable, OrderNotExecuted, OrderReceived, OrderRejectable, OrderCancelRequest, OrderRevocated, ReceiveQuote, InternalReceiveInternalQuote, 
         InternalAcceptBestIfStillValid, InternalReceiveExecutableQuote, Rejected, RejectQuote, Revocation, SendAutoNotExecutionReport, SendExecutionReport, SendNotExecutionReport, 
         SendOrder, SendReports, SendRfq, InternalSendRfqToBest, StandbyBook, StandbyNoBook, Standby, StandbyWithBook, StandbyWithoutBook, StartExecution, InternalSendRfqToInternal, 
         StartMagnetExecution, UnreconciledTrade, ValidateByPunctualFilter, WaitFillAfterCancel, WaitFillAfterRevocation, WaitingFill, WaitingPrice, Warning, InternalGetExecutableQuote, 

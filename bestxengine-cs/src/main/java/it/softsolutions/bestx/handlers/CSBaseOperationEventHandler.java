@@ -30,7 +30,6 @@ import it.softsolutions.bestx.connections.MarketBuySideConnection;
 import it.softsolutions.bestx.fix.field.OrdStatus;
 import it.softsolutions.bestx.markets.bloomberg.BloombergMarket;
 import it.softsolutions.bestx.model.Attempt;
-import it.softsolutions.bestx.model.Attempt.AttemptState;
 import it.softsolutions.bestx.model.ExecutionReport;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.model.MarketExecutionReport;
@@ -42,7 +41,7 @@ import it.softsolutions.bestx.services.FillManagerService;
 import it.softsolutions.bestx.services.SerialNumberServiceProvider;
 import it.softsolutions.bestx.services.serial.SerialNumberService;
 import it.softsolutions.bestx.states.ErrorState;
-import it.softsolutions.bestx.states.OrderRevocatedState;
+import it.softsolutions.bestx.states.OrderCancelRequestState;
 import it.softsolutions.bestx.states.SendNotExecutionReportState;
 import it.softsolutions.bestx.states.WarningState;
 
@@ -123,7 +122,9 @@ public class CSBaseOperationEventHandler extends BaseOperationEventHandler {
 					break;
 				}
 				updateOperationToRevocated(comment);
-				operation.setStateResilient(new OrderRevocatedState(comment), ErrorState.class);
+				//BESTX-483 TDR 20190828
+//				operation.setStateResilient(new OrderRevocatedState(comment), ErrorState.class);
+				operation.setStateResilient(new OrderCancelRequestState(comment), ErrorState.class);
 			} 
 			else {
 				try {

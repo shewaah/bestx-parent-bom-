@@ -35,7 +35,6 @@ import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
-import it.softsolutions.bestx.model.MarketComparator;
 import it.softsolutions.bestx.model.MarketMaker;
 import it.softsolutions.bestx.model.MarketMarketMaker;
 import it.softsolutions.bestx.model.MarketMarketMakerSpec;
@@ -51,8 +50,8 @@ import it.softsolutions.bestx.services.serial.SerialNumberService;
 import it.softsolutions.bestx.states.CurandoState;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.LimitFileNoPriceState;
+import it.softsolutions.bestx.states.OrderCancelRequestState;
 import it.softsolutions.bestx.states.OrderNotExecutableState;
-import it.softsolutions.bestx.states.OrderRevocatedState;
 import it.softsolutions.bestx.states.SendAutoNotExecutionReportState;
 import it.softsolutions.bestx.states.WarningState;
 import it.softsolutions.bestx.states.bloomberg.BBG_StartExecutionState;
@@ -392,7 +391,9 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	@Override
 	public void acceptOrderRevoke(Operation operation, Attempt currentAttempt,
 			SerialNumberService serialNumberService) {
-		operation.setStateResilient(new OrderRevocatedState( Messages.getString("REVOKE_ACKNOWLEDGED")), ErrorState.class);	
+		//BESTX-483 TDR 20190828
+//		operation.setStateResilient(new OrderRevocatedState( Messages.getString("REVOKE_ACKNOWLEDGED")), ErrorState.class);	
+		operation.setStateResilient(new OrderCancelRequestState( Messages.getString("REVOKE_ACKNOWLEDGED")), ErrorState.class);
 	}
 
 	/** get from the market codes in the getAllMarketsToTry which is the first one not used in the current attempt cycle

@@ -47,9 +47,9 @@ import it.softsolutions.bestx.model.MarketExecutionReport;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
-import it.softsolutions.bestx.model.Venue.VenueType;
 import it.softsolutions.bestx.model.UserModel;
 import it.softsolutions.bestx.model.Venue;
+import it.softsolutions.bestx.model.Venue.VenueType;
 import it.softsolutions.bestx.services.CommissionService;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.FillManagerService;
@@ -57,6 +57,7 @@ import it.softsolutions.bestx.services.serial.SerialNumberService;
 import it.softsolutions.bestx.services.timer.quartz.SimpleTimerManager;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.LimitFileNoPriceState;
+import it.softsolutions.bestx.states.OrderCancelRequestState;
 import it.softsolutions.bestx.states.OrderRevocatedState;
 import it.softsolutions.bestx.states.WarningState;
 import it.softsolutions.jsscommon.Money;
@@ -276,7 +277,9 @@ public class BaseOperationEventHandler extends DefaultOperationEventHandler {
 			this.customerSpecificHandler.onOperatorRevokeAccepted(source, comment);
 		else {
 			LOGGER.info("Sending revoke accepted to customer");
-			operation.setStateResilient(new OrderRevocatedState(comment), ErrorState.class);
+			//BESTX-483 TDR 20190828
+//			operation.setStateResilient(new OrderRevocatedState(comment), ErrorState.class);
+			operation.setStateResilient(new OrderCancelRequestState(comment), ErrorState.class);
 		}
 	}
 
@@ -374,7 +377,9 @@ public class BaseOperationEventHandler extends DefaultOperationEventHandler {
 					String comment = Messages.getString("AutomaticRevokeDefaultMessage.0");
 					updateOperationToRevocated(comment);
 					LOGGER.info("Order {}: revoke received, it will be managed automatically. Sending automatic revoke accepted to customer", order.getFixOrderId());
-					operation.setStateResilient(new OrderRevocatedState(comment), ErrorState.class);
+					//BESTX-483 TDR 20190828
+//					operation.setStateResilient(new OrderRevocatedState(comment), ErrorState.class);
+					operation.setStateResilient(new OrderCancelRequestState(comment), ErrorState.class);
 				} 
 				else {
 					try {
@@ -474,7 +479,9 @@ public class BaseOperationEventHandler extends DefaultOperationEventHandler {
 					}
 					LOGGER.debug("Starting the automatic revocation.");
 					revoked = true;
-					operation.setStateResilient(new OrderRevocatedState(Messages.getString("AutomaticRevokeDefaultMessage.0")), ErrorState.class);
+					//BESTX-483 TDR 20190828
+//					operation.setStateResilient(new OrderRevocatedState(Messages.getString("AutomaticRevokeDefaultMessage.0")), ErrorState.class);
+					operation.setStateResilient(new OrderCancelRequestState(Messages.getString("AutomaticRevokeDefaultMessage.0")), ErrorState.class);
 				}
 				else
 				{
@@ -590,5 +597,13 @@ public class BaseOperationEventHandler extends DefaultOperationEventHandler {
     		operatorConsoleConnection.updateRevocationStateChange(operation, operation.getRevocationState(), reason);
     }
 
-	
+	/* (non-Javadoc)
+	 * @see it.softsolutions.bestx.DefaultOperationEventHandler#onCustomerExecutionReportAcknowledged(it.softsolutions.bestx.connections.CustomerConnection, it.softsolutions.bestx.model.ExecutionReport)
+	 */
+    //BESTX-483 TDR 20190828
+	@Override
+	public void onCustomerExecutionReportAcknowledged(CustomerConnection source, ExecutionReport executionReport) {
+		LOGGER.info("Received ACK for execution report : {}", executionReport);
+		operation.setStateResilient(new OrderRevocatedState(), ErrorState.class);
+	}
 }

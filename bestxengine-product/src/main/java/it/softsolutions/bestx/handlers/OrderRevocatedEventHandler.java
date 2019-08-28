@@ -64,7 +64,8 @@ public class OrderRevocatedEventHandler extends BaseOperationEventHandler {
 
     @Override
     public void onNewState(OperationState currentState) {
-        Order order = operation.getOrder();
+    	//BESTX-483 TDR 20190828
+/*        Order order = operation.getOrder();
         try {
             //[RR20150119] CRSBXTEM-146 add a cancellation execution report, it will be needed while creating the
         	//fix message to be sent to the customer
@@ -92,7 +93,7 @@ public class OrderRevocatedEventHandler extends BaseOperationEventHandler {
         } catch (BestXException e) {
             LOGGER.error("An error occurred while sending Revoke Accepted to Customer Connection", e);
             operation.setStateResilient(new WarningState(currentState, e, Messages.getString("ERROR_IN_SENDING_REVOKE_ACCEPT", operation.getIdentifier(OperationIdType.CUSTOMER_CHANNEL))), ErrorState.class);
-        }
+        }*/
     }
     
 	//BXMNT-428 AMC 20160309
