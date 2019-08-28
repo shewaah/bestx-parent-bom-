@@ -147,6 +147,8 @@
 			discriminator-value="it.softsolutions.bestx.states.OrderNotExecutedState" />
 		<subclass name="it.softsolutions.bestx.states.OrderRevocatedState"
 			discriminator-value="it.softsolutions.bestx.states.OrderRevocatedState" />
+		<subclass name="it.softsolutions.bestx.states.OrderCancelRequestState"
+			discriminator-value="it.softsolutions.bestx.states.OrderCancelRequestState" />
 		<subclass name="it.softsolutions.bestx.states.SendExecutionReportState"
 			discriminator-value="it.softsolutions.bestx.states.SendExecutionReportState" />
 		<subclass name="it.softsolutions.bestx.states.SendNotExecutionReportState"
