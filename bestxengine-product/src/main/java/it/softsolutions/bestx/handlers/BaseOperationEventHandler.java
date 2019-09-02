@@ -596,14 +596,4 @@ public class BaseOperationEventHandler extends DefaultOperationEventHandler {
     	if(operatorConsoleConnection != null)
     		operatorConsoleConnection.updateRevocationStateChange(operation, operation.getRevocationState(), reason);
     }
-
-	/* (non-Javadoc)
-	 * @see it.softsolutions.bestx.DefaultOperationEventHandler#onCustomerExecutionReportAcknowledged(it.softsolutions.bestx.connections.CustomerConnection, it.softsolutions.bestx.model.ExecutionReport)
-	 */
-    //BESTX-483 TDR 20190828
-	@Override
-	public void onCustomerExecutionReportAcknowledged(CustomerConnection source, ExecutionReport executionReport) {
-		LOGGER.info("Received ACK for execution report : {}", executionReport);
-		operation.setStateResilient(new OrderRevocatedState(), ErrorState.class);
-	}
 }

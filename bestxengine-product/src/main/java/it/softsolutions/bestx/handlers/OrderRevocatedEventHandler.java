@@ -64,6 +64,7 @@ public class OrderRevocatedEventHandler extends BaseOperationEventHandler {
 
     @Override
     public void onNewState(OperationState currentState) {
+    	LOGGER.debug("OperationState {}", currentState);
     	//BESTX-483 TDR 20190828
 /*        Order order = operation.getOrder();
         try {

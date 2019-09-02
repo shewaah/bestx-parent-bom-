@@ -12,6 +12,7 @@ import it.softsolutions.bestx.Operation.RevocationState;
 import it.softsolutions.bestx.OperationIdType;
 import it.softsolutions.bestx.OperationRegistry;
 import it.softsolutions.bestx.OperationState;
+import it.softsolutions.bestx.connections.CustomerConnection;
 import it.softsolutions.bestx.connections.CustomerConnection.ErrorCode;
 import it.softsolutions.bestx.finders.InstrumentFinder;
 import it.softsolutions.bestx.model.ExecutionReport;
@@ -20,6 +21,7 @@ import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.services.serial.SerialNumberService;
 import it.softsolutions.bestx.states.ErrorState;
+import it.softsolutions.bestx.states.OrderRevocatedState;
 import it.softsolutions.bestx.states.WarningState;
 
 //BESTX-483 TDR 20190828
@@ -94,6 +96,13 @@ public class OrderCancelRequestEventHandler extends BaseOperationEventHandler {
 	@Override
 	public void onTimerExpired(String jobName, String groupName) {
 		LOGGER.info("Order {} : Timer: {} expired.", operation.getOrder().getFixOrderId(), jobName);
+	}
+	
+	//BESTX-483 TDR 20190828
+	@Override
+	public void onCustomerExecutionReportAcknowledged(CustomerConnection source, ExecutionReport executionReport) {
+		LOGGER.info("Received ACK for execution report : {}", executionReport);
+		operation.setStateResilient(new OrderRevocatedState(), ErrorState.class);
 	}
 
 }

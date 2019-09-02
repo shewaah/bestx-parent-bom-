@@ -393,6 +393,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 			SerialNumberService serialNumberService) {
 		//BESTX-483 TDR 20190828
 //		operation.setStateResilient(new OrderRevocatedState( Messages.getString("REVOKE_ACKNOWLEDGED")), ErrorState.class);	
+		LOGGER.debug("Operation {}, Attempt {}, SerialNumberService {}", operation, currentAttempt, serialNumberService);
 		operation.setStateResilient(new OrderCancelRequestState( Messages.getString("REVOKE_ACKNOWLEDGED")), ErrorState.class);
 	}
 
