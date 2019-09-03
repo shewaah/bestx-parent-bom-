@@ -23,8 +23,8 @@
         <tradestac-client.version>2.1.9</tradestac-client.version>
         <tradestac2-client.version>1.2.1</tradestac2-client.version>
         <quickfixjrootobjects.version>1.1.4</quickfixjrootobjects.version>
-        <tradestac-tw-adapter.version>2.1.6-SNAPSHOT</tradestac-tw-adapter.version>
-        <tradestac-bloomberg-adapter.version>1.1.15-SNAPSHOT</tradestac-bloomberg-adapter.version>
+        <tradestac-tw-adapter.version>2.1.6</tradestac-tw-adapter.version>
+        <tradestac-bloomberg-adapter.version>1.1.15</tradestac-bloomberg-adapter.version>
 
         <!-- third party -->
         <quickfix.version>1.6.4</quickfix.version>
