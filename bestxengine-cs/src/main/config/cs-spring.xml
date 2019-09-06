@@ -74,7 +74,6 @@
                 <entry key="it.softsolutions.bestx.cs:name=ApplicationControl" value-ref="applicationController" />
                 <entry key="it.softsolutions.bestx.cs:name=AutomaticCurandoStatus" value-ref="autoCurandoStatusManager" />
                 <entry key="it.softsolutions.bestx.cs:name=Oms1FixCustomerConnection" value-ref="oms1CustomerAdapter" />
-                <entry key="it.softsolutions.bestx.cs:name=Oms2FixCustomerConnection" value-ref="oms2CustomerAdapter" />
                 <entry key="it.softsolutions.bestx.cs:name=BloombergMarketConnection" value-ref="bloombergMarket" />
 				<entry key="it.softsolutions.bestx.cs:name=TradewebMarketConnection" value-ref="tradewebMarket" />
 				<entry key="it.softsolutions.bestx.cs:name=MarketAxessMarketConnection" value-ref="marketAxessMarket" />
@@ -92,6 +91,9 @@
 				<entry key="it.softsolutions.bestx.cs:name=OrdersEndOfDayService" value-ref="ordersEndOfDayService" />
 				<entry key="it.softsolutions.bestx.cs:name=BusinessValuesMonitor" value-ref="businessValuesMonitor" />
 				<entry key="it.softsolutions.bestx.cs:name=CSStrategy" value-ref="csStrategy" />
+				<entry key="it.softsolutions.bestx.cs:name=PooledDataSource" value-ref="pooledDataSource" />
+				<entry key="it.softsolutions.bestx.cs:name=jdbcPooledDataSource" value-ref="jdbcPooledDataSource" />
+				<entry key="it.softsolutions.bestx.cs:name=NonCommittedPooledDataSource" value-ref="nonCommittedPooledDataSource" />
 				<entry key="it.softsolutions.bestx.cs:name=ApplicationStatusController" value-ref="applicationStatusController" />
 				<!-- entry key="bean:name=hibernateStatsMBean"><ref local="hibernateStats"></ref></entry -->
 			</map>
@@ -117,6 +119,9 @@
 						<prop key="it.softsolutions.bestx.cs:name=OrdersEndOfDayService">it.softsolutions.bestx.services.CSOrdersEndOfDayServiceMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=BusinessValuesMonitor">it.softsolutions.bestx.management.BusinessValuesMonitorMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=CSStrategy">it.softsolutions.bestx.management.CSStrategyMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=PooledDataSource">org.apache.commons.dbcp2.BasicDataSourceMXBean </prop>
+						<prop key="it.softsolutions.bestx.cs:name=jdbcPooledDataSource">org.apache.commons.dbcp2.BasicDataSourceMXBean </prop>
+						<prop key="it.softsolutions.bestx.cs:name=NonCommittedPooledDataSource">org.apache.commons.dbcp2.BasicDataSourceMXBean </prop>
 					</props>
 				</property>
 			</bean>
@@ -176,6 +181,8 @@
         <property name="currentProfileName"><value>StandardLimitFile</value></property>
     </bean>
 
+
+	
 	<!-- Hibernate DAOs -->
     <bean id="hibernateOutlawTickerFinder" class="it.softsolutions.bestx.finders.db.OutlawRTFITickerFinder" lazy-init="false" init-method="init">
         <property name="outlawTickerDao"><ref bean="hibernateOutlawTickerDao"></ref></property>
@@ -264,7 +271,7 @@
 
 	<!-- SQL DAOs -->
 	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
-        <property name="dataSource"><ref bean="pooledDataSource"/></property>
+        <property name="dataSource"><ref bean="jdbcPooledDataSource"/></property>
 	</bean>
 	<bean id="nonCommittedJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
         <property name="dataSource"><ref bean="nonCommittedPooledDataSource"/></property>
@@ -334,8 +341,20 @@
         <property name="username"><value>${dbcp.connection.username}</value></property>
         <property name="password"><value>${dbcp.connection.password}</value></property>
         <property name="initialSize"><value>0</value></property>
-        <property name="maxTotal"><value>100</value></property>
-        <property name="maxIdle"><value>100</value></property>
+        <property name="maxTotal"><value>2</value></property>
+        <property name="maxIdle"><value>2</value></property>
+        <property name="minIdle"><value>0</value></property>
+		<property name="validationQuery"><value>select 1</value></property>
+	</bean>
+
+	<bean id="jdbcPooledDataSource" class="org.apache.commons.dbcp2.BasicDataSource">
+        <property name="driverClassName"><value>${hibernate.connection.driver_class}</value></property>
+        <property name="url"><value>${hibernate.connection.url}</value></property>
+        <property name="username"><value>${dbcp.connection.username}</value></property>
+        <property name="password"><value>${dbcp.connection.password}</value></property>
+        <property name="initialSize"><value>0</value></property>
+        <property name="maxTotal"><value>10</value></property>
+        <property name="maxIdle"><value>10</value></property>
         <property name="minIdle"><value>0</value></property>
 		<property name="validationQuery"><value>select 1</value></property>
 	</bean>
@@ -391,6 +410,7 @@
 				hibernate.use_sql_comments = ${hibernate.use_sql_comments}
 				hibernate.generate_statistics = ${hibernate.generate_statistics}
                 hibernate.cache.use_structured_entries = ${hibernate.cache.use_structured_entries}
+				hibernate.order_updates=true
 			</value>
 		</property>
 	</bean>
@@ -417,6 +437,11 @@
         <property name="corePoolSize" value="64"/>
 		<property name="maxPoolSize" value="64"/>
 		<property name="threadNamePrefix" value="ThreadPool-OMS1"/>
+    </bean>
+    <bean id="threadPoolEOD" class="it.softsolutions.bestx.ThreadPoolExecutor" init-method="initialize">
+        <property name="corePoolSize" value="1"/>
+		<property name="maxPoolSize" value="1"/>
+		<property name="threadNamePrefix" value="ThreadPool-EOD"/>
     </bean>
 	<bean id="threadPoolNormalPriceService" class="it.softsolutions.bestx.ThreadPoolExecutor" init-method="initialize">
 		<property name="corePoolSize" value="64"/>
@@ -1241,7 +1266,7 @@
 	</bean>
 
     <bean id="ordersEndOfDayService" class="it.softsolutions.bestx.services.CSOrdersEndOfDayService" init-method="init">
-        <property name="executor"><ref bean="threadPoolOMS1"></ref></property>
+        <property name="executor"><ref bean="threadPoolEOD"></ref></property>
         <property name="operationStateAuditDao"><ref bean="sqlOperationStateAuditDao"></ref></property>
         <property name="operationRegistry"><ref bean="defaultOperationRegistry"></ref></property>
         <property name="ordersEndOfDayHour"><value>${OrdersEndOfDay.hour}</value></property>

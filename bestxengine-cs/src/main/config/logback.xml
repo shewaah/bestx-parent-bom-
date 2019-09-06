@@ -208,9 +208,9 @@
     <logger name="net.sf" additivity="false" level="INFO">
         <appender-ref ref="EhCacheLogger" />
     </logger>
-    <logger name="com.mchange" additivity="false" level="INFO">
+    <!-- <logger name="com.mchange" additivity="false" level="INFO">
         <appender-ref ref="C3p0Logger" />
-    </logger>
+    </logger> -->
     <logger name="org.springframework" additivity="false" level="INFO">
         <appender-ref ref="SpringLogger" />
     </logger>
@@ -219,6 +219,12 @@
     </logger>
     <logger name="it.softsolutions.tradestac" additivity="false" level="INFO">
         <appender-ref ref="TradeStacLogger" />
+    </logger>
+	<logger name="it.softsolutions.bestx.dao.sql.SqlCSOperationStateAuditDao" additivity="false" level="DEBUG">
+        <appender-ref ref="BestXLogger" />
+    </logger>
+    <logger name="it.softsolutions.bestx.services.CSOrdersEndOfDayService" additivity="false" level="INFO">
+        <appender-ref ref="BestXLogger" />
     </logger>
     <logger name="it.softsolutions.bestx" additivity="false" level="INFO">
         <appender-ref ref="BestXLogger" />
