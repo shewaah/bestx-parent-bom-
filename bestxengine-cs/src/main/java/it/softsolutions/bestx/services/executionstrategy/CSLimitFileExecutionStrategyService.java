@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
+import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.OrderHelper;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.model.Customer;
@@ -72,7 +73,14 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
       //when there are no markets available, the execution service is called with a null price result, thus
       //we can go in the LimitPriceNoFileState
       if (priceResult == null) {
-         onUnexecutionResult(Result.LimitFileNoPrice, Messages.getString("LimitFile.NoPrices"));
+         if (this.operation.getState().getType() == OperationState.Type.Rejected) {
+            // If the operation state is rejected, then it comes from an execution attempt that failed.
+            // The customer asked to not retry anymore in such a situation and reject back to OMS the order.
+            onUnexecutionResult(Result.Success, Messages.getString("WaitingPrices.0"));
+         }
+         else {
+            onUnexecutionResult(Result.LimitFileNoPrice, Messages.getString("LimitFile.NoPrices"));
+         }
       } else {
          //if the sorted book contains at least one proposal in substate NONE, it means that we received a price that
          //will not allow us to consider the book empty. A book is empty, thus sending the order to the Limit File No Price
