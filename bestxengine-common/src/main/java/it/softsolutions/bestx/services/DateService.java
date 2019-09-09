@@ -70,11 +70,9 @@ public class DateService {
 			DateTime utcDate = new DateTime(date, DateTimeZone.UTC);
 			DateTime utcTime = new DateTime(time, DateTimeZone.UTC);
 			// concatenate date and time and retrieve UTC dateTime
-			DateTime utcDateTime = utcDate.toLocalDate().toDateTime(utcTime.toLocalTime());
-			// force timeZone to UTC
-			utcDateTime = utcDateTime.withZone(DateTimeZone.UTC);
-
-			res = new Date(DateTimeZone.getDefault().convertUTCToLocal(utcDateTime.getMillis()));
+			DateTime utcDateTime = utcDate.toLocalDate().toDateTime(utcTime.toLocalTime(), DateTimeZone.UTC);
+			// Convert to local date time
+			res = new Date(utcDateTime.getMillis());
 		} else {
 			// restrict date to localDate in order to avoid 02:00:00 instead of 00:00:00
 			res = new LocalDate(date).toDate();
