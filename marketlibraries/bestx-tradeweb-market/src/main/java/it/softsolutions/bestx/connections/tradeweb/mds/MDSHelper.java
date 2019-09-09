@@ -294,7 +294,7 @@ public class MDSHelper extends MarketPriceDiscoveryHelper {
                 String todayStr = DateService.format(DateService.dateISO,today);
                 String dateStr = DateService.format(DateService.dateISO, timestamp);
 
-                LOGGER.info("The proposal " + classifiedProposal + ", has a date (" + dateStr + ") different from today (" + todayStr + "): set it as rejected.");
+                LOGGER.info("The proposal " + classifiedProposal + ", has a date (" + dateStr + ") different from today (" + todayStr + "): set it as rejected. Original values: " + date + " - " + time);
                 classifiedProposal.setProposalState(ProposalState.REJECTED);
                 reason = Messages.getString("RejectProposalPriceTooOld", "" + dateStr);
             }
