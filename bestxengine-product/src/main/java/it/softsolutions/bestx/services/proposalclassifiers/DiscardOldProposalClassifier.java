@@ -39,7 +39,7 @@ import it.softsolutions.bestx.services.DateService;
  * Project Name : bestxengine-product First created by: Creation date: 19-ott-2012
  * 
  **/
-public class DiscardOldProposalClassifier implements ProposalClassifier {
+public class DiscardOldProposalClassifier extends BaseMarketMakerClassifier implements ProposalClassifier {
 
 	private int configValue = 12; // default value is 12
 	private long millisecsToTake = configValue * 60 * 60 * 1000;
@@ -47,7 +47,7 @@ public class DiscardOldProposalClassifier implements ProposalClassifier {
 	@Override
 	public ClassifiedProposal getClassifiedProposal(ClassifiedProposal proposal, Order order, List<Attempt> previousAttempts, Set<Venue> venues, ClassifiedBook book) {
 		// discard prices older than configured number of hours
-		if (proposal.getMarket().getMarketCode() == MarketCode.BLOOMBERG) {
+		if (proposal.getMarket().getMarketCode() == MarketCode.BLOOMBERG && !isCompositePriceMarketMaker(proposal)) {
 			Date twelveHoursAgo = DateService.newLocalDate();
 //			long time = twelveHoursAgo.getTime();
 			twelveHoursAgo.setTime(twelveHoursAgo.getTime() - millisecsToTake /* confValue * 60 * 60 *100 */);
