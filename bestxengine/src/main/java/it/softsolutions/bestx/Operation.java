@@ -953,7 +953,7 @@ public final class Operation implements OperationEventListener {
 				"onExecRepAck-" + toString() + "-ISIN:"
 						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
-			LOGGER.debug("Received an Acknowledgement, starting to manage it.");
+			LOGGER.debug("Received an Acknowledgement, starting to manage it. Operation: {}", this.toString());
 			handler.onCustomerExecutionReportAcknowledged(source, executionReport);
 		} catch (Exception e) {
 			LOGGER.error("Application Exception while handling event {} : ", e.getMessage(), e);
