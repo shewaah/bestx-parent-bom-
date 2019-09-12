@@ -268,7 +268,7 @@
 	</logger>
 	
 	<!-- added by Stefano 2019-07-29 -->
-    <logger name="it.softsolutions.ib4j.clientserver" additivity="false" level="DEBUG">
+    <logger name="it.softsolutions.ib4j.clientserver" additivity="false" level="INFO">
         <appender-ref ref="InfobusLogger" />
     </logger>
 
