@@ -187,6 +187,25 @@
 	    </rollingPolicy>
 	</appender>
 
+	
+	<!-- added by Stefano 2019-07-29 -->
+	 <appender name="InfobusLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <prudent>false</prudent>
+        <encoder>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>../log/ib4j.%d.%i.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>20MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+
+
+	
+	
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <Pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %15.15logger{0} - %message%n</Pattern>
@@ -244,6 +263,16 @@
 	<logger name="entitlementLogger" additivity="false" level="INFO">
 	    <appender-ref ref="EntitlementLogger" />
 	</logger>    
+	<logger name="it.softsolutions.bestx.services.MarketPriceListener" additivity="false" level="DEBUG">
+	    <appender-ref ref="BestXLogger" />
+	</logger>
+	
+	<!-- added by Stefano 2019-07-29 -->
+    <logger name="it.softsolutions.ib4j.clientserver" additivity="false" level="DEBUG">
+        <appender-ref ref="InfobusLogger" />
+    </logger>
+
+	
     <root level="INFO">
         <appender-ref ref="BestXLogger" />
     </root>
