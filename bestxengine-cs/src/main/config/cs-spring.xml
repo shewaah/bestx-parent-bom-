@@ -184,9 +184,6 @@
 
 	
 	<!-- Hibernate DAOs -->
-    <bean id="hibernateOutlawTickerFinder" class="it.softsolutions.bestx.finders.db.OutlawRTFITickerFinder" lazy-init="false" init-method="init">
-        <property name="outlawTickerDao"><ref bean="hibernateOutlawTickerDao"></ref></property>
-	</bean>
     <bean id="dbBasedHolidayFinder" class="it.softsolutions.bestx.finders.db.SetHolidayFinder" lazy-init="false" init-method="init">
         <property name="holidayDao"><ref bean="hibernateHolidayDao"></ref></property>
 	</bean>
