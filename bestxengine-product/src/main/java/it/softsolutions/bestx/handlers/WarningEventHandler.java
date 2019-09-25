@@ -3,16 +3,18 @@
  */
 package it.softsolutions.bestx.handlers;
 
-import it.softsolutions.bestx.BestXException;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
-import it.softsolutions.bestx.connections.MarketBuySideConnection;
+import it.softsolutions.bestx.connections.CustomerConnection;
 import it.softsolutions.bestx.connections.OperatorConsoleConnection;
 import it.softsolutions.bestx.model.ExecutionReport;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
-import it.softsolutions.bestx.model.MarketExecutionReport;
-import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.services.serial.SerialNumberService;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.ManualManageState;
@@ -21,12 +23,6 @@ import it.softsolutions.bestx.states.SendExecutionReportState;
 import it.softsolutions.bestx.states.SendNotExecutionReportState;
 import it.softsolutions.bestx.states.StateExecuted;
 import it.softsolutions.bestx.states.WaitingPriceState;
-import it.softsolutions.bestx.states.WarningState;
-
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Stefano
@@ -103,4 +99,16 @@ public class WarningEventHandler extends BaseOperationEventHandler {
 	public void onStateRestore(OperationState currentState) {
 		// DO NOTHING
 	}
+	
+	@Override
+   public void onFixRevoke(CustomerConnection source) {
+      if (customerConnection == null) {
+         LOGGER.error("Revoke received but no Customer Connection available");
+      } else {
+         // stop default timer, if any
+         stopDefaultTimer();
+         String comment = Messages.getString("AutomaticRevokeDefaultMessage.0");
+         updateOperationToRevocated(comment);
+      }
+   }	
 }	
