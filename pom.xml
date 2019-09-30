@@ -5,7 +5,7 @@
     <groupId>it.softsolutions.bestx</groupId>
     <artifactId>bestxengine-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.3.15-NEUTRONSTAR-190918-SNAPSHOT</version>
+    <version>4.3.15-SNAPSHOT</version>
 
     <name>BestX! Engine Develop</name>
     <description>Comprising all the modules in bestengine installation for CS</description>
