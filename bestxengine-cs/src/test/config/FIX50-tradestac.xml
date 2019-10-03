@@ -71,6 +71,8 @@
       <field name="TotNumReports" required="N"/>
       <field name="LastRptRequested" required="N"/>
       <component name="Parties" required="N"/>
+	  <field name="PreviouslyReported" required="N"/>
+	  <field name="TradeReportingIndicator" required="N"/>	  
       <field name="TradeOriginationDate" required="N"/>
       <component name="ContraGrp" required="N"/>
       <field name="ListID" required="N"/>
@@ -99,6 +101,7 @@
       <field name="OrderCategory" required="N"/>
       <field name="CashMargin" required="N"/>
       <field name="ClearingFeeIndicator" required="N"/>
+	  <field name="TradePublishIndicator" required="N"/>
       <component name="Instrument" required="Y"/>
       <component name="FinancingDetails" required="N"/>
       <component name="UndInstrmtGrp" required="N"/>
@@ -232,6 +235,10 @@
       <field name="RiskFreeRate" required="N"/>
       <field name="PriceDelta" required="N"/>
 	  <field name="FlatFlag" required="N"/>
+	  <field name="MifidMIC" required="N"/>
+	  <field name="NumOfCompetitors" required="N"/>
+	  <component name="RegulatoryTradeIDGrp" required="N"/>
+      <component name="CompDealers" required="N"/>
     </message>
     <message name="OrderCancelReject" msgtype="9" msgcat="app">
       <field name="OrderID" required="Y"/>
@@ -2071,6 +2078,10 @@
       <component name="TrdRegTimestamps" required="N"/>
       <field name="RefOrderID" required="N"/>
       <field name="RefOrderIDSource" required="N"/>
+      <field name="MarketSegmentID" required="N"/>
+      <field name="StagedOrderIsInquiry" required="N"/>
+      <field name="AutoExRuleInst" required="N" />
+      <field name="AutoOrdType" required="N"/>
     </message>
     <message name="NewOrderList" msgtype="E" msgcat="app">
       <field name="ListID" required="Y"/>
@@ -5315,7 +5326,18 @@
         <field name="PartyID" required="N"/>
         <field name="PartyIDSource" required="N"/>
         <field name="PartyRole" required="N"/>
+        <field name="PartyRoleQualifier" required="N"/>
         <component name="PtysSubGrp" required="N"/>
+      </group>
+    </component>
+	<component name="RegulatoryTradeIDGrp">
+      <group name="NoRegulatoryTradeIDs" required="N">
+        <field name="RegulatoryTradeID" required="N"/>
+        <field name="RegulatoryTradeIDSource" required="N"/>
+        <field name="RegulatoryTradeIDEvent" required="N"/>
+        <field name="RegulatoryTradeIDType" required="N"/>
+		<field name="NoRegulatoryTradeIDs" required="N"/>
+		<field name="RegulatoryLegRefID" required="N"/>
       </group>
     </component>
     <component name="SecSizesGrp">
@@ -5327,6 +5349,13 @@
     <component name="IOIQualGrp">
       <group name="NoIOIQualifiers" required="N">
         <field name="IOIQualifier" required="N"/>
+      </group>
+    </component>
+    <component name="EntitlementGrp">
+      <group name="NoEntitlements" required="N">
+        <field name="EntitlementIndicator" required="Y"/>
+        <field name="EntitlementType" required="N"/>
+        <field name="EntitlementID" required="N"/>
       </group>
     </component>
     <component name="DerivativeSecurityXML">
@@ -5437,6 +5466,25 @@
 			<field name="NoteText" required="N" />
 		</group>
 	</component>
+    <component name="CompDealers">
+      <group name="NoCompDealers" required="N">
+        <field name="CompDealerID" required="N"/>
+		<field name="CompDealerQuotePrice" required="N"/>
+        <field name="CompDealerQuotePriceType" required="N"/>
+        <field name="CompISpread" required="N"/>
+        <field name="CompZSpread" required="N"/>
+		<field name="CompDealerParQuote" required="N"/>
+		<field name="CompDealerStatus" required="N"/>
+		<field name="DealerNetMoney" required="N"/>
+		<field name="CompDealerQuotePriceLeg2" required="N"/>
+		<field name="CompDealerQuoteForwardPoints" required="N"/>
+		<field name="CompDealerQuoteSwapPoints" required="N"/>
+		<field name="CompDealerQuoteOrdQty" required="N"/>
+		<field name="CompDealerRollSpread" required="N"/>
+		<field name="CompDealerQuoteType" required="N"/>
+		<field name="CompDealerQuoteLegRefID" required="N"/>
+      </group>
+    </component>
   </components>
   <fields>
     <field number="1" name="Account" type="STRING"/>
@@ -5533,6 +5581,8 @@
       <value enum="1" description="AUTOMATED_EXECUTION_ORDER_PRIVATE_NO_BROKER_INTERVENTION"/>
       <value enum="2" description="AUTOMATED_EXECUTION_ORDER_PUBLIC"/>
       <value enum="3" description="MANUAL_ORDER"/>
+	  <value enum="y" description="AUTO_ROUTE"/>
+	  <value enum="z" description="MANUAL_ROUTE"/>
     </field>
     <field number="22" name="SecurityIDSource" type="STRING">
       <value enum="1" description="CUSIP"/>
@@ -5946,6 +5996,17 @@
       <value enum="15" description="UNKNOWN_ACCOUNT"/>
       <value enum="16" description="PRICE_EXCEEDS_CURRENT_PRICE_BAND"/>
       <value enum="18" description="INVALID_PRICE_INCREMENT"/>
+	  <value enum="19" description="REFERENCE_PRICE_NOT_AVAILABLE"/>
+	  <value enum="20" description="NOTIONAL_VALUE_EXCEEDS_THRESHOLD"/>
+	  <value enum="21" description="ALGORITHM_RISK_THRESHOLD_BREACHED"/>
+	  <value enum="22" description="SHORT_SELL_NOT_PERMITTED"/>
+	  <value enum="23" description="SHORT_SELL_REJECTED_DUE_TO_SECURITY_PRE_BORROW_RESTRICTION"/>
+	  <value enum="24" description="SHORT_SELL_REJECTED_DUE_TO_ACCOUNT_PRE_BORROW_RESTRICTION"/>
+	  <value enum="25" description="INSUFFICIENT_CREDIT_LIMIT"/>
+	  <value enum="26" description="EXCEEDED_CLIP_SIZE_LIMIT"/>
+	  <value enum="27" description="EXCEEDED_MAXIMUM_NOTIONAL_ORDER_AMOUNT"/>
+	  <value enum="28" description="EXCEEDED_DV01_PV01_LIMIT"/>
+	  <value enum="29" description="EXCEEDED_CS01_LIMIT"/>
       <value enum="99" description="OTHER"/>
     </field>
     <field number="104" name="IOIQualifier" type="CHAR">
@@ -7273,6 +7334,42 @@
       <value enum="83" description="CLEARING_ACCOUNT"/>
       <value enum="84" description="ACCEPTABLE_SETTLING_COUNTERPARTY"/>
       <value enum="85" description="UNACCEPTABLE_SETTLING_COUNTERPARTY"/>
+      <value enum="86" description="CLS_MEMBER_BANK"/>
+      <value enum="87" description="IN_CONCERT_GROUP"/>
+      <value enum="88" description="IN_CONCERT_CONTROLLING_ENTITY"/>
+      <value enum="89" description="LARGE_POSITIONS_REPORTING_ACCOUNT"/>
+      <value enum="90" description="SETTLEMENT_FIRM"/>
+      <value enum="91" description="SETTLEMENT_ACCOUNT"/>
+      <value enum="92" description="REPORTING_MARKET_CENTER"/>
+      <value enum="93" description="RELATED_REPORTING_MARKET_CENTER"/>
+      <value enum="94" description="AWAY_MARKET"/>
+      <value enum="95" description="GIVE_UP_FIRM"/>
+      <value enum="96" description="TAKE_UP_FIRM"/>
+      <value enum="97" description="GIVE_UP_CLEARING_FIRM"/>
+      <value enum="98" description="TAKE_UP_CLEARING_FIRM"/>
+      <value enum="99" description="ORIGINATING_MARKET"/>
+      <value enum="100" description="MARGIN_ACCOUNT"/>
+      <value enum="101" description="COLLATERAL_ASSET_ACCOUNT"/>
+      <value enum="102" description="DATA_REPOSITORY"/>
+      <value enum="103" description="CALCULATION_AGENT"/>
+      <value enum="104" description="SENDER_OF_EXERCISE_NOTICE"/>
+      <value enum="105" description="RECEIVER_OF_EXERCISE_NOTICE"/>
+      <value enum="106" description="RATE_REFERENCE_BANK"/>
+      <value enum="107" description="CORRESPONDENT"/>
+      <value enum="109" description="BENEFICIARYS_BANK_OR_DEPOSITORY_INSTITUTION"/>
+      <value enum="110" description="BORROWER"/>
+      <value enum="111" description="PRIMARY_OBLIGATOR"/>
+      <value enum="112" description="GUARANTOR"/>
+      <value enum="113" description="EXCLUDED_REFERENCE_ENTITY"/>
+      <value enum="114" description="DETERMINING_PARTY"/>
+      <value enum="115" description="HEDGING_PARTY"/>
+      <value enum="116" description="REPORTING_ENTITY"/>
+      <value enum="117" description="SALES_PERSON"/>
+      <value enum="118" description="OPERATOR"/>
+      <value enum="119" description="CENTRAL_SECURITIES_DEPOSITORY"/>
+      <value enum="120" description="INTERNATIONAL_CENTRAL_SECURITIES_DEPOSITORY"/>
+      <value enum="121" description="TRADING_SUB_ACCOUNT"/>
+      <value enum="122" description="INVESTMENT_DECISION_MAKER"/>
     </field>
     <field number="453" name="NoPartyIDs" type="NUMINGROUP"/>
     <field number="454" name="NoSecurityAltID" type="NUMINGROUP"/>
@@ -8563,6 +8660,9 @@
       <value enum="2" description="REMOVED_LIQUIDITY"/>
       <value enum="3" description="LIQUIDITY_ROUTED_OUT"/>
       <value enum="4" description="AUCTION"/>
+	  <value enum="5" description="TRIGGERED_STOP_ORDER"/>
+	  <value enum="6" description="TRIGGERED_CONTINGENCY_ORDER"/>
+	  <value enum="7" description="TRIGGERED_MARKET_ORDER"/>
     </field>
     <field number="852" name="PublishTrdIndicator" type="BOOLEAN">
       <value enum="N" description="DO_NOT_REPORT_TRADE"/>
@@ -9561,7 +9661,16 @@
     <field number="1297" name="DerivativeInstrumentPartySubID" type="STRING"/>
     <field number="1298" name="DerivativeInstrumentPartySubIDType" type="INT"/>
     <field number="1299" name="DerivativeExerciseStyle" type="CHAR"/>
-    <field number="1300" name="MarketSegmentID" type="STRING"/>
+	<field number="1300" name="MarketSegmentID" type="STRING">	
+	  <value enum="BETP" description="BLOOMBERG_JAPANESE_ELECTRONIC_TRADING_PLATFORM"/>
+      <value enum="BGL" description="NON_SEF_BLOOMBERG_PLATFORM"/>
+      <value enum="BGM" description="BLOOMBERG_GLOBAL_MARKETS"/>
+      <value enum="BMTF" description="BLOOMBERG_MULTILATERAL_TRADING_FACILITY"/>
+      <value enum="BSEF" description="BLOOMBERG_SWAP_EXECUTION_FACILITY"/>
+      <value enum="BTFE" description="BLOOMBERG_TRADING_FACILITY_EUROPE"/>
+      <value enum="FXGO" description="BLOOMBERG_FX_ELECTRONIC_TRADING_FACILITY"/>
+      <value enum="XOFF" description="OFF_MARKET"/>
+	</field>
     <field number="1301" name="MarketID" type="EXCHANGE"/>
     <field number="1302" name="MaturityMonthYearIncrementUnits" type="INT">
       <value enum="0" description="MONTHS"/>
@@ -10004,7 +10113,76 @@
       <value enum="1" description="ACCEPTED"/>
       <value enum="2" description="REJECTED"/>
     </field>
+    <field number="1773" name="NoEntitlements" type="NUMINGROUP" />   
+    <field number="1774" name="EntitlementIndicator" type="BOOLEAN" />    
+    <field number="1775" name="EntitlementType" type="INT">
+          <value enum="0" description="TRADE" />
+          <value enum="1" description="MAKE_MARKET" />
+	  <value enum="2" description="HOLD_POSITION" />
+	  <value enum="5" description="SUBSCRIBE_TO_MARKET_DATA" />
+    </field>
+    <field number="1776" name="EntitlementID" type="STRING" />
 	<!-- custom fields -->
+	<field number="1904" name="RegulatoryTradeIDEvent" type="INT">
+      <value enum="0" description="INITIAL_BLOCK_TRADE"/>
+      <value enum="1" description="ALLOCATION"/>
+      <value enum="2" description="CLEARING"/>
+      <value enum="3" description="COMPRESSION"/>
+      <value enum="4" description="NOVATION"/>
+      <value enum="5" description="TERMINATION"/>
+      <value enum="6" description="POST_TRADE_VALUATION"/>
+    </field>
+	<field number="1903" name="RegulatoryTradeID" type="STRING"/>
+	<field number="1905" name="RegulatoryTradeIDSource" type="STRING"/>
+	<field number="1906" name="RegulatoryTradeIDType" type="INT">
+      <value enum="0" description="CURRENT"/>
+      <value enum="1" description="PREVIOUS"/>
+      <value enum="2" description="BLOCK"/>
+      <value enum="3" description="RELATED"/>
+      <value enum="4" description="CLEARED_BLOCK_TRADE"/>
+      <value enum="5" description="TRADING_VENUE_TRANSACTION_IDENTIFIER"/>
+    </field>
+    <field number="1907" name="NoRegulatoryTradeIDs" type="NUMINGROUP"/>
+	<field number="1913" name="NumOfCompetitors" type="INT"/>
+    <field number="2376" name="PartyRoleQualifier" type="INT">
+		<value enum="0" description="Agency"/>
+        <value enum="1" description="Principal"/>
+        <value enum="2" description="RisklessPrincipal"/>
+        <value enum="3" description="GeneralClearingMember"/>
+        <value enum="4" description="IndividualClearingMember"/>
+        <value enum="5" description="PreferredMarketMaker"/>
+        <value enum="6" description="DirectedMarketMaker"/>
+        <value enum="7" description="Bank"/>
+        <value enum="8" description="Hub"/>
+        <value enum="9" description="PrimaryTraderRepository"/>
+        <value enum="10" description="OriginalTRadeRepository"/>
+        <value enum="11" description="AdditionalInternationalTRadeRepository"/>
+        <value enum="12" description="AdditionalDomesticTradeRepository"/>
+        <value enum="13" description="RelatedExchange"/>
+        <value enum="14" description="OptionsExchange"/>
+        <value enum="15" description="SpecifiedExchange"/>
+        <value enum="16" description="ConstituentExchange"/>
+        <value enum="17" description="ExemptFromTradeReporting"/>
+        <value enum="18" description="Current"/>
+        <value enum="19" description="New"/>
+        <value enum="20" description="DesignatedSponsor"/>
+        <value enum="21" description="Specialist"/>
+        <value enum="22" description="Algorithm"/>
+        <value enum="23" description="FirmOrLegalEntity"/>
+        <value enum="24" description="NaturalPerson"/>
+        <value enum="25" description="RegularTrader"/>
+        <value enum="26" description="HeadTrader"/>
+        <value enum="27" description="Supervisor"/>
+	</field>
+	<field number="2411" name="RegulatoryLegRefID" type="STRING"/>	
+	<field number="2524" name="TradeReportingIndicator" type="INT">
+      <value enum="0" description="TRADE_HAS_NOT_BEEN_REPORTED"/>
+      <value enum="1" description="TRADE_HAS_BEEN_REPORTED_BY_A_TRADING_VENUE_AS_AN_ON_BOOK_TRADE"/>
+      <value enum="2" description="TRADE_HAS_BEEN_REPORTED_AS_A_SYSTEMATIC_INTERNALISER_SELLER_TRADE"/>
+      <value enum="3" description="TRADE_HAS_BEEN_REPORTED_AS_A_SYSTEMATIC_INTERNALISER_BUYER_TRADE"/>
+      <value enum="4" description="TRADE_HAS_BEEN_REPORTED_AS_A_NON_SYSTEMATIC_INTERNALISER_SELLER_TRADE"/>
+      <value enum="5" description="TRADE_HAS_BEEN_REPORTED_UNDER_A_SUB_DELEGATION_ARRANGEMENT_BY_AN_INVESTMENT_FIRM_TO_A_REPORTING_FACILITY_ON_BEHALF_OF_ANOTHER_INVESTMENT_FIRM"/>
+    </field>
 	<field number="6923" name="TradeStacRequestID" type="STRING" />
 	<field number="6924" name="TradeStacRequestType" type="INT">
 		<value enum="1" description="LOGONUSER" />
@@ -10026,6 +10204,7 @@
       <value enum="N" description="NOT_FLAG"/>
       <value enum="Y" description="FLAG"/>
     </field>
+	<field number="9575" name="StagedOrderIsInquiry" type="BOOLEAN"/>
 	<field number="9610" name="NoNotes" type="NUMINGROUP" />
 	<field number="9611" name="NoteType" type="CHAR">
 		<value enum="C" description="CUSTOMER_NOTES" />
@@ -10034,10 +10213,166 @@
 	<field number="9612" name="NoteLabel" type="STRING" />
 	<field number="9613" name="NoteText" type="STRING" />
 	<field number="9650" name="DealerResponseTime" type="UTCTIMESTAMP"/>
+    <!-- Added custom field -->
+    <field number="10000" name="NoBlockedDealers" type="NUMINGROUP"/>
+    <!-- Added custom field -->
+    <field number="10001" name="BlockedDealer" type="STRING"/>
+    <!-- Added custom field -->
+    <field number="10002" name="CheckoutID" type="STRING"/>
+    <!-- Added custom field -->
+    <field number="10003" name="CheckoutStatus" type="CHAR">
+                <value enum="0" description="PENDING_CHECKOUT"/>
+                <value enum="1" description="ACCEPT"/>
+                <value enum="2" description="REJECTED"/>
+                <value enum="3" description="CONFIRMED"/>
+                <value enum="4" description="AWAITING_BENCHMARK_PRICE"/>
+                <value enum="5" description="AWAITING_TRADE_QUANTITY"/>
+            </field>
+    <!-- Added custom field -->
+    <field number="10004" name="CheckoutRejReason" type="CHAR">
+                <value enum="0" description="DONT_KNOW_TRADE"/>
+                <value enum="2" description="INCORRECT_SIDE"/>
+                <value enum="3" description="INCORRECT_PRICE"/>
+                <value enum="5" description="INCORRECT_YIELD"/>
+                <value enum="7" description="INCORRECT_QUANTITY"/>
+                <value enum="9" description="INCORRECT_SETTLEMENT_DATE"/>
+                <value enum="B" description="INCORRECT_SECURITY"/>
+                <value enum="D" description="DUPLICATE_TRADE"/>
+                <value enum="E" description="INCORRECT_NET_MONEY"/>
+                <value enum="F" description="INCORRECT_AVG_PRICE"/>
+                <value enum="Z" description="OTHER"/>
+            </field>
+    <!-- Added custom field -->
+    <field number="10005" name="CheckoutResponse" type="CHAR">
+                <value enum="0" description="ACCEPTED"/>
+                <value enum="1" description="REJECTED"/>
+            </field>
+    <!-- Added custom field -->
+    <field number="10006" name="PriceDiscovery" type="AMT"/>
+    <!-- Added custom field -->
+    <field number="10007" name="CompositePrice" type="PRICE"/>
+    <!-- Added custom field -->
+    <field number="10008" name="CompositePriceType" type="INT">
+                <value enum="1" description="PERCENT_OF_PAR"/>
+                <value enum="2" description="PER_UNIT"/>
+                <value enum="3" description="FIXED_AMOUNT"/>
+                <value enum="4" description="DISCOUNT_RATE_BELOW_PAR"/>
+                <value enum="6" description="YIELD_SPREAD_TO_BENCHMARK"/>
+                <value enum="9" description="YIELD"/>
+                <value enum="23" description="UPFRONTPOINTS"/>
+            </field>
+    <!-- Added custom field -->
+    <field number="10009" name="NoCompDealers" type="NUMINGROUP"/>
+    <!-- Added custom field -->
+    <field number="10010" name="CompDealerID" type="STRING"/>
+    <!-- Added custom field -->
+	<field number="10011" name="CompDealerQuotePrice" type="PRICE"/>
+	<field number="10012" name="CompDealerQuotePriceType" type="INT">
+                <value enum="1" description="PERCENT_OF_PAR"/>
+                <value enum="2" description="PER_UNIT"/>
+                <value enum="3" description="FIXED_AMOUNT"/>
+                <value enum="4" description="DISCOUNT_RATE_BELOW_PAR"/>
+                <value enum="6" description="YIELD_SPREAD_TO_BENCHMARK"/>
+                <value enum="9" description="YIELD"/>
+                <value enum="23" description="UPFRONTPOINTS"/>
+				<value enum="24" description="INTEREST_RATE"/>
+    </field>			
+    <!-- Added custom field -->
+    <field number="10013" name="CompISpread" type="FLOAT"/>
+    <!-- Added custom field -->
+    <field number="10014" name="CompZSpread" type="FLOAT"/>
+    <!-- Added custom field -->
+    <field number="10015" name="CompDealerParQuote" type="PRICE"/>
+    <!-- Added custom field -->
+    <field number="10016" name="CompDealerStatus" type="INT">
+                <value enum="0" description="ERROR"/>
+                <value enum="1" description="PASS"/>
+                <value enum="2" description="TIMED_OUT"/>
+                <value enum="3" description="REJECTED"/>
+                <value enum="4" description="EXPIRED"/>
+                <value enum="5" description="ENDED"/>
+            </field>
+    <!-- Added custom field -->
+    <field number="10017" name="CompReportType" type="INT">
+                <value enum="0" description="COMPOSITE"/>
+                <value enum="1" description="COMPETING_DEALER"/>
+            </field>
+    <!-- Added custom field -->
+    <field number="10018" name="CompReportID" type="STRING"/>
+    <!-- Added custom field -->
+    <field number="10019" name="NoCustomAttribs" type="NUMINGROUP"/>
+    <!-- Added custom field -->
+    <field number="10020" name="CustomAttribType" type="STRING"/>
+    <!-- Added custom field -->
+    <field number="10021" name="CustomAttribName" type="STRING"/>
+    <!-- Added custom field -->
+    <field number="10022" name="CustomAttribValue" type="STRING"/>
+    <!-- Added custom field -->
+    <field number="10023" name="AddUnknownAccount" type="BOOLEAN"/>
+    <!-- Added custom field -->
+    <field number="10024" name="CustomerBasketID" type="STRING"/>
+    <!-- Added custom field -->
+    <field number="10025" name="DealerBasketID" type="STRING"/>
+    <!-- Added custom field -->
+    <field number="10026" name="CompDealerHaircut" type="FLOAT"/>
+    <!-- Added custom field -->
+    <field number="10027" name="CompositeMidPrice" type="PRICE"/>
+    <!-- Added custom field -->
+    <field number="10028" name="CompositeMidPriceType" type="INT">
+                <value enum="1" description="PERCENT_OF_PAR"/>
+                <value enum="2" description="PER_UNIT"/>
+                <value enum="3" description="FIXED_AMOUNT"/>
+                <value enum="4" description="DISCOUNT_RATE_BELOW_PAR"/>
+                <value enum="6" description="YIELD_SPREAD_TO_BENCHMARK"/>
+                <value enum="9" description="YIELD"/>
+                <value enum="23" description="UPFRONTPOINTS"/>
+            </field>
+    <!-- Added custom field -->
+    <field number="10029" name="CompositeMidParPrice" type="PRICE"/>
+    <!-- Added custom field -->
+    <field number="10030" name="CompDealerOppositeQuote" type="PRICE"/>
+    <!-- Added custom field -->
+    <field number="10031" name="NegotiationType" type="STRING"/>
+    <!-- Added custom field -->
+    <field number="10032" name="CompositeParPrice" type="PRICE"/>
+    <!-- Added custom field -->
+    <field number="10033" name="CompositeYield" type="PRICE"/>
+    <!-- Added custom field -->
+    <field number="10034" name="CompositeMidYield" type="PRICE"/>
+    <!-- Added custom field -->
+    <field number="10035" name="CompDealerSpread" type="PRICE"/>
+    <!-- Added custom field -->
+    <field number="10036" name="CompDealerYield" type="PRICE"/>
+    <!-- Added custom field -->
+    <field number="10037" name="CompDealerNPV" type="PRICE"/>
+    <!-- Added custom field -->
+    <field number="10038" name="CompDealerSettlCurrFxRate" type="FLOAT"/>
 	<field number="22019" name="CounterInd" type="INT">
 		<value enum="0" description="NEGOTIATE_COUNTER_VIA_FIX" />
 		<value enum="1" description="NEGOTIATE_COUNTER_VIA_BLOOMBERG_UI" />
 		<value enum="2" description="AUTOPASS_WHEN_COUNTERED_BY_DEALER" />
+		<value enum="3" description="BLOOMBERG_AUTO_ACCEPT" />
 	</field>
+	<field number="22037" name="DealerNetMoney" type="AMT"/>
+	<field number="22161" name="CompDealerQuotePriceLeg2" type="PRICE"/>
+	<field number="22162" name="CompDealerQuoteForwardPoints" type="PRICEOFFSET"/>
+	<field number="22163" name="CompDealerQuoteSwapPoints" type="PRICEOFFSET"/>
+	<field number="22179" name="CompDealerQuoteOrdQty" type="AMT"/>
+	<field number="22229" name="CompDealerRollSpread" type="PRICEOFFSET"/>
+	<field number="22276" name="CompDealerQuoteType" type="INT">
+	  <value enum="0" description="INDICATIVE"/>
+      <value enum="1" description="EXECUTABLE"/>
+    </field>
+	<field number="22481" name="CompDealerQuoteLegRefID" type="STRING"/>
+	<field number="22484" name="AutoOrdType" type="INT">
+	  <value enum="0" description="AUTO_RFQ"/>
+      <value enum="1" description="AUTO_ALGO"/>
+	  <value enum="2" description="AUTO_BROKER_ALGO"/>
+    </field>
+    <field number="22515" name="AutoExRuleInst" type="STRING">
+      <value enum="y" description="AUTO-ROUTE"/>
+      <value enum="z" description="MANUAL-ROUTE"/>
+	</field>
+	<field number="23068" name="MifidMIC" type="STRING" />
   </fields>
 </fix>
