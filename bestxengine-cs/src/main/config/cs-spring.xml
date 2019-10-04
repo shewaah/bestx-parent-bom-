@@ -1052,7 +1052,7 @@
         <property name="venueFinder"><ref bean="dbBasedVenueFinder"/></property>
         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
         <property name="tradeStacPreTradeConnection"><ref bean="blpConnector"/></property>
-        <!-- <property name="tsoxConnection"><ref bean="tsoxConnector"/></property> -->
+        <property name="tsoxConnection"><ref bean="tsoxConnector"/></property>
     </bean>
 
     <bean id="blpConnector" class="it.softsolutions.bestx.connections.bloomberg.blp.BLPConnector" init-method="init">
@@ -1067,16 +1067,21 @@
         <property name="fixConfigFileName"><value>fix-tradestac-blp.properties</value></property>
     </bean>
 
-    <!-- <bean id="tsoxConnector" class="it.softsolutions.bestx.connections.bloomberg.tsox.TSOXConnectionImpl" init-method="init">
-        <property name="tsoxConnectionListener"><ref bean="bloombergMarket"/></property>
+    <bean id="tsoxConnector" class="it.softsolutions.bestx.connections.bloomberg.tsox.RBLD_TSOXConnection" init-method="init">
 		<property name="tradeStacClientSession">
 			<bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
 		</property>
-        <property name="fixConfigFileName"><value>fix-tradestac-tsox.properties</value></property>
-        <property name="tsoxWiretime"><value>${Bloomberg.Tsox.wiretime}</value></property>
-        <property name="tsoxHitLiftTimeout"><value>${Bloomberg.Tsox.hitlift_reply_time}</value></property>
-        <property name="tsoxTradercode"><value>${Bloomberg.Tsox.tradercode}</value></property>
-	</bean> -->
+        <property name="tsoxConnectionListener"><ref bean="bloombergMarket"/></property>
+		<property name="destinationMICCode"><value>${Bloomberg.Tsox.DestinationMICCode}</value></property>
+		<property name="traderCode"><value>${Bloomberg.Tsox.TraderCode}</value></property>
+		<property name="executionDecisionMakerID"><value>${Bloomberg.Tsox.ExecutionDecisionMakerID}</value></property>
+		<property name="investmentDecisionMakerID"><value>${Bloomberg.Tsox.InvestmentDecisionMakerID}</value></property>
+		<property name="investmentDecisionQualifier"><value>${Bloomberg.Tsox.InvestmentDecisionQualifier}</value></property>
+		<property name="enteringFirmCode"><value>${Bloomberg.Tsox.EnteringFirmCode}</value></property>
+		<!-- property name="defaultCapacity"><value>${Bloomberg.Tsox.DefaultCapacity}</value></property-->
+		<property name="tsoxEnquiryTime"><value>${Bloomberg.Tsox.TsoxEnquiryTime}</value></property>
+        <property name="fixConfigFileName" value="fix-tradestac-tsox.properties" />
+	</bean>
 
 	<!-- ====================================================================== -->
     <!-- ==== Tradeweb ======================================================== -->
