@@ -5835,6 +5835,7 @@
       <value enum="E" description="REDEEM"/>
       <value enum="F" description="LEND"/>
       <value enum="G" description="BORROW"/>
+      <value enum="H" description="SELL_UNDISCLOSED"/>
     </field>
     <field number="55" name="Symbol" type="STRING"/>
     <field number="56" name="TargetCompID" type="STRING"/>
