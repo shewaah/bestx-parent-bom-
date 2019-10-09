@@ -29,11 +29,10 @@ import it.softsolutions.bestx.connections.CustomerConnection;
 import it.softsolutions.bestx.connections.MarketBuySideConnection;
 import it.softsolutions.bestx.exceptions.ConnectionNotAvailableException;
 import it.softsolutions.bestx.handlers.BaseOperationEventHandler;
-import it.softsolutions.bestx.handlers.MultipleQuotesHandler;
-import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
-import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ExecutionReport;
+import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
+import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.MarketExecutionReport;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
@@ -58,10 +57,13 @@ public class BBG_SendEnquiryEventHandler extends BaseOperationEventHandler {
 
 	private final MarketBuySideConnection buySideConnection;
 	protected final long waitingAnswerDelay;
-
+	private long orderCancelDelay;
+	
 	private Set<String> technicalRejectReasons;
 
-	private boolean isCancelBestXInitiative;
+	private boolean isCancelBestXInitiative = false;
+	private boolean isCancelRequestedByUser = false;
+	
 
 	public static final String REVOKE_TIMER_SUFFIX="#REVOKE";
 
@@ -77,11 +79,12 @@ public class BBG_SendEnquiryEventHandler extends BaseOperationEventHandler {
 	 * @param multipleQuoteHandler the multiple quote handler
 	 * 
 	 */
-	public BBG_SendEnquiryEventHandler(Operation operation, MarketBuySideConnection bbgConnection, SerialNumberService serialNumberService, long waitingAnswerDelay,
+	public BBG_SendEnquiryEventHandler(Operation operation, MarketBuySideConnection bbgConnection, SerialNumberService serialNumberService, long waitingAnswerDelay, long orderCancelDelay,
 			Set<String> technicalRejectReasons ) {
 		super(operation);
 		this.buySideConnection = bbgConnection;
 		this.waitingAnswerDelay = waitingAnswerDelay;
+		this.orderCancelDelay = orderCancelDelay;
 		this.serialNumberService = serialNumberService;
 		this.technicalRejectReasons = technicalRejectReasons;
 	}
@@ -167,8 +170,7 @@ public class BBG_SendEnquiryEventHandler extends BaseOperationEventHandler {
 		//marketExecutionReport.getClOrdID (non esiste...)
 		if (marketExecutionReport.getState() == ExecutionReportState.FILLED) {
 			operation.setStateResilient(new BBG_ExecutedState(reason), ErrorState.class);
-		} else
-			if (marketExecutionReport.getState() == ExecutionReportState.CANCELLED || marketExecutionReport.getState() == ExecutionReportState.REJECTED) {
+		} else if (marketExecutionReport.getState() == ExecutionReportState.CANCELLED || marketExecutionReport.getState() == ExecutionReportState.REJECTED) {
 				// go to next execution attempt
 				if (reason != null && reason.length() > 0) {
 					boolean isTechnicalReject = false;
@@ -179,11 +181,21 @@ public class BBG_SendEnquiryEventHandler extends BaseOperationEventHandler {
 							break;
 						}
 					}
-					operation.setStateResilient(new BBG_RejectedState(reason, isTechnicalReject), ErrorState.class);
+
+					String rejectReason = reason;
+					if (marketExecutionReport.getState() == ExecutionReportState.CANCELLED) {
+					if (isCancelRequestedByUser) {
+						rejectReason = "Revoke requested by the customer";
+					} else if(isCancelBestXInitiative) {
+						rejectReason = "No answer received after the configuration number of seconds. Order has been automatically cancelled by BestX!";
+					}
+					
+					operation.setStateResilient(new BBG_RejectedState(rejectReason, isTechnicalReject), ErrorState.class);
 				} else {
 					operation.setStateResilient(new BBG_RejectedState("", false), ErrorState.class);
 				}
 			}
+		}
 	}
 
 	//	 should be used if Enquiry is sent and rejected    
@@ -205,33 +217,56 @@ public class BBG_SendEnquiryEventHandler extends BaseOperationEventHandler {
 		String handlerJobName = super.getDefaultTimerJobName();
 
 		if (jobName.equals(handlerJobName)) {
-			LOGGER.info("Order {} : Timer: {} expired.", operation.getOrder().getFixOrderId(), jobName);
-			// not sure if I should send this order to technical Issue
-			operation.setStateResilient(new WarningState(operation.getState(), null,
-					Messages.getString("BBGExecutionReportTImeout.0")) , ErrorState.class);	
-			//			try {
-			//				//create the timer for the order cancel
-			//				handlerJobName += REVOKE_TIMER_SUFFIX;
-			//				setupTimer(handlerJobName, orderCancelDelay, false);
-			//				// send order cancel message to the market
-			//				buySideConnection.revokeOrder(operation, operation.getLastAttempt().getMarketOrder(), Messages.getString("TW_RevokeOrderForTimeout"));
-			//			} catch (BestXException e) {
-			//				LOGGER.error("An error occurred while revoking the order {}", operation.getOrder().getFixOrderId(), e);
-			//				operation.setStateResilient(new WarningState(operation.getState(), e,
-			//						Messages.getString("TW_MarketRevokeOrderError",  operation.getOrder().getFixOrderId())),
-			//						ErrorState.class);	
-			//			}            
-			//		} else if (jobName.equals(handlerJobName + REVOKE_TIMER_SUFFIX)) {
-			//			//The timer created after receiving an Order Cancel Reject is expired without receiving an execution or a cancellation
-			//			LOGGER.debug("Order {} : Timer: {} expired.", operation.getOrder().getFixOrderId(), jobName);
-			//			//[AMC 20170117 BXSUP-2015] Added a more specific messge to audit
-			//			operation.setStateResilient(new WarningState(operation.getState(), null, 
-			//					Messages.getString("CancelRejectWithNoExecutionReportTimeout.0", operation.getLastAttempt().getMarketOrder().getMarket().getName())), ErrorState.class);
-			//		} else {
+			LOGGER.debug("Order {} : Timer: {} expired.", operation.getOrder().getFixOrderId(), jobName);
+			try {
+				//create the timer for the order cancel
+				handlerJobName += REVOKE_TIMER_SUFFIX;
+				setupTimer(handlerJobName, orderCancelDelay, false);
+				// send order cancel message to the market
+				isCancelBestXInitiative = true;
+				this.buySideConnection.revokeOrder(operation, operation.getLastAttempt().getMarketOrder(), Messages.getString("MARKETAXESS_RevokeOrderForTimeout"));
+			} catch (BestXException e) {
+				LOGGER.error("Error {} while revoking the order {}", e.getMessage(), operation.getOrder().getFixOrderId(), e);
+				operation.setStateResilient(new WarningState(operation.getState(), e,
+						Messages.getString("BBG_MarketRevokeOrderError", operation.getOrder().getFixOrderId())),
+						ErrorState.class);	
+			}            
+		} else if (jobName.equals(handlerJobName + REVOKE_TIMER_SUFFIX)) {
+			//The timer created after receiving an Order Cancel Reject is expired without receiving an execution or a cancellation
+			LOGGER.debug("Order {} : Timer: {} expired.", operation.getOrder().getFixOrderId(), jobName);
+			operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("CancelRejectWithNoExecutionReportTimeout.0", operation.getLastAttempt().getMarketOrder().getMarket().getName())), ErrorState.class);
+		} else {
 			super.onTimerExpired(jobName, groupName);
 		}
 	}
 
+	@Override
+	public void onRevoke() {
+
+		// onRevoke is invoked by webapp and must only reject this market so no need to
+		// set customerRevokeReceived so that operations may continue on other markets
+
+		String handlerJobName = super.getDefaultTimerJobName() + REVOKE_TIMER_SUFFIX;
+
+		try {
+			// create the timer for the order cancel
+			setupTimer(handlerJobName, waitingAnswerDelay, false);
+			// send order cancel message to the market
+			this.isCancelBestXInitiative = true;
+			this.isCancelRequestedByUser = true;
+			this.buySideConnection.revokeOrder(operation, operation.getLastAttempt().getMarketOrder(),
+					Messages.getString("BBG_RevokeOrder"));
+		} catch (BestXException e) {
+			LOGGER.error("An error occurred while revoking the order {}", operation.getOrder().getFixOrderId(), e);
+			operation.setStateResilient(
+					new WarningState(operation.getState(), e,
+							Messages.getString("BBG_MarketRevokeOrderError", operation.getOrder().getFixOrderId())),
+					ErrorState.class);
+		}
+
+	}
+	
+	
 	@Override
 	public void onFixRevoke(CustomerConnection source) {
 		MarketOrder marketOrder = operation.getLastAttempt().getMarketOrder();
@@ -241,6 +276,8 @@ public class BBG_SendEnquiryEventHandler extends BaseOperationEventHandler {
 		
 		// TW
 		try {
+			this.isCancelBestXInitiative = true;
+			this.isCancelRequestedByUser = true;
 			this.buySideConnection.revokeOrder(operation, marketOrder, reason);
 		} catch (BestXException e) {
 			LOGGER.error("An error occurred while revoking the order {}", operation.getOrder().getFixOrderId(), e);
@@ -251,4 +288,20 @@ public class BBG_SendEnquiryEventHandler extends BaseOperationEventHandler {
 		}
 
 	}
+
+	@Override
+	public void onMarketOrderCancelRequestReject(MarketBuySideConnection source, Order order, String reason) {
+		String handlerJobName = super.getDefaultTimerJobName() + REVOKE_TIMER_SUFFIX;
+		try {
+			isCancelBestXInitiative = false;
+			stopTimer(handlerJobName);
+			LOGGER.info("Order {} cancel rejected, waiting for the order execution or cancellation", order.getFixOrderId());
+			//recreate the timer with a longer timeout (the same used for the execution)
+			setupTimer(handlerJobName, waitingAnswerDelay, false);
+		} catch (SchedulerException e) {
+			LOGGER.error("Cannot stop timer {}", handlerJobName, e);
+		}
+	}
+
+	
 }
