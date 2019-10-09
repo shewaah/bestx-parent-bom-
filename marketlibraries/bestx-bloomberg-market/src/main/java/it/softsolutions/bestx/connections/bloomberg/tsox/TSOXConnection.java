@@ -50,4 +50,6 @@ public interface TSOXConnection extends Connection {
     void acceptProposal(Operation operation, Instrument instrument, Proposal proposal) throws BestXException;
 
     void rejectProposal(Operation operation, Instrument instrument, Proposal proposal) throws BestXException;
+    
+    void cancelOrder(MarketOrder marketOrder) throws BestXException;
 }

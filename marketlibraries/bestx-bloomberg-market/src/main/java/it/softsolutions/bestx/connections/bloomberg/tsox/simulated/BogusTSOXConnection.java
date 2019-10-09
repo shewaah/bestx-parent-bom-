@@ -370,4 +370,27 @@ public class BogusTSOXConnection extends AbstractTradeStacConnection implements 
 		;
 	}
 
+	@Override
+	public void cancelOrder(MarketOrder marketOrder) throws BestXException {
+		LOGGER.debug("marketOrder = {}", marketOrder);
+		
+		sendOrderCancelReject(marketOrder);
+		
+	    try {
+          Thread.sleep(30000);
+       } catch (InterruptedException e) {}
+		
+		sendFilledExecutionReport(marketOrder);
+		
+	}
+
+	private void sendOrderCancelReject(MarketOrder marketOrder) {
+		String sessionId = "sessionID";
+		String clOrdId = marketOrder.getMarketSessionId();
+		String reason = "Up yours!";
+		
+		this.tsoxConnectionListener.onCancelReject(sessionId, clOrdId, reason);
+	}
+
+
 }

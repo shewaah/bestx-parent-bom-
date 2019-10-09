@@ -559,4 +559,9 @@ public class TSOXConnectionImpl extends AbstractTradeStacConnection implements T
         this.tsoxTradercode = tsoxTradercode;
     }
 
+	@Override
+	public void cancelOrder(MarketOrder marketOrder) throws BestXException {
+		throw new UnsupportedOperationException("This class should not be used");		
+	}
+
 }

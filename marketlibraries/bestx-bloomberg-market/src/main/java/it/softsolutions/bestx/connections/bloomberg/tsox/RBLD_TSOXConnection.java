@@ -47,6 +47,7 @@ import it.softsolutions.tradestac.fix50.TSBusinessMessageReject;
 import it.softsolutions.tradestac.fix50.TSExecutionReport;
 import it.softsolutions.tradestac.fix50.TSNewOrderSingle;
 import it.softsolutions.tradestac.fix50.TSNoPartyID;
+import it.softsolutions.tradestac.fix50.TSOrderCancelRequest;
 import it.softsolutions.tradestac.fix50.TSQuoteRequestReject;
 import it.softsolutions.tradestac.fix50.component.TSInstrument;
 import it.softsolutions.tradestac.fix50.component.TSOrderQtyData;
@@ -446,5 +447,42 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
    public void rejectProposal(Operation operation, Instrument instrument, Proposal proposal) throws BestXException {
       throw new UnsupportedOperationException();
    }
+
+	@Override
+	public void cancelOrder(MarketOrder marketOrder) throws BestXException {
+		LOGGER.debug("marketOrder = {}", marketOrder);
+        
+		if (!isConnected()) {
+			throw new BestXException("Not connected");
+		}
+		
+		Side side = Side.getInstanceForFIXValue(marketOrder.getSide().getFixCode().charAt(0));
+		String origClOrdID = marketOrder.getMarketSessionId();
+		String securityID = marketOrder.getInstrument().getIsin();
+        Double orderQty = marketOrder.getQty().doubleValue();
+        
+        TSOrderCancelRequest tsOrderCancelRequest = new TSOrderCancelRequest();
+        tsOrderCancelRequest.setClOrdID("OCR#" + origClOrdID);  // ATTENZIONE; non posso cancellare più di 1 volta
+        tsOrderCancelRequest.setOrigClOrdID(origClOrdID);
+        tsOrderCancelRequest.setSide(side);
+        tsOrderCancelRequest.setTransactTime(DateService.newLocalDate());
+        
+        TSOrderQtyData tsOrderQtyData = new TSOrderQtyData();
+        tsOrderQtyData.setOrderQty(orderQty);
+        tsOrderCancelRequest.setTSOrderQtyData(tsOrderQtyData);
+        
+        TSInstrument tsInstrument = new TSInstrument();
+        tsInstrument.setSymbol("N/A");
+        tsInstrument.setSecurityID(securityID);
+        tsInstrument.setSecurityIDSource(SecurityIDSource.IsinNumber);
+        tsOrderCancelRequest.setTSInstrument(tsInstrument);
+
+        try {
+        	this.getTradeStacClientSession().manageOrderCancelRequest(tsOrderCancelRequest);
+        } catch (TradeStacException e) {
+            throw new BestXException(String.format("Error managing orderCancelRequest [%s]", tsOrderCancelRequest), e);
+        }
+
+	}
 
 }

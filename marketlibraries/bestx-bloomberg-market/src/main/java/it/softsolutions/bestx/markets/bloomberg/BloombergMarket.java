@@ -609,12 +609,29 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
 
 	@Override
 	public void revokeOrder(Operation operation, MarketOrder marketOrder, String reason) throws BestXException {
-		throw new UnsupportedOperationException();
+		if (tsoxConnectionMarketStatus != ConnectionStatus.Connected) {
+			throw new ConnectionNotAvailableException("TSOX not connected");
+		}
+		LOGGER.debug("listener = {}, marketOrder = {}, reason = {}", operation, marketOrder, reason);
+
+		String clOrdID = marketOrder.getMarketSessionId();
+		LOGGER.info("[MktReq] Order {}, Sending Cancel - ClOrdID={}", operation.getOrder().getFixOrderId(), clOrdID);
+
+		this.tsoxConnection.cancelOrder(marketOrder);
 	}
 
 	@Override
 	public void revokeOrder(Operation operation, MarketOrder marketOrder, String reason, long sendOrderCancelTimeout) throws BestXException {
-		throw new UnsupportedOperationException();
+		if (tsoxConnectionMarketStatus != ConnectionStatus.Connected) {
+			throw new ConnectionNotAvailableException("TSOX not connected");
+		}
+		LOGGER.debug("listener = {}, marketOrder = {}, reason = {}, sendOrderCancelTimeout = {}", operation,
+				marketOrder, reason, sendOrderCancelTimeout);
+
+		String clOrdID = marketOrder.getMarketSessionId();
+		LOGGER.info("[MktReq] Order {}, Sending Cancel - ClOrdID={}", operation.getOrder().getFixOrderId(), clOrdID);
+
+		this.tsoxConnection.cancelOrder(marketOrder);
 	}
 
 	@Override
@@ -963,7 +980,8 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
 
 	@Override
 	public void onCancelReject(String sessionId, String quoteReqId, String reason) {
-		LOGGER.error("onCancelReject received while BestX! is supposed not to cancel any enquiry!");
+	    LOGGER.info("Cancel rejected: sessionId = {}, origClOrdID = {}, reason = {}", sessionId, quoteReqId, reason);
+		executor.execute(new OnOrderCancelRejectRunnable(quoteReqId, reason, this));
 	}
 
 }

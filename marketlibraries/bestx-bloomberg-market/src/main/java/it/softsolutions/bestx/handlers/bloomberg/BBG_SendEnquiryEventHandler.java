@@ -238,5 +238,17 @@ public class BBG_SendEnquiryEventHandler extends BaseOperationEventHandler {
 
 		String reason = Messages.getString("EventRevocationRequest.0");
 		updateOperationToRevocated(reason);
+		
+		// TW
+		try {
+			this.buySideConnection.revokeOrder(operation, marketOrder, reason);
+		} catch (BestXException e) {
+			LOGGER.error("An error occurred while revoking the order {}", operation.getOrder().getFixOrderId(), e);
+			operation.setStateResilient(
+					new WarningState(operation.getState(), e,
+							Messages.getString("BBG_MarketRevokeOrderError", operation.getOrder().getFixOrderId())),
+					ErrorState.class);
+		}
+
 	}
 }
