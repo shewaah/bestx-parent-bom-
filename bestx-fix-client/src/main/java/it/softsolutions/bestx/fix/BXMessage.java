@@ -29,6 +29,8 @@ public abstract class BXMessage<T41 extends quickfix.fix41.Message, T42 extends 
    private Integer msgSeqNum;
    private MsgType msgType;
    
+   private String originalFixMessage;
+   
    public BXMessage(MsgType msgType) {
       this.msgType = msgType;
    }
@@ -52,5 +54,13 @@ public abstract class BXMessage<T41 extends quickfix.fix41.Message, T42 extends 
    public void setMsgType(MsgType msgType) {
       this.msgType = msgType;
    }
+
+	public String getOriginalFixMessage() {
+		return originalFixMessage;
+	}
+
+	public void setOriginalFixMessage(String originalFixMessage) {
+		this.originalFixMessage = originalFixMessage;
+	}
    
 }
