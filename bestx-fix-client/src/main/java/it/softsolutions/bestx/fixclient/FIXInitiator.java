@@ -293,10 +293,12 @@ public class FIXInitiator implements Application {
                 switch (msgType) {
                 case ExecutionReport:
                     BXExecutionReport bxExecutionReport = BXExecutionReport.fromFIX41Message((quickfix.fix41.ExecutionReport) message);
+                    bxExecutionReport.setOriginalFixMessage(message.toString());
                     fixClientCallback.onExecutionReport(bxExecutionReport);
                     break;
                 case OrderCancelReject:
                     BXOrderCancelReject bxOrderCancelReject = BXOrderCancelReject.fromFIX41Message((quickfix.fix41.OrderCancelReject) message);
+                    bxOrderCancelReject.setOriginalFixMessage(message.toString());
                     fixClientCallback.onOrderCancelReject(bxOrderCancelReject);
                     break;
                 default:
@@ -311,14 +313,17 @@ public class FIXInitiator implements Application {
                 	quickfix.fix42.ExecutionReport exRep = new quickfix.fix42.ExecutionReport();
                 	exRep.fromString(message.toString(), dataDictionary, false);
                     BXExecutionReport bxExecutionReport = BXExecutionReport.fromFIX42Message(exRep);
+                    bxExecutionReport.setOriginalFixMessage(message.toString());
                     fixClientCallback.onExecutionReport(bxExecutionReport);
                     break;
                 case OrderCancelReject:
                     BXOrderCancelReject bxOrderCancelReject = BXOrderCancelReject.fromFIX42Message((quickfix.fix42.OrderCancelReject) message);
+                    bxOrderCancelReject.setOriginalFixMessage(message.toString());
                     fixClientCallback.onOrderCancelReject(bxOrderCancelReject);
                     break;
                 case BusinessMessageReject:
                     BXBusinessMessageReject bxBusinessMessageReject = BXBusinessMessageReject.fromFIX42Message((quickfix.fix42.BusinessMessageReject) message);
+                    bxBusinessMessageReject.setOriginalFixMessage(message.toString());
                     fixClientCallback.onBusinessMessageReject(bxBusinessMessageReject);
                     break;
                 default:
