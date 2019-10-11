@@ -870,7 +870,7 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
 					operation.getOrder().getFixOrderId(), clOrdID, ordStatus, execType, lastPrice, text);
 
 			if(execType != ExecType.New && execType != ExecType.OrderStatus) {
-				if (execType != ExecType.Canceled && lastPrice.doubleValue() > 0) {
+				if (execType != ExecType.Canceled && execType != ExecType.DoneForDay && lastPrice.doubleValue() > 0) {
 					marketStatistics.orderResponseReceived(orderId, operation.getOrder().getQty().doubleValue());
 				} else {
 					marketStatistics.orderResponseReceived(orderId, 0.0);

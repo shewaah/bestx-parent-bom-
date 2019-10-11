@@ -162,7 +162,8 @@ public class BBG_SendEnquiryEventHandler extends BaseOperationEventHandler {
         	executionReport.setCounterPart(marketExecutionReport.getExecBroker());
         }
         executionReport.setMarketOrderID(marketExecutionReport.getMarketOrderID());
-            
+         
+        //TDRCHECK Is it right?
 		operation.getExecutionReports().add(executionReport);
 		
 		// FIXME 20190506 verify that the Execution Report carries the order ID
@@ -170,30 +171,32 @@ public class BBG_SendEnquiryEventHandler extends BaseOperationEventHandler {
 		//marketExecutionReport.getClOrdID (non esiste...)
 		if (marketExecutionReport.getState() == ExecutionReportState.FILLED) {
 			operation.setStateResilient(new BBG_ExecutedState(reason), ErrorState.class);
-		} else if (marketExecutionReport.getState() == ExecutionReportState.CANCELLED || marketExecutionReport.getState() == ExecutionReportState.REJECTED) {
-				// go to next execution attempt
-				if (reason != null && reason.length() > 0) {
-					boolean isTechnicalReject = false;
-					for (String r : technicalRejectReasons) {
-						if (reason.toLowerCase().contains(r)) {
-							isTechnicalReject = true;
-							LOGGER.info("Order {}, must send technical Reject as reject reason ({}) matches one of the configured ones ({})", order.getFixOrderId(), reason, r);
-							break;
-						}
+		} else if (marketExecutionReport.getState() == ExecutionReportState.CANCELLED ||
+				marketExecutionReport.getState() == ExecutionReportState.REJECTED || 
+				marketExecutionReport.getState() == ExecutionReportState.DONE_FOR_DAY) {
+			// go to next execution attempt
+			boolean isTechnicalReject = false;
+			if (reason != null && reason.length() > 0) {
+				for (String r : technicalRejectReasons) {
+					if (reason.toLowerCase().contains(r)) {
+						isTechnicalReject = true;
+						LOGGER.info("Order {}, must send technical Reject as reject reason ({}) matches one of the configured ones ({})", order.getFixOrderId(), reason, r);
+						break;
 					}
-
-					String rejectReason = reason;
-					if (marketExecutionReport.getState() == ExecutionReportState.CANCELLED) {
-					if (isCancelRequestedByUser) {
-						rejectReason = "Revoke requested by the customer";
-					} else if(isCancelBestXInitiative) {
-						rejectReason = "No answer received after the configuration number of seconds. Order has been automatically cancelled by BestX!";
-					}
-					
-					operation.setStateResilient(new BBG_RejectedState(rejectReason, isTechnicalReject), ErrorState.class);
-				} else {
-					operation.setStateResilient(new BBG_RejectedState("", false), ErrorState.class);
 				}
+			}
+
+			String rejectReason = reason;
+			if (marketExecutionReport.getState() == ExecutionReportState.CANCELLED) {
+				if (isCancelRequestedByUser) {
+					rejectReason = "Revoke requested by the customer";
+				} else if(isCancelBestXInitiative) {
+					rejectReason = "No answer received after the configuration number of seconds. Order has been automatically cancelled by BestX!";
+				}
+
+				operation.setStateResilient(new BBG_RejectedState(rejectReason, isTechnicalReject), ErrorState.class);
+			} else {
+				operation.setStateResilient(new BBG_RejectedState("", false), ErrorState.class);
 			}
 		}
 	}
