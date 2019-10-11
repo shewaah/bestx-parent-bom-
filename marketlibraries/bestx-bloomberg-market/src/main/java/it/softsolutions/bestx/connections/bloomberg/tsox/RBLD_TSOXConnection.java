@@ -269,6 +269,9 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
       if (quickfix.field.ExecType.REJECTED == execType) {
          tsoxConnectionListener.onOrderReject(sessionID.toString(), tsExecutionReport.getClOrdID(), tsExecutionReport.getText());
       }
+      else if(quickfix.field.ExecType.CANCELED == execType && tsExecutionReport.getOrigClOrdID() != null) {
+    	  tsoxConnectionListener.onExecutionReport(sessionID.toString(), tsExecutionReport.getOrigClOrdID(), tsExecutionReport);
+      }
       else {
          tsoxConnectionListener.onExecutionReport(sessionID.toString(), tsExecutionReport.getClOrdID(), tsExecutionReport);
       }
