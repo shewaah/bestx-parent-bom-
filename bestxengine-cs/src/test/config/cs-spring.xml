@@ -1027,11 +1027,17 @@
         <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
         <property name="cancelIsins">
         	<list>
+        		<value>TXBBG0000002</value>
         	</list>
 		</property>
         <property name="rejectIsins">
         	<list>
         	</list>
+		</property>
+		<property name="waitingIsins">
+			<list>
+				<value>TXBBG0000003</value>
+			</list>
 		</property>
 	</bean>
  

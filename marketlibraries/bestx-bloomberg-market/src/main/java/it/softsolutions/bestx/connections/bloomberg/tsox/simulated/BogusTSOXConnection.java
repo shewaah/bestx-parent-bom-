@@ -89,26 +89,9 @@ public class BogusTSOXConnection extends AbstractTradeStacConnection implements 
 	
     private TSOXConnectionListener tsoxConnectionListener;	
 	
-	private static List<String> cancelIsins = new ArrayList<String>();
-	
-	static {
-		cancelIsins.add("AA0005240830");
-	}
-
-	private static List<String> rejectIsins = new ArrayList<String>();
-	
-	static {
-		rejectIsins.add("XS0451037062");
-	}
-	
-   private static List<String> fillIsins = new ArrayList<String>();
-   
-   static {
-	      fillIsins.add("IT0005240830");
-	      fillIsins.add("DE000A0DHUM0");
-   }
-	
-	
+	private List<String> cancelIsins = new ArrayList<String>();
+	private List<String> rejectIsins = new ArrayList<String>();
+	private List<String> waitingIsins = new ArrayList<String>();
 	
 	@Override
 	public void init() {
@@ -158,23 +141,25 @@ public class BogusTSOXConnection extends AbstractTradeStacConnection implements 
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {}
 
-		sendNewExecutionReport(marketOrder);
-
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {}
-
-		//		cancelIsins.remove(0);
-//		if(cancelIsins.size() == 0)
-//			cancelIsins.add("TRFAKBK11926");
-		if (cancelIsins.contains(marketOrder.getInstrument().getIsin())) {
-			sendCancelledExecutionReport(marketOrder);
-		} else if (rejectIsins.contains(marketOrder.getInstrument().getIsin())){
+		// We accept all orders
+		if (rejectIsins.contains(marketOrder.getInstrument().getIsin())) {
 			sendOrderReject(marketOrder);
 		} else {
-			sendFilledExecutionReport(marketOrder);
-		} 
+			sendNewExecutionReport(marketOrder);
+			
+			if (!waitingIsins.contains(marketOrder.getInstrument().getIsin())) {
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {}
 
+				if (cancelIsins.contains(marketOrder.getInstrument().getIsin())) {
+					sendCancelledExecutionReport(marketOrder);
+				} else {
+					sendFilledExecutionReport(marketOrder);
+				} 
+			}
+		}
+		
 	}
 
 	private void sendQuote(MarketOrder marketOrder) {
@@ -233,12 +218,16 @@ public class BogusTSOXConnection extends AbstractTradeStacConnection implements 
 		tsoxConnectionListener.onExecutionReport(sessionId, clOrdId, tsExecutionReport);
 	}
 
-	public static void setCancelIsins(List<String> cancelIsins) {
-		BogusTSOXConnection.cancelIsins = cancelIsins;
+	public void setCancelIsins(List<String> cancelIsins) {
+		this.cancelIsins = cancelIsins;
 	}
 
-	public static void setRejectIsins(List<String> rejectIsins) {
-		BogusTSOXConnection.rejectIsins = rejectIsins;
+	public void setRejectIsins(List<String> rejectIsins) {
+		this.rejectIsins = rejectIsins;
+	}
+	
+	public void setWaitingIsins(List<String> waitingIsins) {
+		this.waitingIsins = waitingIsins;
 	}
 
 	private void sendFilledExecutionReport(MarketOrder marketOrder) {
@@ -248,8 +237,8 @@ public class BogusTSOXConnection extends AbstractTradeStacConnection implements 
 		OrdStatus ordStatus = OrdStatus.Filled;
 		BigDecimal accruedInterestAmount = new BigDecimal("123400.56");
 		int numDaysInterest = 62;
-//		Double factor = 345.9873;
-		Double factor = null;
+		Double factor = 345.9873;
+//		Double factor = null;
 		
 		BigDecimal lastPrice = new BigDecimal("100.002");
 		String contractNo = "C#" + System.currentTimeMillis();
@@ -374,13 +363,17 @@ public class BogusTSOXConnection extends AbstractTradeStacConnection implements 
 	public void cancelOrder(MarketOrder marketOrder) throws BestXException {
 		LOGGER.debug("marketOrder = {}", marketOrder);
 		
-		sendOrderCancelReject(marketOrder);
-		
-	    try {
-          Thread.sleep(30000);
-       } catch (InterruptedException e) {}
-		
-		sendFilledExecutionReport(marketOrder);
+		if (waitingIsins.contains(marketOrder.getInstrument().getIsin())) {
+			sendCancelledExecutionReport(marketOrder);
+		} else {
+			sendOrderCancelReject(marketOrder);
+
+			try {
+				Thread.sleep(30000);
+			} catch (InterruptedException e) { }
+
+			sendFilledExecutionReport(marketOrder);
+		}
 		
 	}
 
