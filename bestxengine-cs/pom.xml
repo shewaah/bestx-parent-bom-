@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>it.softsolutions.bestx</groupId>
 		<artifactId>bestxengine-parent</artifactId>
-		<version>4.3.16-SNAPSHOT</version>
+		<version>4.3.16-NEUTRONSTAR-191016-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>bestxengine-cs</artifactId>
