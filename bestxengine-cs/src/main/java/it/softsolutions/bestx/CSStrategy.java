@@ -155,6 +155,7 @@ public class CSStrategy implements Strategy, SystemStateSelector {
 	private long priceDiscoveryTimeout;
 	private long marketAxessExecTimeout = 10 * 60 * 1000;
 	private long marketExecTimeout;
+	private long bloombergExecTimeout;
 	private long internalRfqReplyTimeout;
 	private String internalRfqMessagePrefix;
 
@@ -665,7 +666,7 @@ public class CSStrategy implements Strategy, SystemStateSelector {
 			switch (marketCode) {
 			case BLOOMBERG:
 				handler = new BBG_SendEnquiryEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BLOOMBERG).getBuySideConnection(), 
-						serialNumberService, marketExecTimeout, orderCancelDelay, tsoxTechnicalRejectReasons);
+						serialNumberService, this.bloombergExecTimeout, orderCancelDelay, tsoxTechnicalRejectReasons);
 				break;
 			case BV:
 				handler = new BV_SendRFCQEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BV).getBuySideConnection(), serialNumberService,
@@ -1484,4 +1485,12 @@ public class CSStrategy implements Strategy, SystemStateSelector {
 		this.applicationStatus = applicationStatus;
 	}
 
+	public long getBloombergExecTimeout() {
+		return bloombergExecTimeout;
+	}
+
+	public void setBloombergExecTimeout(long bloombergExecTimeout) {
+		this.bloombergExecTimeout = bloombergExecTimeout;
+	}
+	
 }

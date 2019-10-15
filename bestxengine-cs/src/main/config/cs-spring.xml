@@ -633,6 +633,7 @@
         <property name="marketPriceTimeout"><value>${Bloomberg.pricesTimeout}</value></property>
         <property name="marketExecTimeout"><value>${Market.state.timeout}</value></property>
 		<property name="marketAxessExecTimeout"><value>${MarketAxess.ExecTimeout}</value></property>
+		<property name="bloombergExecTimeout"><value>${Bloomberg.ExecTimeout}</value></property>
         <property name="internalRfqReplyTimeout"><value>${Internal.rfqreply.timeout}</value></property>
         <property name="internalRfqMessagePrefix"><value>${Internal.rfq.message.prefix}</value></property>
         <property name="targetPriceMaxLevel"><value>${TargetPrice.MaxLevel}</value></property>
