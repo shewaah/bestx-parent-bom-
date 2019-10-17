@@ -90,6 +90,7 @@ import it.softsolutions.tradestac.fix.field.ExecType;
 import it.softsolutions.tradestac.fix.field.OrdStatus;
 import it.softsolutions.tradestac.fix.field.PartyIDSource;
 import it.softsolutions.tradestac.fix.field.PartyRole;
+import it.softsolutions.tradestac.fix.field.PriceType;
 import it.softsolutions.tradestac.fix50.TSExecutionReport;
 import it.softsolutions.tradestac.fix50.TSNoPartyID;
 import it.softsolutions.tradestac.fix50.component.TSCompDealersGrpComponent;
@@ -99,9 +100,10 @@ import quickfix.Group;
 import quickfix.IntField;
 import quickfix.MessageComponent;
 import quickfix.StringField;
+import quickfix.field.CompDealerID;
+import quickfix.field.CompDealerParQuote;
 import quickfix.field.CompDealerQuote;
 import quickfix.field.CompDealerStatus;
-import tw.quickfix.field.CompDealerID;
 import tw.quickfix.field.MiFIDMIC;
 /**
  * 
@@ -805,7 +807,22 @@ public class TradewebMarket extends MarketCommon
       OrdStatus ordStatus = tsExecutionReport.getOrdStatus();
       BigDecimal accruedInterestAmount = tsExecutionReport.getAccruedInterestAmt() != null ? BigDecimal.valueOf(tsExecutionReport.getAccruedInterestAmt()) : BigDecimal.ZERO;
       BigDecimal accruedInterestRate = BigDecimal.ZERO;
-      BigDecimal lastPrice = tsExecutionReport.getLastPx() != null ? BigDecimal.valueOf(tsExecutionReport.getLastPx()) : BigDecimal.ZERO;
+      
+      // SP-20191016 - BESTX-546
+      BigDecimal lastPrice = BigDecimal.ZERO;
+      if (tsExecutionReport.getPriceType() != null && tsExecutionReport.getPriceType() == PriceType.Percentage) {
+         if (tsExecutionReport.getLastParPrice() != null) {
+            lastPrice = tsExecutionReport.getLastParPrice() != null ? BigDecimal.valueOf(tsExecutionReport.getLastParPrice()) : BigDecimal.ZERO;
+         } else {
+            lastPrice = tsExecutionReport.getLastPx() != null ? BigDecimal.valueOf(tsExecutionReport.getLastPx()) : BigDecimal.ZERO;
+         }
+      } else {
+         if (tsExecutionReport.getAvgPx() != null) {
+            lastPrice = BigDecimal.valueOf(tsExecutionReport.getAvgPx());
+         } else {
+            lastPrice = tsExecutionReport.getLastPx() != null ? BigDecimal.valueOf(tsExecutionReport.getLastPx()) : BigDecimal.ZERO;
+         }
+      }
       String contractNo = tsExecutionReport.getExecID();
       Date futSettDate = tsExecutionReport.getSettlDate();
       Date transactTime = tsExecutionReport.getTransactTime();
@@ -959,11 +976,21 @@ public class TradewebMarket extends MarketCommon
                                  price.setMarketMarketMaker(tempMM);
                               }
                            }
-                           if (groups.get(i).isSetField(CompDealerQuote.FIELD)) {
-                              Double compDealerQuote = groups.get(i).getField(new DoubleField(CompDealerQuote.FIELD)).getValue();
+                           
+                           //SP-20191016 - BESTX-546
+                           if (groups.get(i).isSetField(CompDealerParQuote.FIELD)) {
+                              Double compDealerQuote = groups.get(i).getField(new DoubleField(CompDealerParQuote.FIELD)).getValue();
                               price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerQuote)));
-                           } else
-                        	   price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
+                           } else {
+                              LOGGER.info("CompDealerParQuote not set for percentage price use CompDealerQuote");
+                              if (groups.get(i).isSetField(CompDealerQuote.FIELD)) {
+                                 Double compDealerQuote = groups.get(i).getField(new DoubleField(CompDealerQuote.FIELD)).getValue();
+                                 price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerQuote)));
+                              } else {
+                                 price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
+                              }
+                           }
+                           
                            price.setQty(operation.getOrder().getQty());
                            price.setTimestamp(tsExecutionReport.getTransactTime());
                            price.setType(ProposalType.COUNTER);
