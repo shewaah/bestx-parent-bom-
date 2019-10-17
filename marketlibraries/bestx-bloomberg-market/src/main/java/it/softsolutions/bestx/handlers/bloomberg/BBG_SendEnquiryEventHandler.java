@@ -191,7 +191,7 @@ public class BBG_SendEnquiryEventHandler extends BaseOperationEventHandler {
 				if (isCancelRequestedByUser) {
 					rejectReason = "Revoke requested by the customer";
 				} else if(isCancelBestXInitiative) {
-					rejectReason = "No answer received after the configuration number of seconds. Order has been automatically cancelled by BestX!";
+					rejectReason = "No answer received after the configurated number of seconds. Order has been automatically cancelled by BestX!";
 				}
 
 				operation.setStateResilient(new BBG_RejectedState(rejectReason, isTechnicalReject), ErrorState.class);

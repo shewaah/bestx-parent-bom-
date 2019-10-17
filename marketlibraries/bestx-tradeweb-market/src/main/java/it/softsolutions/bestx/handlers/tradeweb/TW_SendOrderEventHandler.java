@@ -262,7 +262,7 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
 					if(isCancelBestXInitiative) {
 						marketExecutionReport.setState(ExecutionReportState.REJECTED);
 						marketExecutionReport.setReason(RejectReason.AUTO_REJECTED);
-						operation.setStateResilient(new TW_CancelledState("No answer received after the configuration number of seconds. Order has been automatically cancelled by BestX!"),
+						operation.setStateResilient(new TW_CancelledState("No answer received after the configurated number of seconds. Order has been automatically cancelled by BestX!"),
 								ErrorState.class);
 					}
 					else {

@@ -37,6 +37,7 @@ import it.softsolutions.bestx.finders.VenueFinder;
 import it.softsolutions.bestx.handlers.BaseOperationEventHandler;
 import it.softsolutions.bestx.markets.marketaxess.MarketAxessExecutionReport;
 import it.softsolutions.bestx.model.Attempt;
+import it.softsolutions.bestx.model.Attempt.AttemptState;
 import it.softsolutions.bestx.model.ExecutablePrice;
 import it.softsolutions.bestx.model.ExecutionReport;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
@@ -53,7 +54,6 @@ import it.softsolutions.bestx.model.Proposal.ProposalSubState;
 import it.softsolutions.bestx.model.Proposal.ProposalType;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.Venue;
-import it.softsolutions.bestx.model.Attempt.AttemptState;
 import it.softsolutions.bestx.model.Venue.VenueType;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.serial.SerialNumberService;
@@ -213,7 +213,7 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 					operation.setStateResilient(new MA_CancelledState("Revoke requested by the customer"),
 							ErrorState.class);				
 				else if(isCancelBestXInitiative)
-					operation.setStateResilient(new MA_CancelledState("No answer received after the configuration number of seconds. Order has been automatically cancelled by BestX!"),
+					operation.setStateResilient(new MA_CancelledState("No answer received after the configurated number of seconds. Order has been automatically cancelled by BestX!"),
 							ErrorState.class);
 				else 
 					operation.setStateResilient(new MA_CancelledState(), ErrorState.class);
