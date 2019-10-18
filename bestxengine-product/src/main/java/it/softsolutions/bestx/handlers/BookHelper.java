@@ -25,6 +25,7 @@ import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal.ProposalState;
+import it.softsolutions.bestx.model.Proposal.ProposalSubState;
 import it.softsolutions.bestx.model.Rfq;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.SortedBook;
@@ -97,14 +98,16 @@ public class BookHelper {
     * gets the spread in the sorted proposal list between the best and the i-th proposal
     * @param sortedProposals
     * @param i the maximum level to be used
+    * We expect bestPrice to be always a valid proposal
     * @return
     */
    public static double getQuoteSpread(List<ClassifiedProposal> sortedProposals, int i) {
       BigDecimal bestPrice = BigDecimal.ZERO;
       BigDecimal otherPrice = BigDecimal.ZERO;
       if (sortedProposals.size() > 0) {
+ 
          bestPrice = getValidIthProposal(sortedProposals, 1).getPrice().getAmount();
-         otherPrice = getValidIthProposal(sortedProposals, i).getPrice().getAmount();
+         otherPrice = getAcceptableIthProposal(sortedProposals, i).getPrice().getAmount();
       }
       double delta = Math.abs(bestPrice.doubleValue() - otherPrice.doubleValue());
       double deltaPerc = (delta / bestPrice.doubleValue()) * 100;
@@ -144,6 +147,32 @@ public class BookHelper {
                return sortedProposals.get(index - 1);
       }
       return null;
+   }
+   
+   public static ClassifiedProposal getAcceptableIthProposal(List<ClassifiedProposal> sortedProposals, int i) {
+	   if (sortedProposals.size() == 0)
+		   return null;
+	   if ((sortedProposals.size() >= i && i > 0 && ProposalState.VALID == sortedProposals.get(i - 1).getProposalState()) ||
+			   (ProposalState.REJECTED == sortedProposals.get(i - 1).getProposalState() &&
+			   sortedProposals.get(i - 1).getProposalSubState() != null && 
+			   sortedProposals.get(i - 1).getProposalSubState() == ProposalSubState.PRICE_WORST_THAN_LIMIT))
+		   return sortedProposals.get(i - 1);
+	   else if ((ProposalState.VALID == sortedProposals.get(sortedProposals.size() - 1).getProposalState()) || 
+			   (ProposalState.REJECTED == sortedProposals.get(sortedProposals.size() - 1).getProposalState() &&
+			   sortedProposals.get(sortedProposals.size() - 1).getProposalSubState() != null && 
+			   sortedProposals.get(sortedProposals.size() - 1).getProposalSubState() == ProposalSubState.PRICE_WORST_THAN_LIMIT))
+		   return sortedProposals.get(sortedProposals.size() - 1);
+	   else {
+		   for (int index = 0; i < sortedProposals.size(); index++) {
+			   ClassifiedProposal classifiedProposal = sortedProposals.get(index);
+			   if ((ProposalState.VALID != classifiedProposal.getProposalState()) || 
+					   (ProposalState.REJECTED == classifiedProposal.getProposalState() &&
+					   classifiedProposal.getProposalSubState() != null && 
+					   classifiedProposal.getProposalSubState() == ProposalSubState.PRICE_WORST_THAN_LIMIT))
+				   return sortedProposals.get(index - 1);
+		   }
+	   }
+	   return null;
    }
 
    /**
