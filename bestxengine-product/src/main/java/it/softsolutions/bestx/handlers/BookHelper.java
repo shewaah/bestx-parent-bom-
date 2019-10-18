@@ -176,19 +176,23 @@ public class BookHelper {
     * @return
     */
    public static Money widen(Money quote, BigDecimal wideSpread, Rfq.OrderSide side, BigDecimal maxPrice) {
-      if (quote == null)
-         return null;
-      if (wideSpread == null || wideSpread.compareTo(BigDecimal.ZERO) <= 0)
-         return quote;
-      BigDecimal price = quote.getAmount();
-      BigDecimal spread = wideSpread.multiply(price).divide(ONE_HUNDRED);
-      if (maxPrice == null)
-         maxPrice = price.add(spread);
-      if (side == OrderSide.BUY)
-         price = price.add(spread).min(maxPrice);
-      else if (side == OrderSide.SELL)
-         price = price.subtract(spread).max(maxPrice);
-      return new Money(quote.getStringCurrency(), price);
+	   if (quote == null)
+		   return null;
+	   if (wideSpread == null || wideSpread.compareTo(BigDecimal.ZERO) <= 0)
+		   return quote;
+	   BigDecimal price = quote.getAmount();
+	   BigDecimal spread = wideSpread.multiply(price).divide(ONE_HUNDRED);
+	   if (side == OrderSide.BUY) {
+		   if (maxPrice == null)
+			   maxPrice = price.add(spread);
+		   price = price.add(spread).min(maxPrice);
+	   }
+	   else if (side == OrderSide.SELL) {
+		   if (maxPrice == null)
+			   maxPrice = price.subtract(spread);
+		   price = price.subtract(spread).max(maxPrice);
+	   }
+	   return new Money(quote.getStringCurrency(), price);
    }
 
    /**

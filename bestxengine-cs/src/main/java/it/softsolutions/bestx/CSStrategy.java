@@ -71,9 +71,9 @@ import it.softsolutions.bestx.handlers.ValidateByPunctualFilterEventHandler;
 import it.softsolutions.bestx.handlers.WaitingPriceEventHandler;
 import it.softsolutions.bestx.handlers.WarningEventHandler;
 import it.softsolutions.bestx.handlers.bloomberg.BBG_ExecutedEventHandler;
-import it.softsolutions.bestx.handlers.bloomberg.BBG_RejectedEventHandler;
 import it.softsolutions.bestx.handlers.bloomberg.BBG_SendEnquiryEventHandler;
 import it.softsolutions.bestx.handlers.bloomberg.BBG_StartExecutionEventHandler;
+import it.softsolutions.bestx.handlers.bloomberg.CS_BBG_RejectedEventHandler;
 import it.softsolutions.bestx.handlers.bloomberg.UnreconciledTradeEventHandler;
 import it.softsolutions.bestx.handlers.bondvision.BV_SendOrderEventHandler;
 import it.softsolutions.bestx.handlers.bondvision.BV_SendRFCQEventHandler;
@@ -586,7 +586,7 @@ public class CSStrategy implements Strategy, SystemStateSelector {
 			else {
 				switch (marketCode) {
 				case BLOOMBERG:
-					handler = new BBG_RejectedEventHandler(operation, serialNumberService);
+					handler = new CS_BBG_RejectedEventHandler(operation, serialNumberService);
 					break;
 				case TW:
 					handler = new TW_RejectedEventHandler(operation, serialNumberService, bestXConfigurationDao);

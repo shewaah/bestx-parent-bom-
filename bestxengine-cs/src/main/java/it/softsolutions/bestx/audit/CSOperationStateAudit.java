@@ -813,7 +813,8 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
                     comment = Messages.getString("InternalMM_MarketExecuted");
                 }
                 else {
-                    comment = getComment(false, marketCode, type, comment);
+                	Object[] params = { executionMarketMaker, executionReportPrice };
+                    comment = getComment(false, marketCode, type, comment, params);
                 }
                 break;
             case TW: 

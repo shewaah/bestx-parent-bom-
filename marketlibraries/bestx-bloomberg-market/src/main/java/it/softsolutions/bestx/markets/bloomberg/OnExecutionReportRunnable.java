@@ -191,6 +191,9 @@ public class OnExecutionReportRunnable implements Runnable {
 				accruedInterestAmount == null ? BigDecimal.ZERO : accruedInterestAmount));
 //		marketExecutionReport.setAccruedInterestRate(null);
 		marketExecutionReport.setLastMkt(lastMkt);
+		if(dealerCode != null) {
+			marketExecutionReport.setExecBroker(dealerCode);
+		}
 		
 		if (numDaysInterest != null) {
 			marketExecutionReport.setAccruedInterestDays(numDaysInterest);
