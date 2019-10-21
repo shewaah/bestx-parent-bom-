@@ -152,8 +152,8 @@ public class BookHelper {
    public static ClassifiedProposal getAcceptableIthProposal(List<ClassifiedProposal> sortedProposals, int i) {
 	   if (sortedProposals.size() == 0)
 		   return null;
-	   if ((sortedProposals.size() >= i && i > 0 && ProposalState.VALID == sortedProposals.get(i - 1).getProposalState()) ||
-			   (ProposalState.REJECTED == sortedProposals.get(i - 1).getProposalState() &&
+	   if (sortedProposals.size() >= i && i > 0 && ((ProposalState.VALID == sortedProposals.get(i - 1).getProposalState() ||
+			   ProposalState.REJECTED == sortedProposals.get(i - 1).getProposalState()) &&
 			   sortedProposals.get(i - 1).getProposalSubState() != null && 
 			   sortedProposals.get(i - 1).getProposalSubState() == ProposalSubState.PRICE_WORST_THAN_LIMIT))
 		   return sortedProposals.get(i - 1);
