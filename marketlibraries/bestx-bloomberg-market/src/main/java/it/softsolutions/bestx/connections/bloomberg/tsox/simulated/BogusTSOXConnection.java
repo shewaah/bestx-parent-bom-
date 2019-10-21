@@ -368,11 +368,13 @@ public class BogusTSOXConnection extends AbstractTradeStacConnection implements 
 		} else {
 			sendOrderCancelReject(marketOrder);
 
+			/*
 			try {
 				Thread.sleep(30000);
 			} catch (InterruptedException e) { }
 
 			sendFilledExecutionReport(marketOrder);
+			*/
 		}
 		
 	}
