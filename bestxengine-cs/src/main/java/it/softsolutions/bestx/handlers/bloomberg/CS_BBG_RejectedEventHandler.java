@@ -63,9 +63,9 @@ public class CS_BBG_RejectedEventHandler extends BaseOperationEventHandler {
             }
             
             if (!mustSendAutoNotExecution) {            
-                List<ClassifiedProposal> currentProposals = lastAttempt.getSortedBook().getValidSideProposals(order.getSide());
+/*                List<ClassifiedProposal> currentProposals = lastAttempt.getSortedBook().getValidSideProposals(order.getSide());
                 double[] resultValues = new double[2];
-/*                try {
+                try {
                     if (BookHelper.isSpreadOverTheMax(currentProposals, order, resultValues)) {
                         rejectReason = Messages.getString("BestBook.21", resultValues[0], resultValues[1]);
         
