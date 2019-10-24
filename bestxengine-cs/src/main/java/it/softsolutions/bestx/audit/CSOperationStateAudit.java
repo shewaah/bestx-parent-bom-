@@ -793,7 +793,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             comment = getComment(false, marketCode, type, comment);
             break;
         case Rejected:
-            comment = getComment(false, marketCode, type, comment, orderMarketMaker);
+            comment = getComment(false, marketCode, type, comment, orderMarketMaker == null ? marketCode : orderMarketMaker);
             break;
         case ManageCounter: {
             String counterOfferAmount = df.format(operation.getLastAttempt().getExecutablePrice(0).getClassifiedProposal().getPrice().getAmount());
