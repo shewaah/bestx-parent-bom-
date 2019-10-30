@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.model.Attempt.AttemptState;
 import it.softsolutions.bestx.model.Market.MarketCode;
@@ -12,6 +15,8 @@ import it.softsolutions.bestx.services.DateService;
 
 public class CSPOBexExecutionReport extends ExecutionReport {
 
+   private static final Logger LOGGER = LoggerFactory.getLogger(CSPOBexExecutionReport.class);
+   
 	private Integer execAttmptNo;
 	private Date execAttmptTime;
 	private String multiDealerID;
@@ -195,9 +200,9 @@ public class CSPOBexExecutionReport extends ExecutionReport {
 		}
 
 		if(marketExecutionReport != null && (marketExecutionReport.getMarket().getMarketCode() == MarketCode.MARKETAXESS
-									|| (marketExecutionReport.getMarket().getMarketCode() == MarketCode.TW && marketExecutionReport.getState() == ExecutionReportState.FILLED)
-									|| (marketExecutionReport.getMarket().getMarketCode() == MarketCode.BLOOMBERG)
-									|| (marketExecutionReport.getMarket().getMarketCode() == MarketCode.BV)
+									|| marketExecutionReport.getMarket().getMarketCode() == MarketCode.TW
+									|| marketExecutionReport.getMarket().getMarketCode() == MarketCode.BLOOMBERG
+									|| marketExecutionReport.getMarket().getMarketCode() == MarketCode.BV
 									)) {
 			// manage MarketAxess more rich execution report
 			// get all quotes from attempt
@@ -214,8 +219,10 @@ public class CSPOBexExecutionReport extends ExecutionReport {
 					try {
 						dealerGroup.setDealerID(quote.getMarketMarketMaker().getMarketMaker().getCode());
 					} catch (@SuppressWarnings("unused") Exception e) {
+					   LOGGER.warn("Marke maker not defined : {}", quote.getMarketMarketMaker().getMarketSpecificCode(), e);
+					   
 					   if (quote.getOriginatorID() != null) {
-					   dealerGroup.setDealerID(quote.getOriginatorID());
+					      dealerGroup.setDealerID(quote.getOriginatorID());
 					   } else {
 					      continue;
 					   }
