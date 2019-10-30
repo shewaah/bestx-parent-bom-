@@ -214,7 +214,11 @@ public class CSPOBexExecutionReport extends ExecutionReport {
 					try {
 						dealerGroup.setDealerID(quote.getMarketMarketMaker().getMarketMaker().getCode());
 					} catch (@SuppressWarnings("unused") Exception e) {
-						dealerGroup.setDealerID(quote.getOriginatorID());
+					   if (quote.getOriginatorID() != null) {
+					   dealerGroup.setDealerID(quote.getOriginatorID());
+					   } else {
+					      continue;
+					   }
 					}
 					if(quote.getPrice() != null){
 						dealerGroup.setDealerQuotePrice(quote.getPrice().getAmount());

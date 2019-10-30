@@ -314,24 +314,25 @@ public class OMS1FixExecutionReportOutputLazyBean extends FixExecutionReportOutp
     	}
     	int i = 0;
     	for (CSDealerGroup dealer: executionReport.getDealerGroups()) {
-    		if (dealer.getDealerID()!=null) {
+    		if (dealer.getDealerID() != null) {
         		msg.setValue(CSFixMessageFields.CS_FIX_PT_DealerID+"."+i, dealer.getDealerID());
-        	}
-    		if (dealer.getDealerQuotePrice()!=null) {
-        		msg.setValue(CSFixMessageFields.CS_FIX_PT_DealerQuotePrice+"."+i, dealer.getDealerQuotePrice().doubleValue());
-        	}
-    		if (dealer.getDealerQuoteOrdQty()!=null) {
-        		msg.setValue(CSFixMessageFields.CS_FIX_PT_DealerQuoteOrdQty+"."+i, dealer.getDealerQuoteOrdQty().doubleValue());
-        	}
-    		if (dealer.getDealerQuoteTime()!=null) {
-        		msg.setValue(CSFixMessageFields.CS_FIX_PT_DealerQuoteTime+"."+i, DateService.formatAsUTC("yyyyMMdd-HH:mm:ss.SSS", dealer.getDealerQuoteTime()));
-        	}
-    		if (dealer.getDealerQuoteStatusString()!=null) {
-    			msg.setValue(CSFixMessageFields.CS_FIX_PT_DealerQuoteStatus+"."+i, dealer.getDealerQuoteStatusString());
-    		} else if (dealer.getDealerQuoteStatus()!=null) {
-        		msg.setValue(CSFixMessageFields.CS_FIX_PT_DealerQuoteStatus+"."+i, dealer.getDealerQuoteStatus().name());
-        	}
-    		i++;
+    		
+            if (dealer.getDealerQuotePrice()!=null) {
+               msg.setValue(CSFixMessageFields.CS_FIX_PT_DealerQuotePrice+"."+i, dealer.getDealerQuotePrice().doubleValue());
+            }
+            if (dealer.getDealerQuoteOrdQty()!=null) {
+               msg.setValue(CSFixMessageFields.CS_FIX_PT_DealerQuoteOrdQty+"."+i, dealer.getDealerQuoteOrdQty().doubleValue());
+            }
+            if (dealer.getDealerQuoteTime()!=null) {
+               msg.setValue(CSFixMessageFields.CS_FIX_PT_DealerQuoteTime+"."+i, DateService.formatAsUTC("yyyyMMdd-HH:mm:ss.SSS", dealer.getDealerQuoteTime()));
+            }
+            if (dealer.getDealerQuoteStatusString()!=null) {
+               msg.setValue(CSFixMessageFields.CS_FIX_PT_DealerQuoteStatus+"."+i, dealer.getDealerQuoteStatusString());
+            } else if (dealer.getDealerQuoteStatus()!=null) {
+               msg.setValue(CSFixMessageFields.CS_FIX_PT_DealerQuoteStatus+"."+i, dealer.getDealerQuoteStatus().name());
+            }
+            i++;
+    		}
         }
     }
 
