@@ -238,54 +238,64 @@ public class BBG_SendEnquiryEventHandler extends BaseOperationEventHandler {
 
    @Override
    public void onTimerExpired(String jobName, String groupName) {
-      String handlerJobName = super.getDefaultTimerJobName();
+	   String handlerJobName = super.getDefaultTimerJobName();
 
-      if (jobName.equals(handlerJobName)) {
-         LOGGER.debug("Order {} : Timer: {} expired.", operation.getOrder().getFixOrderId(), jobName);
-         try {
-            //create the timer for the order cancel
-            handlerJobName += REVOKE_TIMER_SUFFIX;
-            setupTimer(handlerJobName, orderCancelDelay, false);
-            // send order cancel message to the market
-            isCancelBestXInitiative = true;
-            this.buySideConnection.revokeOrder(operation, operation.getLastAttempt().getMarketOrder(), Messages.getString("MARKETAXESS_RevokeOrderForTimeout"));
-         }
-         catch (BestXException e) {
-            LOGGER.error("Error {} while revoking the order {}", e.getMessage(), operation.getOrder().getFixOrderId(), e);
-            operation.setStateResilient(new WarningState(operation.getState(), e, Messages.getString("BBG_MarketRevokeOrderError", operation.getOrder().getFixOrderId())), ErrorState.class);
-         }
-      }
-      else if (jobName.equals(handlerJobName + REVOKE_TIMER_SUFFIX)) {
-         //The timer created after receiving an Order Cancel Reject is expired without receiving an execution or a cancellation
-         LOGGER.debug("Order {} : Timer: {} expired.", operation.getOrder().getFixOrderId(), jobName);
-         operation.setStateResilient(
-               new WarningState(operation.getState(), null, Messages.getString("CancelRejectWithNoExecutionReportTimeout.0", operation.getLastAttempt().getMarketOrder().getMarket().getName())),
-               ErrorState.class);
-      }
-      else {
-         super.onTimerExpired(jobName, groupName);
-      }
+	   if (jobName.equals(handlerJobName)) {
+		   LOGGER.debug("Order {} : Timer: {} expired.", operation.getOrder().getFixOrderId(), jobName);
+		   try {
+			   //create the timer for the order cancel
+			   handlerJobName += REVOKE_TIMER_SUFFIX;
+			   setupTimer(handlerJobName, orderCancelDelay, false);
+			   // send order cancel message to the market
+			   isCancelBestXInitiative = true;
+			   this.buySideConnection.revokeOrder(operation, operation.getLastAttempt().getMarketOrder(), Messages.getString("MARKETAXESS_RevokeOrderForTimeout"));
+		   }
+		   catch (BestXException e) {
+			   try {
+				   stopTimer(handlerJobName);
+			   } catch (SchedulerException e1) {
+				   LOGGER.error("Error in stop timer " + handlerJobName, e1);
+			   }
+			   LOGGER.error("Error {} while revoking the order {}", e.getMessage(), operation.getOrder().getFixOrderId(), e);
+			   operation.setStateResilient(new WarningState(operation.getState(), e, Messages.getString("BBG_MarketRevokeOrderError", operation.getOrder().getFixOrderId())), ErrorState.class);
+		   }
+	   }
+	   else if (jobName.equals(handlerJobName + REVOKE_TIMER_SUFFIX)) {
+		   //The timer created after receiving an Order Cancel Reject is expired without receiving an execution or a cancellation
+		   LOGGER.debug("Order {} : Timer: {} expired.", operation.getOrder().getFixOrderId(), jobName);
+		   operation.setStateResilient(
+				   new WarningState(operation.getState(), null, Messages.getString("CancelRejectWithNoExecutionReportTimeout.0", operation.getLastAttempt().getMarketOrder().getMarket().getName())),
+				   ErrorState.class);
+	   }
+	   else {
+		   super.onTimerExpired(jobName, groupName);
+	   }
    }
 
    @Override
    public void onRevoke() {
-      // onRevoke is invoked by webapp and must only reject this market so no need to
-      // set customerRevokeReceived so that operations may continue on other markets
+	   // onRevoke is invoked by webapp and must only reject this market so no need to
+	   // set customerRevokeReceived so that operations may continue on other markets
 
-      String handlerJobName = super.getDefaultTimerJobName() + REVOKE_TIMER_SUFFIX;
+	   String handlerJobName = super.getDefaultTimerJobName() + REVOKE_TIMER_SUFFIX;
 
-      try {
-         // create the timer for the order cancel
-         setupTimer(handlerJobName, waitingAnswerDelay, false);
-         // send order cancel message to the market
-         this.isCancelBestXInitiative = true;
-         this.isCancelRequestedByUser = true;
-         this.buySideConnection.revokeOrder(operation, operation.getLastAttempt().getMarketOrder(), Messages.getString("BBG_RevokeOrder"));
-      }
-      catch (BestXException e) {
-         LOGGER.error("An error occurred while revoking the order {}", operation.getOrder().getFixOrderId(), e);
-         operation.setStateResilient(new WarningState(operation.getState(), e, Messages.getString("BBG_MarketRevokeOrderError", operation.getOrder().getFixOrderId())), ErrorState.class);
-      }
+	   try {
+		   // create the timer for the order cancel
+		   setupTimer(handlerJobName, waitingAnswerDelay, false);
+		   // send order cancel message to the market
+		   this.isCancelBestXInitiative = true;
+		   this.isCancelRequestedByUser = true;
+		   this.buySideConnection.revokeOrder(operation, operation.getLastAttempt().getMarketOrder(), Messages.getString("BBG_RevokeOrder"));
+	   }
+	   catch (BestXException e) {
+		   try {
+			   stopTimer(handlerJobName);
+		   } catch (SchedulerException e1) {
+			   LOGGER.error("Error in stop timer " + handlerJobName, e1);
+		   }
+		   LOGGER.error("An error occurred while revoking the order {}", operation.getOrder().getFixOrderId(), e);
+		   operation.setStateResilient(new WarningState(operation.getState(), e, Messages.getString("BBG_MarketRevokeOrderError", operation.getOrder().getFixOrderId())), ErrorState.class);
+	   }
 
    }
 
