@@ -189,10 +189,21 @@ public class OnExecutionReportRunnable implements Runnable {
 		marketExecutionReport.setText(text);
 		marketExecutionReport.setAccruedInterestAmount(new Money(order.getInstrument().getCurrency(), 
 				accruedInterestAmount == null ? BigDecimal.ZERO : accruedInterestAmount));
-//		marketExecutionReport.setAccruedInterestRate(null);
 		marketExecutionReport.setLastMkt(lastMkt);
 		if(dealerCode != null) {
-			marketExecutionReport.setExecBroker(dealerCode);
+			MarketMarketMaker mmm = null;
+			try {
+				mmm = marketMakerFinder.getMarketMarketMakerByTSOXCode(dealerCode);
+			} catch (BestXException e) {
+				LOGGER.error("Exception occurred", e);
+			}
+			if(mmm == null) {
+				LOGGER.debug("Market maker not defined in configuration");
+				marketExecutionReport.setExecBroker(dealerCode);
+			}
+			else {
+				marketExecutionReport.setExecBroker(mmm.getMarketMaker().getCode());
+			}
 		}
 		
 		if (numDaysInterest != null) {
