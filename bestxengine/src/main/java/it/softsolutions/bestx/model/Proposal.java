@@ -64,7 +64,16 @@ public class Proposal implements Cloneable, Comparable<Proposal> {
      *
      */
     public static enum ProposalSubState {
-        NONE, PRICE_NOT_VALID, QUANTITY_NOT_VALID, ZERO_QUANTITY, REJECTED_BY_MARKET, REJECTED_BY_DEALER, TOO_OLD, NOT_TRADING, PRICE_WORST_THAN_LIMIT
+        NONE, 
+        PRICE_NOT_VALID, 
+        QUANTITY_NOT_VALID, 
+        ZERO_QUANTITY, 
+        REJECTED_BY_MARKET, 
+        REJECTED_BY_DEALER, 
+        TOO_OLD, 
+        NOT_TRADING, 
+        PRICE_WORST_THAN_LIMIT,
+        OUTSIDE_SPREAD
     }
     
     /**

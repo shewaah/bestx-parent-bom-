@@ -170,7 +170,8 @@ public class SortedBook implements Book, Cloneable {
 		for (ClassifiedProposal prop : sideProposals) {
 			if (prop.getProposalState() == ProposalState.VALID ||
 					(prop.getProposalState() == ProposalState.REJECTED &&
-						prop.getProposalSubState() != null && prop.getProposalSubState() == ProposalSubState.PRICE_WORST_THAN_LIMIT)) {
+						prop.getProposalSubState() != null && (prop.getProposalSubState() == ProposalSubState.PRICE_WORST_THAN_LIMIT ||
+						prop.getProposalSubState() == ProposalSubState.OUTSIDE_SPREAD))) {
 				result.add(prop);
 			}
 		}

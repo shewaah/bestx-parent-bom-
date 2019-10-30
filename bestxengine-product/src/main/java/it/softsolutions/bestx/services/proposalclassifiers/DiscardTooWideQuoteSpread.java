@@ -13,19 +13,6 @@
  */
 package it.softsolutions.bestx.services.proposalclassifiers;
 
-import it.softsolutions.bestx.CustomerAttributes;
-import it.softsolutions.bestx.Messages;
-import it.softsolutions.bestx.bestexec.ProposalClassifier;
-import it.softsolutions.bestx.model.Attempt;
-import it.softsolutions.bestx.model.ClassifiedBook;
-import it.softsolutions.bestx.model.ClassifiedProposal;
-import it.softsolutions.bestx.model.Order;
-import it.softsolutions.bestx.model.Rfq.OrderSide;
-import it.softsolutions.bestx.model.Proposal;
-import it.softsolutions.bestx.model.Proposal.ProposalSide;
-import it.softsolutions.bestx.model.Proposal.ProposalState;
-import it.softsolutions.bestx.model.Venue;
-
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
@@ -34,6 +21,20 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.softsolutions.bestx.CustomerAttributes;
+import it.softsolutions.bestx.Messages;
+import it.softsolutions.bestx.bestexec.ProposalClassifier;
+import it.softsolutions.bestx.model.Attempt;
+import it.softsolutions.bestx.model.ClassifiedBook;
+import it.softsolutions.bestx.model.ClassifiedProposal;
+import it.softsolutions.bestx.model.Order;
+import it.softsolutions.bestx.model.Proposal;
+import it.softsolutions.bestx.model.Proposal.ProposalSide;
+import it.softsolutions.bestx.model.Proposal.ProposalState;
+import it.softsolutions.bestx.model.Proposal.ProposalSubState;
+import it.softsolutions.bestx.model.Rfq.OrderSide;
+import it.softsolutions.bestx.model.Venue;
 
 /**  
 
@@ -181,6 +182,7 @@ public class DiscardTooWideQuoteSpread implements ProposalClassifier {
 			if (deltaPerc > spreadPercent) {
 				classifiedProposal.setProposalState(Proposal.ProposalState.REJECTED);
 				classifiedProposal.setReason(Messages.getString("BestBook.21", deltaPerc, spreadPercent));
+				classifiedProposal.setProposalSubState(ProposalSubState.OUTSIDE_SPREAD);
 			}
 		} else {
 			LOGGER.debug("DiscardTooWideQuoteSpread stop (no best price available)");
