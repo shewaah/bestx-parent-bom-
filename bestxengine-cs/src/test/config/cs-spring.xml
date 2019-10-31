@@ -973,6 +973,7 @@
 <!-- Execution strategy -->
     <bean id="executionStrategyServiceFactory" class="it.softsolutions.bestx.services.executionstrategy.CSExecutionStrategyServiceFactory">
     	<property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
+    	<property name="marketConnectionRegistry"><ref bean="configurableMarketConnectionRegistry"/></property>
         <property name="bookClassifier"><ref bean="bookClassifierBean"/></property>
  		<property name="bookSorter"><bean class="it.softsolutions.bestx.services.booksorter.BookSorterImpl"></bean></property>
     	<property name="allMarketsToTry">

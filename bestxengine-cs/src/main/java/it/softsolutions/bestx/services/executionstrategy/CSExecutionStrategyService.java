@@ -22,17 +22,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.softsolutions.bestx.BestXException;
+import it.softsolutions.bestx.MarketConnectionRegistry;
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationIdType;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.bestexec.BookClassifier;
+import it.softsolutions.bestx.connections.MarketConnection;
+import it.softsolutions.bestx.connections.MarketPriceConnection;
+import it.softsolutions.bestx.exceptions.MarketNotAvailableException;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.handlers.ExecutionReportHelper;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
+import it.softsolutions.bestx.model.Instrument.QuotingStatus;
 import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.MarketMaker;
@@ -41,6 +46,7 @@ import it.softsolutions.bestx.model.MarketMarketMakerSpec;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.services.DateService;
+import it.softsolutions.bestx.services.MarketPriceListener;
 import it.softsolutions.bestx.services.OperationStateAuditDAOProvider;
 import it.softsolutions.bestx.services.SerialNumberServiceProvider;
 import it.softsolutions.bestx.services.booksorter.BookSorterImpl;
@@ -52,6 +58,7 @@ import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.LimitFileNoPriceState;
 import it.softsolutions.bestx.states.OrderCancelRequestState;
 import it.softsolutions.bestx.states.OrderNotExecutableState;
+import it.softsolutions.bestx.states.RejectedState;
 import it.softsolutions.bestx.states.SendAutoNotExecutionReportState;
 import it.softsolutions.bestx.states.WarningState;
 import it.softsolutions.bestx.states.bloomberg.BBG_StartExecutionState;
@@ -81,7 +88,18 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	protected BookClassifier bookClassifier;
 	protected BookSorterImpl bookSorter;
 	protected ApplicationStatus applicationStatus;
+	private MarketConnectionRegistry marketConnectionRegistry;
 	protected int minimumRequiredBookDepth = 3;
+
+	
+	public MarketConnectionRegistry getMarketConnectionRegistry() {
+		return marketConnectionRegistry;
+	}
+
+	public void setMarketConnectionRegistry(MarketConnectionRegistry marketConnectionRegistry) {
+		this.marketConnectionRegistry = marketConnectionRegistry;
+	}
+
 
 
 	public BookClassifier getBookClassifier() {
@@ -179,26 +197,40 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		
 		// manage custom strategy to execute UST on Tradeweb with no MMM specified and limit price as specified in client order
 		if(BondTypesService.isUST(operation.getOrder().getInstrument())) { // BESTX-382
-			// override execution proposal every time
-			MarketOrder marketOrder = new MarketOrder();
-			currentAttempt.setMarketOrder(marketOrder);
-			marketOrder.setValues(operation.getOrder());
-			marketOrder.setTransactTime(DateService.newUTCDate());
-			try {
-				marketOrder.setMarket(marketFinder.getMarketByCode(MarketCode.TW, null));
-			} catch (BestXException e) {
-				LOGGER.info("Error when trying to send an order to Tradeweb: unable to find market with code {}", MarketCode.TW.name());
+			if (!CheckIfBuySideMarketIsConnectedAndEnabled(MarketCode.TW)) {
+				String reason = "TW Market is not available";
+				try {
+					ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
+					operation.setStateResilient(new SendAutoNotExecutionReportState(reason), ErrorState.class);
+				} catch (BestXException e) {
+					LOGGER.error("Order {}, error while creating report for TW market not available report.", operation.getOrder().getFixOrderId(), e);
+					String errorMessage = e.getMessage();
+					operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
+					
+				}
+				return;				
+			} else {
+				// override execution proposal every time
+				MarketOrder marketOrder = new MarketOrder();
+				currentAttempt.setMarketOrder(marketOrder);
+				marketOrder.setValues(operation.getOrder());
+				marketOrder.setTransactTime(DateService.newUTCDate());
+				try {
+					marketOrder.setMarket(marketFinder.getMarketByCode(MarketCode.TW, null));
+				} catch (BestXException e) {
+					LOGGER.info("Error when trying to send an order to Tradeweb: unable to find market with code {}", MarketCode.TW.name());
+				}
+				marketOrder.setVenue(null);
+				marketOrder.setMarketMarketMaker(null);
+				marketOrder.setLimit(operation.getOrder().getLimit());  // if order limit is null, send a market order to TW
+				LOGGER.info("Order={}, Selecting for execution market market maker: null and price null", operation.getOrder().getFixOrderId());
+				String twSessionId = operation.getIdentifier(OperationIdType.TW_SESSION_ID);
+				if (twSessionId != null) {
+					operation.removeIdentifier(OperationIdType.TW_SESSION_ID);
+				}
+				operation.setStateResilient(new TW_StartExecutionState(), ErrorState.class);
+				// last command in method for this case
 			}
-			marketOrder.setVenue(null);
-			marketOrder.setMarketMarketMaker(null);
-			marketOrder.setLimit(operation.getOrder().getLimit());  // if order limit is null, send a market order to TW
-			LOGGER.info("Order={}, Selecting for execution market market maker: null and price null", operation.getOrder().getFixOrderId());
-			String twSessionId = operation.getIdentifier(OperationIdType.TW_SESSION_ID);
-			if (twSessionId != null) {
-				operation.removeIdentifier(OperationIdType.TW_SESSION_ID);
-			}
-			operation.setStateResilient(new TW_StartExecutionState(), ErrorState.class);
-			// last command in method for this case
 		} else {
 			//we must always preserve the existing comment, because it could be the one sent to us through OMS
 			if(currentAttempt == null || currentAttempt.getMarketOrder() == null || currentAttempt.getMarketOrder().getMarket() == null) {
@@ -481,6 +513,32 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	        this.operation.setStateResilient(new WarningState(this.operation.getState(), null, message), ErrorState.class);
 	        break;
 	    }
+	}
+	
+	/**
+	 * Check if buy side market is connected and enabled.
+	 *
+	 * @param marketCode the market code
+	 * @return true, if successful
+	 */
+	public boolean CheckIfBuySideMarketIsConnectedAndEnabled (MarketCode marketCode){
+		MarketConnection marketConnection = marketConnectionRegistry.getMarketConnection(marketCode);
+		if (marketConnection == null) {
+			LOGGER.error("MarketCode {} is not contained in market connection list", marketCode.toString());
+			return false;
+		}
+		
+		if (!marketConnection.isBuySideConnectionEnabled()) {              // isPriceConnectionProvided()
+			LOGGER.info("MarketCode {} is not enabled", marketCode.toString());
+			return false;			
+		}
+		
+		if (!marketConnection.isBuySideConnectionAvailable()) {              // isPriceConnectionAvailable()
+			LOGGER.info("MarketCode {} is not available", marketCode.toString());
+			return false;			
+		}		
+
+		return true;		
 	}
 
 }
