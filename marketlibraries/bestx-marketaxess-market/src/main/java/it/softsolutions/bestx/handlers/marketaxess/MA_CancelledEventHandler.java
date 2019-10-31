@@ -49,6 +49,9 @@ public class MA_CancelledEventHandler extends BaseOperationEventHandler {
 
     @Override
     public void onNewState(OperationState currentState) {
+    	if(customerSpecificHandler != null) {
+    		customerSpecificHandler.onNewState(currentState);
+    	}
 //		try {
 			
 	      if (!checkCustomerRevoke(operation.getOrder())) {

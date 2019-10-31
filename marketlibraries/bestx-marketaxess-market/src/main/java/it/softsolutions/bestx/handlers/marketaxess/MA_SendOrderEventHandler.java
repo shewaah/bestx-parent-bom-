@@ -342,6 +342,11 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 					quote.setTimestamp(DateService.convertUTCToLocal(currentAttempt.getMarketOrder().getTransactTime())); // there is no timestamp in MA returned values - MarketOrder TransactTime is in UTC
 					quote.setQuoteReqId(currentAttempt.getMarketOrder().getFixOrderId());
 					int rank = Integer.parseInt(dealer.getQuoteRank().getValue());
+					if(mmm == null) {
+						LOGGER.debug("Added Executable price for {}, price {}, status {}", quote.getOriginatorID(), quote.getPrice().getAmount().toString(), quote.getAuditQuoteState());
+					} else {
+						LOGGER.debug("Added Executable price for {}, price {}, status {}", quote.getMarketMarketMaker().getMarketMaker().getName(), quote.getPrice().getAmount().toString(), quote.getAuditQuoteState());
+					}
 					currentAttempt.addExecutablePrice(quote, rank);
 					if(mmm != null && mmm.getMarketMaker() != null)
 					quote.setVenue(venueFinder.getMarketMakerVenue(mmm.getMarketMaker()));

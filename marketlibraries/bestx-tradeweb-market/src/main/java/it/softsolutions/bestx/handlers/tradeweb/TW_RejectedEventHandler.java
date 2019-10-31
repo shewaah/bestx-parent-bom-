@@ -59,6 +59,9 @@ public class TW_RejectedEventHandler extends BaseOperationEventHandler {
 
     @Override
     public void onNewState(OperationState currentState) {
+    	if(customerSpecificHandler != null) {
+    		customerSpecificHandler.onNewState(currentState);
+    	}
 
         boolean mustSendAutoNotExecution = false;
         Order order = operation.getOrder();

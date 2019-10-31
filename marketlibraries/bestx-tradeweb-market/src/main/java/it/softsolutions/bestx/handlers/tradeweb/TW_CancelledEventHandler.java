@@ -52,6 +52,9 @@ public class TW_CancelledEventHandler extends BaseOperationEventHandler {
 
     @Override
     public void onNewState(OperationState currentState) {
+    	if(customerSpecificHandler != null) {
+    		customerSpecificHandler.onNewState(currentState);
+    	}
 		try {
 			String rejReason = operation.getExecutionReports().get(operation.getExecutionReports().size()-1).getText();
 			ExecutionReportHelper.prepareForAutoNotExecution(operation,serialNumberService, ExecutionReportState.CANCELLED);

@@ -495,9 +495,21 @@ public class CSStrategy implements Strategy, SystemStateSelector {
 			switch (marketCode) {
 			case TW:
 				handler = new TW_CancelledEventHandler(operation, serialNumberService);
+				if (CSExecutionReportHelper.isPOBex(operation)) {
+					CSSendPOBExEventHandler customerHandler = new CSSendPOBExEventHandler(operation, orderBookDepth, priceDecimals, priceDiscoveryConnection, serialNumberService, pobExMaxSize);
+					customerHandler.setCustomerConnection(customerConnection);
+					customerHandler.setOperatorConsoleConnection(operatorConsoleConnection);
+					handler.setCustomerSpecificHandler(customerHandler);
+				}
 				break;
 			case MARKETAXESS:
 				handler = new MA_CancelledEventHandler(operation, serialNumberService);
+				if (CSExecutionReportHelper.isPOBex(operation)) {
+					CSSendPOBExEventHandler customerHandler = new CSSendPOBExEventHandler(operation, orderBookDepth, priceDecimals, priceDiscoveryConnection, serialNumberService, pobExMaxSize);
+					customerHandler.setCustomerConnection(customerConnection);
+					customerHandler.setOperatorConsoleConnection(operatorConsoleConnection);
+					handler.setCustomerSpecificHandler(customerHandler);
+				}
 				break;
 				/*
                case BV:
@@ -590,9 +602,21 @@ public class CSStrategy implements Strategy, SystemStateSelector {
 					break;
 				case TW:
 					handler = new TW_RejectedEventHandler(operation, serialNumberService, bestXConfigurationDao);
+					if (CSExecutionReportHelper.isPOBex(operation)) {
+						CSSendPOBExEventHandler customerHandler = new CSSendPOBExEventHandler(operation, orderBookDepth, priceDecimals, priceDiscoveryConnection, serialNumberService, pobExMaxSize);
+						customerHandler.setCustomerConnection(customerConnection);
+						customerHandler.setOperatorConsoleConnection(operatorConsoleConnection);
+						handler.setCustomerSpecificHandler(customerHandler);
+					}
 					break;
 				case MARKETAXESS:
 					handler = new MA_RejectedEventHandler(operation, serialNumberService, bestXConfigurationDao);
+					if (CSExecutionReportHelper.isPOBex(operation)) {
+						CSSendPOBExEventHandler customerHandler = new CSSendPOBExEventHandler(operation, orderBookDepth, priceDecimals, priceDiscoveryConnection, serialNumberService, pobExMaxSize);
+						customerHandler.setCustomerConnection(customerConnection);
+						customerHandler.setOperatorConsoleConnection(operatorConsoleConnection);
+						handler.setCustomerSpecificHandler(customerHandler);
+					}
 					break;
 					/*
                   case BV:
@@ -724,13 +748,6 @@ public class CSStrategy implements Strategy, SystemStateSelector {
 			handler = new WaitingPriceEventHandler(operation, getPriceService(operation.getOrder()), titoliIncrociabiliService, customerFinder, serialNumberService, regulatedMktIsinsLoader,
 					regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout, marketSecurityStatusService, executionDestinationService,
 					rejectWhenBloombergIsBest, doNotExecuteWP, bookDepthValidator, internalMMcodesList, operationStateAuditDao, targetPriceMaxLevel, applicationStatus);
-
-			if (CSExecutionReportHelper.isPOBex(operation)) {
-				CSSendPOBExEventHandler customerHandler = new CSSendPOBExEventHandler(operation, orderBookDepth, priceDecimals, priceDiscoveryConnection, serialNumberService, pobExMaxSize);
-				customerHandler.setCustomerConnection(customerConnection);
-				customerHandler.setOperatorConsoleConnection(operatorConsoleConnection);
-				handler.setCustomerSpecificHandler(customerHandler);
-			}
 			break;
 			//        case WaitingFill:
 			//            handler = new BBG_WaitingFillEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BLOOMBERG), bbgWaitFillMSec, bbgFillPollingMSec);
