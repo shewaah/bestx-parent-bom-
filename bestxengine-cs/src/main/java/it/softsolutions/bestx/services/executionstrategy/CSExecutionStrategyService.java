@@ -197,7 +197,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		
 		// manage custom strategy to execute UST on Tradeweb with no MMM specified and limit price as specified in client order
 		if(BondTypesService.isUST(operation.getOrder().getInstrument())) { // BESTX-382
-			if (!CheckIfBuySideMarketIsConnectedAndEnabled(MarketCode.TW)) {
+			if (!CheckIfBuySideMarketIsConnectedAndEnabled(MarketCode.TW)) { // BESTX-574
 				String reason = "TW Market is not available";
 				try {
 					ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
@@ -528,12 +528,12 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 			return false;
 		}
 		
-		if (!marketConnection.isBuySideConnectionEnabled()) {              // isPriceConnectionProvided()
+		if (!marketConnection.isBuySideConnectionEnabled()) {             
 			LOGGER.info("MarketCode {} is not enabled", marketCode.toString());
 			return false;			
 		}
 		
-		if (!marketConnection.isBuySideConnectionAvailable()) {              // isPriceConnectionAvailable()
+		if (!marketConnection.isBuySideConnectionAvailable()) {             
 			LOGGER.info("MarketCode {} is not available", marketCode.toString());
 			return false;			
 		}		
