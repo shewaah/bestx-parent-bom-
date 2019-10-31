@@ -219,7 +219,7 @@ public class CSPOBexExecutionReport extends ExecutionReport {
 					try {
 						dealerGroup.setDealerID(quote.getMarketMarketMaker().getMarketMaker().getCode());
 					} catch (@SuppressWarnings("unused") Exception e) {
-					   LOGGER.warn("Marke maker not defined : {}", quote.getMarketMarketMaker().getMarketSpecificCode(), e);
+					   LOGGER.warn("Market maker not defined", e);
 					   
 					   if (quote.getOriginatorID() != null) {
 					      dealerGroup.setDealerID(quote.getOriginatorID());
@@ -276,7 +276,7 @@ public class CSPOBexExecutionReport extends ExecutionReport {
 		}
 	}
 
-	private String convertAuditState(String auditQuoteState) {
+	public static String convertAuditState(String auditQuoteState) {
 		switch (auditQuoteState) {
 		case "Done":
 		case "Order Accepted":
