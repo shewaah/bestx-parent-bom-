@@ -277,11 +277,18 @@ public class BBG_SendEnquiryEventHandler extends BaseOperationEventHandler {
 	   // onRevoke is invoked by webapp and must only reject this market so no need to
 	   // set customerRevokeReceived so that operations may continue on other markets
 
-	   String handlerJobName = super.getDefaultTimerJobName() + REVOKE_TIMER_SUFFIX;
+	   String handlerJobName = super.getDefaultTimerJobName();
+	   try {
+		   stopTimer(handlerJobName);
+	   } catch (SchedulerException e2) {
+		   LOGGER.error("Error in stop timer " + handlerJobName, e2);
+	   }
+
+	   handlerJobName += REVOKE_TIMER_SUFFIX;
 
 	   try {
 		   // create the timer for the order cancel
-		   setupTimer(handlerJobName, waitingAnswerDelay, false);
+		   setupTimer(handlerJobName, orderCancelDelay, false);
 		   // send order cancel message to the market
 		   this.isCancelBestXInitiative = true;
 		   this.isCancelRequestedByUser = true;

@@ -521,7 +521,14 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 //		@Override
 		public void onRevoke() {
 
-			String handlerJobName = super.getDefaultTimerJobName() + REVOKE_TIMER_SUFFIX;
+			String handlerJobName = super.getDefaultTimerJobName();
+			try {
+				stopTimer(handlerJobName);
+			} catch (SchedulerException e2) {
+				LOGGER.error("Error in stop timer " + handlerJobName, e2);
+			}
+
+			handlerJobName += REVOKE_TIMER_SUFFIX;
 
 			try {
 				//create the timer for the order cancel
