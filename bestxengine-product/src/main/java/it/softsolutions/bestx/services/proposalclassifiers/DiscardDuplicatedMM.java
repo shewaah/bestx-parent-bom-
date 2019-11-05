@@ -81,7 +81,7 @@ public class DiscardDuplicatedMM implements ProposalClassifier {
             //[RR20121030] There was a check for prop not being a market in the if where we decide to reject the proposal.
             //There is no need to check market proposals against the one being classified (which is never a market proposal),
             //skip those kind of proposals
-            if (prop.getVenue().getVenueType() == VenueType.MARKET) {
+            if (prop.getVenue() != null && prop.getVenue().getVenueType() == VenueType.MARKET) {
                 continue;
             }
             
@@ -96,7 +96,7 @@ public class DiscardDuplicatedMM implements ProposalClassifier {
                 MarketMaker propMM = null;
                 if (propVenue != null) {
                 	sb.append(" - Venue=").append(propVenue).append(", venueType=").append(propVenue.getVenueType());
-                    propMM = prop.getVenue().getMarketMaker();
+                    propMM = prop.getVenue() != null ? prop.getVenue().getMarketMaker() : null;
                 }
                 Market propMkt = prop.getMarket();
                 if (propMkt != null) {
@@ -115,6 +115,7 @@ public class DiscardDuplicatedMM implements ProposalClassifier {
             // Same market maker, different market -> keep the one with the better ranking market or better price
             ClassifiedProposal classProp = (ClassifiedProposal) prop;
             if ((classProp.getProposalState() == ProposalState.VALID || classProp.getProposalState() == ProposalState.NEW)
+            		&& classProp.getVenue() != null
                     && proposal.getVenue().getMarketMaker().getCode().equalsIgnoreCase(classProp.getVenue().getMarketMaker().getCode())
                     && !loopProposalMarket.getMarketCode().equals(proposalMarket.getMarketCode())) {
                 //[RR20121030] BXMNT-193 : sometimes happens that two markets have the same ranking and both proposals for the same market maker
