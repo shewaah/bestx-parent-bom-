@@ -62,13 +62,21 @@ public class ClassifiedAskComparator implements Comparator<ClassifiedProposal> {
 		}
 
 		// Order by execution venue rank (former MarketMaker rank)
-		if (result==0) {
-			if (o1.getVenue().getVenueType() != VenueType.MARKET && o2.getVenue().getVenueType() != VenueType.MARKET) {
-				if (o1.getVenue().getMarketMaker().getRank() < o2.getVenue().getMarketMaker().getRank()) {
-					result = -1;
-				} else if (o1.getVenue().getMarketMaker().getRank() > o2.getVenue().getMarketMaker().getRank()) {
-					result = 1;
+		if(result == 0) {
+			if (o1.getVenue() != null && o2.getVenue() != null) {
+				if (o1.getVenue().getVenueType() != VenueType.MARKET && o2.getVenue().getVenueType() != VenueType.MARKET) {
+					if (o1.getVenue().getMarketMaker().getRank() < o2.getVenue().getMarketMaker().getRank()) {
+						result = -1;
+					} else if (o1.getVenue().getMarketMaker().getRank() > o2.getVenue().getMarketMaker().getRank()) {
+						result = 1;
+					}
 				}
+			}
+			else if(o1.getVenue() != null) {
+				result = 1;
+			}
+			else if(o2.getVenue() != null) {
+				result = -1;
 			}
 		}
 

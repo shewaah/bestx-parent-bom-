@@ -65,7 +65,7 @@ public class BV_ManagingRfqEventHandler extends BaseOperationEventHandler
 		{
 			for (Attempt attempt : operation.getAttempts()) {
 				ClassifiedProposal counterOffer = attempt.getExecutablePrice(Attempt.BEST) == null ? null : attempt.getExecutablePrice(Attempt.BEST).getClassifiedProposal();
-				if (counterOffer != null && 
+				if (counterOffer != null && counterOffer.getVenue() != null && operation.getLastAttempt().getExecutionProposal().getVenue() != null &&
 						counterOffer.getVenue().getCode().equalsIgnoreCase(operation.getLastAttempt().getExecutionProposal().getVenue().getCode())) {
 					ClassifiedProposal counter = (ClassifiedProposal)attempt.getExecutablePrice(Attempt.BEST).getClassifiedProposal();
 					counter.setProposalState(Proposal.ProposalState.REJECTED);

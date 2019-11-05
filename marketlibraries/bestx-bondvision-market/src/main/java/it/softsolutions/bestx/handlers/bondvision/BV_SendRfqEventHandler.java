@@ -130,7 +130,7 @@ public class BV_SendRfqEventHandler extends BV_ManagingRfqEventHandler {
 
 			for (Attempt attempt : operation.getAttempts()) {
 				ClassifiedProposal counter = attempt.getExecutablePrice(Attempt.BEST) == null ? null : attempt.getExecutablePrice(Attempt.BEST).getClassifiedProposal();
-				if (counter != null && 
+				if (counter != null && counter.getVenue() != null && operation.getLastAttempt().getExecutionProposal().getVenue() != null &&
 						counter.getVenue().getCode().equalsIgnoreCase(operation.getLastAttempt().getExecutionProposal().getVenue().getCode())) {
 					counter.setProposalState(Proposal.ProposalState.REJECTED);
 					counter.setReason(Messages.getString("DiscardTriedInEarlierAttemptProposalClassifier.0"));

@@ -53,7 +53,7 @@ public class DiscardDuplicatedMM implements ProposalClassifier {
 
     @Override
     public ClassifiedProposal getClassifiedProposal(ClassifiedProposal proposal, Order order, List<Attempt> previousAttempts, Set<Venue> venues, ClassifiedBook book) {
-        if (proposal.getVenue().getVenueType() == VenueType.MARKET) {
+        if (proposal.getVenue() == null || proposal.getVenue().getVenueType() == VenueType.MARKET) {
             return proposal;
         }
 

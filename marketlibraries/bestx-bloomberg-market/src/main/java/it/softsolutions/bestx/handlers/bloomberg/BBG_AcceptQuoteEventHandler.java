@@ -152,7 +152,10 @@ public class BBG_AcceptQuoteEventHandler extends BaseOperationEventHandler {
             LOGGER.info("Order {} : execution report/{} received", operation.getOrder().getFixOrderId(), marketExecutionReport.getState());
             
             Attempt attempt = operation.getLastAttempt();
-            if (attempt != null && attempt.getExecutablePrice(0) != null && attempt.getExecutablePrice(0).getClassifiedProposal() != null && attempt.getExecutablePrice(0).getClassifiedProposal().getVenue().getCode().equalsIgnoreCase(operation.getLastAttempt().getExecutionProposal().getVenue().getCode())) {
+            if (attempt != null && attempt.getExecutablePrice(0) != null && attempt.getExecutablePrice(0).getClassifiedProposal() != null && 
+            		attempt.getExecutablePrice(0).getClassifiedProposal().getVenue() != null &&
+            		operation.getLastAttempt().getExecutionProposal().getVenue() != null && 
+            		attempt.getExecutablePrice(0).getClassifiedProposal().getVenue().getCode().equalsIgnoreCase(operation.getLastAttempt().getExecutionProposal().getVenue().getCode())) {
                 ClassifiedProposal counter = (ClassifiedProposal) attempt.getExecutablePrice(0).getClassifiedProposal();
                 counter.setProposalState(Proposal.ProposalState.REJECTED);
                 counter.setReason(Messages.getString("DiscardTriedInEarlierAttemptProposalClassifier.0"));

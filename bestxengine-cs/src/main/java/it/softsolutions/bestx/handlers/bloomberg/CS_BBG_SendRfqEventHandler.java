@@ -195,7 +195,10 @@ public class CS_BBG_SendRfqEventHandler extends BaseOperationEventHandler {
             LOGGER.info("Managing a market reject for orderID {}", order.getFixOrderId());
             if (!checkCustomerRevoke(order)) {
                 for (Attempt attempt : operation.getAttempts()) {
-                    if (attempt.getExecutablePrice(0) != null && attempt.getExecutablePrice(0).getClassifiedProposal() != null && attempt.getExecutablePrice(0).getClassifiedProposal().getVenue().getCode().equalsIgnoreCase(operation.getLastAttempt().getExecutionProposal().getVenue().getCode())) {
+                    if (attempt.getExecutablePrice(0) != null && attempt.getExecutablePrice(0).getClassifiedProposal() != null && 
+                    		attempt.getExecutablePrice(0).getClassifiedProposal().getVenue() != null &&
+                    				operation.getLastAttempt().getExecutionProposal().getVenue() != null &&
+                    		attempt.getExecutablePrice(0).getClassifiedProposal().getVenue().getCode().equalsIgnoreCase(operation.getLastAttempt().getExecutionProposal().getVenue().getCode())) {
                         ClassifiedProposal counter = (ClassifiedProposal) attempt.getExecutablePrice(0).getClassifiedProposal();
                         counter.setProposalState(Proposal.ProposalState.REJECTED);
                         counter.setReason(Messages.getString("DiscardTriedInEarlierAttemptProposalClassifier.0"));
@@ -266,7 +269,10 @@ public class CS_BBG_SendRfqEventHandler extends BaseOperationEventHandler {
             LOGGER.info("[Timeout] No answer from MM for orderID {}, quoteReqID {}", operation.getOrder().getFixOrderId(), operation.getLastAttempt().getMarketOrder().getMarketSessionId());
 
             for (Attempt attempt : operation.getAttempts()) {
-                if (attempt.getExecutablePrice(0) != null && attempt.getExecutablePrice(0).getClassifiedProposal() != null && attempt.getExecutablePrice(0).getClassifiedProposal().getVenue().getCode().equalsIgnoreCase(operation.getLastAttempt().getExecutionProposal().getVenue().getCode())) {
+                if (attempt.getExecutablePrice(0) != null && attempt.getExecutablePrice(0).getClassifiedProposal() != null &&
+                		attempt.getExecutablePrice(0).getClassifiedProposal().getVenue() != null && 
+                		operation.getLastAttempt().getExecutionProposal().getVenue() != null &&
+                		attempt.getExecutablePrice(0).getClassifiedProposal().getVenue().getCode().equalsIgnoreCase(operation.getLastAttempt().getExecutionProposal().getVenue().getCode())) {
                     ClassifiedProposal counter = (ClassifiedProposal) attempt.getExecutablePrice(0).getClassifiedProposal();
                     counter.setProposalState(Proposal.ProposalState.REJECTED);
                     counter.setReason(Messages.getString("DiscardTriedInEarlierAttemptProposalClassifier.0"));
