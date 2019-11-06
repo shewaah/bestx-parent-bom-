@@ -29,15 +29,12 @@ import it.softsolutions.bestx.OperationIdType;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.bestexec.BookClassifier;
 import it.softsolutions.bestx.connections.MarketConnection;
-import it.softsolutions.bestx.connections.MarketPriceConnection;
-import it.softsolutions.bestx.exceptions.MarketNotAvailableException;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.handlers.ExecutionReportHelper;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
-import it.softsolutions.bestx.model.Instrument.QuotingStatus;
 import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.MarketMaker;
@@ -46,7 +43,6 @@ import it.softsolutions.bestx.model.MarketMarketMakerSpec;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.services.DateService;
-import it.softsolutions.bestx.services.MarketPriceListener;
 import it.softsolutions.bestx.services.OperationStateAuditDAOProvider;
 import it.softsolutions.bestx.services.SerialNumberServiceProvider;
 import it.softsolutions.bestx.services.booksorter.BookSorterImpl;
@@ -58,13 +54,13 @@ import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.LimitFileNoPriceState;
 import it.softsolutions.bestx.states.OrderCancelRequestState;
 import it.softsolutions.bestx.states.OrderNotExecutableState;
-import it.softsolutions.bestx.states.RejectedState;
 import it.softsolutions.bestx.states.SendAutoNotExecutionReportState;
 import it.softsolutions.bestx.states.WarningState;
 import it.softsolutions.bestx.states.bloomberg.BBG_StartExecutionState;
 import it.softsolutions.bestx.states.bondvision.BV_StartExecutionState;
 import it.softsolutions.bestx.states.marketaxess.MA_StartExecutionState;
 import it.softsolutions.bestx.states.tradeweb.TW_StartExecutionState;
+import it.softsolutions.jsscommon.Money;
 
 /**  
  *
@@ -211,6 +207,12 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 				return;				
 			} else {
 				// override execution proposal every time
+				Money targetPrice = null;
+				if (currentAttempt.getMarketOrder() != null && currentAttempt.getMarketOrder().getLimit() != null && currentAttempt.getMarketOrder().getLimit().getAmount() != null) {
+					targetPrice = currentAttempt.getMarketOrder().getLimit();
+				} else {
+					targetPrice = operation.getOrder().getLimit();
+				}
 				MarketOrder marketOrder = new MarketOrder();
 				currentAttempt.setMarketOrder(marketOrder);
 				marketOrder.setValues(operation.getOrder());
@@ -222,7 +224,8 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 				}
 				marketOrder.setVenue(null);
 				marketOrder.setMarketMarketMaker(null);
-				marketOrder.setLimit(operation.getOrder().getLimit());  // if order limit is null, send a market order to TW
+
+				marketOrder.setLimit(targetPrice);  // if order limit is null, send a market order to TW
 				LOGGER.info("Order={}, Selecting for execution market market maker: null and price null", operation.getOrder().getFixOrderId());
 				String twSessionId = operation.getIdentifier(OperationIdType.TW_SESSION_ID);
 				if (twSessionId != null) {
