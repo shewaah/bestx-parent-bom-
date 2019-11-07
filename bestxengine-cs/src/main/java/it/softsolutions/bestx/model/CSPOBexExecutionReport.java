@@ -194,8 +194,11 @@ public class CSPOBexExecutionReport extends ExecutionReport {
 
 		this.setExecAttmptNo(operation.getAttemptNo());
 		
-		if(marketExecutionReport != null && this.getLastMkt() == null) {
+		if(marketExecutionReport != null && marketExecutionReport.getLastMkt() != null && this.getLastMkt() != null) {
 			this.setLastMkt(marketExecutionReport.getLastMkt());
+		}
+		else if(marketOrder!=null && marketOrder.getMarket() != null && marketOrder.getMarket().getMicCode() != null) {
+			this.setLastMkt(marketOrder.getMarket().getMicCode());
 		}
 
 		if(marketOrder!=null) {

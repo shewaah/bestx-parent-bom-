@@ -922,9 +922,11 @@ public class TradewebMarket extends MarketCommon
                attempt.addExecutablePrice(priceExec, 0);
                
                if(mmm == null) {
-                  LOGGER.debug("Added Executable price for {}, price {}, status {}", priceExec.getOriginatorID(), priceExec.getPrice().getAmount().toString(), priceExec.getAuditQuoteState());
+                  LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", 
+                		  operation.getOrder().getFixOrderId(), operation.getAttemptNo(), priceExec.getOriginatorID(), priceExec.getPrice().getAmount().toString(), priceExec.getAuditQuoteState());
                } else {
-                  LOGGER.debug("Added Executable price for {}, price {}, status {}", priceExec.getMarketMarketMaker().getMarketMaker().getName(), priceExec.getPrice().getAmount().toString(), priceExec.getAuditQuoteState());
+                  LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", 
+                		  operation.getOrder().getFixOrderId(), operation.getAttemptNo(), priceExec.getMarketMarketMaker().getMarketMaker().getName(), priceExec.getPrice().getAmount().toString(), priceExec.getAuditQuoteState());
                }
                //END BESTX-366
             }            
@@ -1006,9 +1008,11 @@ public class TradewebMarket extends MarketCommon
                            price.setQuoteReqId(attempt.getMarketOrder().getFixOrderId());
                            attempt.addExecutablePrice(price, i + 1);
                            if(tempMM == null) {
-                              LOGGER.debug("Added Executable price for {}, price {}, status {}", price.getOriginatorID(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
+                              LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", 
+                            		  operation.getOrder().getFixOrderId(), operation.getAttemptNo(), price.getOriginatorID(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
                            } else {
-                              LOGGER.debug("Added Executable price for {}, price {}, status {}", price.getMarketMarketMaker().getMarketMaker().getName(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
+                              LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", 
+                            		  operation.getOrder().getFixOrderId(), operation.getAttemptNo(), price.getMarketMarketMaker().getMarketMaker().getName(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
                            }
                         }
                      }

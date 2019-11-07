@@ -343,13 +343,15 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 					quote.setQuoteReqId(currentAttempt.getMarketOrder().getFixOrderId());
 					int rank = Integer.parseInt(dealer.getQuoteRank().getValue());
 					if(mmm == null) {
-						LOGGER.debug("Added Executable price for {}, price {}, status {}", quote.getOriginatorID(), quote.getPrice().getAmount().toString(), quote.getAuditQuoteState());
+						LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", 
+								operation.getOrder().getFixOrderId(), operation.getAttemptNo(), quote.getOriginatorID(), quote.getPrice().getAmount().toString(), quote.getAuditQuoteState());
 					} else {
-						LOGGER.debug("Added Executable price for {}, price {}, status {}", quote.getMarketMarketMaker().getMarketMaker().getName(), quote.getPrice().getAmount().toString(), quote.getAuditQuoteState());
+						LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", 
+								operation.getOrder().getFixOrderId(), operation.getAttemptNo(), quote.getMarketMarketMaker().getMarketMaker().getName(), quote.getPrice().getAmount().toString(), quote.getAuditQuoteState());
 					}
 					currentAttempt.addExecutablePrice(quote, rank);
 					if(mmm != null && mmm.getMarketMaker() != null)
-					quote.setVenue(venueFinder.getMarketMakerVenue(mmm.getMarketMaker()));
+						quote.setVenue(venueFinder.getMarketMakerVenue(mmm.getMarketMaker()));
 				} catch (@SuppressWarnings("unused") FieldNotFound e) {
 					LOGGER.info("Quote not valid for dealer {}", quotingDealer);
 				} catch (@SuppressWarnings("unused") NullPointerException|BestXException e) {

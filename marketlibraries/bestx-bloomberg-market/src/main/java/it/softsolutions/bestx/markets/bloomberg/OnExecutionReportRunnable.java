@@ -274,9 +274,11 @@ public class OnExecutionReportRunnable implements Runnable {
 							price.setQuoteReqId(attempt.getMarketOrder().getFixOrderId());
 							price.setAuditQuoteState(calculateStatus(price, ordStatus, dealerCode, lastPrice));
 							if(tempMM == null) {
-								LOGGER.debug("Added Executable price for {}, price {}, status {}", price.getOriginatorID(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
+								LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", 
+										operation.getOrder().getFixOrderId(), operation.getAttemptNo(), price.getOriginatorID(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
 							} else {
-								LOGGER.debug("Added Executable price for {}, price {}, status {}", price.getMarketMarketMaker().getMarketMaker().getName(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
+								LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}",
+										operation.getOrder().getFixOrderId(), operation.getAttemptNo(), price.getMarketMarketMaker().getMarketMaker().getName(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
 							}
 							prices.add(price);
 						}
