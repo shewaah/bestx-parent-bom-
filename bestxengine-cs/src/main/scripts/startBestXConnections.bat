@@ -42,6 +42,13 @@ timeout 3
 java -jar bxcontrol.jar -Nit.softsolutions.bestx.cs -Hlocalhost:29300 -qBloombergMarketConnection PriceConnectionEnabled | findstr /I true
 REM ERRORLEVEL 1 means the returned value is not true, i.e. the channel is not enabled yet
 IF ERRORLEVEL 1 GOTO :retrybbg
+java -jar bxcontrol.jar -Nit.softsolutions.bestx.cs -Hlocalhost:29300 -iBloombergMarketConnection startBuySideConnection
+java -jar bxcontrol.jar -Nit.softsolutions.bestx.cs -Hlocalhost:29300 -iBloombergMarketConnection enableBuySideConnection
+:retrybgo
+timeout 3
+java -jar bxcontrol.jar -Nit.softsolutions.bestx.cs -Hlocalhost:29300 -qBloombergMarketConnection BuySideConnectionEnabled | findstr /I true
+REM ERRORLEVEL 1 means the returned value is not true, i.e. the channel is not enabled yet
+IF ERRORLEVEL 1 GOTO :retrybgo
 REM Tradeweb
 ECHO "TRADEWEB"
 java -jar bxcontrol.jar -Nit.softsolutions.bestx.cs -Hlocalhost:29300 -iTradewebMarketConnection startPriceConnection
