@@ -193,6 +193,10 @@ public class CSPOBexExecutionReport extends ExecutionReport {
 			counteroffer = currentAttempt.getExecutablePrice(0).getClassifiedProposal();
 
 		this.setExecAttmptNo(operation.getAttemptNo());
+		
+		if(marketExecutionReport != null && this.getLastMkt() == null) {
+			this.setLastMkt(marketExecutionReport.getLastMkt());
+		}
 
 		if(marketOrder!=null) {
 			this.setExecAttmptTime(marketOrder.getTransactTime());
@@ -214,19 +218,18 @@ public class CSPOBexExecutionReport extends ExecutionReport {
 			}
 			for(; index < size; index++) {  //BESTX-314 from 0 to i-1 to catch also executed price
 				ExecutablePrice quote = currentAttempt.getExecutablePrice(index);
-				if(quote != null && (quote.getMarketMarketMaker() != null || quote.getOriginatorID() != null)) {
+				if(quote != null) {
 					CSDealerGroup dealerGroup = new CSDealerGroup(); 
-					try {
+					if(quote.getMarketMarketMaker() != null && quote.getMarketMarketMaker().getMarketMaker() != null) {
 						dealerGroup.setDealerID(quote.getMarketMarketMaker().getMarketMaker().getCode());
-					} catch (@SuppressWarnings("unused") Exception e) {
-					   LOGGER.warn("Market maker not defined", e);
-					   
-					   if (quote.getOriginatorID() != null) {
-					      dealerGroup.setDealerID(quote.getOriginatorID());
-					   } else {
-					      continue;
-					   }
 					}
+					else if (quote.getOriginatorID() != null) {
+						dealerGroup.setDealerID(quote.getOriginatorID());
+					} else {
+						LOGGER.warn("Market maker not defined");
+						continue;
+					}
+
 					if(quote.getPrice() != null){
 						dealerGroup.setDealerQuotePrice(quote.getPrice().getAmount());
 						dealerGroup.setDealerQuoteOrdQty(quote.getQty());

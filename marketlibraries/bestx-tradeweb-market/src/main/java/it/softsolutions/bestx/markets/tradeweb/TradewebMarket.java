@@ -878,25 +878,33 @@ public class TradewebMarket extends MarketCommon
 
          //Add execution prices from tsExecutionReport
          Attempt attempt = operation.getLastAttempt();
+         String textTruncated = null;
          if (OrdStatus.Canceled.equals(tsExecutionReport.getOrdStatus())) {
-            String notes = tsExecutionReport.getText();
-            
-            if (notes != null && notes.indexOf("[") >= 0 && notes.indexOf("]") >= 0) {
-               String prices[] = notes.substring(notes.indexOf("[") + 1, notes.indexOf("]")).split(";");
-               for (int i = 0; i < prices.length; i++) {
-                  String data[] = prices[i].split(":");
-                  ExecutablePrice price = new ExecutablePrice();
-                  price.setAuditQuoteState("Rejected");
-                  price.setOriginatorID(data[0].trim());
-                  price.setPrice(new Money(operation.getOrder().getCurrency(), new BigDecimal(data[1].trim())));
-                  price.setQty(operation.getOrder().getQty());
-                  price.setTimestamp(tsExecutionReport.getTransactTime());
-                  
-                  attempt.addExecutablePrice(price, 0);
-               }
-            }
+        	 String notes = tsExecutionReport.getText();
+
+        	 if (notes != null && notes.indexOf("[") >= 0 && notes.indexOf("]") >= 0) {
+        		 String prices[] = notes.substring(notes.indexOf("[") + 1, notes.indexOf("]")).split(";");
+        		 for (int i = 0; i < prices.length; i++) {
+        			 String data[] = prices[i].split(":");
+        			 ExecutablePrice price = new ExecutablePrice();
+        			 price.setAuditQuoteState("Rejected");
+        			 price.setOriginatorID(data[0].trim());
+        			 price.setPrice(new Money(operation.getOrder().getCurrency(), new BigDecimal(data[1].trim())));
+        			 price.setQty(operation.getOrder().getQty());
+        			 price.setTimestamp(tsExecutionReport.getTransactTime());
+        			 MarketMarketMaker tempMM = marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), data[0]);
+        			 if(tempMM == null) {
+        				 LOGGER.info("IMPORTANT! Tradeweb returned dealer {} not configured in BestX!. Please configure it", data[0]);
+        				 price.setOriginatorID(data[0]);
+        			 } else {
+        				 price.setMarketMarketMaker(tempMM);
+        			 }   
+        			 attempt.addExecutablePrice(price, i);
+        		 }
+        		 textTruncated = notes.substring(0, notes.indexOf("["));
+        	 }
          } else {
-            if(OrdStatus.Filled.equals(tsExecutionReport.getOrdStatus()) || OrdStatus.PartiallyFilled.equals(tsExecutionReport.getOrdStatus()) ) {
+        	 if(OrdStatus.Filled.equals(tsExecutionReport.getOrdStatus()) || OrdStatus.PartiallyFilled.equals(tsExecutionReport.getOrdStatus()) ) {
                //BESTX-363 SP20181010 : Added executable price of execution broker
                ExecutablePrice priceExec = new ExecutablePrice();
                priceExec.setAuditQuoteState("Done");
@@ -1015,7 +1023,7 @@ public class TradewebMarket extends MarketCommon
          }
          LOGGER.debug("Passing to executor message with status {} for order {} for management", ordStatus, cleanClOrdId);
          executor.execute(new OnExecutionReportRunnable(operation, this, market, cleanClOrdId, execType, ordStatus, accruedInterestAmount, accruedInterestRate, lastPrice, contractNo, futSettDate,
-               transactTime, cleanText, mmm, executionBroker, micCode, numDaysInterest, factor));
+               transactTime, (textTruncated != null ? textTruncated : cleanText), mmm, executionBroker, micCode, numDaysInterest, factor));
       }
       catch (OperationNotExistingException e) {
          LOGGER.warn("[MktMsg] Operation not found for clOrdID {} , ignoring ExecutionReport/{}/{}", cleanClOrdId, execType, ordStatus);
