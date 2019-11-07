@@ -14,6 +14,7 @@
 package it.softsolutions.bestx.services.executionstrategy;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -25,6 +26,8 @@ import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.OrderHelper;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
+import it.softsolutions.bestx.model.Attempt;
+import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Order;
@@ -33,6 +36,9 @@ import it.softsolutions.bestx.model.SortedBook;
 import it.softsolutions.bestx.services.OperationStateAuditDAOProvider;
 import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.bestx.services.price.PriceResult;
+import it.softsolutions.bestx.services.serial.SerialNumberService;
+import it.softsolutions.bestx.states.ErrorState;
+import it.softsolutions.bestx.states.WarningState;
 
 /**
  * 
@@ -105,4 +111,40 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 
       }
    }
+   
+   
+   
+   
+	@Override
+	public void startExecution(Operation operation, Attempt currentAttempt, SerialNumberService serialNumberService) {
+		if (BondTypesService.isUST(operation.getOrder().getInstrument())) {
+			 Order order = operation.getOrder();
+			 SortedBook sortedBook = currentAttempt.getSortedBook();
+	         
+	         //List<ProposalSubState> wantedSubStates = Arrays.asList(ProposalSubState.NONE /*, ProposalSubState.PRICE_WORST_THAN_LIMIT*/);
+	         boolean emptyOriginalBook = sortedBook == null || sortedBook.getSideProposals(order.getSide()).isEmpty();
+	         boolean onePriceWorse = sortedBook != null && !sortedBook.getProposalBySubState(Arrays.asList(ProposalSubState.PRICE_WORST_THAN_LIMIT), order.getSide()).isEmpty();
+	         
+	         if (priceResult.getState() == PriceResult.PriceResultState.COMPLETE) {
+	            //this.operation.getLastAttempt().setSortedBook(sortedBook);
+	             super.startExecution(operation, currentAttempt, serialNumberService);
+	         } else if (emptyOriginalBook && this.applicationStatus.getType() == ApplicationStatus.Type.EXECUTION) {
+	        	 super.startExecution(operation, currentAttempt, serialNumberService);
+	         } else if (!onePriceWorse && this.applicationStatus.getType() == ApplicationStatus.Type.EXECUTION) {
+	        	 super.startExecution(operation, currentAttempt, serialNumberService);
+	         } else {
+	        	try {
+	        		this.manageAutomaticUnexecution(order, order.getCustomer());
+	        	} catch (BestXException e) {
+					LOGGER.error("Order {}, error while managing {} price result state {}", order.getFixOrderId(), priceResult.getState().name(), e.getMessage(), e);
+					operation.removeLastAttempt();
+					operation.setStateResilient(new WarningState(operation.getState(), e, Messages.getString("PriceService.16")), ErrorState.class);
+				}
+	         }
+		} else {
+			super.startExecution(operation, currentAttempt, serialNumberService);
+		}
+	}
+
+   
 }

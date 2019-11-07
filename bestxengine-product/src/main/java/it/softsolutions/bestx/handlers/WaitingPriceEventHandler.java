@@ -426,11 +426,10 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		} else if (priceResult.getState() == PriceResult.PriceResultState.NULL 
 				|| priceResult.getState() == PriceResult.PriceResultState.ERROR) {
 			
-			if(!operation.isNotAutoExecute() && !BondTypesService.isUST(operation.getOrder().getInstrument()) && doRejectThisBestOnBloomberg) { 
+			if(!operation.isNotAutoExecute() && BondTypesService.isUST(operation.getOrder().getInstrument())) { 
 				// it is an executable UST order and there are no prices on consolidated book
 				csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
-			}
-			else {
+			} else {
 				Customer customer = customerOrder.getCustomer();
 				checkOrderAndsetNotAutoExecuteOrder(operation, doNotExecute);
 				try {

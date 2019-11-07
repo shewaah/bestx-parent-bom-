@@ -921,9 +921,7 @@
                     <property name="configValue"><value>12</value></property>
                     <property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
 				</bean>
-				<!--
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardInsufficientQuantityProposalClassifier"></bean>
-                -->
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardInadequateOrderedQuantityProposalClassifier">
                     <property name="marketSecurityStatusService"><ref bean="marketSecurityStatusService"></ref></property>
                     <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
@@ -965,6 +963,7 @@
 		<property name="bookClassifierList">
 			<list>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardDuplicatedMM"></bean>
+                <!-- bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTooWideQuoteSpread"></bean-->
 			</list>
 		</property>
 	</bean>
