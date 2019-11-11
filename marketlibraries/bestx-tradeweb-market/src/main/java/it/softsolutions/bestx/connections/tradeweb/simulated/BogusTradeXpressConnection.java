@@ -277,7 +277,7 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 		execReport.setExecID("C#" + System.currentTimeMillis());
 		execReport.setSettlDate(DateUtils.addDays(new Date(), 3));
 		execReport.setTransactTime(new Date());
-		execReport.setText("Target price not met/Quoted:DLRX:103.27;DLRY:103.27");
+		execReport.setText("Target price not met/Quoted:[DLRX:103.27;DLRY:103.27]");
 		
 		if(marketOrder.getMarketMarketMaker() != null) {
 			TSParties tsp = new TSParties();
