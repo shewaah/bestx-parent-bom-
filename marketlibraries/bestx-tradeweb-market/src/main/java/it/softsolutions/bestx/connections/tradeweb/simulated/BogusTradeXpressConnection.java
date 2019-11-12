@@ -294,7 +294,7 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 	private void sendOrderReject(MarketOrder marketOrder) {
 		String sessionId = "sessionID";
 		String clOrdId = marketOrder.getMarketSessionId();
-		String reason = "Don't like your manners";
+		String reason = "Order could not be filled";
 		
 		tradeXpressConnectionListener.onOrderReject(sessionId, clOrdId, reason);
 	}
