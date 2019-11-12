@@ -207,12 +207,6 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 				return;				
 			} else {
 				// override execution proposal every time
-				Money targetPrice = null;
-				if (currentAttempt.getMarketOrder() != null && currentAttempt.getMarketOrder().getLimit() != null && currentAttempt.getMarketOrder().getLimit().getAmount() != null) {
-					targetPrice = currentAttempt.getMarketOrder().getLimit();
-				} else {
-					targetPrice = operation.getOrder().getLimit();
-				}
 				MarketOrder marketOrder = new MarketOrder();
 				currentAttempt.setMarketOrder(marketOrder);
 				marketOrder.setValues(operation.getOrder());
@@ -225,7 +219,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 				marketOrder.setVenue(null);
 				marketOrder.setMarketMarketMaker(null);
 
-				marketOrder.setLimit(targetPrice);  // if order limit is null, send a market order to TW
+				marketOrder.setLimit(operation.getOrder().getLimit());  // if order limit is null, send a market order to TW
 				LOGGER.info("Order={}, Selecting for execution market market maker: null and price null", operation.getOrder().getFixOrderId());
 				String twSessionId = operation.getIdentifier(OperationIdType.TW_SESSION_ID);
 				if (twSessionId != null) {
