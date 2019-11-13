@@ -496,7 +496,7 @@ public class CSStrategy implements Strategy, SystemStateSelector {
 			case TW:
 				handler = new TW_CancelledEventHandler(operation, serialNumberService);
 				if (CSExecutionReportHelper.isPOBex(operation)) {
-					CSSendPOBExEventHandler customerHandler = new CSSendPOBExEventHandler(operation, orderBookDepth, priceDecimals, priceDiscoveryConnection, serialNumberService, pobExMaxSize);
+					CSSendPOBExEventHandler customerHandler = new CSSendPOBExEventHandler(operation, orderBookDepth, priceDecimals, priceDiscoveryConnection, serialNumberService, pobExMaxSize, true);
 					customerHandler.setCustomerConnection(customerConnection);
 					customerHandler.setOperatorConsoleConnection(operatorConsoleConnection);
 					handler.setCustomerSpecificHandler(customerHandler);
@@ -505,7 +505,7 @@ public class CSStrategy implements Strategy, SystemStateSelector {
 			case MARKETAXESS:
 				handler = new MA_CancelledEventHandler(operation, serialNumberService);
 				if (CSExecutionReportHelper.isPOBex(operation)) {
-					CSSendPOBExEventHandler customerHandler = new CSSendPOBExEventHandler(operation, orderBookDepth, priceDecimals, priceDiscoveryConnection, serialNumberService, pobExMaxSize);
+					CSSendPOBExEventHandler customerHandler = new CSSendPOBExEventHandler(operation, orderBookDepth, priceDecimals, priceDiscoveryConnection, serialNumberService, pobExMaxSize, true);
 					customerHandler.setCustomerConnection(customerConnection);
 					customerHandler.setOperatorConsoleConnection(operatorConsoleConnection);
 					handler.setCustomerSpecificHandler(customerHandler);
@@ -603,7 +603,7 @@ public class CSStrategy implements Strategy, SystemStateSelector {
 				case TW:
 					handler = new TW_RejectedEventHandler(operation, serialNumberService, bestXConfigurationDao);
 					if (CSExecutionReportHelper.isPOBex(operation)) {
-						CSSendPOBExEventHandler customerHandler = new CSSendPOBExEventHandler(operation, orderBookDepth, priceDecimals, priceDiscoveryConnection, serialNumberService, pobExMaxSize);
+						CSSendPOBExEventHandler customerHandler = new CSSendPOBExEventHandler(operation, orderBookDepth, priceDecimals, priceDiscoveryConnection, serialNumberService, pobExMaxSize, true);
 						customerHandler.setCustomerConnection(customerConnection);
 						customerHandler.setOperatorConsoleConnection(operatorConsoleConnection);
 						handler.setCustomerSpecificHandler(customerHandler);
@@ -612,7 +612,7 @@ public class CSStrategy implements Strategy, SystemStateSelector {
 				case MARKETAXESS:
 					handler = new MA_RejectedEventHandler(operation, serialNumberService, bestXConfigurationDao);
 					if (CSExecutionReportHelper.isPOBex(operation)) {
-						CSSendPOBExEventHandler customerHandler = new CSSendPOBExEventHandler(operation, orderBookDepth, priceDecimals, priceDiscoveryConnection, serialNumberService, pobExMaxSize);
+						CSSendPOBExEventHandler customerHandler = new CSSendPOBExEventHandler(operation, orderBookDepth, priceDecimals, priceDiscoveryConnection, serialNumberService, pobExMaxSize, true);
 						customerHandler.setCustomerConnection(customerConnection);
 						customerHandler.setOperatorConsoleConnection(operatorConsoleConnection);
 						handler.setCustomerSpecificHandler(customerHandler);

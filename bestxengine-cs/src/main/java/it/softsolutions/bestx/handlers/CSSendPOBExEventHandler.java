@@ -32,14 +32,16 @@ public class CSSendPOBExEventHandler extends CSBaseOperationEventHandler {
 	private SerialNumberService serialNumberService;
 	private OperatorConsoleConnection operatorConsoleConnection;
 	private int pobExMaxSize = 5;
+	private boolean isCancelReject = false; //BESTX-424 SP20191113 added to mange different values in attempt reject/cancel 
 	
-	public CSSendPOBExEventHandler(Operation operation, int bookDepth, int priceDecimals, OperatorConsoleConnection operatorConsoleConnection, SerialNumberService serialNumberService, int pobExMaxSize) {
+	public CSSendPOBExEventHandler(Operation operation, int bookDepth, int priceDecimals, OperatorConsoleConnection operatorConsoleConnection, SerialNumberService serialNumberService, int pobExMaxSize, boolean isCancelReject) {
 		super(operation);
 		this.bookDepth = bookDepth;
 		this.priceDecimals = priceDecimals;
 		this.operatorConsoleConnection = operatorConsoleConnection;
 		this.serialNumberService = serialNumberService;
 		this.pobExMaxSize = pobExMaxSize;
+		this.isCancelReject = isCancelReject;
 	}
 
 
@@ -66,7 +68,11 @@ public class CSSendPOBExEventHandler extends CSBaseOperationEventHandler {
 		report.setState(ExecutionReportState.NEW);
 		report.setActualQty(BigDecimal.ZERO);
 		
-		report.setText("Order Accepted");
+		if (isCancelReject) {
+		   report.setText("");
+		} else {
+		   report.setText("Order Accepted");
+		}
 		report.setAveragePrice(BigDecimal.ZERO);
 		
 		report.setExecutionReportId("0");
