@@ -54,7 +54,7 @@ public class CS_BBG_RejectedEventHandler extends BaseOperationEventHandler {
         Attempt lastAttempt = operation.getLastAttempt();
         String rejectReason = ""; 
         if (lastAttempt != null) {
-        	lastAttempt.setAttemptState(AttemptState.PASSED_COUNTER);
+            lastAttempt.setAttemptState(AttemptState.REJECTED);
             // set in transition from BBG_SendRfq to BBG_Rejected
             if ( ((BBG_RejectedState)currentState).mustForceAutoNotExecution() )  {
                 mustSendAutoNotExecution = true;
@@ -63,7 +63,7 @@ public class CS_BBG_RejectedEventHandler extends BaseOperationEventHandler {
             }
             
             if (!mustSendAutoNotExecution) {            
-                List<ClassifiedProposal> currentProposals = lastAttempt.getSortedBook().getValidSideProposals(order.getSide());
+/*                List<ClassifiedProposal> currentProposals = lastAttempt.getSortedBook().getValidSideProposals(order.getSide());
                 double[] resultValues = new double[2];
                 try {
                     if (BookHelper.isSpreadOverTheMax(currentProposals, order, resultValues)) {
@@ -77,7 +77,7 @@ public class CS_BBG_RejectedEventHandler extends BaseOperationEventHandler {
                     operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
     
                     return;
-                }
+                }*/
             }
 
             if (mustSendAutoNotExecution) {

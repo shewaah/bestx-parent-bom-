@@ -189,8 +189,22 @@ public class OnExecutionReportRunnable implements Runnable {
 		marketExecutionReport.setText(text);
 		marketExecutionReport.setAccruedInterestAmount(new Money(order.getInstrument().getCurrency(), 
 				accruedInterestAmount == null ? BigDecimal.ZERO : accruedInterestAmount));
-//		marketExecutionReport.setAccruedInterestRate(null);
 		marketExecutionReport.setLastMkt(lastMkt);
+		if(dealerCode != null) {
+			MarketMarketMaker mmm = null;
+			try {
+				mmm = marketMakerFinder.getMarketMarketMakerByTSOXCode(dealerCode);
+			} catch (BestXException e) {
+				LOGGER.error("Exception occurred", e);
+			}
+			if(mmm == null) {
+				LOGGER.debug("Market maker not defined in configuration");
+				marketExecutionReport.setExecBroker(dealerCode);
+			}
+			else {
+				marketExecutionReport.setExecBroker(mmm.getMarketMaker().getCode());
+			}
+		}
 		
 		if (numDaysInterest != null) {
 			marketExecutionReport.setAccruedInterestDays(numDaysInterest);
@@ -260,9 +274,11 @@ public class OnExecutionReportRunnable implements Runnable {
 							price.setQuoteReqId(attempt.getMarketOrder().getFixOrderId());
 							price.setAuditQuoteState(calculateStatus(price, ordStatus, dealerCode, lastPrice));
 							if(tempMM == null) {
-								LOGGER.debug("Added Executable price for {}, price {}, status {}", price.getOriginatorID(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
+								LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", 
+										operation.getOrder().getFixOrderId(), operation.getAttemptNo(), price.getOriginatorID(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
 							} else {
-								LOGGER.debug("Added Executable price for {}, price {}, status {}", price.getMarketMarketMaker().getMarketMaker().getName(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
+								LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}",
+										operation.getOrder().getFixOrderId(), operation.getAttemptNo(), price.getMarketMarketMaker().getMarketMaker().getName(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
 							}
 							prices.add(price);
 						}

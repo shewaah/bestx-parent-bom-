@@ -44,13 +44,16 @@ import it.softsolutions.bestx.finders.CustomerFinder;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.handlers.LimitFileHelper;
 import it.softsolutions.bestx.model.Attempt;
+import it.softsolutions.bestx.model.CSPOBexExecutionReport;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.CustomerAttributesIFC;
+import it.softsolutions.bestx.model.ExecutablePrice;
 import it.softsolutions.bestx.model.ExecutionReport;
 import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.MarketExecutionReport;
 import it.softsolutions.bestx.model.Order;
+import it.softsolutions.bestx.model.CSPOBexExecutionReport.CSDealerGroup;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.financecalc.SettlementDateCalculator;
 import it.softsolutions.bestx.states.ErrorState;
@@ -792,8 +795,24 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         case Warning:
             comment = getComment(false, marketCode, type, comment);
             break;
+        case Cancelled:
+        	comment = getComment(false, marketCode, type, comment, createPobexInformation(operation));
+        	break;
         case Rejected:
-            comment = getComment(false, marketCode, type, comment, orderMarketMaker);
+        	String reason = null;
+        	if(orderMarketMaker == null) {
+        		if(marketCode == null) {
+        			reason = proposalMarketMaker;
+        		}
+        		else {
+        			reason = marketCode.toString();
+        		}
+        	}
+        	else {
+        		reason = orderMarketMaker;
+        	}
+        	Boolean isTW = marketCode != null && marketCode.equals(Market.MarketCode.TW);
+            comment = getComment(isTW, marketCode, type, comment, isTW ? createPobexInformation(operation) : reason);
             break;
         case ManageCounter: {
             String counterOfferAmount = df.format(operation.getLastAttempt().getExecutablePrice(0).getClassifiedProposal().getPrice().getAmount());
@@ -813,7 +832,8 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
                     comment = Messages.getString("InternalMM_MarketExecuted");
                 }
                 else {
-                    comment = getComment(false, marketCode, type, comment);
+                	Object[] params = { executionMarketMaker, executionReportPrice };
+                    comment = getComment(false, marketCode, type, comment, params);
                 }
                 break;
             case TW: 
@@ -1059,4 +1079,40 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
 //
 //        operationStateAuditDao.updateOrderStatusDescription(order, marketPrice);
 //    }
+    
+    public String createPobexInformation(Operation operation) {
+    	Attempt currentAttempt = operation.getLastAttempt();
+    	int size = currentAttempt.getExecutablePrices().size();
+		int index = 0;
+		if(currentAttempt.getExecutablePrice(0) == null) {
+		   index =1;
+		   size++;
+		}
+		String ret = new String();
+		String quoteData;
+		for(; index < size; index++) {
+			ExecutablePrice quote = currentAttempt.getExecutablePrice(index);
+			if(quote != null && (quote.getMarketMarketMaker() != null || quote.getOriginatorID() != null)) {
+				quoteData = "";
+				try {
+					quoteData += quote.getMarketMarketMaker().getMarketMaker().getCode();
+				} catch (@SuppressWarnings("unused") Exception e) {
+				   if (quote.getOriginatorID() != null) {
+					   quoteData += quote.getOriginatorID();
+				   } else {
+				      continue;
+				   }
+				}
+				quoteData += " ";
+				if(quote.getPrice() != null){
+					quoteData += quote.getPrice().getAmount();
+				} else {
+					quoteData += "0";
+				}
+				quoteData += " " + CSPOBexExecutionReport.convertAuditState(quote.getAuditQuoteState());
+				ret += quoteData + "; ";
+			}
+		}
+		return ret;
+    }
 }

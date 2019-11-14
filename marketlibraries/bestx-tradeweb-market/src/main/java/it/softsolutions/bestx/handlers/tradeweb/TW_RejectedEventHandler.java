@@ -59,6 +59,9 @@ public class TW_RejectedEventHandler extends BaseOperationEventHandler {
 
     @Override
     public void onNewState(OperationState currentState) {
+    	if(customerSpecificHandler != null) {
+    		customerSpecificHandler.onNewState(currentState);
+    	}
 
         boolean mustSendAutoNotExecution = false;
         Order order = operation.getOrder();
@@ -66,7 +69,7 @@ public class TW_RejectedEventHandler extends BaseOperationEventHandler {
         String rejectReason = ""; 
         if (lastAttempt != null) {
         	lastAttempt.setAttemptState(AttemptState.REJECTED);
-        	List<ClassifiedProposal> currentProposals = lastAttempt.getSortedBook().getValidSideProposals(order.getSide());
+/*        	List<ClassifiedProposal> currentProposals = lastAttempt.getSortedBook().getValidSideProposals(order.getSide());
         	double[] resultValues = new double[2];
         	try {
         		if (BookHelper.isSpreadOverTheMax(currentProposals, order, resultValues)) {
@@ -80,7 +83,7 @@ public class TW_RejectedEventHandler extends BaseOperationEventHandler {
         		operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
 
         		return;
-        	}
+        	}*/
 
         	if (mustSendAutoNotExecution) {
         		// auto not execution

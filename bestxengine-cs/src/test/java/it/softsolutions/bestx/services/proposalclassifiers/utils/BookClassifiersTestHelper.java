@@ -302,7 +302,7 @@ public class BookClassifiersTestHelper {
             propSubMktCode = null;
             propMmmCode = "";
 
-            boolean isMarket = clProp.getVenue().isMarket();
+            boolean isMarket = clProp.getVenue() != null && clProp.getVenue().isMarket();
             if (isMarket) {
                 /*
                  *  proposal ---> venue (MOTXMOT) ---> mkt (MOT/XMOT)

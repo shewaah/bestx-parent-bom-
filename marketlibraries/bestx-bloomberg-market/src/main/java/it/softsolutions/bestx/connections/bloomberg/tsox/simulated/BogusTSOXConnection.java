@@ -313,7 +313,7 @@ public class BogusTSOXConnection extends AbstractTradeStacConnection implements 
 		String contractNo = "C#" + System.currentTimeMillis();
 		Date futSettDate = DateUtils.addDays(new Date(), 3);
 		Date transactTime = new Date();
-		String text = "Don't like your ugly face";
+		String text = "Order could not be filled";
 		
 		TSExecutionReport tsExecutionReport = new TSExecutionReport();
 		tsExecutionReport.setClOrdID(clOrdId);
@@ -368,11 +368,13 @@ public class BogusTSOXConnection extends AbstractTradeStacConnection implements 
 		} else {
 			sendOrderCancelReject(marketOrder);
 
+			/*
 			try {
 				Thread.sleep(30000);
 			} catch (InterruptedException e) { }
 
 			sendFilledExecutionReport(marketOrder);
+			*/
 		}
 		
 	}

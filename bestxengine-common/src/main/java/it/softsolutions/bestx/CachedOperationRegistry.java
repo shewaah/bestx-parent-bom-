@@ -432,7 +432,7 @@ public class CachedOperationRegistry implements OperationRegistry, ConfigurableO
       Set<Long> noDupOperationIds = new HashSet<Long>(idToOperationIdMap.values());
       for (Long operationId : noDupOperationIds) {
          Operation op = getCachedOperation(operationId);
-         if (op != null) {
+         if (op != null && opStateCanonicalNames.contains(op.getState().getClass().getCanonicalName())) {
             operations.add(op);
          }
       }

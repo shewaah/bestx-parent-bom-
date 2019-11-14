@@ -262,7 +262,7 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
 					if(isCancelBestXInitiative) {
 						marketExecutionReport.setState(ExecutionReportState.REJECTED);
 						marketExecutionReport.setReason(RejectReason.AUTO_REJECTED);
-						operation.setStateResilient(new TW_CancelledState("No answer received after the configuration number of seconds. Order has been automatically cancelled by BestX!"),
+						operation.setStateResilient(new TW_CancelledState("No answer received after the configurated number of seconds. Order has been automatically cancelled by BestX!"),
 								ErrorState.class);
 					}
 					else {
@@ -298,29 +298,34 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
     @Override
     public void onTimerExpired(String jobName, String groupName) {
     	String handlerJobName = super.getDefaultTimerJobName();
-    	
-        if (jobName.equals(handlerJobName)) {
-            LOGGER.debug("Order {} : Timer: {} expired.", operation.getOrder().getFixOrderId(), jobName);
-			try {
-				//create the timer for the order cancel
-				handlerJobName += REVOKE_TIMER_SUFFIX;
-				setupTimer(handlerJobName, orderCancelDelay, false);
-				// send order cancel message to the market
-				twConnection.revokeOrder(operation, operation.getLastAttempt().getMarketOrder(), Messages.getString("TW_RevokeOrderForTimeout"));
-			} catch (BestXException e) {
-				LOGGER.error("An error occurred while revoking the order {}", operation.getOrder().getFixOrderId(), e);
-				operation.setStateResilient(new WarningState(operation.getState(), e,
-						Messages.getString("TW_MarketRevokeOrderError",  operation.getOrder().getFixOrderId())),
-						ErrorState.class);	
-			}            
-        } else if (jobName.equals(handlerJobName + REVOKE_TIMER_SUFFIX)) {
-        	//The timer created after receiving an Order Cancel Reject is expired without receiving an execution or a cancellation
-        	LOGGER.debug("Order {} : Timer: {} expired.", operation.getOrder().getFixOrderId(), jobName);
-        	//[AMC 20170117 BXSUP-2015] Added a more specific messge to audit
-            operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("CancelRejectWithNoExecutionReportTimeout.0", operation.getLastAttempt().getMarketOrder().getMarket().getName())), ErrorState.class);
-            } else {
-            super.onTimerExpired(jobName, groupName);
-        }
+
+    	if (jobName.equals(handlerJobName)) {
+    		LOGGER.debug("Order {} : Timer: {} expired.", operation.getOrder().getFixOrderId(), jobName);
+    		try {
+    			//create the timer for the order cancel
+    			handlerJobName += REVOKE_TIMER_SUFFIX;
+    			setupTimer(handlerJobName, orderCancelDelay, false);
+    			// send order cancel message to the market
+    			twConnection.revokeOrder(operation, operation.getLastAttempt().getMarketOrder(), Messages.getString("TW_RevokeOrderForTimeout"));
+    		} catch (BestXException e) {
+    			try {
+    				stopTimer(handlerJobName);
+    			} catch (SchedulerException e1) {
+    				LOGGER.error("Error in stop timer " + handlerJobName, e1);
+    			}
+    			LOGGER.error("An error occurred while revoking the order {}", operation.getOrder().getFixOrderId(), e);
+    			operation.setStateResilient(new WarningState(operation.getState(), e,
+    					Messages.getString("TW_MarketRevokeOrderError",  operation.getOrder().getFixOrderId())),
+    					ErrorState.class);	
+    		}            
+    	} else if (jobName.equals(handlerJobName + REVOKE_TIMER_SUFFIX)) {
+    		//The timer created after receiving an Order Cancel Reject is expired without receiving an execution or a cancellation
+    		LOGGER.debug("Order {} : Timer: {} expired.", operation.getOrder().getFixOrderId(), jobName);
+    		//[AMC 20170117 BXSUP-2015] Added a more specific messge to audit
+    		operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("CancelRejectWithNoExecutionReportTimeout.0", operation.getLastAttempt().getMarketOrder().getMarket().getName())), ErrorState.class);
+    	} else {
+    		super.onTimerExpired(jobName, groupName);
+    	}
     }
     
     
@@ -343,29 +348,41 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
 	}
 	
 	@Override
-   public void onRevoke() {
-	   
-	   //onRevoke is invoked by webapp and must only reject this market so no need to set customerRevokeReceived so that operations may continue on other markets
-	   
-	   String handlerJobName = super.getDefaultTimerJobName() + REVOKE_TIMER_SUFFIX;
-	   
-	   try {
-	      //create the timer for the order cancel
-	      setupTimer(handlerJobName, orderCancelDelay, false);
-	      // send order cancel message to the market
-	      twConnection.revokeOrder(operation, operation.getLastAttempt().getMarketOrder(), Messages.getString("TW_RevokeOrder"));
-	   } catch (BestXException e) {
-	      LOGGER.error("An error occurred while revoking the order {}", operation.getOrder().getFixOrderId(), e);
-	      operation.setStateResilient(
-	            new WarningState(
-	                  operation.getState(), 
-	                  e, 
-	                  Messages.getString("TW_MarketRevokeOrderError", operation.getOrder().getFixOrderId())
-	            ),
-	            ErrorState.class
-	      );   
-	   }            
-       
+	public void onRevoke() {
+
+		//onRevoke is invoked by webapp and must only reject this market so no need to set customerRevokeReceived so that operations may continue on other markets
+
+		String handlerJobName = super.getDefaultTimerJobName();
+		try {
+			stopTimer(handlerJobName);
+		} catch (SchedulerException e2) {
+			LOGGER.error("Error in stop timer " + handlerJobName, e2);
+		}
+
+		handlerJobName += REVOKE_TIMER_SUFFIX;
+
+		try {
+			//create the timer for the order cancel
+			setupTimer(handlerJobName, orderCancelDelay, false);
+			// send order cancel message to the market
+			twConnection.revokeOrder(operation, operation.getLastAttempt().getMarketOrder(), Messages.getString("TW_RevokeOrder"));
+		} catch (BestXException e) {
+			try {
+				stopTimer(handlerJobName);
+			} catch (SchedulerException e1) {
+				LOGGER.error("Error in stop timer " + handlerJobName, e1);
+			}
+			LOGGER.error("An error occurred while revoking the order {}", operation.getOrder().getFixOrderId(), e);
+			operation.setStateResilient(
+					new WarningState(
+							operation.getState(), 
+							e, 
+							Messages.getString("TW_MarketRevokeOrderError", operation.getOrder().getFixOrderId())
+							),
+					ErrorState.class
+					);   
+		}            
+
 	}
 
    @Override

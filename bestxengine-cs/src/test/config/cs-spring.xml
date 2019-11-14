@@ -607,6 +607,7 @@
         <property name="marketPriceTimeout"><value>${Bloomberg.pricesTimeout}</value></property>
         <property name="marketExecTimeout"><value>${Market.state.timeout}</value></property>
 		<property name="marketAxessExecTimeout"><value>${MarketAxess.ExecTimeout}</value></property>
+        <property name="bloombergExecTimeout"><value>${Bloomberg.ExecTimeout}</value></property>
         <property name="internalRfqReplyTimeout"><value>${Internal.rfqreply.timeout}</value></property>
         <property name="internalRfqMessagePrefix"><value>${Internal.rfq.message.prefix}</value></property>
 		<!-- TECHNICAL PARAMETERS -->
@@ -920,9 +921,7 @@
                     <property name="configValue"><value>12</value></property>
                     <property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
 				</bean>
-				<!--
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardInsufficientQuantityProposalClassifier"></bean>
-                -->
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardInadequateOrderedQuantityProposalClassifier">
                     <property name="marketSecurityStatusService"><ref bean="marketSecurityStatusService"></ref></property>
                     <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
@@ -964,6 +963,7 @@
 		<property name="bookClassifierList">
 			<list>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardDuplicatedMM"></bean>
+                <!-- bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTooWideQuoteSpread"></bean-->
 			</list>
 		</property>
 	</bean>
@@ -971,6 +971,8 @@
 
 <!-- Execution strategy -->
     <bean id="executionStrategyServiceFactory" class="it.softsolutions.bestx.services.executionstrategy.CSExecutionStrategyServiceFactory">
+    	<property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
+    	<property name="marketConnectionRegistry"><ref bean="configurableMarketConnectionRegistry"/></property>
         <property name="bookClassifier"><ref bean="bookClassifierBean"/></property>
  		<property name="bookSorter"><bean class="it.softsolutions.bestx.services.booksorter.BookSorterImpl"></bean></property>
     	<property name="allMarketsToTry">
@@ -1096,10 +1098,11 @@
         <property name="venueFinder"><ref bean="dbBasedVenueFinder"/></property>
         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
         <!-- <property name="tradeStacPreTradeConnection"><ref bean="simulatedMdsConnector"/></property> -->
-        <property name="tradeStacPreTradeConnection"><ref bean="mdsConnector"/></property>
+        <property name="tradeStacPreTradeConnection"><ref bean="simulatedMdsConnector"/></property>
         <property name="tradeXpressConnection"><ref bean="tradexpressConnector"/></property>
 	</bean>
 
+	<!-- 
     <bean id="mdsConnector" class="it.softsolutions.bestx.connections.tradeweb.mds.MDSConnectionImpl" init-method="init">
         <property name="executor"><ref bean="threadPoolTradeweb"/></property>
         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
@@ -1113,8 +1116,9 @@
 		</property>
         <property name="fixConfigFileName"><value>fix-tradestac-mds.properties</value></property>
 	</bean>
+	-->
  
- <!--    <bean id="simulatedMdsConnector" class="it.softsolutions.bestx.connections.tradestac.TradeStacMarketSimulatorConnectionImpl" init-method="init">
+    <bean id="simulatedMdsConnector" class="it.softsolutions.bestx.connections.tradestac.TradeStacMarketSimulatorConnectionImpl" init-method="init">
         <property name="marketCode"><value>TW</value></property>
         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
         <property name="marketMakerFinder"><ref bean="dbBasedMarketMakerFinder"/></property>
@@ -1128,7 +1132,8 @@
         </property>
         <property name="fixConfigFileName"><value>fix-tradestac-simulated-mds.properties</value></property>
     </bean>
--->
+
+<!-- 
     <bean id="tradexpressConnector" class="it.softsolutions.bestx.connections.tradeweb.tradexpress.TradeXpressConnectionImpl" init-method="init">
 		<property name="tradeXpressConnectionListener"><ref bean="tradewebMarket"/></property>
 		<property name="tradeStacConnectionListener"><ref bean="tradewebMarket"/></property>
@@ -1144,7 +1149,7 @@
 		<property name="defaultTradingCapacity"><value>${Tradeweb.defaultCapacity}</value></property>
         <property name="fixConfigFileName" value="fix-tradestac-tradexpress.properties" />
 	</bean>
-<!--  
+	 -->
     <bean id="tradexpressConnector" class="it.softsolutions.bestx.connections.tradeweb.simulated.BogusTradeXpressConnection" init-method="init">
 		<property name="tradeXpressConnectionListener"><ref bean="tradewebMarket"/></property>
         <property name="cancelIsins">
@@ -1153,13 +1158,20 @@
 		</property>
         <property name="rejectIsins">
         	<list>
+        		<value>US912833DE75</value>
         		<value>XS0076085603</value>
         		<value>XS0563306314</value>
         		<value>CA563469CN38</value>
         	</list>
 		</property>
+		<property name="waitingIsins">
+			<list>
+				<value>DE0001135275</value>
+			</list>
+		</property>
 	</bean>
---><!--
+
+<!--
     <bean id="simulatedTradexpressConnector" class="it.softsolutions.bestx.connections.tradeweb.tradexpress.TradeXpressConnectionImpl" init-method="init">
 		<property name="tradeXpressConnectionListener"><ref bean="tradewebMarket"/></property>
 		<property name="tradeStacConnectionListener"><ref bean="tradewebMarket"/></property>

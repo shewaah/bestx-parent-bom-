@@ -59,6 +59,7 @@ import it.softsolutions.bestx.states.CurandoAutoState;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.ManualManageState;
 import it.softsolutions.bestx.states.WarningState;
+import it.softsolutions.bestx.states.bloomberg.BBG_SendRfqState;
 import it.softsolutions.bestx.states.marketaxess.MA_SendOrderState;
 import it.softsolutions.bestx.states.tradeweb.TW_SendOrderState;
 import it.softsolutions.ib4j.IBException;
@@ -998,8 +999,10 @@ public void init() throws BestXException {
       ArrayList<Class<? extends BaseState>> classes = new ArrayList<>();
       if (marketName.equals("TW")) {
          classes.add(TW_SendOrderState.class);
-      } else if (marketName.equals("MA")) {
+      } else if (marketName.equals("MA") || marketName.equals("MARKETAXESS")) {
          classes.add(MA_SendOrderState.class);
+      } else if (marketName.equals("BLOOMBERG")) {
+         classes.add(BBG_SendRfqState.class);
       }
       return classes;
    }

@@ -860,10 +860,10 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
 
 			PriceType priceType = tsExecutionReport.getPriceType();
 			BigDecimal lastPrice= null;
-			if(priceType == PriceType.Percentage) {
-				lastPrice = tsExecutionReport.getLastPx() == null ? null : new BigDecimal(tsExecutionReport.getLastPx().toString());
+			if(priceType != null && priceType == PriceType.Percentage && tsExecutionReport.getLastParPrice() != null) {
+            lastPrice = new BigDecimal(tsExecutionReport.getLastParPrice().toString());
 			} else {
-				lastPrice = tsExecutionReport.getLastParPrice() == null ? null : new BigDecimal(tsExecutionReport.getLastParPrice().toString());
+            lastPrice = tsExecutionReport.getLastPx() == null ? null : new BigDecimal(tsExecutionReport.getLastPx().toString());
 			}
 			String text = tsExecutionReport.getText();
 			LOGGER.info("[MktMsg] orderID = {}, ExecutionReport received: clOrdId={}, OrdStatus={}, ExecType={}, LastPrice={}, text={}",

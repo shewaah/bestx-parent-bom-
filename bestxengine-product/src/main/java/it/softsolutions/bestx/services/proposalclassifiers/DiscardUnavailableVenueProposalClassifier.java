@@ -40,12 +40,14 @@ public class DiscardUnavailableVenueProposalClassifier implements ProposalClassi
 
 	@Override
 	public ClassifiedProposal getClassifiedProposal(ClassifiedProposal proposal, Order order, List<Attempt> previousAttempts, Set<Venue> venues, ClassifiedBook book) {
-		boolean enabled = (proposal.getVenue().getMarketMaker() != null ? proposal.getVenue().getMarketMaker().isEnabled() : true);
+		if(proposal.getVenue() != null) {
+			boolean enabled = (proposal.getVenue().getMarketMaker() != null ? proposal.getVenue().getMarketMaker().isEnabled() : true);
 
-		if (venues != null) {
-			if (!venues.contains(proposal.getVenue()) || (!enabled && order.isBestExecutionRequired())) {
-				proposal.setProposalState(Proposal.ProposalState.DROPPED);
-				proposal.setReason(Messages.getString("DiscardUnavailableVenueProposalClassifier.0"));
+			if (venues != null) {
+				if (!venues.contains(proposal.getVenue()) || (!enabled && order.isBestExecutionRequired())) {
+					proposal.setProposalState(Proposal.ProposalState.DROPPED);
+					proposal.setReason(Messages.getString("DiscardUnavailableVenueProposalClassifier.0"));
+				}
 			}
 		}
 		return proposal;

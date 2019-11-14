@@ -17,6 +17,7 @@ package it.softsolutions.bestx.services.executionstrategy;
 
 import java.util.List;
 
+import it.softsolutions.bestx.MarketConnectionRegistry;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.bestexec.BookClassifier;
@@ -43,6 +44,7 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
 	private BookClassifier bookClassifier;
 	private BookSorterImpl bookSorter;
 	private ApplicationStatus applicationStatus;
+	private MarketConnectionRegistry marketConnectionRegistry;
 	private int minimumRequiredBookDepth = 3;
 
 
@@ -61,7 +63,14 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
 	public void setBookSorter(BookSorterImpl bookSorter) {
 		this.bookSorter = bookSorter;
 	}
-
+	
+	public void setMarketConnectionRegistry(MarketConnectionRegistry marketConnectionRegistry) {
+		this.marketConnectionRegistry = marketConnectionRegistry;
+	}
+	
+	public MarketConnectionRegistry getMarketConnectionRegistry() {
+		return marketConnectionRegistry;
+	}
 
 	public MarketFinder getMarketFinder()
 	{
@@ -110,6 +119,7 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
          execService.setMarketFinder(marketFinder);
          execService.setBookClassifier(bookClassifier);
          execService.setBookSorter(bookSorter);
+         execService.setMarketConnectionRegistry(marketConnectionRegistry);
          return execService;
       }
       case NORMAL_PRICEDISCOVERY: {
@@ -117,6 +127,7 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
          execService.setMarketFinder(marketFinder);
          execService.setBookClassifier(bookClassifier);
          execService.setBookSorter(bookSorter);
+         execService.setMarketConnectionRegistry(marketConnectionRegistry);
          return execService;
       }
           // AMC 20160801 probably not needed
@@ -125,6 +136,7 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
          execService.setMarketFinder(marketFinder);
           execService.setBookClassifier(bookClassifier);
          execService.setBookSorter(bookSorter);
+         execService.setMarketConnectionRegistry(marketConnectionRegistry);
          return execService;
       }
       default:

@@ -48,4 +48,8 @@ public class BBG_SendRfqState extends BaseState implements Cloneable {
         return true;
     }
 
+    @Override
+    public boolean isExpirable() {
+        return false;
+    }
 }

@@ -76,10 +76,15 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 		this.cancelIsins = cancelIsins;
 	}
 
+	public void setWaitingIsins(List<String> waitingIsins) {
+		this.waitingIsins = waitingIsins;
+	}
+	
 	private List<String> cancelIsins = new ArrayList<String>();
 	
 	private List<String> rejectIsins = new ArrayList<String>();
 	
+	private List<String> waitingIsins = new ArrayList<String>();
 	
 	public void init() {
 		
@@ -138,15 +143,17 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 //		if(!cancelIsins.contains("TRFAKBK11926"))cancelIsins.add("TRFAKBK11926");
 //		cancelIsins.remove("US912810EC81");
 
-		if (cancelIsins.contains(marketOrder.getInstrument().getIsin())) {
-			sendCancelledExecutionReport(marketOrder);
-		} else if (rejectIsins.contains(marketOrder.getInstrument().getIsin())){  //rejectIsins.add("XS0365323608");
-			sendOrderReject(marketOrder);										//rejectIsins.remove("XS0365323608");
-		} else {
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {}
-			sendFilledExecutionReport(marketOrder);
+		if (!waitingIsins.contains(marketOrder.getInstrument().getIsin())) {
+			if (cancelIsins.contains(marketOrder.getInstrument().getIsin())) {
+				sendCancelledExecutionReport(marketOrder);
+			} else if (rejectIsins.contains(marketOrder.getInstrument().getIsin())){  //rejectIsins.add("XS0365323608");
+				sendOrderReject(marketOrder);										//rejectIsins.remove("XS0365323608");
+			} else {
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {}
+				sendFilledExecutionReport(marketOrder);
+			}
 		}
 	}
 
@@ -270,7 +277,7 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 		execReport.setExecID("C#" + System.currentTimeMillis());
 		execReport.setSettlDate(DateUtils.addDays(new Date(), 3));
 		execReport.setTransactTime(new Date());
-		execReport.setText("Target price not met/Quoted:DLRX,DLRY");
+		execReport.setText("Target price not met/Quoted:[DLRX:103.27;DLRY:103.27]");
 		
 		if(marketOrder.getMarketMarketMaker() != null) {
 			TSParties tsp = new TSParties();
@@ -287,7 +294,7 @@ public class BogusTradeXpressConnection implements TradeXpressConnection {
 	private void sendOrderReject(MarketOrder marketOrder) {
 		String sessionId = "sessionID";
 		String clOrdId = marketOrder.getMarketSessionId();
-		String reason = "Don't like your manners";
+		String reason = "Order could not be filled";
 		
 		tradeXpressConnectionListener.onOrderReject(sessionId, clOrdId, reason);
 	}

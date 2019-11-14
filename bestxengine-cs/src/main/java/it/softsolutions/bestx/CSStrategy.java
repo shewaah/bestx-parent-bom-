@@ -71,9 +71,9 @@ import it.softsolutions.bestx.handlers.ValidateByPunctualFilterEventHandler;
 import it.softsolutions.bestx.handlers.WaitingPriceEventHandler;
 import it.softsolutions.bestx.handlers.WarningEventHandler;
 import it.softsolutions.bestx.handlers.bloomberg.BBG_ExecutedEventHandler;
-import it.softsolutions.bestx.handlers.bloomberg.BBG_RejectedEventHandler;
 import it.softsolutions.bestx.handlers.bloomberg.BBG_SendEnquiryEventHandler;
 import it.softsolutions.bestx.handlers.bloomberg.BBG_StartExecutionEventHandler;
+import it.softsolutions.bestx.handlers.bloomberg.CS_BBG_RejectedEventHandler;
 import it.softsolutions.bestx.handlers.bloomberg.UnreconciledTradeEventHandler;
 import it.softsolutions.bestx.handlers.bondvision.BV_SendOrderEventHandler;
 import it.softsolutions.bestx.handlers.bondvision.BV_SendRFCQEventHandler;
@@ -155,6 +155,7 @@ public class CSStrategy implements Strategy, SystemStateSelector {
 	private long priceDiscoveryTimeout;
 	private long marketAxessExecTimeout = 10 * 60 * 1000;
 	private long marketExecTimeout;
+	private long bloombergExecTimeout;
 	private long internalRfqReplyTimeout;
 	private String internalRfqMessagePrefix;
 
@@ -494,9 +495,21 @@ public class CSStrategy implements Strategy, SystemStateSelector {
 			switch (marketCode) {
 			case TW:
 				handler = new TW_CancelledEventHandler(operation, serialNumberService);
+				if (CSExecutionReportHelper.isPOBex(operation)) {
+					CSSendPOBExEventHandler customerHandler = new CSSendPOBExEventHandler(operation, orderBookDepth, priceDecimals, priceDiscoveryConnection, serialNumberService, pobExMaxSize, true);
+					customerHandler.setCustomerConnection(customerConnection);
+					customerHandler.setOperatorConsoleConnection(operatorConsoleConnection);
+					handler.setCustomerSpecificHandler(customerHandler);
+				}
 				break;
 			case MARKETAXESS:
 				handler = new MA_CancelledEventHandler(operation, serialNumberService);
+				if (CSExecutionReportHelper.isPOBex(operation)) {
+					CSSendPOBExEventHandler customerHandler = new CSSendPOBExEventHandler(operation, orderBookDepth, priceDecimals, priceDiscoveryConnection, serialNumberService, pobExMaxSize, true);
+					customerHandler.setCustomerConnection(customerConnection);
+					customerHandler.setOperatorConsoleConnection(operatorConsoleConnection);
+					handler.setCustomerSpecificHandler(customerHandler);
+				}
 				break;
 				/*
                case BV:
@@ -585,13 +598,25 @@ public class CSStrategy implements Strategy, SystemStateSelector {
 			else {
 				switch (marketCode) {
 				case BLOOMBERG:
-					handler = new BBG_RejectedEventHandler(operation, serialNumberService);
+					handler = new CS_BBG_RejectedEventHandler(operation, serialNumberService);
 					break;
 				case TW:
 					handler = new TW_RejectedEventHandler(operation, serialNumberService, bestXConfigurationDao);
+					if (CSExecutionReportHelper.isPOBex(operation)) {
+						CSSendPOBExEventHandler customerHandler = new CSSendPOBExEventHandler(operation, orderBookDepth, priceDecimals, priceDiscoveryConnection, serialNumberService, pobExMaxSize, true);
+						customerHandler.setCustomerConnection(customerConnection);
+						customerHandler.setOperatorConsoleConnection(operatorConsoleConnection);
+						handler.setCustomerSpecificHandler(customerHandler);
+					}
 					break;
 				case MARKETAXESS:
 					handler = new MA_RejectedEventHandler(operation, serialNumberService, bestXConfigurationDao);
+					if (CSExecutionReportHelper.isPOBex(operation)) {
+						CSSendPOBExEventHandler customerHandler = new CSSendPOBExEventHandler(operation, orderBookDepth, priceDecimals, priceDiscoveryConnection, serialNumberService, pobExMaxSize, true);
+						customerHandler.setCustomerConnection(customerConnection);
+						customerHandler.setOperatorConsoleConnection(operatorConsoleConnection);
+						handler.setCustomerSpecificHandler(customerHandler);
+					}
 					break;
 					/*
                   case BV:
@@ -665,7 +690,7 @@ public class CSStrategy implements Strategy, SystemStateSelector {
 			switch (marketCode) {
 			case BLOOMBERG:
 				handler = new BBG_SendEnquiryEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BLOOMBERG).getBuySideConnection(), 
-						serialNumberService, marketExecTimeout, orderCancelDelay, tsoxTechnicalRejectReasons);
+						serialNumberService, this.bloombergExecTimeout, orderCancelDelay, tsoxTechnicalRejectReasons);
 				break;
 			case BV:
 				handler = new BV_SendRFCQEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BV).getBuySideConnection(), serialNumberService,
@@ -723,13 +748,6 @@ public class CSStrategy implements Strategy, SystemStateSelector {
 			handler = new WaitingPriceEventHandler(operation, getPriceService(operation.getOrder()), titoliIncrociabiliService, customerFinder, serialNumberService, regulatedMktIsinsLoader,
 					regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout, marketSecurityStatusService, executionDestinationService,
 					rejectWhenBloombergIsBest, doNotExecuteWP, bookDepthValidator, internalMMcodesList, operationStateAuditDao, targetPriceMaxLevel, applicationStatus);
-
-			if (CSExecutionReportHelper.isPOBex(operation)) {
-				CSSendPOBExEventHandler customerHandler = new CSSendPOBExEventHandler(operation, orderBookDepth, priceDecimals, priceDiscoveryConnection, serialNumberService, pobExMaxSize);
-				customerHandler.setCustomerConnection(customerConnection);
-				customerHandler.setOperatorConsoleConnection(operatorConsoleConnection);
-				handler.setCustomerSpecificHandler(customerHandler);
-			}
 			break;
 			//        case WaitingFill:
 			//            handler = new BBG_WaitingFillEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BLOOMBERG), bbgWaitFillMSec, bbgFillPollingMSec);
@@ -1484,4 +1502,12 @@ public class CSStrategy implements Strategy, SystemStateSelector {
 		this.applicationStatus = applicationStatus;
 	}
 
+	public long getBloombergExecTimeout() {
+		return bloombergExecTimeout;
+	}
+
+	public void setBloombergExecTimeout(long bloombergExecTimeout) {
+		this.bloombergExecTimeout = bloombergExecTimeout;
+	}
+	
 }

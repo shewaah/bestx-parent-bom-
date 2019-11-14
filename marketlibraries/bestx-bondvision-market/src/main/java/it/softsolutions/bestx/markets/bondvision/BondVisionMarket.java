@@ -240,6 +240,8 @@ public class BondVisionMarket extends MarketCommon implements MarketBuySideConne
         	return result;
 
         for (ClassifiedProposal a : bookProposals) {
+        	//////////////////////////////////////////////////////////////////////////////////
+        	//FIXME PAY ATTENTION!!!! getVenue could be null
             if (a.getVenue().getCode().equalsIgnoreCase(proposal.getVenue().getCode())) {
                 return true;
             }

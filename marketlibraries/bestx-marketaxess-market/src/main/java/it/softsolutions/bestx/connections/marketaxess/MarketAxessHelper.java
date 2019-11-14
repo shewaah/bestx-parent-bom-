@@ -345,7 +345,12 @@ public class MarketAxessHelper extends MarketPriceDiscoveryHelper {
 			// get side
 			proposal.setSide(
 					(entry.getChar(MDEntryType.FIELD) == MDEntryType.OFFER) ? ProposalSide.ASK : ProposalSide.BID);
-			proposal.setVenue(venueFinder.getMarketMakerVenue(mmm.getMarketMaker()));
+			if(mmm != null) {
+				proposal.setVenue(venueFinder.getMarketMakerVenue(mmm.getMarketMaker()));
+			}
+			else {
+				LOGGER.warn("Market maker is null for MARKETAXESS {} and dealerCode {}", Market.MarketCode.MARKETAXESS, dealerCode);
+			}
 		} catch (Exception e) {
 			throw new BestXException(e);
 		}
@@ -375,7 +380,12 @@ public class MarketAxessHelper extends MarketPriceDiscoveryHelper {
 		proposal.setFutSettDate(instrument.getDefaultSettlementDate());
 		// get side
 		proposal.setSide(side);
-		proposal.setVenue(venueFinder.getMarketMakerVenue(mmm.getMarketMaker()));
+		if(mmm != null) {
+			proposal.setVenue(venueFinder.getMarketMakerVenue(mmm.getMarketMaker()));
+		}
+		else {
+			LOGGER.warn("Market maker is null");
+		}
 		return proposal;
 	}
 

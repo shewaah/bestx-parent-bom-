@@ -52,7 +52,8 @@ public class DiscardTriedInEarlierAttemptProposalClassifier implements ProposalC
 			for (Attempt a : previousAttempts) {
 				if (!a.isByPassableForVenueAlreadyTried()) {
 					// Venue used in an earlier attempt
-					if (a.getMarketOrder() != null && a.getMarketOrder().getVenue().equals(proposal.getVenue())) {
+					if (a.getMarketOrder() != null && a.getMarketOrder().getVenue() != null && 
+							a.getMarketOrder().getVenue().equals(proposal.getVenue())) {
 						LOGGER.debug("Order {}, proposal venue {}, venue market {}", order.getFixOrderId(), proposal.getVenue(), proposal.getVenue().getMarket());
 						List<MarketExecutionReport> execReports = a.getMarketExecutionReports();
 						// The earlier attempt has a market execution report stating that a technical failure prevented

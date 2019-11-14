@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.model.Attempt.AttemptState;
 import it.softsolutions.bestx.model.Market.MarketCode;
@@ -12,6 +15,8 @@ import it.softsolutions.bestx.services.DateService;
 
 public class CSPOBexExecutionReport extends ExecutionReport {
 
+   private static final Logger LOGGER = LoggerFactory.getLogger(CSPOBexExecutionReport.class);
+   
 	private Integer execAttmptNo;
 	private Date execAttmptTime;
 	private String multiDealerID;
@@ -188,6 +193,13 @@ public class CSPOBexExecutionReport extends ExecutionReport {
 			counteroffer = currentAttempt.getExecutablePrice(0).getClassifiedProposal();
 
 		this.setExecAttmptNo(operation.getAttemptNo());
+		
+		if(marketExecutionReport != null && marketExecutionReport.getLastMkt() != null && this.getLastMkt() != null) {
+			this.setLastMkt(marketExecutionReport.getLastMkt());
+		}
+		else if(marketOrder!=null && marketOrder.getMarket() != null && marketOrder.getMarket().getMicCode() != null) {
+			this.setLastMkt(marketOrder.getMarket().getMicCode());
+		}
 
 		if(marketOrder!=null) {
 			this.setExecAttmptTime(marketOrder.getTransactTime());
@@ -195,9 +207,9 @@ public class CSPOBexExecutionReport extends ExecutionReport {
 		}
 
 		if(marketExecutionReport != null && (marketExecutionReport.getMarket().getMarketCode() == MarketCode.MARKETAXESS
-									|| (marketExecutionReport.getMarket().getMarketCode() == MarketCode.TW && marketExecutionReport.getState() == ExecutionReportState.FILLED)
-									|| (marketExecutionReport.getMarket().getMarketCode() == MarketCode.BLOOMBERG)
-									|| (marketExecutionReport.getMarket().getMarketCode() == MarketCode.BV)
+									|| marketExecutionReport.getMarket().getMarketCode() == MarketCode.TW
+									|| marketExecutionReport.getMarket().getMarketCode() == MarketCode.BLOOMBERG
+									|| marketExecutionReport.getMarket().getMarketCode() == MarketCode.BV
 									)) {
 			// manage MarketAxess more rich execution report
 			// get all quotes from attempt
@@ -209,13 +221,18 @@ public class CSPOBexExecutionReport extends ExecutionReport {
 			}
 			for(; index < size; index++) {  //BESTX-314 from 0 to i-1 to catch also executed price
 				ExecutablePrice quote = currentAttempt.getExecutablePrice(index);
-				if(quote != null && (quote.getMarketMarketMaker() != null || quote.getOriginatorID() != null)) {
+				if(quote != null) {
 					CSDealerGroup dealerGroup = new CSDealerGroup(); 
-					try {
+					if(quote.getMarketMarketMaker() != null && quote.getMarketMarketMaker().getMarketMaker() != null) {
 						dealerGroup.setDealerID(quote.getMarketMarketMaker().getMarketMaker().getCode());
-					} catch (@SuppressWarnings("unused") Exception e) {
-						dealerGroup.setDealerID(quote.getOriginatorID());
 					}
+					else if (quote.getOriginatorID() != null) {
+						dealerGroup.setDealerID(quote.getOriginatorID());
+					} else {
+						LOGGER.warn("Market maker not defined");
+						continue;
+					}
+
 					if(quote.getPrice() != null){
 						dealerGroup.setDealerQuotePrice(quote.getPrice().getAmount());
 						dealerGroup.setDealerQuoteOrdQty(quote.getQty());
@@ -265,7 +282,7 @@ public class CSPOBexExecutionReport extends ExecutionReport {
 		}
 	}
 
-	private String convertAuditState(String auditQuoteState) {
+	public static String convertAuditState(String auditQuoteState) {
 		switch (auditQuoteState) {
 		case "Done":
 		case "Order Accepted":

@@ -425,13 +425,15 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("EventPriceTimeout.0", priceResult.getReason())), ErrorState.class);
 		} else if (priceResult.getState() == PriceResult.PriceResultState.NULL 
 				|| priceResult.getState() == PriceResult.PriceResultState.ERROR) {
-			if(!operation.isNotAutoExecute() && (applicationStatus.getType()==ApplicationStatus.Type.EXECUTION &&(BondTypesService.isUST(operation.getOrder().getInstrument())) || doRejectThisBestOnBloomberg)) { 
+			
+			boolean executable = !operation.isNotAutoExecute() && (!operation.getOrder().isLimitFile() || !doNotExecute);
+			
+			if(executable && BondTypesService.isUST(operation.getOrder().getInstrument())) { 
 				// it is an executable UST order and there are no prices on consolidated book
 				csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
-			}
-			else {
+			} else {
 				Customer customer = customerOrder.getCustomer();
-				checkOrderAndsetNotAutoExecuteOrder(operation, doNotExecute);
+				// checkOrderAndsetNotAutoExecuteOrder(operation, doNotExecute);
 				try {
 					csExecutionStrategyService.manageAutomaticUnexecution(customerOrder, customer);
 				} catch (BestXException e) {
@@ -461,7 +463,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			LOGGER.debug("NullPointerException trying to manage widen best or get the {}-th best for order {}", this.targetPriceMaxLevel, order.getFixOrderId());
 		}
 		try {
-			double spread = BookHelper.getQuoteSpread(currentAttempt.getSortedBook().getValidSideProposals(operation.getOrder().getSide()), this.targetPriceMaxLevel);
+			double spread = BookHelper.getQuoteSpread(currentAttempt.getSortedBook().getAcceptableSideProposals(operation.getOrder().getSide()), this.targetPriceMaxLevel);
 			CustomerAttributes custAttr = (CustomerAttributes) order.getCustomer().getCustomerAttributes();
 			BigDecimal customerMaxWideSpread = custAttr.getWideQuoteSpread();
 			if(customerMaxWideSpread != null && customerMaxWideSpread.doubleValue() < spread) { // must use the spread, not the i-th best
@@ -487,7 +489,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 				}                	
 			} else {
 				if(order.getLimit() != null && isWorseThan(limitPrice, order.getLimit(), order.getSide())) {
-					LOGGER.debug("Found price is {}, which is worse than client order limit price: {}. Will use client order limit price", limitPrice.toString(), order.getLimit().getAmount().toString());					
+					LOGGER.debug("Found price is {}, which is worse than client order limit price: {}. Will use client order limit price", limitPrice.getAmount().toString(), order.getLimit().getAmount().toString());					
 					limitPrice = order.getLimit();
 				} else
 					LOGGER.debug("Use less wide between i-th best proposal and best widened by {} as market order limit price: {}", customerMaxWideSpread, limitPrice == null? "null":limitPrice.getAmount().toString());

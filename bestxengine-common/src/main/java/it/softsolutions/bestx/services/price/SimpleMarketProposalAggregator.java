@@ -525,9 +525,12 @@ public class SimpleMarketProposalAggregator implements MarketProposalAggregator 
 
     private ClassifiedProposal getClonedProposal(ClassifiedProposal sourceProposal, MarketCode targetMarket, MarketMarketMaker targetMMM, Instrument instrument) throws BestXException {
         ClassifiedProposal fakeProposal = new ClassifiedProposal();
-        Venue venue = new Venue(sourceProposal.getVenue());
         Market market = marketFinder.getMarketByCode(targetMarket, null);
-        venue.setMarket(market);
+        if(sourceProposal.getVenue() != null) {
+        	Venue venue = new Venue(sourceProposal.getVenue());
+        	venue.setMarket(market);
+        	fakeProposal.setVenue(venue);
+        }
         fakeProposal = new ClassifiedProposal();
         fakeProposal.setMarket(market);
         fakeProposal.setProposalState(ProposalState.NEW);
@@ -536,7 +539,6 @@ public class SimpleMarketProposalAggregator implements MarketProposalAggregator 
         fakeProposal.setTimestamp(sourceProposal.getTimestamp());
         fakeProposal.setPrice(sourceProposal.getPrice());
         fakeProposal.setQty(sourceProposal.getQty());
-        fakeProposal.setVenue(venue);
         fakeProposal.setFutSettDate(instrument.getDefaultSettlementDate());
         fakeProposal.setNonStandardSettlementDateAllowed(sourceProposal.isNonStandardSettlementDateAllowed());
         fakeProposal.setMarketMarketMaker(targetMMM);

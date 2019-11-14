@@ -37,6 +37,7 @@ import it.softsolutions.bestx.finders.VenueFinder;
 import it.softsolutions.bestx.handlers.BaseOperationEventHandler;
 import it.softsolutions.bestx.markets.marketaxess.MarketAxessExecutionReport;
 import it.softsolutions.bestx.model.Attempt;
+import it.softsolutions.bestx.model.Attempt.AttemptState;
 import it.softsolutions.bestx.model.ExecutablePrice;
 import it.softsolutions.bestx.model.ExecutionReport;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
@@ -53,7 +54,6 @@ import it.softsolutions.bestx.model.Proposal.ProposalSubState;
 import it.softsolutions.bestx.model.Proposal.ProposalType;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.Venue;
-import it.softsolutions.bestx.model.Attempt.AttemptState;
 import it.softsolutions.bestx.model.Venue.VenueType;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.serial.SerialNumberService;
@@ -213,7 +213,7 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 					operation.setStateResilient(new MA_CancelledState("Revoke requested by the customer"),
 							ErrorState.class);				
 				else if(isCancelBestXInitiative)
-					operation.setStateResilient(new MA_CancelledState("No answer received after the configuration number of seconds. Order has been automatically cancelled by BestX!"),
+					operation.setStateResilient(new MA_CancelledState("No answer received after the configurated number of seconds. Order has been automatically cancelled by BestX!"),
 							ErrorState.class);
 				else 
 					operation.setStateResilient(new MA_CancelledState(), ErrorState.class);
@@ -342,9 +342,16 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 					quote.setTimestamp(DateService.convertUTCToLocal(currentAttempt.getMarketOrder().getTransactTime())); // there is no timestamp in MA returned values - MarketOrder TransactTime is in UTC
 					quote.setQuoteReqId(currentAttempt.getMarketOrder().getFixOrderId());
 					int rank = Integer.parseInt(dealer.getQuoteRank().getValue());
+					if(mmm == null) {
+						LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", 
+								operation.getOrder().getFixOrderId(), operation.getAttemptNo(), quote.getOriginatorID(), quote.getPrice().getAmount().toString(), quote.getAuditQuoteState());
+					} else {
+						LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", 
+								operation.getOrder().getFixOrderId(), operation.getAttemptNo(), quote.getMarketMarketMaker().getMarketMaker().getName(), quote.getPrice().getAmount().toString(), quote.getAuditQuoteState());
+					}
 					currentAttempt.addExecutablePrice(quote, rank);
 					if(mmm != null && mmm.getMarketMaker() != null)
-					quote.setVenue(venueFinder.getMarketMakerVenue(mmm.getMarketMaker()));
+						quote.setVenue(venueFinder.getMarketMakerVenue(mmm.getMarketMaker()));
 				} catch (@SuppressWarnings("unused") FieldNotFound e) {
 					LOGGER.info("Quote not valid for dealer {}", quotingDealer);
 				} catch (@SuppressWarnings("unused") NullPointerException|BestXException e) {
@@ -461,6 +468,11 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 					isCancelBestXInitiative = true;
 					connection.revokeOrder(operation, operation.getLastAttempt().getMarketOrder(), Messages.getString("MARKETAXESS_RevokeOrderForTimeout"));
 				} catch (BestXException e) {
+					try {
+						stopTimer(handlerJobName);
+					} catch (SchedulerException e1) {
+						LOGGER.error("Error in stop timer " + handlerJobName, e1);
+					}
 					LOGGER.error("Error {} while revoking the order {}", e.getMessage(), operation.getOrder().getFixOrderId(), e);
 					operation.setStateResilient(new WarningState(operation.getState(), e,
 							Messages.getString("MARKETAXESS_MarketRevokeOrderError",  operation.getOrder().getFixOrderId())),
@@ -509,30 +521,42 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 		}
 		
 //		@Override
-	   public void onRevoke() {
-	      
-	      String handlerJobName = super.getDefaultTimerJobName() + REVOKE_TIMER_SUFFIX;
-	      
-	      try {
-	         //create the timer for the order cancel
-	         setupTimer(handlerJobName, orderCancelDelay, false);
+		public void onRevoke() {
 
-	         // send order cancel message to the market
-			 isCancelBestXInitiative = true;
-			 isCancelRequestedByUser = true;
-	         connection.revokeOrder(operation, operation.getLastAttempt().getMarketOrder(), Messages.getString("TW_RevokeOrder"));
-	      } catch (BestXException e) {
-	         LOGGER.error("An error occurred while revoking the order {}", operation.getOrder().getFixOrderId(), e);
-	         operation.setStateResilient(
-	               new WarningState(
-	                     operation.getState(), 
-	                     e, 
-	                     Messages.getString("MA_MarketRevokeOrderError", operation.getOrder().getFixOrderId())
-	               ),
-	               ErrorState.class
-	         );   
-	      }            
-	       
-	   }
-		
-	}
+			String handlerJobName = super.getDefaultTimerJobName();
+			try {
+				stopTimer(handlerJobName);
+			} catch (SchedulerException e2) {
+				LOGGER.error("Error in stop timer " + handlerJobName, e2);
+			}
+
+			handlerJobName += REVOKE_TIMER_SUFFIX;
+
+			try {
+				//create the timer for the order cancel
+				setupTimer(handlerJobName, orderCancelDelay, false);
+
+				// send order cancel message to the market
+				isCancelBestXInitiative = true;
+				isCancelRequestedByUser = true;
+				connection.revokeOrder(operation, operation.getLastAttempt().getMarketOrder(), Messages.getString("TW_RevokeOrder"));
+			} catch (BestXException e) {
+				try {
+					stopTimer(handlerJobName);
+				} catch (SchedulerException e1) {
+					LOGGER.error("Error in stop timer " + handlerJobName, e1);
+				}
+				LOGGER.error("An error occurred while revoking the order {}", operation.getOrder().getFixOrderId(), e);
+				operation.setStateResilient(
+						new WarningState(
+								operation.getState(), 
+								e, 
+								Messages.getString("MA_MarketRevokeOrderError", operation.getOrder().getFixOrderId())
+								),
+						ErrorState.class
+						);   
+			}            
+
+		}
+
+}
