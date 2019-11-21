@@ -311,7 +311,7 @@
 		</subclass>
 	</class>
 
-	<class name="it.softsolutions.bestx.model.MarketOrder" table="MarketOrder">
+	<class name="it.softsolutions.bestx.model.MarketOrder" table="MarketOrder" mutable="false">
 		<id name="id" column="OrderId" access="field">
 			<generator class="native" />
 		</id>
@@ -350,7 +350,7 @@
 	</class>
 
 	<class name="it.softsolutions.bestx.model.ClassifiedProposal"
-		table="Proposal">
+		table="Proposal" mutable="false">
 		<id name="id" column="ProposalId" access="field">
 			<generator class="native" />
 		</id>
@@ -467,7 +467,7 @@
 		<property name="factor" column="Factor" />
 	</class>
 
-	<class name="it.softsolutions.bestx.model.MarketExecutionReport" table="MarketExecutionReport" discriminator-value="MarketExecutionReport">
+	<class name="it.softsolutions.bestx.model.MarketExecutionReport" table="MarketExecutionReport" discriminator-value="MarketExecutionReport" mutable="false">
 		<cache usage="read-write" />
 		<id name="id" column="ExecutionReportId" access="field">
 			<generator class="native" />
@@ -580,7 +580,7 @@
 		<property name="notRegisteredInRegulatedMarketsFilter"
 			column="NotRegisteredInRegulatedMarketsFilter" />
 	</class>
-	<class name="it.softsolutions.bestx.model.ExecutablePrice"  table="ExecutablePrice">
+	<class name="it.softsolutions.bestx.model.ExecutablePrice"  table="ExecutablePrice" mutable="false">
 		<id name="id" column="id" access="field">
 			<generator class="native" />
 		</id>
@@ -787,7 +787,7 @@
 		<property name="marketBehaviour" column="MarketBehaviour" />
 	</class>
 
-	<class name="it.softsolutions.bestx.model.SortedBook" table="Book">
+	<class name="it.softsolutions.bestx.model.SortedBook" table="Book" mutable="false">
 		<id name="id" column="BookId" access="field">
 			<generator class="native" />
 		</id>

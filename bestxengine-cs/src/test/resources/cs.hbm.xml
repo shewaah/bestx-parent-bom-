@@ -156,19 +156,6 @@
 		<subclass
 			name="it.softsolutions.bestx.states.SendAutoNotExecutionReportState"
 			discriminator-value="it.softsolutions.bestx.states.SendAutoNotExecutionReportState" />
-		<subclass name="it.softsolutions.bestx.states.internal.deprecated.INT_ExecutedState"
-			discriminator-value="it.softsolutions.bestx.states.internal.deprecated.INT_ExecutedState" />
-		<subclass
-			name="it.softsolutions.bestx.states.internal.deprecated.INT_ManageCounterState"
-			discriminator-value="it.softsolutions.bestx.states.internal.deprecated.INT_ManageCounterState" />
-		<subclass name="it.softsolutions.bestx.states.internal.deprecated.INT_RejectedState"
-			discriminator-value="it.softsolutions.bestx.states.internal.deprecated.INT_RejectedState" />
-		<subclass
-			name="it.softsolutions.bestx.states.internal.deprecated.INT_StartExecutionState"
-			discriminator-value="it.softsolutions.bestx.states.internal.deprecated.INT_StartExecutionState" />
-		<subclass
-			name="it.softsolutions.bestx.states.internal.deprecated.INT_InternalInCurandoState"
-			discriminator-value="it.softsolutions.bestx.states.internal.deprecated.INT_InternalInCurandoState" />
 		<subclass name="it.softsolutions.bestx.states.matching.MATCH_ExecutedState"
 			discriminator-value="it.softsolutions.bestx.states.matching.MATCH_ExecutedState" />
 		<subclass
@@ -324,7 +311,7 @@
 		</subclass>
 	</class>
 
-	<class name="it.softsolutions.bestx.model.MarketOrder" table="MarketOrder">
+	<class name="it.softsolutions.bestx.model.MarketOrder" table="MarketOrder" mutable="false">
 		<id name="id" column="OrderId" access="field">
 			<generator class="native" />
 		</id>
@@ -363,7 +350,7 @@
 	</class>
 
 	<class name="it.softsolutions.bestx.model.ClassifiedProposal"
-		table="Proposal">
+		table="Proposal" mutable="false">
 		<id name="id" column="ProposalId" access="field">
 			<generator class="native" />
 		</id>
@@ -472,9 +459,15 @@
 		<many-to-one name="instrument" column="ISIN" class="it.softsolutions.bestx.model.Instrument"
 			cascade="none" lazy="false" not-null="false" />
 		<property name="priceType" column="PriceType" />
+		<property name="execType" column="ExecType" />
+		<property name="execTransType" column="ExecTransType" />
+		<property name="executionReportId" column="ExecId" />
+		<property name="lastCapacity" column="LastCapacity" />
+		<property name="orderCapacity" column="OrderCapacity" />
+		<property name="factor" column="Factor" />
 	</class>
 
-	<class name="it.softsolutions.bestx.model.MarketExecutionReport" table="MarketExecutionReport" discriminator-value="MarketExecutionReport">
+	<class name="it.softsolutions.bestx.model.MarketExecutionReport" table="MarketExecutionReport" discriminator-value="MarketExecutionReport" mutable="false">
 		<cache usage="read-write" />
 		<id name="id" column="ExecutionReportId" access="field">
 			<generator class="native" />
@@ -587,7 +580,7 @@
 		<property name="notRegisteredInRegulatedMarketsFilter"
 			column="NotRegisteredInRegulatedMarketsFilter" />
 	</class>
-	<class name="it.softsolutions.bestx.model.ExecutablePrice"  table="ExecutablePrice">
+	<class name="it.softsolutions.bestx.model.ExecutablePrice"  table="ExecutablePrice" mutable="false">
 		<id name="id" column="id" access="field">
 			<generator class="native" />
 		</id>
@@ -604,8 +597,10 @@
 		<id name="id" column="AttemptId" access="field">
 			<generator class="native" />
 		</id>
-		<property name="byPassableForVenueAlreadyTried" column="ByPass"/>
-
+		<property name="byPassableForVenueAlreadyTried" column="ByPass" />
+		<many-to-one name="internalAttempt"
+			class="it.softsolutions.bestx.model.InternalAttempt" column="InternalAttemptId"
+			cascade="all" />
 		<many-to-one name="executionProposal" column="ExecutionProposalId"
 			class="it.softsolutions.bestx.model.ClassifiedProposal" cascade="all"
 			lazy="false" not-null="false" />
@@ -792,7 +787,7 @@
 		<property name="marketBehaviour" column="MarketBehaviour" />
 	</class>
 
-	<class name="it.softsolutions.bestx.model.SortedBook" table="Book">
+	<class name="it.softsolutions.bestx.model.SortedBook" table="Book" mutable="false">
 		<id name="id" column="BookId" access="field">
 			<generator class="native" />
 		</id>
@@ -818,7 +813,7 @@
 			<key-property name="clientCode" type="string" column="ClientCode" />
 			<key-property name="isinType" type="boolean" column="IsinType" />
 	<!-- 		<key-property name="marketId" type="int" column="MarketId"  -->
-			<key-property name="portfolioId" type="int" column="PortfolioId"/>
+			<key-property name="portfolioId" type="int" column="PortfolioId" />
 		</composite-id>
 		<property name="firstQtyThreshold" column="FirstQtyThreshold" />
 		<property name="firstSpread" column="FirstSpread" />
@@ -883,6 +878,4 @@
 		<property name="description" column="description" />
 		<property name="locked" column="isLocked" />
 	</class>
-
-
 </hibernate-mapping>
