@@ -19,7 +19,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.softsolutions.bestx.exceptions.ObjectNotInitializedException;
+import it.softsolutions.bestx.exceptions.OperationNotExistingException;
 import it.softsolutions.bestx.management.SimpleOperationRestorerMBean;
+import it.softsolutions.bestx.states.ErrorState;
+import it.softsolutions.bestx.states.WarningState;
 
 /**
  * 
@@ -94,4 +97,23 @@ public class SimpleOperationRestorer implements SimpleOperationRestorerMBean {
    public boolean isRestoreOperationStatesCompleted() {
       return operationStatesCompleted;
    }
+
+	@Override
+	public String killAndRestoreOperation(String orderId) {
+		// [BESTX-545] AA 21-11-2019 adding this method in order to kill (from memory but not from db) an existing operation and restore it from the last good image 
+		// in the db and put it after in warning state, so the operator can manage it from the web interface
+		try {
+			if (operationRegistry.killOperation(orderId)) {
+				Operation operation = operationRegistry.loadOperationById(orderId);
+				if (operation != null) {
+					operation.setStateResilient(new WarningState(operation.getState(),null, Messages.getString("RetrievedWarningState")), ErrorState.class);
+				}
+			}
+		} catch (OperationNotExistingException e) {
+			return "ERROR " + e.getMessage();
+		} catch (BestXException e) {
+			return "ERROR " + e.getMessage();
+		}
+		return null;
+	}
 }

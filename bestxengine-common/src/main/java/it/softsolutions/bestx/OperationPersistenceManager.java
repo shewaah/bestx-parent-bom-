@@ -523,4 +523,47 @@ public class OperationPersistenceManager implements OperationStateListener, Init
        return operations;
     }
 
+	public Operation loadOperationById(String orderId) throws PersistenceException {
+	      Operation operation = null;
+	        Session session = null;
+	        try {
+	        	 List<Operation> operations = null;
+	            session = sessionFactory.openSession();
+
+	            String queryStr = "FROM Operation o WHERE o.order.fixOrderId = :orderId";
+
+	            Query query = session.createQuery(queryStr);
+	            query.setString("orderId", orderId);
+	            operations = query.list();
+
+	            if (operations != null && operations.size() > 0) {
+	            	if (operations.size() > 1) {
+	            		throw new PersistenceException("More than an record found on orderId " + orderId);
+	            	}
+	            	operation = operations.get(0);
+	            	try {
+						operationFactory.initOperation(operation);
+					} catch (BestXException e) {
+
+						
+						// TODO
+					}
+	            	
+	    	        LOGGER.info("Retrieved {} operations", (operations != null ? operations.size() : 0));
+
+	            } else {
+	                LOGGER.warn("No operations retrieved");
+	            }
+	        } catch (RuntimeException e) {
+	            LOGGER.error("Error while loading system state restoring the operations: {}", e.getMessage(), e);
+	            throw new PersistenceException("An error occurred while retrieving operations from database: " + e.getMessage(), e);
+	        } finally {
+	            if (session != null) {
+	                session.close();
+	            }
+	        }
+
+	        return operation;		
+	}
+
 }

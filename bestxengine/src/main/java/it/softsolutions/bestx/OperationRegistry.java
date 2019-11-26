@@ -19,6 +19,7 @@ import java.util.List;
 import it.softsolutions.bestx.exceptions.OperationAlreadyExistingException;
 import it.softsolutions.bestx.exceptions.OperationNotExistingException;
 
+// TODO: Auto-generated Javadoc
 /**
  * Purpose: Main interface for interface components for communicating with operations.
  *
@@ -38,16 +39,13 @@ public interface OperationRegistry {
 
     /**
      * Creates a new operation and bind it to the given id. If an operation already exists bound to the given id, an exception is thrown.
-     * 
-     * @param idType
-     *            Type of operation id
-     * @param id
-     *            Specific id
+     *
+     * @param idType            Type of operation id
+     * @param id            Specific id
+     * @param isVolatile the is volatile
      * @return An operation
-     * @throws OperationAlreadyExistingException
-     *             If an operation is already bound to the id
-     * @throws BestXException
-     *             If an unexpected error occurs while processing
+     * @throws OperationAlreadyExistingException             If an operation is already bound to the id
+     * @throws BestXException             If an unexpected error occurs while processing
      */
     Operation getNewOperationById(OperationIdType idType, String id, boolean isVolatile) throws OperationAlreadyExistingException, BestXException;
 
@@ -67,15 +65,12 @@ public interface OperationRegistry {
     Operation getExistingOperationById(OperationIdType idType, String id) throws OperationNotExistingException, BestXException;
 
     /**
-     * Retrieves an operation bound to the given id, or creates a new one if it doesn't exist already
-     * 
-     * @param idType
-     *            Type of operation id
-     * @param id
-     *            Specific id
+     * Retrieves an operation bound to the given id, or creates a new one if it doesn't exist already.
+     *
+     * @param idType            Type of operation id
+     * @param id            Specific id
      * @return An operation
-     * @throws BestXException
-     *             If an unexpected error occurs while processing
+     * @throws BestXException             If an unexpected error occurs while processing
      */
     Operation getExistingOrNewOperationById(OperationIdType idType, String id) throws BestXException;
 
@@ -92,35 +87,27 @@ public interface OperationRegistry {
 
     /**
      * Binds an existing operation to the given idType/id. If the operation is already bound to an id, the old one is discarded.
-     * 
-     * @param operation
-     *            The operation to be bound
-     * @param idType
-     *            The id type
-     * @param id
-     *            The id for this operation
-     * @throws BestXException
+     *
+     * @param operation            The operation to be bound
+     * @param idType            The id type
+     * @param id            The id for this operation
+     * @throws BestXException the best X exception
      */
     void bindOperation(Operation operation, OperationIdType idType, String id) throws BestXException;
 
     /**
      * Removes the binding of an existing operation for the given idType. the old one is discarded.
-     * 
-     * @param operation
-     *            The operation to be bound
-     * @param idType
-     *            The id type
-     * @param id
-     *            The id for this operation
-     * @throws BestXException
+     *
+     * @param operation            The operation to be bound
+     * @param idType            The id type
      */
     public void removeOperationBinding(Operation operation, OperationIdType idType);
 
     /**
-     * Remove operation from the active operations registry
-     * 
-     * @param operation
-     *            The operation to be removed
+     * Remove operation from the active operations registry.
+     *
+     * @param operation            The operation to be removed
+     * @throws BestXException the best X exception
      */
     void removeOperation(Operation operation) throws BestXException;
 
@@ -141,9 +128,31 @@ public interface OperationRegistry {
     public void updateOperation(Operation operation);
     
     /**
-     * Given an operation state, this method returns a compatible list of active operations currently having the required states
-     * @param operationStateClasses
-     * @return
+     * Given an operation state, this method returns a compatible list of active operations currently having the required states.
+     *
+     * @param operationStateClasses the operation state classes
+     * @return the operations by states
      */
     public List<Operation> getOperationsByStates(List<Class<? extends BaseState>> operationStateClasses);
+    
+    
+    /**
+     * Kill operation (in memory and not in persistance).
+     *
+     * @param orderId the operation id
+     * @return true, if successful
+     * @throws BestXException the best X exception
+     * @throws OperationNotExistingException the operation not existing exception
+     */
+    public boolean killOperation(String orderId) throws BestXException, OperationNotExistingException;
+    
+    /**
+     * Load operation by id from the persistance.
+     *
+     * @param orderId the order id
+     * @return the operation
+     * @throws BestXException the best X eception
+     */
+    public Operation loadOperationById(String orderId) throws BestXException;
+    
 }

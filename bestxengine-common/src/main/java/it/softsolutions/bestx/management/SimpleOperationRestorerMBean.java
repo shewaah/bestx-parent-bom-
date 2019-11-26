@@ -31,5 +31,7 @@ public interface SimpleOperationRestorerMBean {
 	boolean isRestoreActiveOperationsCompleted();
 	
    boolean isRestoreOperationStatesCompleted();
+   
+   String killAndRestoreOperation(String orderId); 
 	
 }

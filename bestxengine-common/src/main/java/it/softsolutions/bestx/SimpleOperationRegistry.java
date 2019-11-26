@@ -253,6 +253,24 @@ public class SimpleOperationRegistry implements OperationRegistry, TimerEventLis
       return operations;
    }
 
+	@Override
+	public boolean killOperation(String orderId) throws BestXException, OperationNotExistingException {
+	
+		Operation operation = getExistingOperationById(OperationIdType.ORDER_ID, orderId);
+		if (operation != null) {
+			removeOperation(operation);
+			return true;
+		} else {
+			LOGGER.warn("Unable to find operation " + orderId + " in registry");
+			return false;
+		}
+	}
+	
+	@Override
+	public Operation loadOperationById(String orderId) throws BestXException {
+		return operationPersistenceManager.loadOperationById(orderId);
+	}
+
    
 }
 
