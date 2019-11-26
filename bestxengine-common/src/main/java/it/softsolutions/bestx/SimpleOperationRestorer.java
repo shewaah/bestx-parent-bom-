@@ -104,7 +104,7 @@ public class SimpleOperationRestorer implements SimpleOperationRestorerMBean {
 		// in the db and put it after in warning state, so the operator can manage it from the web interface
 		try {
 			if (operationRegistry.killOperation(orderId)) {
-				Operation operation = operationRegistry.loadOperationById(orderId);
+				Operation operation = operationRegistry.loadOperationById(orderId);								
 				if (operation != null) {
 					operation.setStateResilient(new WarningState(operation.getState(),null, Messages.getString("RetrievedWarningState")), ErrorState.class);
 				}

@@ -268,7 +268,11 @@ public class SimpleOperationRegistry implements OperationRegistry, TimerEventLis
 	
 	@Override
 	public Operation loadOperationById(String orderId) throws BestXException {
-		return operationPersistenceManager.loadOperationById(orderId);
+		Operation operation = operationPersistenceManager.loadOperationById(orderId);
+		if (operation != null) {
+			 bindOperation(operation, OperationIdType.ORDER_ID, orderId); 
+		}
+		return operation;
 	}
 
    
