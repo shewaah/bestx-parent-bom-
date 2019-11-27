@@ -39,11 +39,11 @@ public class Attempt {
     /** multiple quotes reported  in a RFCQ or other competitive trading protocol .
      * quotes(0) is always the counterOffer;
 	*/
-    private List<ExecutablePrice> executablePrices;
+    private List<ExecutablePrice> executablePrices = new ArrayList<>();;
 
     private SortedBook sortedBook;
     private MarketOrder marketOrder;
-    private List<MarketExecutionReport> marketExecutionReports;
+    private List<MarketExecutionReport> marketExecutionReports = new ArrayList<>();
     private boolean byPassableForVenueAlreadyTried = false;
     private InternalAttempt internalAttempt;
     
