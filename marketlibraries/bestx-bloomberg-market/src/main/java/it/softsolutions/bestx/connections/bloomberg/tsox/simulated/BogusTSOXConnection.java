@@ -52,7 +52,6 @@ import it.softsolutions.tradestac.fix50.component.TSParties;
 import quickfix.Group;
 import quickfix.field.CompDealerID;
 import quickfix.field.CompDealerQuote;
-import quickfix.field.CompDealerStatus;
 
 /**
  *
@@ -92,6 +91,7 @@ public class BogusTSOXConnection extends AbstractTradeStacConnection implements 
 	private List<String> cancelIsins = new ArrayList<String>();
 	private List<String> rejectIsins = new ArrayList<String>();
 	private List<String> waitingIsins = new ArrayList<String>();
+	private int sleepTime = 30000;
 	
 	@Override
 	public void init() {
@@ -149,7 +149,7 @@ public class BogusTSOXConnection extends AbstractTradeStacConnection implements 
 			
 			if (!waitingIsins.contains(marketOrder.getInstrument().getIsin())) {
 				try {
-					Thread.sleep(5000);
+					Thread.sleep(sleepTime); 
 				} catch (InterruptedException e) {}
 
 				if (cancelIsins.contains(marketOrder.getInstrument().getIsin())) {
@@ -229,6 +229,11 @@ public class BogusTSOXConnection extends AbstractTradeStacConnection implements 
 	public void setWaitingIsins(List<String> waitingIsins) {
 		this.waitingIsins = waitingIsins;
 	}
+	
+	
+   public void setSleepTime(int sleepTime) {
+      this.sleepTime = sleepTime;
+   }
 
 	private void sendFilledExecutionReport(MarketOrder marketOrder) {
 		String sessionId = "sessionID";
