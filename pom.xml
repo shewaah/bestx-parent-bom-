@@ -47,6 +47,7 @@
         <module>bestx-mq-service</module>
         <module>bestx-sod-loader</module>
         <module>bestx-grdlite-simulators</module>
+        <module>bestx-mq-jmx-client-app</module>
     </modules>
 
     <dependencyManagement>

@@ -21,6 +21,7 @@ public class PriceDiscoveryMessage extends IBcsMessage {
 	public static final String FLD_ORDER_ID        = "order_id";
 	public static final String FLD_TRACE_ID        = "trace_id";
 	public static final String FLD_INSTRUMENT      = "instrument";
+	public static final String FLD_INSTRUMENT_NAME = "InstrumentName";
 	public static final String FLD_SIDE            = "side";
 	public static final String FLD_QUANTITY        = "quantity";
 	public static final String FLD_TIMESTAMP       = "timestamp";
@@ -83,6 +84,12 @@ public class PriceDiscoveryMessage extends IBcsMessage {
 		}
 		jsonBook.put(PriceDiscoveryMessage.FLD_TIMESTAMP, getFormatter().format(DateService.newLocalDate()));
 		jsonBook.put(PriceDiscoveryMessage.FLD_INSTRUMENT, order.getInstrumentCode());
+		
+		if (order.getInstrument() != null) {
+		   jsonBook.put(PriceDiscoveryMessage.FLD_INSTRUMENT_NAME, order.getInstrument().getDescription());
+		} else {
+		   jsonBook.put(PriceDiscoveryMessage.FLD_INSTRUMENT_NAME, "NA");
+		}
 		return jsonBook;
 	}
 }
