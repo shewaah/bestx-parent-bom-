@@ -3,8 +3,8 @@ sod.sendInPackets = true
 sod.packetSize = 10
 
 # BestX Database connection
-sod.jdbc.driver_class = net.sourceforge.jtds.jdbc.Driver
-sod.jdbc.url = jdbc:jtds:sqlserver://svi-vsrv-pocdb-106:1433;databasename=BESTX_CS_DEVELOP;SelectMethod=cursor
+sod.jdbc.driver_class = com.microsoft.sqlserver.jdbc.SQLServerDriver
+sod.jdbc.url = jdbc:sqlserver://svi-vsrv-pocdb-106:1433;databasename=BESTX_CS_DEVELOP;SelectMethod=cursor
 sod.jdbc.username = sa
 sod.jdbc.password = ENC(X7rYdC6Vx8hFEISwPhdsSA==)
 
