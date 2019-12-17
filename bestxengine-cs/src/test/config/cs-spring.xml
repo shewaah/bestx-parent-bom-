@@ -84,7 +84,7 @@
                 <entry key="it.softsolutions.bestx.cs:name=LimitFilePriceService" value-ref="limitFilePriceService" />
                 <entry key="it.softsolutions.bestx.cs:name=PDOnlyPriceService" value-ref="pDOnlyPriceService" />
                 <entry key="it.softsolutions.bestx.cs:name=IB4JOperatorConsoleAdapter" value-ref="ib4jOperatorConsoleAdapter" />
-                <entry key="it.softsolutions.bestx.cs:name=MQPriceDiscoveryOperatorConsoleAdapter" value-ref="ib4jOperatorConsoleAdapter" />
+                <entry key="it.softsolutions.bestx.cs:name=MQPriceDiscoveryOperatorConsoleAdapter" value-ref="mqPriceDiscoveryOperatorConsoleAdapter" />
                 <entry key="it.softsolutions.bestx.cs:name=OperationRestore" value-ref="operationRestore" />
                 <entry key="it.softsolutions.bestx.cs:name=DealerRankingService" value-ref="rankingLoaderManager" />
                 <entry key="it.softsolutions.bestx.cs:name=OperationRegistry" value-ref="defaultOperationRegistry" />

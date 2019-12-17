@@ -1,5 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>it.softsolutions.bestx</groupId>
@@ -7,29 +8,17 @@
 		<version>4.4.1-PackageD-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>bestx-sod-loader</artifactId>
-	<name>BestX - bestx-sod-loader</name>
+  <artifactId>bestx-mq-jmx-client-app</artifactId>
+
+  <name>bestx-mq-jmx-client-app</name>
+  <url>http://maven.apache.org</url>
 
 
-
-	<dependencies>
+  <dependencies>
 		<dependency>
 			<groupId>it.softsolutions.bestx</groupId>
 			<artifactId>bestx-mq-service</artifactId>
 			<version>${project.parent.version}</version>
-		</dependency>
-        <dependency>
-            <groupId>com.microsoft.sqlserver.jdbc</groupId>
-            <artifactId>sqljdbc</artifactId>
-            <version>4.1</version>
-        </dependency>
-		<dependency>
-			<groupId>commons-configuration</groupId>
-			<artifactId>commons-configuration</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.jasypt</groupId>
-			<artifactId>jasypt</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -40,12 +29,14 @@
 			<artifactId>logback-classic</artifactId>
 			<scope>runtime</scope>
 		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  
 	<properties>
 		<maven.test.skip>true</maven.test.skip>
 		<maven.javadoc.skip>true</maven.javadoc.skip>
@@ -105,7 +96,7 @@
 							<addClasspath>true</addClasspath>
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-							<mainClass>it.softsolutions.bestx.sod.SODLoader</mainClass>
+							<mainClass>it.softsolutions.bestx.mqclient.MQtest</mainClass>
 						</manifest>
 						<manifestEntries>
 							<Build-Number>${BUILD_NUMBER}</Build-Number>
