@@ -48,7 +48,7 @@
 <!--             <Pattern>%date{ISO8601} %-5level %35.35logger{0} -> %-35.35method:%-3line - %message%n</Pattern> -->
         </encoder>
     </appender>
-    <logger name="it.softsolutions.bestx" additivity="false" level="DEBUG">
+    <logger name="it.softsolutions.bestx" additivity="false" level="INFO">
         <appender-ref ref="SODLoaderLogger" />
     </logger>
     <logger name="com.ibm" additivity="false" level="INFO">
