@@ -3,7 +3,7 @@
     <parent>
         <artifactId>bestxengine-parent</artifactId>
         <groupId>it.softsolutions.bestx</groupId>
-        <version>4.4.1-PackageD-SNAPSHOT</version>
+        <version>4.4.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
