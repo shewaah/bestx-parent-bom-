@@ -1098,7 +1098,7 @@
         <property name="venueFinder"><ref bean="dbBasedVenueFinder"/></property>
         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
         <!-- <property name="tradeStacPreTradeConnection"><ref bean="simulatedMdsConnector"/></property> -->
-        <property name="tradeStacPreTradeConnection"><ref bean="simulatedMdsConnector"/></property>
+        <property name="tradeStacPreTradeConnection"><ref bean="mdsConnector"/></property>
         <property name="tradeXpressConnection"><ref bean="tradexpressConnector"/></property>
 	</bean>
 
@@ -1117,7 +1117,22 @@
         <property name="fixConfigFileName"><value>fix-tradestac-mds.properties</value></property>
 	</bean>
 	-->
+	
+	<bean id="mdsConnector" class="it.softsolutions.bestx.connections.tradeweb.mds.MDSConnectionImpl" init-method="init">
+        <property name="executor"><ref bean="threadPoolTradeweb"/></property>
+        <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
+        <property name="marketMakerFinder"><ref bean="dbBasedMarketMakerFinder"/></property>
+        <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
+        <property name="venueFinder"><ref bean="dbBasedVenueFinder"/></property>
+        <property name="tradeStacConnectionListener"><ref bean="tradewebMarket"/></property>
+        <property name="tradeStacPreTradeConnectionListener"><ref bean="tradewebMarket"/></property>
+		<property name="tradeStacClientSession">
+			<bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
+		</property>
+        <property name="fixConfigFileName"><value>fix-tradestac-simulated2-mds.properties</value></property>
+	</bean>
  
+    <!-- 
     <bean id="simulatedMdsConnector" class="it.softsolutions.bestx.connections.tradestac.TradeStacMarketSimulatorConnectionImpl" init-method="init">
         <property name="marketCode"><value>TW</value></property>
         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
@@ -1132,7 +1147,7 @@
         </property>
         <property name="fixConfigFileName"><value>fix-tradestac-simulated-mds.properties</value></property>
     </bean>
-
+ -->
 <!-- 
     <bean id="tradexpressConnector" class="it.softsolutions.bestx.connections.tradeweb.tradexpress.TradeXpressConnectionImpl" init-method="init">
 		<property name="tradeXpressConnectionListener"><ref bean="tradewebMarket"/></property>
@@ -1150,6 +1165,24 @@
         <property name="fixConfigFileName" value="fix-tradestac-tradexpress.properties" />
 	</bean>
 	 -->
+
+    <bean id="tradexpressConnector" class="it.softsolutions.bestx.connections.tradeweb.tradexpress.TradeXpressConnectionImpl" init-method="init">
+		<property name="tradeXpressConnectionListener"><ref bean="tradewebMarket"/></property>
+		<property name="tradeStacConnectionListener"><ref bean="tradewebMarket"/></property>
+		<property name="tradeStacClientSession">
+			<bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
+		</property>
+		<property name="traderCode"><value>${Tradeweb.TraderCode}</value></property>
+		<property name="bestxAlgoID"><value>${Tradeweb.ExecutionDecisionMakerID}</value></property>
+		<property name="defaultShortSelling"><value>${Tradeweb.defaultShortSell}</value></property>
+		<property name="investmentDecisorID"><value>${Tradeweb.InvestmentDecisionMakerID}</value></property>
+		<property name="investmentDecisorRoleQualifier"><value>${Tradeweb.InvestmentDecisionRoleQualifier}</value></property>
+		<property name="defaultTradingMode"><value>${Tradeweb.defaultTradingMode}</value></property> 
+		<property name="defaultTradingCapacity"><value>${Tradeweb.defaultCapacity}</value></property>
+        <property name="fixConfigFileName" value="fix-tradestac-simulated2-tradexpress.properties" />
+	</bean>
+	 
+	 <!-- 
     <bean id="tradexpressConnector" class="it.softsolutions.bestx.connections.tradeweb.simulated.BogusTradeXpressConnection" init-method="init">
 		<property name="tradeXpressConnectionListener"><ref bean="tradewebMarket"/></property>
         <property name="cancelIsins">
@@ -1170,7 +1203,7 @@
 			</list>
 		</property>
 	</bean>
-
+ -->
 <!--
     <bean id="simulatedTradexpressConnector" class="it.softsolutions.bestx.connections.tradeweb.tradexpress.TradeXpressConnectionImpl" init-method="init">
 		<property name="tradeXpressConnectionListener"><ref bean="tradewebMarket"/></property>
@@ -1207,7 +1240,8 @@
 	</bean>
 	
     <bean id="marketAxessPreTradeConnector" class="it.softsolutions.bestx.connections.marketaxess.MarketAxessInventoryAndLiveMarketFeedConnector" init-method="init">
-         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
+    	<!-- constructor-arg><value>UNIVERSAL-MARKET-SESSION</value></constructor-arg-->
+        <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
         <property name="marketMakerFinder"><ref bean="dbBasedMarketMakerFinder"/></property>
         <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
         <property name="venueFinder"><ref bean="dbBasedVenueFinder"/></property>
@@ -1216,10 +1250,11 @@
 		<property name="tradeStacClientSession">
 			<bean class="it.softsolutions.tradestac2.client.TradeStacClient"/>
 		</property>
-        <property name="fixConfigFileName"><value>fix-tradestac-marketaxess-buyside-prices.properties</value></property>
+        <property name="fixConfigFileName"><value>fix-tradestac-simulated-marketaxess-buyside-prices.properties</value></property>
     </bean>
      
     <bean id="autoExecutionTradeConnector" class="it.softsolutions.bestx.connections.marketaxess.MarketAxessAutoExecutionConnector" init-method="init">
+    	<!-- constructor-arg><value>UNIVERSAL-MARKET-SESSION</value></constructor-arg-->
  		<property name="tradeStacTradeConnectionListener"><ref bean="marketAxessMarket"/></property>
         <property name="tradeStacConnectionListener"><ref bean="marketAxessMarket"/></property>
         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
@@ -1241,7 +1276,7 @@
 		<property name="executionDecisionID"><value>${MarketAxess.ExecutionDecisionMakerID}</value></property>
 		<property name="defaultTradingCapacity"><value>${MarketAxess.defaultCapacity}</value></property>
 		<property name="defaultShortSelling"><value>${MarketAxess.defaultShortSell}</value></property>
-        <property name="fixConfigFileName"><value>fix-tradestac-marketaxess-buyside-trade.properties</value></property>
+        <property name="fixConfigFileName"><value>fix-tradestac-simulated-marketaxess-buyside-trade.properties</value></property>
         <property name="addBlockedDealers"><value>${MarketAxess.AddBlockedDealers}</value></property>
         <property name="marketSegmentID"><value>${MarketAxess.destinationMICCode}</value></property>
  	</bean>
