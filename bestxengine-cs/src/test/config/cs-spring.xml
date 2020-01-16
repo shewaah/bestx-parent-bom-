@@ -1020,10 +1020,28 @@
         <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
         <property name="venueFinder"><ref bean="dbBasedVenueFinder"/></property>
         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
-        <property name="tradeStacPreTradeConnection"><ref bean="simulatedBlpConnector"/></property>
+        <property name="tradeStacPreTradeConnection"><ref bean="blpConnector"/></property>
         <property name="tsoxConnection"><ref bean="tsoxConnector"/></property>
     </bean>
-	
+
+
+    <bean id="tsoxConnector" class="it.softsolutions.bestx.connections.bloomberg.tsox.RBLD_TSOXConnection" init-method="init">
+		<property name="tradeStacClientSession">
+			<bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
+		</property>
+        <property name="tsoxConnectionListener"><ref bean="bloombergMarket"/></property>
+		<property name="destinationMICCode"><value>${Bloomberg.Tsox.DestinationMICCode}</value></property>
+		<property name="traderCode"><value>${Bloomberg.Tsox.TraderCode}</value></property>
+		<property name="executionDecisionMakerID"><value>${Bloomberg.Tsox.ExecutionDecisionMakerID}</value></property>
+		<property name="investmentDecisionMakerID"><value>${Bloomberg.Tsox.InvestmentDecisionMakerID}</value></property>
+		<property name="investmentDecisionQualifier"><value>${Bloomberg.Tsox.InvestmentDecisionQualifier}</value></property>
+		<property name="enteringFirmCode"><value>${Bloomberg.Tsox.EnteringFirmCode}</value></property>
+		<!-- property name="defaultCapacity"><value>${Bloomberg.Tsox.DefaultCapacity}</value></property-->
+		<property name="tsoxEnquiryTime"><value>${Bloomberg.Tsox.TsoxEnquiryTime}</value></property>
+        <property name="fixConfigFileName" value="fix-tradestac-simulated2-tsox.properties" />
+	</bean>
+
+<!-- 	
      <bean id="tsoxConnector" class="it.softsolutions.bestx.connections.bloomberg.tsox.simulated.BogusTSOXConnection" init-method="init">
         <property name="tsoxConnectionListener"><ref bean="bloombergMarket"/></property>
         <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
@@ -1042,6 +1060,7 @@
 			</list>
 		</property>
 	</bean>
+ -->
  
 <!--
     <bean id="blpConnector" class="it.softsolutions.bestx.connections.bloomberg.blp.BLPConnector" init-method="init">
@@ -1057,6 +1076,19 @@
     </bean>
 -->
 
+    <bean id="blpConnector" class="it.softsolutions.bestx.connections.bloomberg.blp.BLPConnector" init-method="init">
+        <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
+        <property name="marketMakerFinder"><ref bean="dbBasedMarketMakerFinder"/></property>
+        <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
+        <property name="venueFinder"><ref bean="dbBasedVenueFinder"/></property>
+        <property name="tradeStacPreTradeConnectionListener"><ref bean="bloombergMarket"/></property>
+        <property name="tradeStacClientSession">
+            <bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
+        </property>
+        <property name="fixConfigFileName"><value>fix-tradestac-simulated2-blp.properties</value></property>
+    </bean>
+
+<!-- 
     <bean id="simulatedBlpConnector" class="it.softsolutions.bestx.connections.tradestac.TradeStacMarketSimulatorConnectionImpl" init-method="init">
         <property name="marketCode"><value>BLOOMBERG</value></property>
         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
@@ -1071,7 +1103,8 @@
         </property>
         <property name="fixConfigFileName"><value>fix-tradestac-simulated-blp.properties</value></property>
     </bean>
-
+ -->
+ 
 	<!-- ====================================================================== -->
     <!-- ==== Tradeweb ======================================================== -->
     <!-- ====================================================================== -->
