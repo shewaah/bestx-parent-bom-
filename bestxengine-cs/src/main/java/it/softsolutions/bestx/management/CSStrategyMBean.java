@@ -32,4 +32,8 @@ public interface CSStrategyMBean {
    void setLimitFileBestOutsideLimitThresholdPDIntervalInSeconds(long limitFileBestOutsideLimitThresholdPDIntervalInSeconds);
    long getLimitFileBestWithinLimitThresholdPDIntervalInSeconds();
    long getLimitFileBestOutsideLimitThresholdPDIntervalInSeconds();
+   void setRejectWhenBloombergIsBest (boolean RejectWhenBloombergIsBest);
+   boolean isRejectWhenBloombergIsBest();
+   void setMinimumRequiredBookDepth(int minimumRequiredBookDepth);
+   int getMinimumRequiredBookDepth();
 }

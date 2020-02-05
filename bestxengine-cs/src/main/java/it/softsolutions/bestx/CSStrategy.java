@@ -93,6 +93,7 @@ import it.softsolutions.bestx.handlers.tradeweb.TW_ExecutedEventHandler;
 import it.softsolutions.bestx.handlers.tradeweb.TW_RejectedEventHandler;
 import it.softsolutions.bestx.handlers.tradeweb.TW_SendOrderEventHandler;
 import it.softsolutions.bestx.handlers.tradeweb.TW_StartExecutionEventHandler;
+import it.softsolutions.bestx.management.CSStrategyMBean;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
@@ -122,7 +123,7 @@ import it.softsolutions.bestx.states.autocurando.AutoCurandoStatus;
  * Project Name : bestxengine-cs First created by: ruggero.rizzo Creation date: 06/lug/2012
  * 
  **/
-public class CSStrategy implements Strategy, SystemStateSelector {
+public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBean {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CSStrategy.class);
 	private static final long LIMIT_FILE_MINIMUM_PD_INTERVAL = 15;
