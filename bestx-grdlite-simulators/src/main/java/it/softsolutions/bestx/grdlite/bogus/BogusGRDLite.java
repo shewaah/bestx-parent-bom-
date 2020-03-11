@@ -325,7 +325,7 @@ public class BogusGRDLite implements MQMessageListener {
             SecurityType securityType = loadRequest.getSecurityType();
             String[] securityIDs = loadRequest.getSecurityIDs();
             
-            processInstruments(initialLoad, securityType, securityIDs);
+            processInstruments(false, securityType, securityIDs);
 
             subscriberQueueSession.commit();
         } catch (Exception e) {

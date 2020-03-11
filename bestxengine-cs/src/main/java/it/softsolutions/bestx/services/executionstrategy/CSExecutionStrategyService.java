@@ -60,7 +60,6 @@ import it.softsolutions.bestx.states.bloomberg.BBG_StartExecutionState;
 import it.softsolutions.bestx.states.bondvision.BV_StartExecutionState;
 import it.softsolutions.bestx.states.marketaxess.MA_StartExecutionState;
 import it.softsolutions.bestx.states.tradeweb.TW_StartExecutionState;
-import it.softsolutions.jsscommon.Money;
 
 /**  
  *
@@ -273,7 +272,11 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 				if (maSessionId != null) {
 					operation.removeIdentifier(OperationIdType.MARKETAXESS_SESSION_ID);
 				}
-
+				//SP20200310 BESTX-542
+            MarketOrder marketOrderMA = currentAttempt.getMarketOrder();
+            List<MarketMarketMakerSpec> dealersMA = currentAttempt.getSortedBook().getValidProposalDealersByMarket(MarketCode.MARKETAXESS, marketOrderMA.getSide());
+            marketOrderMA.setDealers(dealersMA);
+            
 				// requested on March 2019 rendez vous un Zurich currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
 				currentAttempt.getMarketOrder().setMarketMarketMaker(null);
 				operation.setStateResilient(new MA_StartExecutionState(), ErrorState.class);

@@ -335,8 +335,6 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 		}
 		if(this.validSeconds > 0)
 			newOrderSingle.setField(new ValidSeconds(this.validSeconds)); //ValidSeconds.FIELD
-		if(this.includeDealers > 0)
-			newOrderSingle.setField(new IncludeDealers(this.includeDealers));
 		if(this.numCompetitiveQuotes > 0)
 			newOrderSingle.setField(new NumCompetitiveQuotes(this.numCompetitiveQuotes));
 
@@ -384,18 +382,24 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 		
 		// da usare se si preferisce usare il solo dealer best
 //		String dealerCode = marketOrder.getMarketMarketMaker() != null ? marketOrder.getMarketMarketMaker().getMarketSpecificCode() : null;
+		
+		
+	   if(this.includeDealers == 0) {
+	      newOrderSingle.setField(new IncludeDealers(2));
+	   } else if(this.includeDealers == 1 || this.includeDealers == 2) {
+	      newOrderSingle.setField(new IncludeDealers(this.includeDealers));
+	      
+	      // da usare se si vogliono aggiungere tutti i dealer che hanno fornito un prezzo alla PD
+	      for(MarketMarketMakerSpec maDealerCode : maOrder.getDealers()) {
+	         NewOrderSingle.NoDealers dealer = new NewOrderSingle.NoDealers();
+	         if(maDealerCode != null) {
+	            dealer.set(new DealerID(maDealerCode.marketMakerCode));
+	            dealer.set(new DealerIDSource(maDealerCode.marketMakerCodeSource));
+	            newOrderSingle.addGroup(dealer);
+	         }
+	      }
+	   }
 
-		// da usare se si vogliono aggiungere tutti i dealer che hanno fornito un prezzo alla PD
-		// group
-//		for(MarketMarketMakerSpec maDealerCode : maOrder.getDealers()) {
-//			NewOrderSingle.NoDealers dealer = new NewOrderSingle.NoDealers();
-//			if(maDealerCode != null) {
-//				dealer.set(new DealerID(maDealerCode.marketMakerCode));
-//				dealer.set(new DealerIDSource(maDealerCode.marketMakerCodeSource));
-//				newOrderSingle.addGroup(dealer);
-//			}
-//		}
-//
 		// add dealers that must be excluded
 		if(addBlockedDealers) {
 			for(MarketMarketMakerSpec maDealerCode : maOrder.getExcludeDealers()) {
