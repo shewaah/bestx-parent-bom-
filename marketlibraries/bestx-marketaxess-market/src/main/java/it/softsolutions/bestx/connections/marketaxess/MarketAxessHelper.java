@@ -300,8 +300,23 @@ public class MarketAxessHelper extends MarketPriceDiscoveryHelper {
 					dealerCode);
 			proposal.setMarketMarketMaker(mmm);
 			// get Px and currency
-			proposal.setPriceType(Proposal.PriceType.PRICE);
-
+			Proposal.PriceType priceType = null;
+         switch (entry.getInt(PriceType.FIELD)) {
+            case PriceType.PERCENTAGE:
+               priceType = Proposal.PriceType.PRICE;
+               break;
+            case PriceType.YIELD:
+               priceType = Proposal.PriceType.YIELD;
+               break;
+            case PriceType.SPREAD:
+               priceType = Proposal.PriceType.SPREAD;
+               break;
+            default:
+               LOGGER.debug("PriceType = {} not managed yet", entry.getInt(PriceType.FIELD));
+               break;
+         }
+         proposal.setPriceType(priceType);
+			
 			BigDecimal px = new BigDecimal(Double.toString(entry.getDouble(MDEntryPx.FIELD)));
 			if (px.scale() > 10)
 				px = px.setScale(10, RoundingMode.HALF_UP);
