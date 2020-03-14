@@ -384,12 +384,13 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 //		String dealerCode = marketOrder.getMarketMarketMaker() != null ? marketOrder.getMarketMarketMaker().getMarketSpecificCode() : null;
 		
 		
-	   if(this.includeDealers == 0) {
-	      newOrderSingle.setField(new IncludeDealers(2));
-	   } else if(this.includeDealers == 1 || this.includeDealers == 2) {
+//	   if(this.includeDealers == 0) {
+//	      newOrderSingle.setField(new IncludeDealers(2));
+//	   } else 
+		if(this.includeDealers == 1 || this.includeDealers == 2) {
 	      newOrderSingle.setField(new IncludeDealers(this.includeDealers));
 	      
-	      // da usare se si vogliono aggiungere tutti i dealer che hanno fornito un prezzo alla PD
+	      // add only dealers with price in price discovery
 	      for(MarketMarketMakerSpec maDealerCode : maOrder.getDealers()) {
 	         NewOrderSingle.NoDealers dealer = new NewOrderSingle.NoDealers();
 	         if(maDealerCode != null) {
