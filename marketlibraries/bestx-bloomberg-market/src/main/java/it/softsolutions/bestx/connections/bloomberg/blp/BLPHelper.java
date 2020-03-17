@@ -202,14 +202,13 @@ public class BLPHelper {
             Date time = null;
             BigDecimal qty = null;
             BigDecimal amount = null;
-            Proposal.PriceType priceType = null;
+            Proposal.PriceType priceType = Proposal.PriceType.PRICE;
 
             if (tsMarketDataSnapshotFullRefresh.getTSMDFullGrp() != null && tsMarketDataSnapshotFullRefresh.getTSMDFullGrp().getTSNoMDEntriesList() != null) {
 
                 List<TSMDFullGrp.TSNoMDEntries> tsNoMDEntriesList = tsMarketDataSnapshotFullRefresh.getTSMDFullGrp().getTSNoMDEntriesList();
 
                 // Set defaultDate as today
-
                 for (TSMDFullGrp.TSNoMDEntries tsNoMDEntries : tsNoMDEntriesList) {
 
                     if (tsNoMDEntries.getMDEntryType() == mdEntryType) {
@@ -232,19 +231,21 @@ public class BLPHelper {
                             amount = new BigDecimal("" + tsNoMDEntries.getMDEntryPx());
                         }
                         
-                        switch (tsNoMDEntries.getPriceType()) {
-                           case Percentage:
-                              priceType = Proposal.PriceType.PRICE;
-                              break;
-                           case Yield:
-                              priceType = Proposal.PriceType.YIELD;
-                              break;
-                           case Spread:
-                              priceType = Proposal.PriceType.SPREAD;
-                              break;
-                           default:
-                              LOGGER.debug("PriceType = {} not managed yet", tsNoMDEntries.getPriceType());
-                              break;
+                        if (tsNoMDEntries.getPriceType() != null) {
+                           switch (tsNoMDEntries.getPriceType()) {
+                              case Percentage:
+                                 priceType = Proposal.PriceType.PRICE;
+                                 break;
+                              case Yield:
+                                 priceType = Proposal.PriceType.YIELD;
+                                 break;
+                              case Spread:
+                                 priceType = Proposal.PriceType.SPREAD;
+                                 break;
+                              default:
+                                 LOGGER.debug("PriceType = {} not managed yet", tsNoMDEntries.getPriceType());
+                                 break;
+                           }
                         }
                     }
                 }
