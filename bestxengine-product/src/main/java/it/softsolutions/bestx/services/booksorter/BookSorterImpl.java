@@ -42,34 +42,35 @@ import it.softsolutions.bestx.model.SortedBook;
  * The Class BookSorterImpl.
  */
 public class BookSorterImpl implements BookSorter {
-	
-	private static final Logger LOGGER = LoggerFactory.getLogger(BookSorterImpl.class);
 
-    /* (non-Javadoc)
-     * @see it.softsolutions.bestx.bestexec.BookSorter#getSortedBook(it.softsolutions.bestx.model.ClassifiedBook)
-     */
-    @Override
-	public SortedBook getSortedBook(ClassifiedBook classifiedBook) {
-        SortedBook sortedBook = new SortedBook();
-        sortedBook.setInstrument(classifiedBook.getInstrument());
-        LOGGER.info("  -----------------------------------------------------------------------------------------");
-        sortedBook.setAskProposals(sortProposals(classifiedBook.getInstrument(), classifiedBook.getAskProposals(), new ClassifiedAskComparator()));
-        LOGGER.info("-----------------------------------------------------------------------------------------");
-        sortedBook.setBidProposals(sortProposals(classifiedBook.getInstrument(), classifiedBook.getBidProposals(), new ClassifiedBidComparator()));
-        LOGGER.info("  -----------------------------------------------------------------------------------------");
-        return sortedBook;
-    }
-    private List<ClassifiedProposal> sortProposals(Instrument instrument, Collection<? extends ClassifiedProposal> proposals, Comparator<ClassifiedProposal> comparator) {
-        ArrayList<ClassifiedProposal> classifiedProposals = new ArrayList<ClassifiedProposal>();
-        classifiedProposals.addAll(proposals);
-        try {
-        Collections.sort(classifiedProposals, comparator);
-    	for(int i = 0; i < classifiedProposals.size(); i++)
-        	LOGGER.info("{}{}{}", instrument == null ? "null" : instrument.getIsin(), i, classifiedProposals.get(i).toStringShort());
-        } catch(IllegalArgumentException e) {
-        	System.out.println(e.toString());
-        	e.printStackTrace(System.out);
-        }
-        return classifiedProposals;
-    }
+   private static final Logger LOGGER = LoggerFactory.getLogger(BookSorterImpl.class);
+
+   /* (non-Javadoc)
+    * @see it.softsolutions.bestx.bestexec.BookSorter#getSortedBook(it.softsolutions.bestx.model.ClassifiedBook)
+    */
+   @Override
+   public SortedBook getSortedBook(ClassifiedBook classifiedBook) {
+      SortedBook sortedBook = new SortedBook();
+      sortedBook.setInstrument(classifiedBook.getInstrument());
+      LOGGER.info("  -----------------------------------------------------------------------------------------");
+      sortedBook.setAskProposals(sortProposals(classifiedBook.getInstrument(), classifiedBook.getAskProposals(), new ClassifiedAskComparator()));
+      LOGGER.info("-----------------------------------------------------------------------------------------");
+      sortedBook.setBidProposals(sortProposals(classifiedBook.getInstrument(), classifiedBook.getBidProposals(), new ClassifiedBidComparator()));
+      LOGGER.info("  -----------------------------------------------------------------------------------------");
+      return sortedBook;
+   }
+
+   private List<ClassifiedProposal> sortProposals(Instrument instrument, Collection<? extends ClassifiedProposal> proposals, Comparator<ClassifiedProposal> comparator) {
+      ArrayList<ClassifiedProposal> classifiedProposals = new ArrayList<ClassifiedProposal>();
+      classifiedProposals.addAll(proposals);
+      try {
+         Collections.sort(classifiedProposals, comparator);
+         for (int i = 0; i < classifiedProposals.size(); i++)
+            LOGGER.info("{}{}{}", instrument == null ? "null" : instrument.getIsin(), i, classifiedProposals.get(i).toStringShort());
+      }
+      catch (IllegalArgumentException e) {
+         LOGGER.warn("Inconsistent informations in sorting book - proposals size {} - error {} ", classifiedProposals.size(), e);
+      }
+      return classifiedProposals;
+   }
 }
