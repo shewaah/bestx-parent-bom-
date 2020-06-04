@@ -71,6 +71,9 @@ public class BookSorterImpl implements BookSorter {
       catch (IllegalArgumentException e) {
          LOGGER.warn("Inconsistent informations in sorting book - proposals size {} - error {} ", classifiedProposals.size(), e);
       }
+      catch (Exception ex) {
+         LOGGER.warn("Generic exception in sorting book ", ex);
+      }
       return classifiedProposals;
    }
 }
