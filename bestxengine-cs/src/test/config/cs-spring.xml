@@ -3,127 +3,132 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-  <!-- -->
-  <!-- Configuration for encryptor, based on environment variables. -->
-  <!-- -->
-  <!-- In this example, the encryption password will be read from an -->
-  <!-- environment variable called "APP_ENCRYPTION_PASSWORD" which, once -->
-  <!-- the application has been started, could be safely unset. -->
-  <!-- -->
+	<!-- -->
+	<!-- Configuration for encryptor, based on environment variables. -->
+	<!-- -->
+	<!-- In this example, the encryption password will be read from an -->
+	<!-- environment variable called "APP_ENCRYPTION_PASSWORD" which, once -->
+	<!-- the application has been started, could be safely unset. -->
+	<!-- -->
     <bean id="environmentVariablesConfiguration" class="org.jasypt.encryption.pbe.config.EnvironmentStringPBEConfig">
-    <property name="algorithm" value="PBEWITHSHA1ANDDESEDE" />
-    <property name="password" value="AyT0P%c$=lPwQ**" />
-  </bean>
+		<property name="algorithm" value="PBEWITHSHA1ANDDESEDE" />
+		<property name="password" value="AyT0P%c$=lPwQ**" />
+	</bean>
 
-  <!-- -->
-  <!-- The will be the encryptor used for decrypting configuration values. -->
-  <!-- -->
-  <bean id="configurationEncryptor" class="org.jasypt.encryption.pbe.StandardPBEStringEncryptor">
-    <property name="config" ref="environmentVariablesConfiguration" />
-  </bean>
+	<!-- -->
+	<!-- The will be the encryptor used for decrypting configuration values. -->
+	<!-- -->
+	<bean id="configurationEncryptor" class="org.jasypt.encryption.pbe.StandardPBEStringEncryptor">
+		<property name="config" ref="environmentVariablesConfiguration" />
+	</bean>
 
-  <!-- -->
-  <!-- The EncryptablePropertyPlaceholderConfigurer will read the -->
-  <!-- .properties files and make their values accessible as ${var} -->
-  <!-- -->
-  <!-- Our "configurationEncryptor" bean (which implements -->
-  <!-- org.jasypt.encryption.StringEncryptor) is set as a constructor arg. -->
-  <!-- -->
+	<!-- -->
+	<!-- The EncryptablePropertyPlaceholderConfigurer will read the -->
+	<!-- .properties files and make their values accessible as ${var} -->
+	<!-- -->
+	<!-- Our "configurationEncryptor" bean (which implements -->
+	<!-- org.jasypt.encryption.StringEncryptor) is set as a constructor arg. -->
+	<!-- -->
     <bean id="propertyConfigurer" class="org.jasypt.spring31.properties.EncryptablePropertyPlaceholderConfigurer">
-    <constructor-arg ref="configurationEncryptor" />
-    <property name="locations">
-      <list>
-        <value>market_credentials.properties</value>
-        <value>BESTX.properties</value>
-        <value>hibernate.properties</value>
-      </list>
-    </property>
-  </bean>
+		<constructor-arg ref="configurationEncryptor" />
+		<property name="locations">
+			<list>
+				<value>market_credentials.properties</value>
+				<value>BESTX.properties</value>
+				<value>hibernate.properties</value>
+			</list>
+		</property>
+	</bean>
+	<!-- APPLICATION MANAGEMENT -->
+	<bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
+		<property name="locateExistingServerIfPossible" value="true" />
+	</bean>
 
-  <!-- APPLICATION MANAGEMENT -->
-  <bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
-    <property name="locateExistingServerIfPossible" value="true" />
-  </bean>
-
-  <bean id="messagesClass" class="it.softsolutions.bestx.Messages">
+	<bean id="messagesClass" class="it.softsolutions.bestx.Messages">
         <property name="bundleName"><value>${Messages.filename}</value></property>
         <property name="language"><value>${Messages.language}</value></property>
         <property name="country"><value>${Messages.country}</value></property>
-  </bean>
+	</bean>
 
     <bean id="bondTypesService" class="it.softsolutions.bestx.services.instrument.BondTypesService">
-    <property name="enabledBondTypes">
-      <list>
-        <value>ATGV</value>
-        <value>BEGV</value>
-        <value>DEGV</value>
-        <value>ESGV</value>
-        <value>FIGV</value>
-        <value>FRGV</value>
-        <value>GRGV</value>
-        <value>IEGV</value>
-        <value>ITGV</value>
-        <value>NLGV</value>
-        <value>PTGV</value>
-      </list>
-    </property>
-  </bean>
+		<property name="enabledBondTypes">
+			<list>
+				<value>ATGV</value>
+				<value>BEGV</value>
+				<value>DEGV</value>
+				<value>ESGV</value>
+				<value>FIGV</value>
+				<value>FRGV</value>
+				<value>GRGV</value>
+				<value>IEGV</value>
+				<value>ITGV</value>
+				<value>NLGV</value>
+				<value>PTGV</value>
+			</list>
+		</property>
+	</bean>
 
     <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter" lazy-init="false">
-    <property name="beans">
-      <map>
+		<property name="beans">
+			<map>
                 <entry key="it.softsolutions.bestx.cs:name=ApplicationControl" value-ref="applicationController" />
                 <entry key="it.softsolutions.bestx.cs:name=AutomaticCurandoStatus" value-ref="autoCurandoStatusManager" />
                 <entry key="it.softsolutions.bestx.cs:name=Oms1FixCustomerConnection" value-ref="oms1CustomerAdapter" />
-                <entry key="it.softsolutions.bestx.cs:name=Oms2FixCustomerConnection" value-ref="oms2CustomerAdapter" />
                 <entry key="it.softsolutions.bestx.cs:name=BloombergMarketConnection" value-ref="bloombergMarket" />
-        <entry key="it.softsolutions.bestx.cs:name=TradewebMarketConnection" value-ref="tradewebMarket" />
-        <entry key="it.softsolutions.bestx.cs:name=MarketAxessMarketConnection" value-ref="marketAxessMarket" />
+				<entry key="it.softsolutions.bestx.cs:name=TradewebMarketConnection" value-ref="tradewebMarket" />
+				<entry key="it.softsolutions.bestx.cs:name=MarketAxessMarketConnection" value-ref="marketAxessMarket" />
 				<entry key="it.softsolutions.bestx.cs:name=MarketAxessConnectionImpl" value-ref="autoExecutionTradeConnector" />
                 <entry key="it.softsolutions.bestx.cs:name=NormalPriceService" value-ref="normalPriceService" />
                 <entry key="it.softsolutions.bestx.cs:name=LimitFilePriceService" value-ref="limitFilePriceService" />
                 <entry key="it.softsolutions.bestx.cs:name=PDOnlyPriceService" value-ref="pDOnlyPriceService" />
                 <entry key="it.softsolutions.bestx.cs:name=IB4JOperatorConsoleAdapter" value-ref="ib4jOperatorConsoleAdapter" />
                 <entry key="it.softsolutions.bestx.cs:name=MQPriceDiscoveryOperatorConsoleAdapter" value-ref="mqPriceDiscoveryOperatorConsoleAdapter" />
+                <entry key="it.softsolutions.bestx.cs:name=GRDLiteService" value-ref="grdLiteService" />
                 <entry key="it.softsolutions.bestx.cs:name=OperationRestore" value-ref="operationRestore" />
                 <entry key="it.softsolutions.bestx.cs:name=DealerRankingService" value-ref="rankingLoaderManager" />
                 <entry key="it.softsolutions.bestx.cs:name=OperationRegistry" value-ref="defaultOperationRegistry" />
                 <entry key="it.softsolutions.bestx.cs:name=InstrumentFinder" value-ref="dbBasedInstrumentFinder" />
-        		<entry key="it.softsolutions.bestx.cs:name=OrdersEndOfDayService" value-ref="ordersEndOfDayService" />
+				<entry key="it.softsolutions.bestx.cs:name=OrdersEndOfDayService" value-ref="ordersEndOfDayService" />
 				<entry key="it.softsolutions.bestx.cs:name=BusinessValuesMonitor" value-ref="businessValuesMonitor" />
 				<entry key="it.softsolutions.bestx.cs:name=CSStrategy" value-ref="csStrategy" />
+				<entry key="it.softsolutions.bestx.cs:name=PooledDataSource" value-ref="pooledDataSource" />
+				<entry key="it.softsolutions.bestx.cs:name=jdbcPooledDataSource" value-ref="jdbcPooledDataSource" />
+				<entry key="it.softsolutions.bestx.cs:name=NonCommittedPooledDataSource" value-ref="nonCommittedPooledDataSource" />
 				<entry key="it.softsolutions.bestx.cs:name=ApplicationStatusController" value-ref="applicationStatusController" />
 				<!-- entry key="bean:name=hibernateStatsMBean"><ref local="hibernateStats"></ref></entry -->
-      </map>
-    </property>
-    <property name="server" ref="mbeanServer" />
-    <property name="assembler">
+			</map>
+		</property>
+		<property name="server" ref="mbeanServer" />
+		<property name="assembler">
           <bean class="org.springframework.jmx.export.assembler.InterfaceBasedMBeanInfoAssembler">
-        <property name="interfaceMappings">
-          <props>
-            <prop key="it.softsolutions.bestx.cs:name=ApplicationControl">it.softsolutions.bestx.management.EngineControllerMBean</prop>
-            <prop key="it.softsolutions.bestx.cs:name=AutomaticCurandoStatus">it.softsolutions.bestx.management.AutoCurandoStatusMBean</prop>
-            <prop key="it.softsolutions.bestx.cs:name=Oms1FixCustomerConnection">it.softsolutions.bestx.management.FixCustomerAdapterMBean</prop>
-            <prop key="it.softsolutions.bestx.cs:name=Oms2FixCustomerConnection">it.softsolutions.bestx.management.FixCustomerAdapterMBean</prop>
-            <prop key="it.softsolutions.bestx.cs:name=BloombergMarketConnection">it.softsolutions.bestx.management.MarketMXBean</prop>
-            <prop key="it.softsolutions.bestx.cs:name=TradewebMarketConnection">it.softsolutions.bestx.management.MarketMXBean</prop>
-            <prop key="it.softsolutions.bestx.cs:name=MarketAxessMarketConnection">it.softsolutions.bestx.management.MarketMXBean</prop>
-			<prop key="it.softsolutions.bestx.cs:name=MarketAxessConnectionImpl">it.softsolutions.bestx.connections.marketaxess.MarketAxessConnectorMBean</prop>
-            <prop key="it.softsolutions.bestx.cs:name=PriceService">it.softsolutions.bestx.management.PriceServiceMBean</prop>
-            <prop key="it.softsolutions.bestx.cs:name=OperatorConsoleAdapter">it.softsolutions.bestx.management.OperatorConsoleAdapterMBean</prop>
-            <prop key="it.softsolutions.bestx.cs:name=OperationRestore">it.softsolutions.bestx.management.SimpleOperationRestorerMBean</prop>
-            <prop key="it.softsolutions.bestx.cs:name=DealerRankingService">it.softsolutions.bestx.management.DealerRankingServiceMBean</prop>
-            <prop key="it.softsolutions.bestx.cs:name=InstrumentFinder">it.softsolutions.bestx.management.InstrumentFinderMBean</prop>
-            <prop key="it.softsolutions.bestx.cs:name=OrdersEndOfDayService">it.softsolutions.bestx.services.CSOrdersEndOfDayServiceMBean</prop>
-			<prop key="it.softsolutions.bestx.cs:name=BusinessValuesMonitor">it.softsolutions.bestx.management.BusinessValuesMonitorMBean</prop>
-			<prop key="it.softsolutions.bestx.cs:name=CSStrategy">it.softsolutions.bestx.management.CSStrategyMBean</prop>
-          </props>
-        </property>
-      </bean>
-    </property>
-  </bean>
+				<property name="interfaceMappings">
+					<props>
+						<prop key="it.softsolutions.bestx.cs:name=ApplicationControl">it.softsolutions.bestx.management.EngineControllerMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=AutomaticCurandoStatus">it.softsolutions.bestx.management.AutoCurandoStatusMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=Oms1FixCustomerConnection">it.softsolutions.bestx.management.FixCustomerAdapterMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=Oms2FixCustomerConnection">it.softsolutions.bestx.management.FixCustomerAdapterMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=BloombergMarketConnection">it.softsolutions.bestx.management.MarketMXBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=TradewebMarketConnection">it.softsolutions.bestx.management.MarketMXBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=MarketAxessMarketConnection">it.softsolutions.bestx.management.MarketMXBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=MarketAxessConnectionImpl">it.softsolutions.bestx.connections.marketaxess.MarketAxessConnectorMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=PriceService">it.softsolutions.bestx.management.PriceServiceMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=OperatorConsoleAdapter">it.softsolutions.bestx.management.OperatorConsoleAdapterMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=OperationRestore">it.softsolutions.bestx.management.SimpleOperationRestorerMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=DealerRankingService">it.softsolutions.bestx.management.DealerRankingServiceMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=InstrumentFinder">it.softsolutions.bestx.management.InstrumentFinderMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=OrdersEndOfDayService">it.softsolutions.bestx.services.CSOrdersEndOfDayServiceMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=BusinessValuesMonitor">it.softsolutions.bestx.management.BusinessValuesMonitorMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=CSStrategy">it.softsolutions.bestx.management.CSStrategyMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=PooledDataSource">org.apache.commons.dbcp2.BasicDataSourceMXBean </prop>
+						<prop key="it.softsolutions.bestx.cs:name=jdbcPooledDataSource">org.apache.commons.dbcp2.BasicDataSourceMXBean </prop>
+						<prop key="it.softsolutions.bestx.cs:name=NonCommittedPooledDataSource">org.apache.commons.dbcp2.BasicDataSourceMXBean </prop>
+					</props>
+				</property>
+			</bean>
+		</property>
+	</bean>
 
-  <!-- bean id="hibernateStats" class="org.hibernate.jmx.StatisticsService">
+	<!-- bean id="hibernateStats" class="org.hibernate.jmx.StatisticsService"> 
             <property name="statisticsEnabled">
             <value>false</value>
         </property>
@@ -132,24 +137,24 @@
        </property>
     </bean -->
 
-  <!-- Statistics related to Operation Status Change -->
+	<!-- Statistics related to Operation Status Change -->
     <bean id="statisticsOnOperationStateChange" class="it.softsolutions.bestx.management.StatisticsOnOperationStateChange">
-  </bean>
+	</bean>
 
-  <!-- Automatic Curando Status manager -->
+	<!-- Automatic Curando Status manager -->
     <bean id="autoCurandoStatusManager" class="it.softsolutions.bestx.states.autocurando.AutoCurandoStatus" factory-method="valueOf">
-    <constructor-arg>
-      <value>INSTANCE</value>
-    </constructor-arg>
+		<constructor-arg>
+			<value>INSTANCE</value>
+		</constructor-arg>
         <property name="autoCurandoStatus"><value>ATTIVO</value></property>
-  </bean>
+	</bean>
 
-  <!-- Ranking Loader manager -->
+	<!-- Ranking Loader manager -->
     <bean id="rankingLoaderManager" class="it.softsolutions.bestx.services.ranking.DefaultDealerRankingService">
         <property name="rankingLoaderDao"><ref bean="sqlRankingLoaderDao"></ref></property>
-  </bean>
+	</bean>
 
-  <!-- APPLICATION CONTROL -->
+	<!-- APPLICATION CONTROL -->
     <bean id="applicationController" class="it.softsolutions.bestx.EngineControllerImpl" init-method="init">
         <property name="jdbcTemplate"><ref bean="jdbcTemplate"/></property>
         <property name="sessionFactory"><ref bean="sessionFactory"></ref></property>
@@ -159,46 +164,48 @@
         <property name="curandoTimerRetriever"><ref bean="curandoTimerRetriever"></ref></property>
     </bean>
 
-  <!-- OPERATION RESTORE -->
+	<!-- OPERATION RESTORE -->
     <bean id="operationRestore" class="it.softsolutions.bestx.SimpleOperationRestorer" init-method="init">
         <property name="initializer"><ref bean="operationPersistenceManager"></ref></property>
         <property name="operationRegistry"><ref bean="defaultOperationRegistry"></ref></property>
         <property name="operationFactory"><ref bean="defaultOperationFactory"></ref></property>
-  </bean>
+	</bean>
 
     <bean id="mifidConfig" class="it.softsolutions.bestx.MifidConfig" init-method="init">
         <property name="jdbcTemplate"><ref bean="jdbcTemplate"></ref></property>
-  </bean>
-
+	</bean>
+	
     <bean id="curandoTimerRetriever" class="it.softsolutions.bestx.CurandoTimerRetriever" init-method="init">
         <property name="propertyFile"><value>BESTX.properties</value></property>
         <property name="timerPropertiesRoot"><value>TimerProfiles</value></property>
         <property name="currentProfileName"><value>StandardLimitFile</value></property>
     </bean>
 
-  <!-- Hibernate DAOs -->
+
+	
+	<!-- Hibernate DAOs -->
     <bean id="dbBasedHolidayFinder" class="it.softsolutions.bestx.finders.db.SetHolidayFinder" lazy-init="false" init-method="init">
         <property name="holidayDao"><ref bean="hibernateHolidayDao"></ref></property>
-  </bean>
+	</bean>
     <bean id="dbBasedExchangeRateFinder" class="it.softsolutions.bestx.finders.db.MapExchangeRateFinder" lazy-init="false" init-method="init">
         <property name="exchangeRateDao"><ref bean="hibernateExchangeRateDao"></ref></property>
-  </bean>
+	</bean>
     <bean id="dbBasedCustomerFinder" class="it.softsolutions.bestx.finders.db.MapCustomerFinder" init-method="init">
         <property name="customerDao"><ref bean="hibernateCustomerDao"></ref></property>
-  </bean>
+	</bean>
     <bean id="dbBasedCountryFinder" class="it.softsolutions.bestx.finders.db.MapCountryFinder" init-method="init">
         <property name="countryDao"><ref bean="hibernateCountryDao"></ref></property>
-  </bean>
+	</bean>
     <bean id="dbBasedInstrumentFinder" class="it.softsolutions.bestx.finders.db.DbInstrumentFinder" init-method="init">
         <property name="instrumentDao"><ref bean="hibernateInstrumentDao"></ref></property>
         <property name="instrumentParamDao"><ref bean="hibernateInstrumentParamDao"></ref></property>
-  </bean>
+	</bean>
     <bean id="dbBasedVenueFinder" class="it.softsolutions.bestx.finders.db.MapVenueFinder" init-method="init">
         <property name="venueDao"><ref bean="hibernateVenueDao"></ref></property>
-  </bean>
+	</bean>
     <bean id="dbBasedMarketMakerFinder" class="it.softsolutions.bestx.finders.db.MapMarketMakerFinder" init-method="init">
         <property name="marketMakerDao"><ref bean="hibernateMarketMakerDao"></ref></property>
-  </bean>
+	</bean>
     <bean id="dbBasedMarketFinder" class="it.softsolutions.bestx.finders.db.MapMarketFinder" init-method="init">
         <property name="marketDao"><ref bean="hibernateMarketDao"></ref></property>
 	</bean>
@@ -261,7 +268,7 @@
 
 	<!-- SQL DAOs -->
 	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
-        <property name="dataSource"><ref bean="pooledDataSource"/></property>
+        <property name="dataSource"><ref bean="jdbcPooledDataSource"/></property>
 	</bean>
 	<bean id="nonCommittedJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
         <property name="dataSource"><ref bean="nonCommittedPooledDataSource"/></property>
@@ -275,13 +282,13 @@
 	
 	<bean id="transMgr" class="org.springframework.jdbc.datasource.DataSourceTransactionManager"> 
                   <property name="dataSource"><ref bean="nonCommittedPooledDataSource"></ref></property> 
-             </bean> 
-    <bean id="sqlOperationStateAuditDao" class="it.softsolutions.bestx.dao.sql.SqlCSOperationStateAuditDao" init-method="init"> 
+    </bean> 
+    <bean id="sqlOperationStateAuditDao" class="it.softsolutions.bestx.dao.sql.SqlCSOperationStateAuditDao" init-method="init">
         <property name="jdbcTemplate"><ref bean="nonCommittedJdbcTemplate"/></property> 
         <property name="dataSourceTransactionManager"> 
              <ref bean="transMgr"></ref>
         </property> 
-     </bean>  
+	</bean>
     <bean id="dbBasedExcessDao" class="it.softsolutions.bestx.dao.sql.SqlExcessDao" init-method="init">
         <property name="jdbcTemplate"><ref bean="jdbcTemplate"/></property>
 	</bean>
@@ -337,6 +344,18 @@
 		<property name="validationQuery"><value>select 1</value></property>
 	</bean>
 
+	<bean id="jdbcPooledDataSource" class="org.apache.commons.dbcp2.BasicDataSource">
+        <property name="driverClassName"><value>${hibernate.connection.driver_class}</value></property>
+        <property name="url"><value>${hibernate.connection.url}</value></property>
+        <property name="username"><value>${dbcp.connection.username}</value></property>
+        <property name="password"><value>${dbcp.connection.password}</value></property>
+        <property name="initialSize"><value>0</value></property>
+        <property name="maxTotal"><value>10</value></property>
+        <property name="maxIdle"><value>10</value></property>
+        <property name="minIdle"><value>0</value></property>
+		<property name="validationQuery"><value>select 1</value></property>
+	</bean>
+
 	<!-- DATA SOURCES -->
 	<bean id="nonCommittedPooledDataSource" class="org.apache.commons.dbcp2.BasicDataSource">
         <property name="driverClassName"><value>${hibernate.connection.driver_class}</value></property>
@@ -388,6 +407,7 @@
 				hibernate.use_sql_comments = ${hibernate.use_sql_comments}
 				hibernate.generate_statistics = ${hibernate.generate_statistics}
                 hibernate.cache.use_structured_entries = ${hibernate.cache.use_structured_entries}
+				hibernate.order_updates=true
 			</value>
 		</property>
 	</bean>
@@ -414,6 +434,11 @@
         <property name="corePoolSize" value="64"/>
 		<property name="maxPoolSize" value="64"/>
 		<property name="threadNamePrefix" value="ThreadPool-OMS1"/>
+    </bean>
+    <bean id="threadPoolEOD" class="it.softsolutions.bestx.ThreadPoolExecutor" init-method="initialize">
+        <property name="corePoolSize" value="1"/>
+		<property name="maxPoolSize" value="1"/>
+		<property name="threadNamePrefix" value="ThreadPool-EOD"/>
     </bean>
 	<bean id="threadPoolNormalPriceService" class="it.softsolutions.bestx.ThreadPoolExecutor" init-method="initialize">
 		<property name="corePoolSize" value="64"/>
@@ -451,7 +476,7 @@
 		<property name="maxPoolSize" value="64"/>
 		<property name="threadNamePrefix" value="ThreadPool-Tradeweb"/>
 	</bean>	
-		
+	
     <bean id="oms1CustomerAdapter" class="it.softsolutions.bestx.connections.OMS1CustomerAdapter" init-method="init">
 		<!-- BUSINESS PARAMETERS -->
 		<property name="defaultCustomer">
@@ -548,6 +573,7 @@
 			</map>
 		</property>
 	</bean>
+
     <bean id="defaultOperationRegistry" class="it.softsolutions.bestx.CachedOperationRegistry" init-method="init">
         <property name="operationFactory"><ref bean="defaultOperationFactory"></ref></property>
         <property name="operationPersistenceManager"><ref bean="operationPersistenceManager"></ref></property>
@@ -607,16 +633,17 @@
         <property name="marketPriceTimeout"><value>${Bloomberg.pricesTimeout}</value></property>
         <property name="marketExecTimeout"><value>${Market.state.timeout}</value></property>
 		<property name="marketAxessExecTimeout"><value>${MarketAxess.ExecTimeout}</value></property>
-        <property name="bloombergExecTimeout"><value>${Bloomberg.ExecTimeout}</value></property>
+		<property name="bloombergExecTimeout"><value>${Bloomberg.ExecTimeout}</value></property>
         <property name="internalRfqReplyTimeout"><value>${Internal.rfqreply.timeout}</value></property>
         <property name="internalRfqMessagePrefix"><value>${Internal.rfq.message.prefix}</value></property>
+        <property name="targetPriceMaxLevel"><value>${TargetPrice.MaxLevel}</value></property>
 		<!-- TECHNICAL PARAMETERS -->
         <property name="mifidConfig"><ref bean="mifidConfig"></ref></property>
         <property name="priceServiceProvider"><ref bean="priceServiceProvider"></ref></property>
         <property name="serialNumberService"><ref bean="serialNumberService"></ref></property>
         <property name="orderValidationService"><ref bean="csOrderValidationService"></ref></property>
         <property name="priceDiscoveryValidationService"><ref bean="csPDValidationService"></ref></property>
-<!--         <property name="titoliIncrociabiliService"><ref bean="titoliIncrociabiliServer"></ref></property>  -->
+        <property name="titoliIncrociabiliService"><ref bean="titoliIncrociabiliServer"></ref></property>
         <property name="marketConnectionRegistry"><ref bean="configurableMarketConnectionRegistry"></ref></property>
         <property name="marketSecurityStatusService"><ref bean="marketSecurityStatusService"></ref></property>
 		<property name="customerFinder" ref="dbBasedCustomerFinder" />
@@ -656,8 +683,7 @@
         <property name="priceDecimals"><value>${PriceDiscovery.PriceDecimals}</value></property>
         <property name="pobExMaxSize"><value>${Marketaxess.MaxPOBEXEntries}</value></property>
         <property name="curandoTimerRetriever"><ref bean="curandoTimerRetriever"></ref></property>
-        <property name="targetPriceMaxLevel"><value>${TargetPrice.MaxLevel}</value></property>
-	<property name="applicationStatus" ref="applicationStatus" />
+		<property name="applicationStatus" ref="applicationStatus" />
 	</bean>
 	
 	<!-- The application status contains global status used by the application -->
@@ -732,8 +758,8 @@
 				</bean>
                 <bean class="it.softsolutions.bestx.services.ordervalidation.LimitFileParkTagFilter">
 					<property name="custOrderHandlingInstrValue"><value>TMO</value></property>
-				</bean>
-               <bean class="it.softsolutions.bestx.services.ordervalidation.StopAutoExecHandlInst">
+				</bean>         
+                <bean class="it.softsolutions.bestx.services.ordervalidation.StopAutoExecHandlInst">
 				</bean>               
 			</list>
 		</property>
@@ -914,30 +940,38 @@
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardYieldProposalClassifier"></bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.SubstituteCounterProposalClassifier"></bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnavailableVenueProposalClassifier"></bean>
+
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroProposalClassifier">
                 	<property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
                 </bean>
+
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardOldProposalClassifier">
                     <property name="configValue"><value>12</value></property>
                     <property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
 				</bean>
+
+				<!-- Next bean uncommented for AUTOMATIC TESTS --> 
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardInsufficientQuantityProposalClassifier"></bean>
-                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardInadequateOrderedQuantityProposalClassifier">
-                    <property name="marketSecurityStatusService"><ref bean="marketSecurityStatusService"></ref></property>
-                    <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
+				
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardInadequateOrderedQuantityProposalClassifier">
+					<property name="marketSecurityStatusService"><ref bean="marketSecurityStatusService"></ref></property>
+					<property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
 				</bean>
 
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardMarketTriedInEarlierAttemptProposalClassifier"></bean>
-                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardWorstPriceProposalClassifier">
-                    <property name="titoliIncrociabiliService"><ref bean="titoliIncrociabiliServer"></ref></property>
-                    <!--  Flag per abilitare o disabilitare il controllo che un ordine sia o meno un matching tramite query -->
-                    <property name="matchByQueryEnabled"><value>false</value></property>
+
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardWorstPriceProposalClassifier">
+					<property name="titoliIncrociabiliService"><ref bean="titoliIncrociabiliServer"></ref></property>
+					<!--  Flag per abilitare o disabilitare il controllo che un ordine sia o meno un matching tramite query -->
+					<property name="matchByQueryEnabled"><value>false</value></property>
 				</bean>
+				<!-- <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTooWideQuoteSpread"></bean> -->
 			</list>
 		</property>
 		<property name="bookClassifierList">
 			<list>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardDuplicatedMM"></bean>
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTooWideQuoteSpread"></bean>
 			</list>
 		</property>
 	</bean>
@@ -945,7 +979,7 @@
 	<bean id="pDOnlyBookClassifierBean" class="it.softsolutions.bestx.ConfigurableBookClassifier">
 		<property name="proposalClassifierList">
 			<list>
-				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardSpreadProposalClassifier"></bean>
+ 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardSpreadProposalClassifier"></bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardYieldProposalClassifier"></bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnavailableVenueProposalClassifier"></bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroProposalClassifier">
@@ -957,13 +991,13 @@
 				</bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.TagInsufficientQtyProposalClassifier">
                 	<property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
-                </bean>
+				</bean>
+				<!-- <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTooWideQuoteSpread"></bean> -->
 			</list>
 		</property>
 		<property name="bookClassifierList">
 			<list>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardDuplicatedMM"></bean>
-                <!-- bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTooWideQuoteSpread"></bean-->
 			</list>
 		</property>
 	</bean>
@@ -971,8 +1005,8 @@
 
 <!-- Execution strategy -->
     <bean id="executionStrategyServiceFactory" class="it.softsolutions.bestx.services.executionstrategy.CSExecutionStrategyServiceFactory">
-    	<property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
-    	<property name="marketConnectionRegistry"><ref bean="configurableMarketConnectionRegistry"/></property>
+		<property name="marketConnectionRegistry"><ref bean="configurableMarketConnectionRegistry"/></property>
+        <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
         <property name="bookClassifier"><ref bean="bookClassifierBean"/></property>
  		<property name="bookSorter"><bean class="it.softsolutions.bestx.services.booksorter.BookSorterImpl"></bean></property>
     	<property name="allMarketsToTry">
@@ -1020,11 +1054,22 @@
         <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
         <property name="venueFinder"><ref bean="dbBasedVenueFinder"/></property>
         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
-        <property name="tradeStacPreTradeConnection"><ref bean="blpConnector"/></property>
+		<property name="tradeStacPreTradeConnection"><ref bean="blpConnector"/></property>
         <property name="tsoxConnection"><ref bean="tsoxConnector"/></property>
     </bean>
 
-
+    <bean id="blpConnector" class="it.softsolutions.bestx.connections.bloomberg.blp.BLPConnector" init-method="init">
+        <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
+        <property name="marketMakerFinder"><ref bean="dbBasedMarketMakerFinder"/></property>
+        <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
+        <property name="venueFinder"><ref bean="dbBasedVenueFinder"/></property>
+        <property name="tradeStacPreTradeConnectionListener"><ref bean="bloombergMarket"/></property>
+        <property name="tradeStacClientSession">
+            <bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
+        </property>
+        <property name="fixConfigFileName"><value>fix-tradestac-simulated2-blp.properties</value></property>
+    </bean>
+    
     <bean id="tsoxConnector" class="it.softsolutions.bestx.connections.bloomberg.tsox.RBLD_TSOXConnection" init-method="init">
 		<property name="tradeStacClientSession">
 			<bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
@@ -1040,72 +1085,26 @@
 		<property name="tsoxEnquiryTime"><value>${Bloomberg.Tsox.TsoxEnquiryTime}</value></property>
         <property name="fixConfigFileName" value="fix-tradestac-simulated2-tsox.properties" />
 	</bean>
+    
 
-<!-- 	
-     <bean id="tsoxConnector" class="it.softsolutions.bestx.connections.bloomberg.tsox.simulated.BogusTSOXConnection" init-method="init">
-        <property name="tsoxConnectionListener"><ref bean="bloombergMarket"/></property>
-        <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
-        <property name="cancelIsins">
-        	<list>
-        		<value>TXBBG0000002</value>
-        	</list>
-		</property>
-        <property name="rejectIsins">
-        	<list>
-        	</list>
-		</property>
-		<property name="waitingIsins">
-			<list>
-				<value>TXBBG0000003</value>
-			</list>
-		</property>
+	<!--
+	<bean id="tsoxConnector" class="it.softsolutions.bestx.connections.bloomberg.tsox.RBLD_TSOXConnection" init-method="init">
+        <property name="tradeStacClientSession">
+            <bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
+        </property>
+                <property name="tsoxConnectionListener"><ref bean="bloombergMarket"/></property>
+        <property name="destinationMICCode"><value>${Bloomberg.Tsox.DestinationMICCode}</value></property>
+        <property name="traderCode"><value>${Bloomberg.Tsox.TraderCode}</value></property>
+        <property name="executionDecisionMakerID"><value>${Bloomberg.Tsox.ExecutionDecisionMakerID}</value></property>
+        <property name="investmentDecisionMakerID"><value>${Bloomberg.Tsox.InvestmentDecisionMakerID}</value></property>
+        <property name="investmentDecisionQualifier"><value>${Bloomberg.Tsox.InvestmentDecisionQualifier}</value></property>
+        <property name="enteringFirmCode"><value>${Bloomberg.Tsox.EnteringFirmCode}</value></property>
+        <property name="tsoxEnquiryTime"><value>${Bloomberg.Tsox.TsoxEnquiryTime}</value></property>
+        <property name="fixConfigFileName" value="fix-tradestac-tsox.properties" />
 	</bean>
- -->
- 
-<!--
-    <bean id="blpConnector" class="it.softsolutions.bestx.connections.bloomberg.blp.BLPConnector" init-method="init">
-        <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
-        <property name="marketMakerFinder"><ref bean="dbBasedMarketMakerFinder"/></property>
-        <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
-        <property name="venueFinder"><ref bean="dbBasedVenueFinder"/></property>
-        <property name="tradeStacPreTradeConnectionListener"><ref bean="bloombergMarket"/></property>
-        <property name="tradeStacClientSession">
-            <bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
-        </property>
-        <property name="fixConfigFileName"><value>fix-tradestac-blp.properties</value></property>
-    </bean>
--->
+	-->
 
-    <bean id="blpConnector" class="it.softsolutions.bestx.connections.bloomberg.blp.BLPConnector" init-method="init">
-        <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
-        <property name="marketMakerFinder"><ref bean="dbBasedMarketMakerFinder"/></property>
-        <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
-        <property name="venueFinder"><ref bean="dbBasedVenueFinder"/></property>
-        <property name="tradeStacPreTradeConnectionListener"><ref bean="bloombergMarket"/></property>
-        <property name="tradeStacClientSession">
-            <bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
-        </property>
-        <property name="fixConfigFileName"><value>fix-tradestac-simulated2-blp.properties</value></property>
-    </bean>
-
-<!-- 
-    <bean id="simulatedBlpConnector" class="it.softsolutions.bestx.connections.tradestac.TradeStacMarketSimulatorConnectionImpl" init-method="init">
-        <property name="marketCode"><value>BLOOMBERG</value></property>
-        <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
-        <property name="marketMakerFinder"><ref bean="dbBasedMarketMakerFinder"/></property>
-        <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
-        <property name="venueFinder"><ref bean="dbBasedVenueFinder"/></property>
-        <property name="tradeStacPreTradeConnectionListener"><ref bean="bloombergMarket"/></property>
-        <property name="tradeStacConnectionListener"><ref bean="bloombergMarket"/></property>
-		<property name="connectionName"><value>UNIVERSAL-MARKET-SESSION</value></property>
-        <property name="tradeStacClientSession">
-            <bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
-        </property>
-        <property name="fixConfigFileName"><value>fix-tradestac-simulated-blp.properties</value></property>
-    </bean>
- -->
- 
-	<!-- ====================================================================== -->
+ 	<!-- ====================================================================== -->
     <!-- ==== Tradeweb ======================================================== -->
     <!-- ====================================================================== -->
     <bean id="tradewebMarket" class="it.softsolutions.bestx.markets.tradeweb.TradewebMarket" init-method="init" lazy-init="true">
@@ -1130,12 +1129,27 @@
         <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
         <property name="venueFinder"><ref bean="dbBasedVenueFinder"/></property>
         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
-        <!-- <property name="tradeStacPreTradeConnection"><ref bean="simulatedMdsConnector"/></property> -->
-        <property name="tradeStacPreTradeConnection"><ref bean="mdsConnector"/></property>
+        <property name="tradeStacPreTradeConnection"><ref bean="simulatedMdsConnector"/></property>
+		<!--property name="tradeStacPreTradeConnection"><ref bean="mdsConnector"/></property-->
         <property name="tradeXpressConnection"><ref bean="tradexpressConnector"/></property>
 	</bean>
 
-	<!-- 
+	
+	<bean id="simulatedMdsConnector" class="it.softsolutions.bestx.connections.tradeweb.mds.MDSConnectionImpl" init-method="init">
+        <property name="executor"><ref bean="threadPoolTradeweb"/></property>
+        <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
+        <property name="marketMakerFinder"><ref bean="dbBasedMarketMakerFinder"/></property>
+        <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
+        <property name="venueFinder"><ref bean="dbBasedVenueFinder"/></property>
+        <property name="tradeStacConnectionListener"><ref bean="tradewebMarket"/></property>
+        <property name="tradeStacPreTradeConnectionListener"><ref bean="tradewebMarket"/></property>
+		<property name="tradeStacClientSession">
+			<bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
+		</property>
+        <property name="fixConfigFileName"><value>fix-tradestac-simulated2-mds.properties</value></property>
+	</bean>
+
+<!--	
     <bean id="mdsConnector" class="it.softsolutions.bestx.connections.tradeweb.mds.MDSConnectionImpl" init-method="init">
         <property name="executor"><ref bean="threadPoolTradeweb"/></property>
         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
@@ -1149,41 +1163,10 @@
 		</property>
         <property name="fixConfigFileName"><value>fix-tradestac-mds.properties</value></property>
 	</bean>
-	-->
-	
-	<bean id="mdsConnector" class="it.softsolutions.bestx.connections.tradeweb.mds.MDSConnectionImpl" init-method="init">
-        <property name="executor"><ref bean="threadPoolTradeweb"/></property>
-        <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
-        <property name="marketMakerFinder"><ref bean="dbBasedMarketMakerFinder"/></property>
-        <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
-        <property name="venueFinder"><ref bean="dbBasedVenueFinder"/></property>
-        <property name="tradeStacConnectionListener"><ref bean="tradewebMarket"/></property>
-        <property name="tradeStacPreTradeConnectionListener"><ref bean="tradewebMarket"/></property>
-		<property name="tradeStacClientSession">
-			<bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
-		</property>
-        <property name="fixConfigFileName"><value>fix-tradestac-simulated2-mds.properties</value></property>
-	</bean>
- 
-    <!-- 
-    <bean id="simulatedMdsConnector" class="it.softsolutions.bestx.connections.tradestac.TradeStacMarketSimulatorConnectionImpl" init-method="init">
-        <property name="marketCode"><value>TW</value></property>
-        <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
-        <property name="marketMakerFinder"><ref bean="dbBasedMarketMakerFinder"/></property>
-        <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
-        <property name="venueFinder"><ref bean="dbBasedVenueFinder"/></property>
-        <property name="tradeStacPreTradeConnectionListener"><ref bean="tradewebMarket"/></property>
-        <property name="tradeStacConnectionListener"><ref bean="tradewebMarket"/></property>
-		<property name="connectionName"><value>UNIVERSAL-MARKET-SESSION</value></property>
-        <property name="tradeStacClientSession">
-            <bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
-        </property>
-        <property name="fixConfigFileName"><value>fix-tradestac-simulated-mds.properties</value></property>
-    </bean>
- -->
-<!-- 
+-->
+	<!--
     <bean id="tradexpressConnector" class="it.softsolutions.bestx.connections.tradeweb.tradexpress.TradeXpressConnectionImpl" init-method="init">
-		<property name="tradeXpressConnectionListener"><ref bean="tradewebMarket"/></property>
+        <property name="tradeXpressConnectionListener"><ref bean="tradewebMarket"/></property>
 		<property name="tradeStacConnectionListener"><ref bean="tradewebMarket"/></property>
 		<property name="tradeStacClientSession">
 			<bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
@@ -1197,7 +1180,7 @@
 		<property name="defaultTradingCapacity"><value>${Tradeweb.defaultCapacity}</value></property>
         <property name="fixConfigFileName" value="fix-tradestac-tradexpress.properties" />
 	</bean>
-	 -->
+	-->
 
     <bean id="tradexpressConnector" class="it.softsolutions.bestx.connections.tradeweb.tradexpress.TradeXpressConnectionImpl" init-method="init">
 		<property name="tradeXpressConnectionListener"><ref bean="tradewebMarket"/></property>
@@ -1214,40 +1197,8 @@
 		<property name="defaultTradingCapacity"><value>${Tradeweb.defaultCapacity}</value></property>
         <property name="fixConfigFileName" value="fix-tradestac-simulated2-tradexpress.properties" />
 	</bean>
-	 
-	 <!-- 
-    <bean id="tradexpressConnector" class="it.softsolutions.bestx.connections.tradeweb.simulated.BogusTradeXpressConnection" init-method="init">
-		<property name="tradeXpressConnectionListener"><ref bean="tradewebMarket"/></property>
-        <property name="cancelIsins">
-        	<list>
-        	</list>
-		</property>
-        <property name="rejectIsins">
-        	<list>
-        		<value>US912833DE75</value>
-        		<value>XS0076085603</value>
-        		<value>XS0563306314</value>
-        		<value>CA563469CN38</value>
-        	</list>
-		</property>
-		<property name="waitingIsins">
-			<list>
-				<value>DE0001135275</value>
-			</list>
-		</property>
-	</bean>
- -->
-<!--
-    <bean id="simulatedTradexpressConnector" class="it.softsolutions.bestx.connections.tradeweb.tradexpress.TradeXpressConnectionImpl" init-method="init">
-		<property name="tradeXpressConnectionListener"><ref bean="tradewebMarket"/></property>
-		<property name="tradeStacConnectionListener"><ref bean="tradewebMarket"/></property>
-		<property name="tradeStacClientSession">
-			<bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
-		</property>
-		<property name="traderCode"><value>${tradexpress.traderCode}</value></property>
-        <property name="fixConfigFileName" value="fix-tradestac-tradexpress.properties" />
-	</bean>
--->
+	
+	
 	<!-- ====================================================================== -->
     <!-- ==== MarketAxess ======================================================== -->
     <!-- ====================================================================== -->
@@ -1271,10 +1222,9 @@
         <property name="tradeStacPreTradeConnection"><ref bean="marketAxessPreTradeConnector"/></property>
         <property name="tradeConnection"><ref bean="autoExecutionTradeConnector"/></property>
 	</bean>
-	
+
     <bean id="marketAxessPreTradeConnector" class="it.softsolutions.bestx.connections.marketaxess.MarketAxessInventoryAndLiveMarketFeedConnector" init-method="init">
-    	<!-- constructor-arg><value>UNIVERSAL-MARKET-SESSION</value></constructor-arg-->
-        <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
+         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
         <property name="marketMakerFinder"><ref bean="dbBasedMarketMakerFinder"/></property>
         <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
         <property name="venueFinder"><ref bean="dbBasedVenueFinder"/></property>
@@ -1287,7 +1237,6 @@
     </bean>
      
     <bean id="autoExecutionTradeConnector" class="it.softsolutions.bestx.connections.marketaxess.MarketAxessAutoExecutionConnector" init-method="init">
-    	<!-- constructor-arg><value>UNIVERSAL-MARKET-SESSION</value></constructor-arg-->
  		<property name="tradeStacTradeConnectionListener"><ref bean="marketAxessMarket"/></property>
         <property name="tradeStacConnectionListener"><ref bean="marketAxessMarket"/></property>
         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
@@ -1298,8 +1247,8 @@
 			<bean class="it.softsolutions.tradestac2.client.TradeStacClient"/>
 		</property>
 		<property name="tolerance"><value>${Marketaxess.Order.Tolerance}</value></property>
-		<property name="numCompetitiveQuotes"><value>${Marketaxess.Order.NumCompetitiveQuotes}</value></property>
 		<property name="includeDealers"><value>${Marketaxess.Order.MinDealers}</value></property>
+		<property name="numCompetitiveQuotes"><value>${Marketaxess.Order.NumCompetitiveQuotes}</value></property>
 		<property name="minTimeDelay"><value>${Marketaxess.Order.MinTimeDelay}</value></property>
 		<property name="validSeconds"><value>${Marketaxess.Order.ValidSeconds}</value></property>
 		<property name="traderPartyID"><value>${Marketaxess.Order.TraderPartyID}</value></property>
@@ -1310,7 +1259,6 @@
 		<property name="defaultTradingCapacity"><value>${MarketAxess.defaultCapacity}</value></property>
 		<property name="defaultShortSelling"><value>${MarketAxess.defaultShortSell}</value></property>
         <property name="fixConfigFileName"><value>fix-tradestac-simulated-marketaxess-buyside-trade.properties</value></property>
-        <property name="addBlockedDealers"><value>${MarketAxess.AddBlockedDealers}</value></property>
         <property name="marketSegmentID"><value>${MarketAxess.destinationMICCode}</value></property>
  	</bean>
 	
@@ -1343,7 +1291,7 @@
 			</list>
 		</property>
         <property name="customService"><ref bean="grdLiteService"></ref></property>
-        <property name="userModelFinder"><ref bean="dbUserModelFinder"></ref></property>
+		<property name="userModelFinder"><ref bean="dbUserModelFinder"></ref></property>																						
 	</bean>
 	
 	<bean id="dbUserModelFinder" class="it.softsolutions.bestx.finders.db.DBUserModelFinder" init-method="init">
@@ -1353,8 +1301,8 @@
 	<bean id="hibernateUserModelDao" class="it.softsolutions.bestx.dao.hibernate.HibernateUserModelDao">
         <property name="sessionFactory"><ref bean="sessionFactory"></ref></property>
 	</bean>
-
     <bean id="mqPriceDiscoveryOperatorConsoleAdapter" class="it.softsolutions.bestx.connections.MQPriceDiscoveryOperatorConsoleAdapter" init-method="init">
+		<!-- TECHNICAL PARAMETERS -->
         <property name="operationRegistry"><ref bean="defaultOperationRegistry"></ref></property>
 		<property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"></ref></property>
 		<property name="sqlInstrumentDao"><ref bean="sqlInstrumentDao"></ref></property>
@@ -1364,7 +1312,7 @@
 	</bean>
 
     <bean id="ordersEndOfDayService" class="it.softsolutions.bestx.services.CSOrdersEndOfDayService" init-method="init">
-        <property name="executor"><ref bean="threadPoolOMS1"></ref></property>
+        <property name="executor"><ref bean="threadPoolEOD"></ref></property>
         <property name="operationStateAuditDao"><ref bean="sqlOperationStateAuditDao"></ref></property>
         <property name="operationRegistry"><ref bean="defaultOperationRegistry"></ref></property>
         <property name="ordersEndOfDayHour"><value>${OrdersEndOfDay.hour}</value></property>
@@ -1397,6 +1345,7 @@
 				<entry key="ONLY_PRICEDISCOVERY" value-ref="pDOnlyPriceService" />
 			</map>
 		</property>
+        <!--property name="doubleQueueActive"><value>false</value></property-->
 	</bean>
     <bean id="serialNumberServiceProvider" class="it.softsolutions.bestx.services.SerialNumberServiceProvider">
         <property name="serialNumberService"><ref bean="serialNumberService"></ref></property>
@@ -1405,22 +1354,21 @@
     <bean id="operationStateAuditDAOProvider" class="it.softsolutions.bestx.services.OperationStateAuditDAOProvider">
         <property name="operationStateAuditDao"><ref bean="sqlOperationStateAuditDao"></ref></property>
 	</bean>
-    <bean id="grdLiteService" class="it.softsolutions.bestx.services.grdlite.GRDLiteService">
+    <bean id="grdLiteService" class="it.softsolutions.bestx.services.grdlite.GRDLiteService" init-method="init">
 		<constructor-arg ref="defaultOperationRegistry" />
 		<!-- the service, as default, is activated -->
         <property name="active"><value>true</value></property>
         <!-- maximum number of reconnections, -1 means never stop trying to reconnect, it
             is also the default value -->
-        <property name="reconnectionMaxTries"><value>-1</value></property>
+        <property name="reconnectionMaxTries"><value>1</value></property>
         <property name="encryptor"><ref bean="configurationEncryptor"></ref></property>
-        <property name="serviceName"><value>GRDLiteService</value></property>
+        <property name="serviceName"><value>GRDLite</value></property>
 	</bean>
 
     <bean id="configurationPropertyLoader" class="it.softsolutions.bestx.services.CSConfigurationPropertyLoader">
         <property name="jdbcTemplate"><ref bean="jdbcTemplate"></ref></property>
         <property name="configurationTable"><value>BestXConfiguration</value></property>
-   </bean>	
-   
+   </bean>	  
     <bean id="businessValuesMonitor" class="it.softsolutions.bestx.services.BusinessValuesMonitor" init-method="init">
         <property name="statsIntervalTimeInSecs"><value>60</value></property>
     	<property name="marketList">

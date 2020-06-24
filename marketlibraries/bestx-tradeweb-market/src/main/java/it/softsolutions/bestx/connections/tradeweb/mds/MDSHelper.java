@@ -230,16 +230,19 @@ public class MDSHelper extends MarketPriceDiscoveryHelper {
                         
                         if (tsNoMDEntries.getPriceType() != null) {
                         	switch (tsNoMDEntries.getPriceType()) {
-							case Percentage:
-								priceType = PriceType.PRICE;
-								break;
-							case Yield:
-								priceType = PriceType.YIELD;
-								break;
-							default:
-								LOGGER.debug("PriceType = {} not managed yet", tsNoMDEntries.getPriceType());
-								break;
-							}
+         							case Percentage:
+         								priceType = PriceType.PRICE;
+         								break;
+         							case Yield:
+         								priceType = PriceType.YIELD;
+         								break;
+                              case Spread:
+                                 priceType = PriceType.SPREAD;
+                                 break;
+         							default:
+         								LOGGER.debug("PriceType = {} not managed yet", tsNoMDEntries.getPriceType());
+         								break;
+      							}
                         	
                         }
                     }

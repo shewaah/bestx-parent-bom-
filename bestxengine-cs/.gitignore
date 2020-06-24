@@ -1,1 +1,3 @@
 /FFDC/
+*.log.0
+*.log.0.lck

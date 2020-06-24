@@ -169,5 +169,7 @@ public class MarketOrder extends Order {
 	    this.marketMarketMaker = marketOrder.marketMarketMaker;
 	    this.isInternal = marketOrder.isInternal;
 	    this.marketSessionId = marketOrder.marketSessionId;
+	    this.dealers = marketOrder.dealers;
+	    this.excludeDealers = marketOrder.excludeDealers;
     }
 }

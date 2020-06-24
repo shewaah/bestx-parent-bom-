@@ -21,9 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.lang3.time.DateUtils;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +37,7 @@ import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Market.SubMarketCode;
 import it.softsolutions.bestx.model.MarketMarketMaker;
+import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Proposal.ProposalSide;
 import it.softsolutions.bestx.model.Proposal.ProposalState;
 import it.softsolutions.bestx.model.Proposal.ProposalSubState;
@@ -204,13 +202,13 @@ public class BLPHelper {
             Date time = null;
             BigDecimal qty = null;
             BigDecimal amount = null;
+            Proposal.PriceType priceType = Proposal.PriceType.PRICE;
 
             if (tsMarketDataSnapshotFullRefresh.getTSMDFullGrp() != null && tsMarketDataSnapshotFullRefresh.getTSMDFullGrp().getTSNoMDEntriesList() != null) {
 
                 List<TSMDFullGrp.TSNoMDEntries> tsNoMDEntriesList = tsMarketDataSnapshotFullRefresh.getTSMDFullGrp().getTSNoMDEntriesList();
 
                 // Set defaultDate as today
-
                 for (TSMDFullGrp.TSNoMDEntries tsNoMDEntries : tsNoMDEntriesList) {
 
                     if (tsNoMDEntries.getMDEntryType() == mdEntryType) {
@@ -231,6 +229,23 @@ public class BLPHelper {
 
                         if (tsNoMDEntries.getMDEntryPx() != null) {
                             amount = new BigDecimal("" + tsNoMDEntries.getMDEntryPx());
+                        }
+                        
+                        if (tsNoMDEntries.getPriceType() != null) {
+                           switch (tsNoMDEntries.getPriceType()) {
+                              case Percentage:
+                                 priceType = Proposal.PriceType.PRICE;
+                                 break;
+                              case Yield:
+                                 priceType = Proposal.PriceType.YIELD;
+                                 break;
+                              case Spread:
+                                 priceType = Proposal.PriceType.SPREAD;
+                                 break;
+                              default:
+                                 LOGGER.debug("PriceType = {} not managed yet", tsNoMDEntries.getPriceType());
+                                 break;
+                           }
                         }
                     }
                 }
@@ -274,6 +289,7 @@ public class BLPHelper {
 
             Money price = new Money(instrument.getCurrency(), amount);
             classifiedProposal.setPrice(price);
+            classifiedProposal.setPriceType(priceType);
 
             Date today = DateService.newLocalDate();
             if (!DateUtils.isSameDay(timestamp, today)) {
