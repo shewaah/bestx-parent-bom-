@@ -460,7 +460,8 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			ithBestProp = BookHelper.getIthProposal(currentAttempt.getSortedBook().getAcceptableSideProposals(operation.getOrder().getSide()), this.targetPriceMaxLevel);
 			ithBest = ithBestProp.getPrice();
 		} catch(NullPointerException e) {
-			LOGGER.debug("NullPointerException trying to manage widen best or get the {}-th best for order {}", this.targetPriceMaxLevel, order.getFixOrderId());
+			LOGGER.warn("NullPointerException trying to manage widen best or get the {}-th best for order {}", this.targetPriceMaxLevel, order.getFixOrderId());
+			LOGGER.warn("NullPointerException trace", e);
 		}
 		try {
 			double spread = BookHelper.getQuoteSpread(currentAttempt.getSortedBook().getAcceptableSideProposals(operation.getOrder().getSide()), this.targetPriceMaxLevel);
@@ -495,7 +496,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 					LOGGER.debug("Use less wide between i-th best proposal and best widened by {} as market order limit price: {}", customerMaxWideSpread, limitPrice == null? "null":limitPrice.getAmount().toString());
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOGGER.warn("Problem appeared while calculating target price", e);
 		}
 		return limitPrice;
 	}

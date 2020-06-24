@@ -47,6 +47,7 @@ import it.softsolutions.tradestac.fix50.TSBusinessMessageReject;
 import it.softsolutions.tradestac.fix50.TSExecutionReport;
 import it.softsolutions.tradestac.fix50.TSNewOrderSingle;
 import it.softsolutions.tradestac.fix50.TSNoPartyID;
+import it.softsolutions.tradestac.fix50.TSOrderCancelReject;
 import it.softsolutions.tradestac.fix50.TSOrderCancelRequest;
 import it.softsolutions.tradestac.fix50.TSQuoteRequestReject;
 import it.softsolutions.tradestac.fix50.component.TSInstrument;
@@ -488,4 +489,12 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
 
 	}
 
+	@Override
+	public void onOrderCancelReject(SessionID sessionID, TSOrderCancelReject tsOrderCancelReject) throws TradeStacException {
+		String clordid = tsOrderCancelReject.getOrigClOrdID();
+		String text = tsOrderCancelReject.getText();
+        this.tsoxConnectionListener.onCancelReject(sessionID.toString(), clordid, text);
+	}
+		
+	
 }
