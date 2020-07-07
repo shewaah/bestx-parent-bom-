@@ -13,6 +13,11 @@
  */
 package it.softsolutions.bestx.markets.bloomberg;
 
+import java.math.BigDecimal;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.softsolutions.bestx.BaseState;
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Operation;
@@ -23,11 +28,6 @@ import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Proposal.ProposalSide;
 import it.softsolutions.bestx.model.Rfq;
-
-import java.math.BigDecimal;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -60,13 +60,6 @@ public class OnCounterRunnable implements Runnable {
             // operation.getOrder().getFixOrderId() value is equal to quoteReqId
             Order order = operation.getOrder();
             Rfq rfq = operation.getRfq();
-
-            Thread.currentThread().setName(
-                    "OnCounterRunnable-"
-                            + operation.toString()
-                            + "-ISIN:"
-                            + ((order != null && order.getInstrument() != null) ? order.getInstrument().getIsin() : (rfq != null && rfq.getInstrument() != null) ? rfq.getInstrument().getIsin()
-                                    : "XXXX"));
 
             // allow multiple quote updates only for internalized states
             boolean allowMultipleQuotes = ((BaseState) operation.getState()).areMultipleQuotesAllowed();

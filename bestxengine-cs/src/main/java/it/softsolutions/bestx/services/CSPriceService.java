@@ -213,7 +213,9 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 		} catch (IllegalArgumentException e) {
 		}
 
-		new Thread(new RequestProcessor(configuredOrdersPerMinute, this), "CSPriceService-RequestProcessor").start();
+		Thread t1 = new Thread(new RequestProcessor(configuredOrdersPerMinute, this));
+		t1.setName("PROC-CSPriceService" + "-T" + t1.getId());
+		t1.start();
 
 	}
 

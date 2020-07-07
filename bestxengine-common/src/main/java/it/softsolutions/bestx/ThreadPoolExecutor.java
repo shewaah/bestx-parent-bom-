@@ -15,6 +15,7 @@ package it.softsolutions.bestx;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import com.codahale.metrics.Gauge;
@@ -31,103 +32,112 @@ import com.codahale.metrics.MetricRegistry;
  **/
 public class ThreadPoolExecutor implements Executor {
 
-	protected int corePoolSize;
-	protected int maxPoolSize;
-	protected String threadNamePrefix;
-	protected java.util.concurrent.ThreadPoolExecutor workerPool;
-	
-	public ThreadPoolExecutor() {
-	}
+   protected int corePoolSize;
+   protected int maxPoolSize;
+   protected String threadNamePrefix;
+   protected java.util.concurrent.ThreadPoolExecutor workerPool;
 
-	@Override
-    public void execute(Runnable command) {
-	    workerPool.execute(command);
-    }
+   public ThreadPoolExecutor(){}
 
-	/**
-	 * @return
-	 */
-    public int getMaxPoolSize() {
-	    return workerPool.getMaximumPoolSize();
-    }
+   @Override
+   public void execute(Runnable command) {
+      workerPool.execute(command);
+   }
 
-	/**
-	 * @return
-	 */
-    public int getActiveCount() {
-	    return workerPool.getActiveCount();
-    }
+   /**
+    * @return
+    */
+   public int getMaxPoolSize() {
+      return workerPool.getMaximumPoolSize();
+   }
 
-	/**
-	 * @return
-	 */
-    public int getPoolSize() {
-	    return workerPool.getPoolSize();
-    }
+   /**
+    * @return
+    */
+   public int getActiveCount() {
+      return workerPool.getActiveCount();
+   }
 
-	/**
-	 * 
-	 */
-    public void shutdown() {
-    	workerPool.shutdown();
-    }
+   /**
+    * @return
+    */
+   public int getPoolSize() {
+      return workerPool.getPoolSize();
+   }
 
-	/**
-	 * @return the corePoolSize
-	 */
-	public int getCorePoolSize() {
-		return corePoolSize;
-	}
+   /**
+    * 
+    */
+   public void shutdown() {
+      workerPool.shutdown();
+   }
 
-	/**
-	 * @param corePoolSize the corePoolSize to set
-	 */
-	public void setCorePoolSize(int corePoolSize) {
-		this.corePoolSize = corePoolSize;
-	}
+   /**
+    * @return the corePoolSize
+    */
+   public int getCorePoolSize() {
+      return corePoolSize;
+   }
 
-	/**
-	 * @return the threadNamePrefix
-	 */
-	public String getThreadNamePrefix() {
-		return threadNamePrefix;
-	}
+   /**
+    * @param corePoolSize the corePoolSize to set
+    */
+   public void setCorePoolSize(int corePoolSize) {
+      this.corePoolSize = corePoolSize;
+   }
 
-	/**
-	 * @param threadNamePrefix the threadNamePrefix to set
-	 */
-	public void setThreadNamePrefix(String threadNamePrefix) {
-		this.threadNamePrefix = threadNamePrefix;
-	}
+   /**
+    * @return the threadNamePrefix
+    */
+   public String getThreadNamePrefix() {
+      return threadNamePrefix;
+   }
 
-	/**
-	 * @param maxPoolSize the maxPoolSize to set
-	 */
-	public void setMaxPoolSize(int maxPoolSize) {
-		this.maxPoolSize = maxPoolSize;
-	}
+   /**
+    * @param threadNamePrefix the threadNamePrefix to set
+    */
+   public void setThreadNamePrefix(String threadNamePrefix) {
+      this.threadNamePrefix = threadNamePrefix;
+   }
 
-	public void initialize() {
-		workerPool = new java.util.concurrent.ThreadPoolExecutor(corePoolSize, maxPoolSize, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
-		
-		try {
-			CommonMetricRegistry.INSTANCE.getMonitorRegistry().register(MetricRegistry.name(ThreadPoolExecutor.class, threadNamePrefix, "activeCount"), new Gauge<Integer>() {
-				@Override
-				public Integer getValue() {
-					return workerPool.getActiveCount();
-				}
-			});
-			
-			CommonMetricRegistry.INSTANCE.getMonitorRegistry().register(MetricRegistry.name(ThreadPoolExecutor.class, threadNamePrefix, "queueSize"), new Gauge<Integer>() {
-				@Override
-				public Integer getValue() {
-					return workerPool.getQueue().size();
-				}
-			});
-	        
-        } catch (IllegalArgumentException e) {
-        }
-	}
-    
+   /**
+    * @param maxPoolSize the maxPoolSize to set
+    */
+   public void setMaxPoolSize(int maxPoolSize) {
+      this.maxPoolSize = maxPoolSize;
+   }
+
+   public void initialize() {
+      workerPool = new java.util.concurrent.ThreadPoolExecutor(corePoolSize, maxPoolSize, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new BestXThreadFactory());
+
+      try {
+         CommonMetricRegistry.INSTANCE.getMonitorRegistry().register(MetricRegistry.name(ThreadPoolExecutor.class, threadNamePrefix, "activeCount"), new Gauge<Integer>() {
+
+            @Override
+            public Integer getValue() {
+               return workerPool.getActiveCount();
+            }
+         });
+
+         CommonMetricRegistry.INSTANCE.getMonitorRegistry().register(MetricRegistry.name(ThreadPoolExecutor.class, threadNamePrefix, "queueSize"), new Gauge<Integer>() {
+
+            @Override
+            public Integer getValue() {
+               return workerPool.getQueue().size();
+            }
+         });
+
+      }
+      catch (IllegalArgumentException e) {}
+   }
+
+   class BestXThreadFactory implements ThreadFactory {
+
+      public Thread newThread(Runnable r) {
+         Thread t = new Thread(r);
+         t.setName(threadNamePrefix + "-T" + t.getId());
+
+         return t;
+      }
+   }
 }
-

@@ -35,7 +35,6 @@ import it.softsolutions.bestx.bestexec.BookClassifier;
 import it.softsolutions.bestx.bestexec.BookSorter;
 import it.softsolutions.bestx.connections.MarketPriceConnection;
 import it.softsolutions.bestx.connections.MarketPriceConnectionListener;
-import it.softsolutions.bestx.dao.bean.PriceForgeRuleBean;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.finders.MarketMakerFinder;
 import it.softsolutions.bestx.finders.VenueFinder;
@@ -205,7 +204,6 @@ public class MarketPriceListener implements MarketPriceConnectionListener {
             public void run() {
                 try {
                     String logStart = "Order " + order.getFixOrderId() + ". ";
-                    Thread.currentThread().setName(logStart + "Price-process-" + listener.toString());
                     PriceDiscoveryPerformanceMonitor.logEvent(order.getCustomerOrderId(), "processPriceResult start");
                     /*
                      * Ho il book completo con le proposal di tutti i mercati Ora devo estrarre la strategia per l'isin oggetto dell'ordine

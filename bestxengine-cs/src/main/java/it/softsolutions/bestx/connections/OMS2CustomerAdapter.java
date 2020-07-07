@@ -299,8 +299,6 @@ public class OMS2CustomerAdapter extends CustomerAdapterStatistics implements Cu
             {
                 fixOrder.setCustomer(customerFinder.getCustomerByFixId(fixOrder.getClientId()));
             }
-            Thread.currentThread().setName("onFixOrderNotification," + operation.toString().replace('-','=') +
-                            ",ISIN=" + fixOrder.getIsin()+",");			
 
             // Save order ID to operation data
             operation.addIdentifier(OperationIdType.ORDER_ID, orderId);
