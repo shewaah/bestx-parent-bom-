@@ -17,6 +17,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
@@ -132,10 +133,11 @@ public class ThreadPoolExecutor implements Executor {
    }
 
    class BestXThreadFactory implements ThreadFactory {
-
+      final AtomicLong count = new AtomicLong(0);
+      
       public Thread newThread(Runnable r) {
          Thread t = new Thread(r);
-         t.setName(threadNamePrefix + "-T" + t.getId());
+         t.setName(threadNamePrefix + "-T" + count.getAndIncrement());
 
          return t;
       }
