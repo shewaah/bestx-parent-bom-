@@ -22,3 +22,5 @@ set SERVER_CONFIG=-XX:+UseParallelGC -XX:+AggressiveOpts -XX:+UseFastAccessorMet
 set CURRENT_DIR%=.
 
 start "SODLoader" "%JDK_HOME%\bin\java" -Dcom.ibm.mq.cfg.useIBMCipherMappings=false -Dss.app.name=BestX-SOD-Loader %SERVER_CONFIG% -cp ..\cfg;..\lib\*; it.softsolutions.bestx.sod.SODLoader
+pause
+exit
