@@ -21,6 +21,4 @@ set JDK_HOME=C:\Program Files\Java\jre1.8.0_181
 set SERVER_CONFIG=-XX:+UseParallelGC -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -Xms128m -Xmx256m 
 set CURRENT_DIR%=.
 
-start "SODLoader" "%JDK_HOME%\bin\java" -Dcom.ibm.mq.cfg.useIBMCipherMappings=false -Dss.app.name=BestX-SOD-Loader %SERVER_CONFIG% -cp %CURRENT_DIR%\cfg;%CURRENT_DIR%\lib\*; it.softsolutions.bestx.sod.SODLoader
-pause
-exit
+start "SODLoader" "%JDK_HOME%\bin\java" -Dcom.ibm.mq.cfg.useIBMCipherMappings=false -Dss.app.name=BestX-SOD-Loader %SERVER_CONFIG% -cp ..\cfg;..\lib\*; it.softsolutions.bestx.sod.SODLoader

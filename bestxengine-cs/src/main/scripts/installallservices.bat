@@ -28,11 +28,6 @@ C:\SoftSolutions\BestX\services\FixGatewayOMS1\FixGatewayOMS1.exe set FixGateway
 C:\SoftSolutions\BestX\services\FixGatewayOMS1\FixGatewayOMS1.exe set FixGatewayOMS1 start SERVICE_DEMAND_START
 C:\SoftSolutions\BestX\services\FixGatewayOMS1\FixGatewayOMS1.exe set FixGatewayOMS1 AppStopMethodConsole 30000
 
-sc delete FixGatewayOMS2
-C:\SoftSolutions\BestX\services\FixGatewayOMS2\FixGatewayOMS2.exe install FixGatewayOMS2 C:\SoftSolutions\BestX\services\FixGatewayOMS2\XT2FixGateway-x86-v110_xp-MTDLL-R.exe
-C:\SoftSolutions\BestX\services\FixGatewayOMS2\FixGatewayOMS2.exe set FixGatewayOMS2 description "FixGatewayOMS2"
-C:\SoftSolutions\BestX\services\FixGatewayOMS2\FixGatewayOMS2.exe set FixGatewayOMS2 start SERVICE_DEMAND_START
-C:\SoftSolutions\BestX\services\FixGatewayOMS2\FixGatewayOMS2.exe set FixGatewayOMS2 AppStopMethodConsole 30000
 
 sc delete SODLoader
 C:\SoftSolutions\BestX\services\SODLoader\SODLoader.exe install SODLoader C:\SoftSolutions\BestX\services\SODLoader\startup.bat
