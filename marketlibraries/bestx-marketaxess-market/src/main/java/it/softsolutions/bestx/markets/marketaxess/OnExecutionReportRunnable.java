@@ -20,12 +20,9 @@ import java.math.BigDecimal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.model.MarketExecutionReport;
-import it.softsolutions.bestx.model.MarketMaker;
-import it.softsolutions.bestx.model.MarketMarketMaker;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.jsscommon.Money;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.ExecType;
@@ -65,7 +62,6 @@ public class OnExecutionReportRunnable implements Runnable {
     @Override
 	public void run() {
         Order order = this.operation.getOrder();
-        Thread.currentThread().setName("OnExecutionReportRunnable-" + this.operation.toString() + "-ISIN:" + ((order != null && order.getInstrument() != null) ? order.getInstrument().getIsin() : "XXXX"));
         if(order == null) {
         	operation.onApplicationError(operation.getState(), new NullPointerException(), "Operation " + operation.getId() + " has no order!");
         	return;

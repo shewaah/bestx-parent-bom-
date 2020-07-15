@@ -56,7 +56,7 @@ public class ApplicationMonitor extends Thread {
         LOGGER.info("Creating ApplicationMonitor with sample time " + sampleTime + " ms.");
         setSampleTime(sampleTime);
         this.setDaemon(true);
-        this.setName("OSMon_" + DateService.currentTimeMillis());
+        this.setName("APPMon-" + "-T" + this.getId());
         monitor_ = new JavaSysMon();
         LOGGER.info("ApplicationMonitor ready to start.");
     }

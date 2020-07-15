@@ -433,48 +433,48 @@
     <bean id="threadPoolOMS1" class="it.softsolutions.bestx.ThreadPoolExecutor" init-method="initialize">
         <property name="corePoolSize" value="64"/>
 		<property name="maxPoolSize" value="64"/>
-		<property name="threadNamePrefix" value="ThreadPool-OMS1"/>
+		<property name="threadNamePrefix" value="TP-OMS1"/>
     </bean>
     <bean id="threadPoolEOD" class="it.softsolutions.bestx.ThreadPoolExecutor" init-method="initialize">
         <property name="corePoolSize" value="1"/>
 		<property name="maxPoolSize" value="1"/>
-		<property name="threadNamePrefix" value="ThreadPool-EOD"/>
+		<property name="threadNamePrefix" value="TP-EOD"/>
     </bean>
 	<bean id="threadPoolNormalPriceService" class="it.softsolutions.bestx.ThreadPoolExecutor" init-method="initialize">
 		<property name="corePoolSize" value="64"/>
 		<property name="maxPoolSize" value="64"/>
-		<property name="threadNamePrefix" value="ThreadPool-NormalPriceService"/>
+		<property name="threadNamePrefix" value="TP-NormalPriceService"/>
     </bean>
 	<bean id="threadPoolLimitFilePriceService" class="it.softsolutions.bestx.ThreadPoolExecutor" init-method="initialize">
 		<property name="corePoolSize" value="64"/>
 		<property name="maxPoolSize" value="64"/>
-		<property name="threadNamePrefix" value="ThreadPool-LimitFilePriceService"/>
+		<property name="threadNamePrefix" value="TP-LimitFilePriceService"/>
     </bean>
 	<bean id="threadPoolPDOnlyPriceService" class="it.softsolutions.bestx.ThreadPoolExecutor" init-method="initialize">
 		<property name="corePoolSize" value="64"/>
 		<property name="maxPoolSize" value="64"/>
-		<property name="threadNamePrefix" value="ThreadPool-PDOnlyPriceService"/>
+		<property name="threadNamePrefix" value="TP-PDOnlyPriceService"/>
     </bean>
 	<bean id="threadPoolMQPriceDiscoveryAdapter" class="it.softsolutions.bestx.ThreadPoolExecutor" init-method="initialize">
 		<property name="corePoolSize" value="64"/>
 		<property name="maxPoolSize" value="100"/>
-		<property name="threadNamePrefix" value="ThreadPool-MQPriceDiscoveryAdapter"/>
+		<property name="threadNamePrefix" value="TP-MQPriceDiscoveryAdapter"/>
     </bean>
 	<bean id="threadPoolBloomberg" class="it.softsolutions.bestx.ThreadPoolExecutor" init-method="initialize">
 		<property name="corePoolSize" value="8"/>
 		<property name="maxPoolSize" value="8"/>
-		<property name="threadNamePrefix" value="ThreadPool-Bloomberg"/>
+		<property name="threadNamePrefix" value="TP-BBG"/>
 	</bean>
 	<bean id="threadPoolTradeweb" class="it.softsolutions.bestx.ThreadPoolSortedQueueExecutor" init-method="initialize">
 		<property name="corePoolSize" value="16"/>
 		<property name="maxPoolSize" value="64"/>
-		<property name="threadNamePrefix" value="ThreadPool-Tradeweb"/>
+		<property name="threadNamePrefix" value="TP-TW"/>
 	</bean>	
 	
 	<bean id="threadPoolMarketAxess" class="it.softsolutions.bestx.ThreadPoolSortedQueueExecutor" init-method="initialize">
 		<property name="corePoolSize" value="16"/>
 		<property name="maxPoolSize" value="64"/>
-		<property name="threadNamePrefix" value="ThreadPool-Tradeweb"/>
+		<property name="threadNamePrefix" value="TP-MA"/>
 	</bean>	
 	
     <bean id="oms1CustomerAdapter" class="it.softsolutions.bestx.connections.OMS1CustomerAdapter" init-method="init">

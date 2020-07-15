@@ -212,11 +212,6 @@ public class OMS1CustomerAdapter extends CustomerAdapterStatistics implements Cu
         
 		        statTotalFixOrderNotifications.incrementAndGet();
 		        orderReceived++;
-		           Thread.currentThread().setName(
-		                    "onFixOrderNotification-"
-		                            + fixOrder.getFixOrderId()
-		                            + "-ISIN:"
-		                            + ((fixOrder.getInstrumentCode() != null) ? fixOrder.getInstrumentCode() : "XXXX"));
 
 		        ApplicationMonitor.onNewOrder(source.getConnectionName()); // for statistics logging
 //		        try {
@@ -254,7 +249,6 @@ public class OMS1CustomerAdapter extends CustomerAdapterStatistics implements Cu
 		            fixOrder.setInstrumentFinder(instrumentFinder);
 		            fixOrder.setSqlInstrumentDao(sqlInstrumentDao);
 		            fixOrder.setCustomer(customerFinder.getCustomerByFixId(fixOrder.getClientId()));
-		            Thread.currentThread().setName("onFixOrderNotification," + operation.toString().replace('-', '=') + ",ISIN=" + fixOrder.getIsin() + ",");
 		            // Save order ID to operation data
 		            operation.addIdentifier(OperationIdType.ORDER_ID, orderId);
 		            LOGGER.debug("OrderID = {}: forward event to operation in new thread", orderId);

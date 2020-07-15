@@ -39,7 +39,6 @@ import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.ExecutionReport;
 import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.InternalAttempt;
-import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.MarketExecutionReport;
 import it.softsolutions.bestx.model.Order;
@@ -50,7 +49,6 @@ import it.softsolutions.bestx.model.UserModel;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyService.Result;
 import it.softsolutions.bestx.services.price.PriceResult;
 import it.softsolutions.bestx.services.price.PriceService;
-import it.softsolutions.bestx.services.price.PriceService.PriceDiscoveryType;
 import it.softsolutions.bestx.services.price.QuoteResult;
 import it.softsolutions.jsscommon.Money;
 
@@ -385,12 +383,6 @@ public final class Operation implements OperationEventListener {
 		Date now = new Date();
 		if (order != null) {
 			orderId = order.getFixOrderId();
-			Thread.currentThread().setName(
-					"updateStateListeners-" + currentState.getClass().getSimpleName() + "," + toString().replace('@', '=') + ",ISIN="
-							+ order.getInstrumentCode()!=null?order.getInstrumentCode():"XXXX" + ",");
-		} else {
-			Thread.currentThread().setName(
-					"updateStateListeners-" + currentState.getClass().getSimpleName() + "," + toString().replace('@', '=') + ",");
 		}
 
 
@@ -728,9 +720,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onNewState(OperationState currentState) {
-		Thread.currentThread().setName(
-				"new-" + currentState.getClass().getSimpleName() + "-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrumentCode() != null ? order.getInstrumentCode() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onNewState(currentState);
 		} catch (ObjectNotInitializedException onie) {
@@ -748,9 +737,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onStateRestore(OperationState currentState) {
-		Thread.currentThread().setName(
-				"restore-" + currentState.getClass().getSimpleName() + "-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onStateRestore(currentState);
 		} catch (Exception e) {
@@ -761,9 +747,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onTimerExpired(String jobName, String groupName) {
-		Thread.currentThread().setName(
-				"onTimerExpire-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onTimerExpired(jobName, groupName);
 		} catch (Exception e) {
@@ -773,9 +756,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onCustomerOrder(CustomerConnection source, Order order) {
-		Thread.currentThread().setName(
-				"onCustomerOrder-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onCustomerOrder(source, order);
 		} catch (Exception e) {
@@ -786,7 +766,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onCustomerRfq(CustomerConnection source, Rfq rfq) {
-		Thread.currentThread().setName("onCustomerRfq-" + toString() + "-ISIN:" + (rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onCustomerRfq(source, rfq);
 		} catch (Exception e) {
@@ -797,9 +776,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onCustomerQuoteAcknowledged(CustomerConnection source, Quote quote) {
-		Thread.currentThread().setName(
-				"onQuoteAck-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onCustomerQuoteAcknowledged(source, quote);
 		} catch (Exception e) {
@@ -810,9 +786,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onCustomerQuoteNotAcknowledged(CustomerConnection source, Quote quote, Integer errorCode, String errorMessage) {
-		Thread.currentThread().setName(
-				"onQuoteNack-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onCustomerQuoteNotAcknowledged(source, quote, errorCode, errorMessage);
 		} catch (Exception e) {
@@ -823,9 +796,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onTradingConsoleOrderAutoExecution(TradingConsoleConnection source) {
-		Thread.currentThread().setName(
-				"onAutoExec-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onTradingConsoleOrderAutoExecution(source);
 		} catch (Exception e) {
@@ -836,9 +806,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onTradingConsoleOrderPendingAccepted(TradingConsoleConnection source) {
-		Thread.currentThread().setName(
-				"onPendAccept-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onTradingConsoleOrderPendingAccepted(source);
 		} catch (Exception e) {
@@ -849,9 +816,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onTradingConsoleOrderPendingCounter(TradingConsoleConnection source, ClassifiedProposal counter) {
-		Thread.currentThread().setName(
-				"onPendCounter-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onTradingConsoleOrderPendingCounter(source, counter);
 		} catch (Exception e) {
@@ -862,9 +826,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onTradingConsoleOrderPendingExpired(TradingConsoleConnection source) {
-		Thread.currentThread().setName(
-				"onPendExpired-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onTradingConsoleOrderPendingExpired(source);
 		} catch (Exception e) {
@@ -875,7 +836,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onTradingConsoleOrderPendingRejected(TradingConsoleConnection source, String reason) {
-		Thread.currentThread().setName("onPendReject-" + toString() + "-ISIN:" + order.getInstrument().getIsin());
 		try {
 			handler.onTradingConsoleOrderPendingRejected(source, reason);
 		} catch (Exception e) {
@@ -886,9 +846,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onTradingConsoleTradeAcknowledged(TradingConsoleConnection source) {
-		Thread.currentThread().setName(
-				"onTradeAck-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onTradingConsoleTradeAcknowledged(source);
 		} catch (Exception e) {
@@ -899,7 +856,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onTradingConsoleTradeNotAcknowledged(TradingConsoleConnection source) {
-		Thread.currentThread().setName("onTradeNack-" + toString() + "-ISIN:" + order.getInstrument().getIsin());
 		try {
 			handler.onTradingConsoleTradeNotAcknowledged(source);
 		} catch (Exception e) {
@@ -910,9 +866,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onTradingConsoleTradeReceived(TradingConsoleConnection source) {
-		Thread.currentThread().setName(
-				"onTradeRec-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onTradingConsoleTradeReceived(source);
 		} catch (Exception e) {
@@ -923,9 +876,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onTradingConsoleTradeRejected(TradingConsoleConnection source, String reason) {
-		Thread.currentThread().setName(
-				"onTradeReject-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onTradingConsoleTradeRejected(source, reason);
 		} catch (Exception e) {
@@ -936,9 +886,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onCmfErrorReply(TradingConsoleConnection source, String errorMessage, int errorCode) {
-		Thread.currentThread().setName(
-				"onCmfErrorReply-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onCmfErrorReply(source, errorMessage, errorCode);
 		} catch (Exception e) {
@@ -949,9 +896,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onCustomerExecutionReportAcknowledged(CustomerConnection source, ExecutionReport executionReport) {
-		Thread.currentThread().setName(
-				"onExecRepAck-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			LOGGER.debug("Received an Acknowledgement, starting to manage it. Operation: {}", this.toString());
 			handler.onCustomerExecutionReportAcknowledged(source, executionReport);
@@ -963,9 +907,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onCustomerExecutionReportNotAcknowledged(CustomerConnection source, ExecutionReport executionReport, Integer errorCode, String errorMessage) {
-		Thread.currentThread().setName(
-				"onExecRepNack-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onCustomerExecutionReportNotAcknowledged(source, executionReport, errorCode, errorMessage);
 		} catch (Exception e) {
@@ -976,9 +917,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorAbortState(OperatorConsoleConnection source, String comment) {
-		Thread.currentThread().setName(
-				"onAbort-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorAbortState(source, comment);
 		} catch (DataAccessException sqle) {
@@ -993,9 +931,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorForceState(OperatorConsoleConnection source, OperationState newState, String comment) {
-		Thread.currentThread().setName(
-				"onForce-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorForceState(source, newState, comment);
 		} catch (DataAccessException sqle) {
@@ -1010,9 +945,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorReinitiateProcess(OperatorConsoleConnection source, String comment) {
-		Thread.currentThread().setName(
-				"onReinit-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorReinitiateProcess(source, comment);
 		} catch (DataAccessException sqle) {
@@ -1027,9 +959,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorRestoreState(OperatorConsoleConnection source, String comment) {
-		Thread.currentThread().setName(
-				"onRestore-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorRestoreState(source, comment);
 		} catch (DataAccessException sqle) {
@@ -1044,9 +973,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorRetryState(OperatorConsoleConnection source, String comment) {
-		Thread.currentThread().setName(
-				"onRetry-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorRetryState(source, comment);
 		} catch (DataAccessException sqle) {
@@ -1061,9 +987,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorSuspendState(OperatorConsoleConnection source, String comment) {
-		Thread.currentThread().setName(
-				"onSuspend-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorSuspendState(source, comment);
 		} catch (DataAccessException sqle) {
@@ -1078,9 +1001,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorTerminateState(OperatorConsoleConnection source, String comment) {
-		Thread.currentThread().setName(
-				"onTerminate-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorTerminateState(source, comment);
 		} catch (DataAccessException sqle) {
@@ -1095,9 +1015,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorMatchOrders(OperatorConsoleConnection source, Money ownPrice, Money matchingPrice, String comment) {
-		Thread.currentThread().setName(
-				"onMatchOrders-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorMatchOrders(source, ownPrice, matchingPrice, comment);
 		} catch (DataAccessException sqle) {
@@ -1112,9 +1029,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onPricesResult(PriceService source, PriceResult priceResult) {
-		Thread.currentThread().setName(
-				"onPricesResult-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onPricesResult(source, priceResult);
 		} catch (Exception e) {
@@ -1125,9 +1039,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onQuoteResult(PriceService source, QuoteResult quoteResult) {
-		Thread.currentThread().setName(
-				"onQuoteResult-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onQuoteResult(source, quoteResult);
 		} catch (Exception e) {
@@ -1138,9 +1049,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorExecuteState(OperatorConsoleConnection source, Money execPrice, String comment) {
-		Thread.currentThread().setName(
-				"onOperatorExecuteState-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorExecuteState(source, execPrice, comment);
 		} catch (DataAccessException sqle) {
@@ -1155,9 +1063,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorSendDDECommand(OperatorConsoleConnection source, String comment) {
-		Thread.currentThread().setName(
-				"onOperatorSendDDECommand-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorSendDDECommand(source, comment);
 		} catch (DataAccessException sqle) {
@@ -1172,9 +1077,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onMarketMatchFound(MarketBuySideConnection source, Operation matching) {
-		Thread.currentThread().setName(
-				"onMarketMatchFound-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onMarketMatchFound(source, matching);
 		} catch (DataAccessException sqle) {
@@ -1189,9 +1091,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onMarketRevocationAccepted(MarketBuySideConnection source) {
-		Thread.currentThread().setName(
-				"onMarketRevocationAccepted-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onMarketRevocationAccepted(source);
 		} catch (Exception e) {
@@ -1202,9 +1101,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onMarketRevocationRejected(MarketBuySideConnection source, String reason) {
-		Thread.currentThread().setName(
-				"onMarketRevocationRejected-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onMarketRevocationRejected(source, reason);
 		} catch (Exception e) {
@@ -1215,9 +1111,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onTradeFeedDataRetrieved(MarketBuySideConnection source, String ticketNum, int numberOfDaysAccrued, BigDecimal accruedInterestAmount) {
-		Thread.currentThread().setName(
-				"onTradeFeedDataRetrieved-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onTradeFeedDataRetrieved(source, ticketNum, numberOfDaysAccrued, accruedInterestAmount);
 		} catch (Exception e) {
@@ -1228,10 +1121,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onMarketExecutionReport(MarketBuySideConnection source, Order order, MarketExecutionReport marketExecutionReport) {
-		Thread.currentThread().setName(
-				"onMarketExecutionReport-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
-
 		try {
 			handler.onMarketExecutionReport(source, order, marketExecutionReport);
 		} catch (Exception e) {
@@ -1260,9 +1149,6 @@ public final class Operation implements OperationEventListener {
 			return;
 		}
 
-		Thread.currentThread().setName(
-				"onMarketOrderReject-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onMarketOrderReject(source, order, reason, sessionId);
 		} catch (Exception e) {
@@ -1291,10 +1177,6 @@ public final class Operation implements OperationEventListener {
 			return;
 		}
 
-		Thread.currentThread().setName(
-				"onQuoteStatusTimeout-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
-
 		try {
 			handler.onQuoteStatusTimeout(source, order, quoteReqId);
 		} catch (Exception e) {
@@ -1322,10 +1204,6 @@ public final class Operation implements OperationEventListener {
 			return;
 		}
 
-		Thread.currentThread().setName(
-				"onQuoteStatusTradeEnded-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
-
 		try {
 			handler.onQuoteStatusTradeEnded(source, order, quoteReqId, text);
 		} catch (Exception e) {
@@ -1337,9 +1215,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onMarketOrderStatus(MarketBuySideConnection source, Order order, Order.OrderStatus orderStatus) {
-		Thread.currentThread().setName(
-				"onMarketOrderStatus-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onMarketOrderStatus(source, order, orderStatus);
 		} catch (Exception e) {
@@ -1350,9 +1225,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onUnexpectedMarketProposal(MarketBuySideConnection source, Instrument instrument, ClassifiedProposal proposal) {
-		Thread.currentThread().setName(
-				"onUnexpectedMarketQuote-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			LOGGER.debug("notifying unexpected counter to handler: {}", handler.getClass().getSimpleName());
 			handler.onUnexpectedMarketProposal(source, instrument, proposal);
@@ -1381,9 +1253,6 @@ public final class Operation implements OperationEventListener {
 			return;
 		}
 
-		Thread.currentThread().setName(
-				"onMarketQuote-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			LOGGER.debug("[INT-TRACE] notifying counter to handler: {}", handler.getClass().getSimpleName());
 			handler.onMarketProposal(source, instrument, proposal);
@@ -1407,9 +1276,6 @@ public final class Operation implements OperationEventListener {
 			return;
 		}
 
-		Thread.currentThread().setName(
-				"onMarketProposalStatusChange-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onMarketProposalStatusChange(source, quoteId, status);
 		} catch (Exception e) {
@@ -1437,9 +1303,6 @@ public final class Operation implements OperationEventListener {
 			return;
 		}
 
-		Thread.currentThread().setName(
-				"onMarketRfqReject-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onMarketRfqReject(source, rfq, reason);
 		} catch (Exception e) {
@@ -1450,9 +1313,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onApplicationError(OperationState currentState, Exception exception, String message) {
-		Thread.currentThread().setName(
-				"onApplicationError-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onApplicationError(currentState, exception, message);
 		} catch (Exception e) {
@@ -1479,9 +1339,6 @@ public final class Operation implements OperationEventListener {
 			return;
 		}
 
-		Thread.currentThread().setName(
-				"onMarketOrderCancelled-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onMarketOrderCancelled(source, order, reason);
 		} catch (Exception e) {
@@ -1491,10 +1348,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorForceReceived(OperatorConsoleConnection source, String comment) {
-		Thread.currentThread().setName(
-				"onOperatorForceReceived-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
-
 		try {
 			handler.onOperatorForceReceived(source, comment);
 		} catch (DataAccessException sqle) {
@@ -1506,9 +1359,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorAcceptOrder(OperatorConsoleConnection source, String comment) {
-		Thread.currentThread().setName(
-				"onOperatorAcceptOrder-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorAcceptOrder(source, comment);
 		} catch (DataAccessException sqle) {
@@ -1520,9 +1370,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorManualManage(OperatorConsoleConnection source, String comment) {
-		Thread.currentThread().setName(
-				"onOperatorManualManage-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorManualManage(source, comment);
 		} catch (DataAccessException sqle) {
@@ -1534,10 +1381,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorForceNotExecution(OperatorConsoleConnection source, String comment) {
-		Thread.currentThread().setName(
-				"onOperatorForceNotExecution-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
-
 		try {
 			handler.onOperatorForceNotExecution(source, comment);
 		} catch (DataAccessException sqle) {
@@ -1549,7 +1392,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorManualExecution(OperatorConsoleConnection source, String comment, Money price, BigDecimal qty, String mercato, String marketMaker, Money prezzoRif) {
-		Thread.currentThread().setName("onOperatorManualExecution-" + toString() + "-ISIN:" + order.getInstrument().getIsin());
 		try {
 			handler.onOperatorManualExecution(source, comment, price, qty, mercato, marketMaker, prezzoRif);
 		} catch (DataAccessException sqle) {
@@ -1561,9 +1403,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorForceExecutedWithoutExecutionReport(OperatorConsoleConnection source, String comment) {
-		Thread.currentThread().setName(
-				"onOperatorForceExecutedWithoutExecutionReport-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorForceExecutedWithoutExecutionReport(source, comment);
 		} catch (DataAccessException sqle) {
@@ -1575,9 +1414,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorForceNotExecutedWithoutExecutionReport(OperatorConsoleConnection source, String comment) {
-		Thread.currentThread().setName(
-				"onOperatorForceNotExecutedWithoutExecutionReport-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorForceNotExecutedWithoutExecutionReport(source, comment);
 		} catch (DataAccessException sqle) {
@@ -1589,9 +1425,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorResendExecutionReport(OperatorConsoleConnection source, String comment) {
-		Thread.currentThread().setName(
-				"onOperatorResendExecutionReport-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorResendExecutionReport(source, comment);
 		} catch (DataAccessException sqle) {
@@ -1603,9 +1436,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorStopOrderExecution(OperatorConsoleConnection source, String comment, Money price) {
-		Thread.currentThread().setName(
-				"onOperatorStopOrderExecution-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorStopOrderExecution(source, comment, price);
 		} catch (DataAccessException sqle) {
@@ -1617,9 +1447,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onFixRevoke(CustomerConnection source) {
-		Thread.currentThread().setName(
-				"onFixRevoke-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onFixRevoke(source);
 		} catch (Exception e) {
@@ -1629,9 +1456,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorRevokeAccepted(OperatorConsoleConnection source, String comment) {
-		Thread.currentThread().setName(
-				"onOperatorRevokeAccepted-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorRevokeAccepted(source, comment);
 		} catch (DataAccessException sqle) {
@@ -1643,9 +1467,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorRevokeRejected(OperatorConsoleConnection source, String comment) {
-		Thread.currentThread().setName(
-				"onOperatorRevokeRejected-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorRevokeRejected(source, comment);
 		} catch (DataAccessException sqle) {
@@ -1657,10 +1478,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorExceedFilterRecalculate(OperatorConsoleConnection source, String comment) {
-		Thread.currentThread().setName(
-				"onOperatorExceedFilterRecalculate-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
-
 		try {
 			handler.onOperatorExceedFilterRecalculate(source, comment);
 		} catch (DataAccessException sqle) {
@@ -1672,9 +1489,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onMarketOrderCancelFillAndBook(MarketBuySideConnection source, Order order, String reason) {
-		Thread.currentThread().setName(
-				"onMarketOrderCancelFillAndBook-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onMarketOrderCancelFillAndBook(source, order, reason);
 		} catch (Exception e) {
@@ -1684,9 +1498,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onMarketOrderCancelFillNoBook(MarketBuySideConnection source, Order order, String reason) {
-		Thread.currentThread().setName(
-				"onMarketOrderCancelFillNoBook-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onMarketOrderCancelFillNoBook(source, order, reason);
 		} catch (Exception e) {
@@ -1696,9 +1507,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onMarketOrderCancelNoFill(MarketBuySideConnection source, Order order, String reason) {
-		Thread.currentThread().setName(
-				"onMarketOrderCancelNoFill-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onMarketOrderCancelNoFill(source, order, reason);
 		} catch (Exception e) {
@@ -1708,9 +1516,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public void onMarketOrderCancelNoFill(MarketBuySideConnection source, Order order, String reason, MarketExecutionReport marketExecutionReport) {
-		Thread.currentThread().setName(
-				"onMarketOrderCancelNoFill-withCancelReportSaving-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onMarketOrderCancelNoFill(source, order, reason, marketExecutionReport);
 		} catch (Exception e) {
@@ -1737,10 +1542,6 @@ public final class Operation implements OperationEventListener {
 			return;
 		}
 
-		Thread.currentThread().setName(
-				"onMarketOrderCancelRequestReject-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
-
 		try {
 			handler.onMarketOrderCancelRequestReject(source, order, reason);
 		} catch (Exception e) {
@@ -1750,9 +1551,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorMoveToNotExecutable(OperatorConsoleConnection source, String comment) {
-		Thread.currentThread().setName(
-				"onOperatorMoveToNotExecutable-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorMoveToNotExecutable(source, comment);
 		} catch (DataAccessException sqle) {
@@ -1764,9 +1562,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorExecutedOperationDelete(OperatorConsoleConnection source, String comment) {
-		Thread.currentThread().setName(
-				"onOperatorExecutedOperationDelete-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorExecutedOperationDelete(source, comment);
 		} catch (DataAccessException sqle) {
@@ -1778,9 +1573,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorExecutedOperationModify(OperatorConsoleConnection source, BigDecimal priceAmount, BigDecimal qty, String sDate, String comment) {
-		Thread.currentThread().setName(
-				"onOperatorExecutedOperationModify-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorExecutedOperationModify(source, priceAmount, qty, sDate, comment);
 		} catch (DataAccessException sqle) {
@@ -1792,9 +1584,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorSendDESCommand(OperatorConsoleConnection source, String comment) {
-		Thread.currentThread().setName(
-				"onOperatorSendDESCommand-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorSendDESCommand(source, comment);
 		} catch (DataAccessException sqle) {
@@ -1826,9 +1615,6 @@ public final class Operation implements OperationEventListener {
 			return;
 		}
 
-		Thread.currentThread().setName(
-				"onMarketOrderTechnicalReject-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onMarketOrderTechnicalReject(source, order, reason);
 		} catch (Exception e) {
@@ -2090,9 +1876,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public synchronized void onOperatorTakeOwnership(OperatorConsoleConnection source, UserModel userToAssign) {
-		Thread.currentThread().setName(
-				"onOperatorTakeOwnership-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorTakeOwnership(source, userToAssign);
 		} catch (DataAccessException sqle) {
@@ -2162,9 +1945,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public String putInVisibleState() {
-		Thread.currentThread().setName(
-				"putInVisibleState-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			return handler.putInVisibleState();
 		} catch (Exception e) {
@@ -2194,9 +1974,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public void onRfqLifetimeUpdate(Date timerExpirationDate) {
-		Thread.currentThread().setName(
-				"onRfqLifetimeUpdate-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onRfqLifetimeUpdate(timerExpirationDate);
 		} catch (Exception e) {
@@ -2207,9 +1984,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public void onOperatorUnreconciledTradeMatched(OperatorConsoleConnection source, BigDecimal executionPrice, String executionMarketMaker, String ticketNumber) {
-		Thread.currentThread().setName(
-				"onOperatorUnreconciledTradeMatched-" + toString() + "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onOperatorUnreconciledTradeMatched(source, executionPrice, executionMarketMaker, ticketNumber);
 		} catch (DataAccessException sqle) {
@@ -2224,8 +1998,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public void onCustomServiceResponse(boolean error, String securityId) {
-		Thread.currentThread().setName(
-				"onCustomServiceResponse-"+ toString()+ "-ISIN:"+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onCustomServiceResponse(error, securityId);
 		} catch (Exception e) {
@@ -2256,12 +2028,6 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public void onOperatorMoveToLimitFileNoPrice(OperatorConsoleConnection source, String comment) {
-		Thread.currentThread().setName(
-				"onOperatorMoveToLimitFileNoPrice-"
-						+ toString()
-						+ "-ISIN:"
-						+ (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument()
-								.getIsin() : "XXXX"));
 		try {
 			addAttempt();
 			handler.onOperatorMoveToLimitFileNoPrice(source, comment);
@@ -2277,13 +2043,11 @@ public final class Operation implements OperationEventListener {
 
 	@Override
 	public void onOperatorPriceDiscovery(OperatorConsoleConnection src) {
-		Thread.currentThread().setName("onOperatorPriceDiscovery");
 		handler.onOperatorPriceDiscovery(src);
 	}
 
 	@Override
 	public void onRevoke() {
-		Thread.currentThread().setName("onOperatorExecutedOperationDelete-" + toString() + "-ISIN:" + (order != null && order.getInstrument() != null ? order.getInstrument().getIsin() : rfq != null && rfq.getInstrument() != null ? rfq.getInstrument().getIsin() : "XXXX"));
 		try {
 			handler.onRevoke();
 		} catch (Exception e) {

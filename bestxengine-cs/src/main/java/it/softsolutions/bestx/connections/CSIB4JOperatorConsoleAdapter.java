@@ -416,7 +416,6 @@ public void init() throws BestXException {
                   operation.onOperatorRetryState(CSIB4JOperatorConsoleAdapter.this, commentCost);
                }
             });
-            Thread.currentThread().setName("IB4JOperatorConsole"); // restore thread name after servicing operation
          } else if (IB4JOperatorConsoleMessage.CMD_TERMINATE.equals(commandType)) {
             incrementInNoOfTerminate();
             executeTask(new Runnable() {
@@ -425,7 +424,6 @@ public void init() throws BestXException {
                   operation.onOperatorTerminateState(CSIB4JOperatorConsoleAdapter.this, commentCost);
                }
             });
-            Thread.currentThread().setName("IB4JOperatorConsole"); // see above
          } else if (IB4JOperatorConsoleMessage.CMD_ABORT.equals(commandType)) {
             incrementInNoOfAbort();
             executeTask(new Runnable() {
@@ -434,7 +432,6 @@ public void init() throws BestXException {
                   operation.onOperatorAbortState(CSIB4JOperatorConsoleAdapter.this, commentCost);
                }
             });
-            Thread.currentThread().setName("IB4JOperatorConsole"); // see above
          } else if (IB4JOperatorConsoleMessage.CMD_SUSPEND.equals(commandType)) {
             incrementInNoOfSuspend();
             executeTask(new Runnable() {
@@ -443,7 +440,6 @@ public void init() throws BestXException {
                   operation.onOperatorSuspendState(CSIB4JOperatorConsoleAdapter.this, commentCost);
                }
             });
-            Thread.currentThread().setName("IB4JOperatorConsole"); // see above
          } else if (IB4JOperatorConsoleMessage.CMD_RESTORE.equals(commandType)) {
             incrementInNoOfRestore();
             executeTask(new Runnable() {
@@ -452,7 +448,6 @@ public void init() throws BestXException {
                   operation.onOperatorRestoreState(CSIB4JOperatorConsoleAdapter.this, commentCost);
                }
             });
-            Thread.currentThread().setName("IB4JOperatorConsole"); // see above
          } else if (IB4JOperatorConsoleMessage.CMD_REINITIATE.equals(commandType)) {
             incrementInNoOfReinitiate();
             executeTask(new Runnable() {
@@ -461,7 +456,6 @@ public void init() throws BestXException {
                   operation.onOperatorReinitiateProcess(CSIB4JOperatorConsoleAdapter.this, commentCost);
                }
             });
-            Thread.currentThread().setName("IB4JOperatorConsole"); // see above
          } else if (IB4JOperatorConsoleMessage.CMD_FORCE_RECEIVED.equals(commandType)) {
             executeTask(new Runnable() {
                @Override
@@ -469,7 +463,6 @@ public void init() throws BestXException {
                   operation.onOperatorForceReceived(CSIB4JOperatorConsoleAdapter.this, commentCost);
                }
             });
-            Thread.currentThread().setName("IB4JOperatorConsole"); // see above
          } else if (IB4JOperatorConsoleMessage.CMD_ACCEPT_ORDER.equals(commandType)) {
             executeTask(new Runnable() {
                @Override
@@ -477,7 +470,6 @@ public void init() throws BestXException {
                   operation.onOperatorAcceptOrder(CSIB4JOperatorConsoleAdapter.this, commentCost);
                }
             });
-            Thread.currentThread().setName("IB4JOperatorConsole"); // see above
          } else if (IB4JOperatorConsoleMessage.CMD_MANUAL_MANAGE.equals(commandType)) {
             executeTask(new Runnable() {
                @Override
@@ -485,7 +477,6 @@ public void init() throws BestXException {
                   operation.onOperatorManualManage(CSIB4JOperatorConsoleAdapter.this, "");
                }
             });
-            Thread.currentThread().setName("IB4JOperatorConsole"); // see above
          } else if (IB4JOperatorConsoleMessage.CMD_NOT_EXECUTED.equals(commandType)) {
             executeTask(new Runnable() {
                @Override
@@ -493,7 +484,6 @@ public void init() throws BestXException {
                   operation.onOperatorForceNotExecution(CSIB4JOperatorConsoleAdapter.this, commentCost);
                }
             });
-            Thread.currentThread().setName("IB4JOperatorConsole"); // see above
          } else if (IB4JOperatorConsoleMessage.CMD_FORCE_NOT_EXECUTED.equals(commandType)) {
             executeTask(new Runnable() {
                @Override
@@ -501,7 +491,6 @@ public void init() throws BestXException {
                   operation.onOperatorForceNotExecutedWithoutExecutionReport(CSIB4JOperatorConsoleAdapter.this, commentCost);
                }
             });
-            Thread.currentThread().setName("IB4JOperatorConsole"); // see above
          } else if (IB4JOperatorConsoleMessage.CMD_FORCE_EXECUTED.equals(commandType)) {
             executeTask(new Runnable() {
                @Override
@@ -509,7 +498,6 @@ public void init() throws BestXException {
                   operation.onOperatorForceExecutedWithoutExecutionReport(CSIB4JOperatorConsoleAdapter.this, commentCost);
                }
             });
-            Thread.currentThread().setName("IB4JOperatorConsole"); // see above
          } else if (IB4JOperatorConsoleMessage.CMD_RESEND_EXECUTIONREPORT.equals(commandType)) {
             executeTask(new Runnable() {
                @Override
@@ -517,7 +505,6 @@ public void init() throws BestXException {
                   operation.onOperatorResendExecutionReport(CSIB4JOperatorConsoleAdapter.this, commentCost);
                }
             });
-            Thread.currentThread().setName("IB4JOperatorConsole"); // see above
          } else if (IB4JOperatorConsoleMessage.CMD_ORDER_RETRY.equals(commandType)) {
             incrementInNoOfRetry();
             executeTask(new Runnable() {
@@ -526,7 +513,6 @@ public void init() throws BestXException {
                   operation.onOperatorRetryState(CSIB4JOperatorConsoleAdapter.this, commentCost);
                }
             });
-            Thread.currentThread().setName("IB4JOperatorConsole"); // see above
          } else if (IB4JOperatorConsoleMessage.CMD_STOP_TLX_EXECUTION.equals(commandType)) {
             try {
                String currency = operation.getOrder().getCurrency();
@@ -537,7 +523,6 @@ public void init() throws BestXException {
                   execPrice = new Money(currency, amount);
                }
                operation.onOperatorStopOrderExecution(this, comment, execPrice);
-               Thread.currentThread().setName("IB4JOperatorConsole"); // see above
             } catch (IBException e) {
                LOGGER.error("Cast error", e);
                this.reqRespService.sendReply(new InternalErrorReplyMessage(sessionId, "Error while retrieving operation corresponding to Order Id: " + orderId + "(" + e.getMessage() + ")"), clientId);
@@ -554,7 +539,6 @@ public void init() throws BestXException {
                   operation.onOperatorExceedFilterRecalculate(CSIB4JOperatorConsoleAdapter.this, commentCost);
                }
             });
-            Thread.currentThread().setName("IB4JOperatorConsole"); // see above
          } else if (IB4JOperatorConsoleMessage.CMD_MOVE_NOT_EXECUTABLE.equals(commandType)) {
             executeTask(new Runnable() {
                @Override
@@ -562,12 +546,10 @@ public void init() throws BestXException {
                   operation.onOperatorMoveToNotExecutable(CSIB4JOperatorConsoleAdapter.this, commentCost);
                }
             });
-            Thread.currentThread().setName("IB4JOperatorConsole"); // see above
          } else if (IB4JOperatorConsoleMessage.CMD_AUTO_MANUAL_ORDER.equals(commandType)) {
             try {
                Money execPrice = new Money(operation.getOrder().getCurrency(), msg.getStringProperty(IB4JOperatorConsoleMessage.FLD_PRICE).replaceAll(",", "."));
                operation.onOperatorExecuteState(this, execPrice, comment);
-               Thread.currentThread().setName("IB4JOperatorConsole"); // see above
             } catch (IBException e) {
                LOGGER.error("Cast error", e);
                this.reqRespService.sendReply(new InternalErrorReplyMessage(sessionId, "Error while retrieving operation corresponding to Order Id: " + orderId + "(" + e.getMessage() + ")"), clientId);
@@ -582,7 +564,6 @@ public void init() throws BestXException {
                Money orderPrice = new Money(operation.getOrder().getCurrency(), msg.getStringProperty(IB4JOperatorConsoleMessage.FLD_PRICE).replaceAll(",", "."));
                Money matchPrice = new Money(operation.getOrder().getCurrency(), msg.getStringProperty(IB4JOperatorConsoleMessage.FLD_MATCH_PRICE).replaceAll(",", "."));
                operation.onOperatorMatchOrders(this, orderPrice, matchPrice, comment);
-               Thread.currentThread().setName("IB4JOperatorConsole"); // see above
             } catch (IBException e) {
                LOGGER.error("Cast error", e);
                this.reqRespService.sendReply(new InternalErrorReplyMessage(sessionId, "Error while retrieving operation corresponding to Order Id: " + orderId + "(" + e.getMessage() + ")"), clientId);
@@ -599,7 +580,6 @@ public void init() throws BestXException {
                   operation.onOperatorSendDDECommand(CSIB4JOperatorConsoleAdapter.this, commentCost);
                }
             });
-            Thread.currentThread().setName("IB4JOperatorConsole"); // see above
          } else if (IB4JOperatorConsoleMessage.CMD_SEND_DES.equals(commandType)) {
             executeTask(new Runnable() {
                @Override
@@ -607,7 +587,6 @@ public void init() throws BestXException {
                   operation.onOperatorSendDESCommand(CSIB4JOperatorConsoleAdapter.this, commentCost);
                }
             });
-            Thread.currentThread().setName("IB4JOperatorConsole"); // see above
          } else if (IB4JOperatorConsoleMessage.CMD_MANUAL_EXECUTED.equals(commandType)) {
             try {
                BigDecimal qty = new BigDecimal(msg.getStringProperty(IB4JOperatorConsoleMessage.FLD_QUANTITY).replaceAll(",", "."));
@@ -625,7 +604,6 @@ public void init() throws BestXException {
                      msg.getStringProperty(IB4JOperatorConsoleMessage.FLD_MKT_NAME),
                      msg.getStringProperty(IB4JOperatorConsoleMessage.FLD_MARKETMAKER_CODE),
                      refPrice);
-               Thread.currentThread().setName("IB4JOperatorConsole"); // see above
             } catch (IBException e) {
                LOGGER.error("Illegal arguments in manual ", e);
                this.reqRespService.sendReply(new InternalErrorReplyMessage(sessionId, "Error while retrieving operation corresponding to Order Id: " + orderId + "(" + e.getMessage() + ")"), clientId);
@@ -645,7 +623,6 @@ public void init() throws BestXException {
                incrementNumberOfExceptions();
                LOGGER.error("Missing property: '{}' from message", IB4JOperatorConsoleMessage.FLD_STATE_NAME);
                this.reqRespService.sendReply(new IllegalArgumentReplyMessage(sessionId, "Missing property: '" + IB4JOperatorConsoleMessage.FLD_STATE_NAME + "' from message"), clientId);
-               Thread.currentThread().setName("IB4JOperatorConsole"); // see above
                return;
             }
             Class<? extends OperationState> newState = null;
@@ -656,7 +633,6 @@ public void init() throws BestXException {
                incrementNumberOfExceptions();
                LOGGER.error("Could not find state class: '{}'",  newStateClassName);
                this.reqRespService.sendReply(new IllegalArgumentReplyMessage(sessionId, "Could not find state class: '" + newStateClassName + "'"), clientId);
-               Thread.currentThread().setName("IB4JOperatorConsole"); // see above
                return;
             }
             try {
@@ -666,17 +642,14 @@ public void init() throws BestXException {
                incrementNumberOfExceptions();
                LOGGER.error("Could not instantiate state class: '{}'", newStateClassName);
                this.reqRespService.sendReply(new IllegalArgumentReplyMessage(sessionId, "Could not instantiate state class: '" + newStateClassName + "'"), clientId);
-               Thread.currentThread().setName("IB4JOperatorConsole"); // see above
                return;
             }
             catch (@SuppressWarnings("unused") IllegalAccessException e) {
                incrementNumberOfExceptions();
                LOGGER.error("Could not access state class: '{}'", newStateClassName);
                this.reqRespService.sendReply(new IllegalArgumentReplyMessage(sessionId, "Could not access state class: '" + newStateClassName + "'"), clientId);
-               Thread.currentThread().setName("IB4JOperatorConsole"); // see above
                return;
             }
-            Thread.currentThread().setName("IB4JOperatorConsole"); // see above
          } else if (IB4JOperatorConsoleMessage.CMD_SYSTEM_ACTIVITY_ON.equals(commandType)) {
             this.systemStateSelector.setOrderEnabled(true);
             this.systemStateSelector.setRfqEnabled(true);
@@ -729,7 +702,6 @@ public void init() throws BestXException {
                this.reqRespService.sendReply(new InternalErrorReplyMessage(sessionId, "Error while retrieving operation corresponding to Order Id: " + orderId + "(" + e.getMessage() + ")"), clientId);
                return;
             }
-            Thread.currentThread().setName("IB4JOperatorConsole"); // see above
          }  else if (IB4JOperatorConsoleMessage.CMD_SEND_TO_LFNP.equals(commandType)) {
              try {
                  final String finalOrderId = msg.getStringProperty(IB4JOperatorConsoleMessage.FLD_ORDER_ID);
@@ -746,7 +718,6 @@ public void init() throws BestXException {
                  this.reqRespService.sendReply(new IllegalArgumentReplyMessage(sessionId, "Missing property: '" + IB4JOperatorConsoleMessage.FLD_RQF_ID + "' from message"), clientId);
                  return;
               }
-              Thread.currentThread().setName("IB4JOperatorConsole"); // see above
            } else if (IB4JOperatorConsoleMessage.CMD_TAKE_OWNERSHIP.equals(commandType)) {
               
               /*try {
@@ -766,7 +737,6 @@ public void init() throws BestXException {
                  incrementNumberOfExceptions();
                  LOGGER.error("Missing property: '{}' from message", IB4JOperatorConsoleMessage.FLD_OWNERSHIP_USER);
                  this.reqRespService.sendReply(new IllegalArgumentReplyMessage(sessionId, "Missing property: '" + IB4JOperatorConsoleMessage.FLD_OWNERSHIP_USER + "' from message"), clientId);
-                 Thread.currentThread().setName("IB4JOperatorConsole"); // see above
                  return;
               }*/
               
@@ -801,7 +771,6 @@ public void init() throws BestXException {
                  incrementNumberOfExceptions();
                  LOGGER.error("Missing property: '{}' from message", IB4JOperatorConsoleMessage.FLD_OWNERSHIP_USER);
                  this.reqRespService.sendReply(new IllegalArgumentReplyMessage(sessionId, "Missing property: '" + IB4JOperatorConsoleMessage.FLD_OWNERSHIP_USER + "' from message"), clientId);
-                 Thread.currentThread().setName("IB4JOperatorConsole"); // see above
                  return;
               }
               

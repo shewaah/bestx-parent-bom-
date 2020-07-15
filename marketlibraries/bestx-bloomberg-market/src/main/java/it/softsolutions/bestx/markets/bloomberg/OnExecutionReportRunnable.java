@@ -148,9 +148,6 @@ public class OnExecutionReportRunnable implements Runnable {
 		Order order = this.operation.getLastAttempt().getMarketOrder();
 		Rfq rfq = this.operation.getRfq();
 		Attempt attempt = operation.getLastAttempt();
-		Thread.currentThread().setName(
-				"OnExecutionReportRunnable-" + this.operation.toString() + "-ISIN:"
-						+ ((order != null && order.getInstrument() != null) ? order.getInstrument().getIsin() : (rfq != null && rfq.getInstrument() != null) ? rfq.getInstrument().getIsin() : "XXXX"));
 		if(order == null) {
 			operation.onApplicationError(operation.getState(), new NullPointerException(), "Operation " + operation.getId() + " has no order!");
 			return;

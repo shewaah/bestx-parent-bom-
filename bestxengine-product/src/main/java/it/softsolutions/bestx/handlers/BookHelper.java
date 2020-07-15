@@ -104,13 +104,18 @@ public class BookHelper {
    public static double getQuoteSpread(List<ClassifiedProposal> sortedProposals, int i) {
       BigDecimal bestPrice = BigDecimal.ZERO;
       BigDecimal otherPrice = BigDecimal.ZERO;
-      if (sortedProposals.size() > 0) {
- 
-         bestPrice = getValidIthProposal(sortedProposals, 1).getPrice().getAmount();
+      double deltaPerc = 0.0;
+      ClassifiedProposal validProposal = getValidIthProposal(sortedProposals, 1);
+      ClassifiedProposal acceptableProposal = getAcceptableIthProposal(sortedProposals, i);
+      
+      if (validProposal != null && acceptableProposal != null) {
+         bestPrice = validProposal.getPrice().getAmount();
          otherPrice = getAcceptableIthProposal(sortedProposals, i).getPrice().getAmount();
+         if (bestPrice.doubleValue() > 0) {
+            double delta = Math.abs(bestPrice.doubleValue() - otherPrice.doubleValue());
+            deltaPerc = (delta / bestPrice.doubleValue()) * 100;
+         }
       }
-      double delta = Math.abs(bestPrice.doubleValue() - otherPrice.doubleValue());
-      double deltaPerc = (delta / bestPrice.doubleValue()) * 100;
       return deltaPerc;
    }
 
@@ -137,6 +142,7 @@ public class BookHelper {
    public static ClassifiedProposal getValidIthProposal(List<ClassifiedProposal> sortedProposals, int i) {
       if (sortedProposals.size() == 0)
          return null;
+      
       if (sortedProposals.size() >= i && i > 0 && ProposalState.VALID == sortedProposals.get(i - 1).getProposalState())
          return sortedProposals.get(i - 1);
       else if (ProposalState.VALID == sortedProposals.get(sortedProposals.size() - 1).getProposalState())
@@ -152,6 +158,7 @@ public class BookHelper {
    public static ClassifiedProposal getAcceptableIthProposal(List<ClassifiedProposal> sortedProposals, int i) {
 	   if (sortedProposals.size() == 0)
 		   return null;
+	   
 	   if (sortedProposals.size() >= i && i > 0 && (ProposalState.VALID == sortedProposals.get(i - 1).getProposalState() ||
 			   (ProposalState.REJECTED == sortedProposals.get(i - 1).getProposalState() &&
 			   sortedProposals.get(i - 1).getProposalSubState() != null && 
