@@ -24,8 +24,8 @@
       <directory>src/main/config</directory>
       <outputDirectory>cfg</outputDirectory>
 	  <excludes>
-		<exclude>*.erb</exclude>
-		<exclude>*.yaml</exclude>
+		<!-- exclude>*.erb</exclude-->
+		<!-- exclude>*.yaml</exclude-->
 		<exclude>logback-test.xml</exclude>
 	  </excludes>
     </fileSet>
