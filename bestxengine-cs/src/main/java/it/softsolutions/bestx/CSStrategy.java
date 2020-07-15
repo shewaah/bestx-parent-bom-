@@ -35,6 +35,7 @@ import it.softsolutions.bestx.connections.CustomerConnection;
 import it.softsolutions.bestx.connections.OperatorConsoleConnection;
 import it.softsolutions.bestx.dao.BestXConfigurationDao;
 import it.softsolutions.bestx.dao.OperationStateAuditDao;
+import it.softsolutions.bestx.datacollector.DataCollector;
 import it.softsolutions.bestx.exceptions.ObjectNotInitializedException;
 import it.softsolutions.bestx.finders.CustomerFinder;
 import it.softsolutions.bestx.finders.InstrumentFinder;
@@ -206,6 +207,8 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 	private int pobExMaxSize;
 	private int targetPriceMaxLevel;
 	private ApplicationStatus applicationStatus;
+	
+	private DataCollector dataCollector;
 
 	public long getBondVisionExecTimeout() {
 		return bondVisionExecTimeout;
@@ -738,7 +741,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 
 			handler = new ManualExecutionWaitingPriceEventHandler(operation, getPriceService(operation.getOrder()), titoliIncrociabiliService, customerFinder, serialNumberService,
 					regulatedMktIsinsLoader, regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout, marketSecurityStatusService,
-					executionDestinationService, rejectWhenBloombergIsBest, doNotExecuteMEW, bookDepthValidator, operationStateAuditDao, applicationStatus);
+					executionDestinationService, rejectWhenBloombergIsBest, doNotExecuteMEW, bookDepthValidator, operationStateAuditDao, applicationStatus, dataCollector);
 			break;
 		case WaitingPrice:
 			Boolean doNotExecuteWP = CSConfigurationPropertyLoader.getBooleanProperty(CSConfigurationPropertyLoader.LIMITFILE_DONOTEXECUTE, false);
@@ -748,7 +751,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 
 			handler = new WaitingPriceEventHandler(operation, getPriceService(operation.getOrder()), titoliIncrociabiliService, customerFinder, serialNumberService, regulatedMktIsinsLoader,
 					regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout, marketSecurityStatusService, executionDestinationService,
-					rejectWhenBloombergIsBest, doNotExecuteWP, bookDepthValidator, internalMMcodesList, operationStateAuditDao, targetPriceMaxLevel, applicationStatus);
+					rejectWhenBloombergIsBest, doNotExecuteWP, bookDepthValidator, internalMMcodesList, operationStateAuditDao, targetPriceMaxLevel, applicationStatus, dataCollector);
 			break;
 			//        case WaitingFill:
 			//            handler = new BBG_WaitingFillEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BLOOMBERG), bbgWaitFillMSec, bbgFillPollingMSec);
@@ -1510,5 +1513,14 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 	public void setBloombergExecTimeout(long bloombergExecTimeout) {
 		this.bloombergExecTimeout = bloombergExecTimeout;
 	}
-	
+
+   
+   public DataCollector getDataCollector() {
+      return dataCollector;
+   }
+
+   
+   public void setDataCollector(DataCollector dataCollector) {
+      this.dataCollector = dataCollector;
+   }
 }

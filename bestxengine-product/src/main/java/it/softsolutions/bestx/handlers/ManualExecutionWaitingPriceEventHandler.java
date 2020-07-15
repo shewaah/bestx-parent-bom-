@@ -27,6 +27,7 @@ import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.RegulatedMktIsinsLoader;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.dao.OperationStateAuditDao;
+import it.softsolutions.bestx.datacollector.DataCollector;
 import it.softsolutions.bestx.exceptions.CustomerRevokeReceivedException;
 import it.softsolutions.bestx.finders.CustomerFinder;
 import it.softsolutions.bestx.model.Attempt;
@@ -71,11 +72,12 @@ public class ManualExecutionWaitingPriceEventHandler extends WaitingPriceEventHa
     public ManualExecutionWaitingPriceEventHandler(Operation operation, PriceService priceService, TitoliIncrociabiliService titoliIncrociabiliService, CustomerFinder customerFinder,
             SerialNumberService serialNumberService, RegulatedMktIsinsLoader regulatedMktIsinsLoader,
             List<String> regulatedMarketPolicies, long waitingPriceDelay, int maxAttemptNo, long marketPriceTimeout,
-            MarketSecurityStatusService marketSecurityStatusService, ExecutionDestinationService executionDestinationService, boolean rejectWhenBloombergIsBest, boolean doNotExecute, BookDepthValidator bookDepthValidator, OperationStateAuditDao operationStateAuditDao, ApplicationStatus applicationStatus) throws BestXException {
+            MarketSecurityStatusService marketSecurityStatusService, ExecutionDestinationService executionDestinationService, boolean rejectWhenBloombergIsBest, boolean doNotExecute, 
+            BookDepthValidator bookDepthValidator, OperationStateAuditDao operationStateAuditDao, ApplicationStatus applicationStatus, DataCollector dataCollector) throws BestXException {
 
         super(operation, priceService, titoliIncrociabiliService, customerFinder, serialNumberService, regulatedMktIsinsLoader, 
-                regulatedMarketPolicies, waitingPriceDelay, maxAttemptNo, marketPriceTimeout, marketSecurityStatusService, executionDestinationService, rejectWhenBloombergIsBest, doNotExecute, bookDepthValidator, null, operationStateAuditDao, 2/*ignored*/, applicationStatus);
-    }
+                regulatedMarketPolicies, waitingPriceDelay, maxAttemptNo, marketPriceTimeout, marketSecurityStatusService, executionDestinationService, rejectWhenBloombergIsBest, doNotExecute, bookDepthValidator, null, operationStateAuditDao, 2/*ignored*/, applicationStatus, dataCollector);
+            }
 
     @Override
     public void onNewState(OperationState currentState) {

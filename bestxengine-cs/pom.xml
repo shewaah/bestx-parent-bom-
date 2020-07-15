@@ -172,7 +172,10 @@
 			<artifactId>json-lib</artifactId>
 			<classifier>jdk15</classifier>
 		</dependency>
-		
+	    <dependency>
+	    	<groupId>org.apache.kafka</groupId>
+	    	<artifactId>kafka-clients</artifactId>
+		</dependency>
 	</dependencies>
 	<profiles>
 	  <profile>
