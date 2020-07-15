@@ -3,7 +3,9 @@ REM All Rights Reserved.
 REM
 REM This script starts the BestX application.
 REM
-REM artifact ref.: BestXREM script version 1.0 - 2016/03/10
+REM artifact ref.: BestX
+REM
+REM script version 1.0 - 2016/03/10
 REM
 REM NOTICE: All information contained herein is, and remains the property of SoftSolutions! srl
 REM The intellectual and technical concepts contained herein are proprietary to SoftSolutions! srl and
@@ -18,9 +20,13 @@ REM @ECHO OFF
 @ECHO OFF
 
 set JDK_HOME=C:\Program Files\Java\jre1.8.0_181
-set SERVER_CONFIG=-XX:+UseParallelGC -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -Xms128m -Xmx256m 
-set CURRENT_DIR%=.
 
-start "SODLoader" "%JDK_HOME%\bin\java" -Dcom.ibm.mq.cfg.useIBMCipherMappings=false -Dss.app.name=BestX-SOD-Loader %SERVER_CONFIG% -cp ..\cfg;..\lib\*; it.softsolutions.bestx.sod.SODLoader
+SET START_CLASS=it.softsolutions.bestx.sod.SODLoader
+
+set OPT_1=-server -Dss.app.name=<%=@servicename%> -XX:+UseParallelGC -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -Xms128m -Xmx256m -XX:HeapDumpPath==../log/dump -XX:+HeapDumpOnOutOfMemoryError -Dcom.ibm.mq.cfg.useIBMCipherMappings=false
+set OPT_2=-cp ../cfg;../lib/* 
+
+start "SODLoader" "%JVM_HOME%\bin\java" %OPT_1% %OPT_2% %START_CLASS%
 pause
 exit
+
