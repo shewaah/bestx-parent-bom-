@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -61,6 +62,8 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
    private String bookTopic;
    private String pobexTopic;
    private String marketMakerCompositeCodes;
+   
+   private Executor executor;
    
    //Class properties
    private Producer<String, String> kafkaProducer;
@@ -118,6 +121,8 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
    @Override
    public void sendBook(Operation operation) {
       if (active) {
+    	  this.executor.execute(() -> {
+    	  
          Attempt currentAttempt = operation.getLastAttempt();
          
          JSONObject message = new JSONObject();
@@ -189,6 +194,8 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
          message.element("prices", jsonMap);
          
          kafkaProducer.send(new ProducerRecord<String, String>(bookTopic, operation.getOrder().getInstrument().getIsin(), message.toString()));
+    	  }
+         );
       }
    }
 
@@ -247,4 +254,14 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
    public void setMarketMakerCompositeCodes(String marketMakerCompositeCodes) {
       this.marketMakerCompositeCodes = marketMakerCompositeCodes;
    }
+
+	public Executor getExecutor() {
+		return executor;
+	}
+	
+	public void setExecutor(Executor executor) {
+		this.executor = executor;
+	}
+   
+   
 }

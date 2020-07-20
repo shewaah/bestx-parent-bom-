@@ -477,6 +477,11 @@
 		<property name="maxPoolSize" value="64"/>
 		<property name="threadNamePrefix" value="TP-MA"/>
 	</bean>	
+	<bean id="threadPoolKafka" class="it.softsolutions.bestx.ThreadPoolExecutor" init-method="initialize">
+		<property name="corePoolSize" value="8"/>
+		<property name="maxPoolSize" value="8"/>
+		<property name="threadNamePrefix" value="TP-KAFKA"/>
+	</bean>	
 	
     <bean id="oms1CustomerAdapter" class="it.softsolutions.bestx.connections.OMS1CustomerAdapter" init-method="init">
 		<!-- BUSINESS PARAMETERS -->
@@ -1342,9 +1347,10 @@
 	</bean>   
 	<bean id="dataCollector" class="it.softsolutions.bestx.datacollector.DataCollectorKafkaImpl" init-method="init">
         <property name="configFilename" value="classpath:kafkaConnection.properties" />
-        <property name="priceTopic" value="softsolutions" />
-        <property name="bookTopic" value="softsolutions" />
-        <property name="pobexTopic" value="softsolutions" />
+        <property name="priceTopic" value="${Kafka.TopicName.Price}" />
+        <property name="bookTopic" value="${Kafka.TopicName.Book}" />
+        <property name="pobexTopic" value="${Kafka.TopicName.Pobex}" />
         <property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
+        <property name="executor" ref="threadPoolKafka" />
 	</bean>
 </beans>
