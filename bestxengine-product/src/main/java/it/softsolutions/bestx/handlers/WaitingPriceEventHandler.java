@@ -31,6 +31,7 @@ import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.RegulatedMktIsinsLoader;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.dao.OperationStateAuditDao;
+import it.softsolutions.bestx.datacollector.DataCollector;
 import it.softsolutions.bestx.exceptions.CustomerRevokeReceivedException;
 import it.softsolutions.bestx.exceptions.MarketNotAvailableException;
 import it.softsolutions.bestx.finders.CustomerFinder;
@@ -103,8 +104,9 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 	private OperationStateAuditDao operationStateAuditDao;
 	protected boolean doNotExecute;
 	private int targetPriceMaxLevel;
-	
 	private ApplicationStatus applicationStatus;
+	
+	private DataCollector dataCollector;
 
 	/**
 	 * Constructor.
@@ -135,7 +137,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			SerialNumberService serialNumberService, RegulatedMktIsinsLoader regulatedMktIsinsLoader, List<String> regulatedMarketPolicies, long waitingPriceDelay, int maxAttemptNo,
 			long marketPriceTimeout, MarketSecurityStatusService marketSecurityStatusService, ExecutionDestinationService executionDestinationService, boolean rejectOrderWhenBloombergIsBest,
 			boolean doNotExecute, BookDepthValidator bookDepthValidator, List<String> internalMMcodes, OperationStateAuditDao operationStateAuditDao, int targetPriceMaxLevel,
-			ApplicationStatus applicationStatus) throws BestXException{
+			ApplicationStatus applicationStatus, DataCollector dataCollector) throws BestXException{
 		super(operation);
 		this.priceService = priceService;
 		String priceServiceName = priceService.getPriceServiceName();
@@ -167,6 +169,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		this.doNotExecute = doNotExecute;
 		this.targetPriceMaxLevel = targetPriceMaxLevel;
 		this.applicationStatus = applicationStatus;
+		this.dataCollector = dataCollector;
 	}
 
 	@Override
@@ -314,6 +317,8 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		//BESTX-377: add always the book to the order
 		Attempt currentAttempt = operation.getLastAttempt();
 		currentAttempt.setSortedBook(priceResult.getSortedBook());
+
+		dataCollector.sendBook(operation);
 
 		LOGGER.debug("Order {}, End of the price discovery, check if we received a customer revoke for this order and, if so, start the revoking routine.", operation.getOrder().getFixOrderId());
 		if (checkCustomerRevoke(operation.getOrder())) {

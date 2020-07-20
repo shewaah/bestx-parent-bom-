@@ -370,6 +370,11 @@
                 <artifactId>bestx-marketaxess-market</artifactId>
                 <version>${project.version}</version>
             </dependency>
+		    <dependency>
+		    	<groupId>org.apache.kafka</groupId>
+		    	<artifactId>kafka-clients</artifactId>
+		    	<version>5.5.0-ce</version>
+			</dependency>
         </dependencies>
     </dependencyManagement>
 

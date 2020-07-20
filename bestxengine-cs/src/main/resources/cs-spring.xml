@@ -95,6 +95,7 @@
 				<entry key="it.softsolutions.bestx.cs:name=jdbcPooledDataSource" value-ref="jdbcPooledDataSource" />
 				<entry key="it.softsolutions.bestx.cs:name=NonCommittedPooledDataSource" value-ref="nonCommittedPooledDataSource" />
 				<entry key="it.softsolutions.bestx.cs:name=ApplicationStatusController" value-ref="applicationStatusController" />
+                <entry key="it.softsolutions.bestx.cs:name=KafkaDataCollector" value-ref="dataCollector" />
 				<!-- entry key="bean:name=hibernateStatsMBean"><ref local="hibernateStats"></ref></entry -->
 			</map>
 		</property>
@@ -684,6 +685,7 @@
         <property name="pobExMaxSize"><value>${Marketaxess.MaxPOBEXEntries}</value></property>
         <property name="curandoTimerRetriever"><ref bean="curandoTimerRetriever"></ref></property>
 		<property name="applicationStatus" ref="applicationStatus" />
+		<property name="dataCollector" ref="dataCollector" />
 	</bean>
 	
 	<!-- The application status contains global status used by the application -->
@@ -1338,4 +1340,11 @@
 			</list>
 		</property>
 	</bean>   
+	<bean id="dataCollector" class="it.softsolutions.bestx.datacollector.DataCollectorKafkaImpl" init-method="init">
+        <property name="configFilename" value="classpath:kafkaConnection.properties" />
+        <property name="priceTopic" value="softsolutions" />
+        <property name="bookTopic" value="softsolutions" />
+        <property name="pobexTopic" value="softsolutions" />
+        <property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
+	</bean>
 </beans>

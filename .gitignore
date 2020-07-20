@@ -4,3 +4,6 @@
 **/.classpath
 /bestxengine-cs/log/
 /bestx-sod-loader/log/
+/bestxengine-cs/katalon-bx.log
+/bestxengine-cs/katalon-qf.log
+/bestxengine-cs/mqjms.log*
