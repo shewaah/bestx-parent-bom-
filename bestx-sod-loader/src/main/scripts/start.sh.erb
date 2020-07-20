@@ -1,7 +1,7 @@
 # *
 # * This script starts the <%=@servicename-%> application.
 # *
-# * artifact ref.: <%=@servicename-%>
+# * artifact ref.: <%=@servicename%>
 # * script version 1.0 - 2016/03/10
 # *
 # * NOTICE: All information contained herein is, and remains the property of SoftSolutions! srl
@@ -15,17 +15,17 @@
 # */
 # Scripts vars
 EXE_DIR=<%=@exedir%>
-PIDFILE=<%=@exedir-%>/<%=@servicename-%>.pid
+PIDFILE=<%=@exedir-%>/<%=@servicename%>.pid
 # Env vars
 export JAVA_HOME=<%=@javapath%>
 export PATH=${JAVA_HOME}/bin:$PATH
 # VM vars
-OPT_1="-server -Dss.app.name=<%=@servicename-%> -XX:+UseParallelGC -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -Xms128m -Xmx256m -XX:PermSize=32m -XX:MaxPermSize=64m -XX:HeapDumpPath==../log/dump -XX:+HeapDumpOnOutOfMemoryError"
+OPT_1="-server -Dss.app.name=<%=@servicename%> -XX:+UseParallelGC -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -Xms128m -Xmx256m -XX:PermSize=32m -XX:MaxPermSize=64m -XX:HeapDumpPath==../log/dump -XX:+HeapDumpOnOutOfMemoryError"
 OPT_2="-cp ../cfg:../lib/* it.softsolutions.bestx.sod.SODLoader"
 # Start the game!
 echo "java arguments: $OPT_1 $OPT_2 "
 if [ -f $PIDFILE ] && kill -0 $(cat $PIDFILE); then
-    echo 'Service <%=@servicename-%> already running' >&2
+    echo 'Service <%=@servicename%> already running' >&2
     exit 1
 fi
 # start "Tradestac IDC playback"
@@ -34,7 +34,7 @@ $JAVA_HOME/bin/java $OPT_1 $OPT_2 &
 echo $! 1>$PIDFILE
 if [ "$?" != "0" ];
 then
-        echo "<%=@servicename-%> exited with code $?."
+        echo "<%=@servicename%> exited with code $?."
         exit $?
 fi
 exit 0
