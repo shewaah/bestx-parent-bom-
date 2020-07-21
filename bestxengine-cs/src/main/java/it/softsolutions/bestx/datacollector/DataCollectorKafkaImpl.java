@@ -118,86 +118,94 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 
    }
 
-   @Override
-   public void sendBook(Operation operation) {
-      if (active) {
-    	  this.executor.execute(() -> {
-    	  
-         Attempt currentAttempt = operation.getLastAttempt();
-         
-         JSONObject message = new JSONObject();
-         message.put("isin", operation.getOrder().getInstrument().getIsin());
-         message.put("ordID", operation.getOrder().getFixOrderId());
-         message.put("attempt", operation.getAttemptNo());
-         
-         SortedBook book = currentAttempt.getSortedBook();
-         
-         Map<String, ClassifiedProposal> bidProposals = new HashMap<String, ClassifiedProposal>();
-         Map<String, ClassifiedProposal> askProposals = new HashMap<String, ClassifiedProposal>();
-         
-         for (ClassifiedProposal prop : book.getBidProposals()) {
-            bidProposals.put(prop.getMarket().getMarketCode() + "_" + prop.getMarketMarketMaker().getMarketSpecificCode(), prop);
-         }
-         for (ClassifiedProposal prop : book.getAskProposals()) {
-            askProposals.put(prop.getMarket().getMarketCode() + "_" + prop.getMarketMarketMaker().getMarketSpecificCode(), prop);
-         }
-         
-         JSONArray jsonMap = new JSONArray();
-         Set<String> keyset = new HashSet<>(); 
-         keyset.addAll(askProposals.keySet());
-         keyset.addAll(bidProposals.keySet());
-         
-         for (String askMmm : keyset) {
-            ClassifiedProposal askProp = askProposals.get(askMmm);
-            ClassifiedProposal bidProp = bidProposals.get(askMmm);
-            
-            JSONObject proposal = new JSONObject();
-            ClassifiedProposal goodProp = null;
-            boolean goodPrice = false;
-            if (askProp != null) {
-               proposal.element("askPrice", askProp.getPrice().getAmount());
-               proposal.element("askQty", askProp.getQty());
-               goodProp = askProp;
-               if (BigDecimal.ZERO.compareTo(askProp.getPrice().getAmount()) < 0) {
-                  goodPrice = true;
-               }
-            }
-            if (bidProp != null) {
-               proposal.element("bidPrice", bidProp.getPrice().getAmount());
-               proposal.element("bidQty", bidProp.getQty());
-               goodProp = bidProp; 
-               if (BigDecimal.ZERO.compareTo(bidProp.getPrice().getAmount()) < 0) {
-                  goodPrice = true;
-               }
-            }
-            if (!goodPrice) {
-               continue;
-            }
-            proposal.element("PriceType", goodProp.getPriceType() == PriceType.PRICE ? 1 : 0);
-            proposal.element("PriceQuality", marketMakerCompositeCodes.contains(askMmm) ? "CMP" : "IND");
-            
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
-            proposal.element("timestamp", df.format(goodProp.getTimestamp()));
-            
-            proposal.element("market", goodProp.getMarket().getMarketCode());
-            proposal.element("marketmaker", goodProp.getMarketMarketMaker().getMarketSpecificCode());
-            
-            if (goodProp.getProposalSubState() != null && goodProp.getProposalSubState() != Proposal.ProposalSubState.NONE) {
-               proposal.element("state", goodProp.getProposalSubState().toString());
-            } else {
-               proposal.element("state", goodProp.getProposalState().toString());
-            }
-            proposal.element("comment", goodProp.getReason());
-            
-            jsonMap.add(proposal);
-         }
-         message.element("prices", jsonMap);
-         
-         kafkaProducer.send(new ProducerRecord<String, String>(bookTopic, operation.getOrder().getInstrument().getIsin(), message.toString()));
-    	  }
-         );
-      }
-   }
+    @Override
+	public void sendBook(Operation operation) {
+		if (active) {
+			this.executor.execute(() -> {
+
+				Attempt currentAttempt = operation.getLastAttempt();
+
+				JSONObject message = new JSONObject();
+				message.put("isin", operation.getOrder().getInstrument().getIsin());
+				message.put("ordID", operation.getOrder().getFixOrderId());
+				message.put("attempt", operation.getAttemptNo());
+
+				SortedBook book = currentAttempt.getSortedBook();
+
+				Map<String, ClassifiedProposal> bidProposals = new HashMap<String, ClassifiedProposal>();
+				Map<String, ClassifiedProposal> askProposals = new HashMap<String, ClassifiedProposal>();
+
+				for (ClassifiedProposal prop : book.getBidProposals()) {
+					bidProposals.put(prop.getMarket().getMarketCode() + "_"
+							+ prop.getMarketMarketMaker().getMarketSpecificCode(), prop);
+				}
+				for (ClassifiedProposal prop : book.getAskProposals()) {
+					askProposals.put(prop.getMarket().getMarketCode() + "_"
+							+ prop.getMarketMarketMaker().getMarketSpecificCode(), prop);
+				}
+
+				JSONArray jsonMap = new JSONArray();
+				Set<String> keyset = new HashSet<>();
+				keyset.addAll(askProposals.keySet());
+				keyset.addAll(bidProposals.keySet());
+
+				for (String askMmm : keyset) {
+					ClassifiedProposal askProp = askProposals.get(askMmm);
+					ClassifiedProposal bidProp = bidProposals.get(askMmm);
+
+					JSONObject proposal = new JSONObject();
+					ClassifiedProposal goodProp = null;
+					boolean goodPrice = false;
+					if (askProp != null) {
+						proposal.element("askPrice", askProp.getPrice().getAmount());
+						proposal.element("askQty", askProp.getQty());
+						goodProp = askProp;
+						if (BigDecimal.ZERO.compareTo(askProp.getPrice().getAmount()) < 0) {
+							goodPrice = true;
+						}
+					}
+					if (bidProp != null) {
+						proposal.element("bidPrice", bidProp.getPrice().getAmount());
+						proposal.element("bidQty", bidProp.getQty());
+						goodProp = bidProp;
+						if (BigDecimal.ZERO.compareTo(bidProp.getPrice().getAmount()) < 0) {
+							goodPrice = true;
+						}
+					}
+					if (!goodPrice) {
+						continue;
+					}
+					proposal.element("PriceType", goodProp.getPriceType() == PriceType.PRICE ? 1 : 0);
+					proposal.element("PriceQuality", marketMakerCompositeCodes.contains(askMmm) ? "CMP" : "IND");
+
+					SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
+					proposal.element("timestamp", df.format(goodProp.getTimestamp()));
+
+					proposal.element("market", goodProp.getMarket().getMarketCode());
+					proposal.element("marketmaker", goodProp.getMarketMarketMaker().getMarketSpecificCode());
+
+					if (goodProp.getProposalSubState() != null
+							&& goodProp.getProposalSubState() != Proposal.ProposalSubState.NONE) {
+						proposal.element("state", goodProp.getProposalSubState().toString());
+					} else {
+						proposal.element("state", goodProp.getProposalState().toString());
+					}
+					proposal.element("comment", goodProp.getReason());
+
+					jsonMap.add(proposal);
+				}
+				message.element("prices", jsonMap);
+
+				LOGGER.trace("Sending message to topic {}: {}", bookTopic, message.toString());
+				kafkaProducer.send(new ProducerRecord<String, String>(bookTopic,
+						operation.getOrder().getInstrument().getIsin(), message.toString()), (metadata, exception) -> {
+							if (exception != null) {
+								LOGGER.warn("Error while trying to send message: " + message.toString(), exception);
+							}
+						});
+			});
+		}
+	}
 
    @Override
    public void sendPobex() {
