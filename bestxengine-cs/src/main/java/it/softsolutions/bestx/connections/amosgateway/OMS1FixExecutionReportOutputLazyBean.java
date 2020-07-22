@@ -122,11 +122,13 @@ public class OMS1FixExecutionReportOutputLazyBean extends FixExecutionReportOutp
         }
         if (executionReport != null && executionReport.getExecTransType()!=null) {
      		execTransType = executionReport.getExecTransType();
-     	}
+     	   }
 
         cumQty = BigDecimal.ZERO;
         settlementType = null;
-        strSettlementType = executionReport.getSettlType();
+        if (executionReport != null && executionReport.getSettlType() != null) {
+           strSettlementType = executionReport.getSettlType();
+        }
         executionReportId += "_CANCEL";
        
         if(order != null)
