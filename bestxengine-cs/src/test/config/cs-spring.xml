@@ -185,9 +185,6 @@
 
 	
 	<!-- Hibernate DAOs -->
-    <bean id="dbBasedHolidayFinder" class="it.softsolutions.bestx.finders.db.SetHolidayFinder" lazy-init="false" init-method="init">
-        <property name="holidayDao"><ref bean="hibernateHolidayDao"></ref></property>
-	</bean>
     <bean id="dbBasedExchangeRateFinder" class="it.softsolutions.bestx.finders.db.MapExchangeRateFinder" lazy-init="false" init-method="init">
         <property name="exchangeRateDao"><ref bean="hibernateExchangeRateDao"></ref></property>
 	</bean>
@@ -244,10 +241,6 @@
         <property name="sessionFactory"><ref bean="sessionFactory"></ref></property>
         <property name="customerFilterFactory"><ref bean="defaultCustomerFilterFactory"/></property>
 	</bean>
-    <bean id="hibernateHolidayDao" class="it.softsolutions.bestx.dao.hibernate.HibernateHolidayDao">
-        <property name="sessionFactory"><ref bean="sessionFactory"></ref></property>
-        <property name="allCountryCode"><value>${SettlementLimitControl.allCountries}</value></property>
-	</bean>
     <bean id="hibernateOutlawTickerDao" class="it.softsolutions.bestx.dao.hibernate.HibernateOutlawTickerDAO">
         <property name="sessionFactory"><ref bean="sessionFactory"></ref></property>
 	</bean>
@@ -258,9 +251,6 @@
         <property name="sessionFactory"><ref bean="sessionFactory"></ref></property>
 	</bean>
     <bean id="hibernateCustomerTickerDao" class="it.softsolutions.bestx.dao.hibernate.HibernateCustomerTickerDao" init-method="init">
-        <property name="sessionFactory"><ref bean="sessionFactory"></ref></property>
-	</bean>
-    <bean id="hibernateSettlementLimitDao" class="it.softsolutions.bestx.dao.hibernate.HibernateSettlementLimitDao">
         <property name="sessionFactory"><ref bean="sessionFactory"></ref></property>
 	</bean>
     <bean id="hibernateInstrumentParamDao" class="it.softsolutions.bestx.dao.hibernate.HibernateInstrumentParamDao">
@@ -372,7 +362,6 @@
 	</bean>
 
 	<!-- SERVICES -->
-    <bean id="settlementDateCalculator" class="it.softsolutions.bestx.services.financecalc.SettlementDateCalculator"></bean>
     <bean id="flyingRFQService" class="it.softsolutions.bestx.services.flyingrfqservice.MapFlyingRFQServer"></bean>
     <bean id="serialNumberService" class="it.softsolutions.bestx.services.serial.SerialNumberServer">
         <property name="serialNumberDao"><ref bean="sqlSerialNumberDao"></ref></property>
@@ -724,11 +713,6 @@
 				<!-- </bean> -->
                 <bean class="it.softsolutions.bestx.services.ordervalidation.FormalCurrencyFilter"/>
                 <bean class="it.softsolutions.bestx.services.ordervalidation.FormalCustomer"/>
-				<!-- [RR20120601] The following validator replaces the old FormalFutSettDateFilter -->
-                <bean class="it.softsolutions.bestx.services.ordervalidation.FormalFutSettDateFilterUsingCalendars">
-                    <property name="holidayFinder"><ref bean="dbBasedHolidayFinder"/></property>
-                    <property name="settlementDateCalculator"><ref bean="settlementDateCalculator"/></property>
-                </bean>
                 <bean class="it.softsolutions.bestx.services.ordervalidation.FormalOrderTypeFilter"/>
                 <bean class="it.softsolutions.bestx.services.ordervalidation.FormalPriceFilter"/>
                 <bean class="it.softsolutions.bestx.services.ordervalidation.FormalQtyFilter"/>
@@ -751,19 +735,8 @@
 				<!-- ExistInstrumentControl must be the first -->
                 <bean class="it.softsolutions.bestx.services.ordervalidation.ExistInstrumentControl"/>
                 <bean class="it.softsolutions.bestx.services.ordervalidation.CurrencyControl"/>
-				<!--<bean class="it.softsolutions.bestx.services.ordervalidation.CustomerCurrencyValidator"/> -->
-                <bean class="it.softsolutions.bestx.services.ordervalidation.HolidaySettlementControl">
-                    <property name="holidayFinder"><ref bean="dbBasedHolidayFinder"/></property>
-                </bean>
                 <bean class="it.softsolutions.bestx.services.ordervalidation.IncQuantityControl"/>
                 <bean class="it.softsolutions.bestx.services.ordervalidation.MinQuantityControl"/>
-                <bean class="it.softsolutions.bestx.services.ordervalidation.SettlementDateLimitControl">
-                    <property name="settlementLimitDao"><ref bean="hibernateSettlementLimitDao"/></property>
-                    <property name="settlementHolidayFinder"><ref bean="dbBasedHolidayFinder"/></property>
-                    <property name="settlementDateCalculator"><ref bean="settlementDateCalculator"/></property>
-                    <property name="allCountryCode"><value>${SettlementLimitControl.allCountries}</value></property>
-                    <property name="allCurrencyCode"><value>${SettlementLimitControl.allCurrencies}</value></property>
-				</bean>
                 <bean class="it.softsolutions.bestx.services.ordervalidation.LimitFileParkTagFilter">
 					<property name="custOrderHandlingInstrValue"><value>TMO</value></property>
 				</bean>         
@@ -835,7 +808,6 @@
 		<property name="regulatedMktIsinsLoader" ref="regulatedMktIsinsLoader" />
         <property name="regulatedMarketPolicies"><ref bean="regulatedMarketPoliciesBean"></ref></property>
         <property name="internalMMcodes"><value>${Internal.MM.Codes}</value></property>
-        <property name="settlementDateCalculator"><ref bean="settlementDateCalculator"/></property>
 	</bean>
 
 	<!-- OPERATION STATUS NOTIFIERS -->

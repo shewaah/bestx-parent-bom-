@@ -27,11 +27,36 @@ import java.util.Map;
  * 
  **/
 public enum SettlmntTyp {
-    Unknown(Character.MIN_VALUE),
+   /*
+    *    public static final int FIELD = 63;
+   public static final char REGULAR = '0';
+   public static final char CASH = '1';
+   public static final char NEXT_DAY = '2';
+   public static final char T_PLUS_2 = '3';
+   public static final char T_PLUS_3 = '4';
+   public static final char T_PLUS_4 = '5';
+   public static final char FUTURE = '6';
+   public static final char WHEN_AND_IF_ISSUED = '7';
+   public static final char SELLERS_OPTION = '8';
+   public static final char T_PLUS_5 = '9';
+   public static final char T_PLUS_1 = 'A';
+ 
+    */
+   
+   
+   Unknown(Character.MIN_VALUE),
+   Regular(quickfix.field.SettlmntTyp.REGULAR),
     Cash(quickfix.field.SettlmntTyp.CASH),
-    Regular(quickfix.field.SettlmntTyp.REGULAR),
+    NextDay(quickfix.field.SettlmntTyp.NEXT_DAY),
+    TPlus2(quickfix.field.SettlmntTyp.T_PLUS_2),
+    TPlus3(quickfix.field.SettlmntTyp.T_PLUS_3),
+    TPlus4(quickfix.field.SettlmntTyp.T_PLUS_4),
     Future(quickfix.field.SettlmntTyp.FUTURE),
-    ;
+    WhwnAndIfIssued(quickfix.field.SettlmntTyp.WHEN_AND_IF_ISSUED),
+    SellersOption(quickfix.field.SettlmntTyp.SELLERS_OPTION),
+    TPlus5(quickfix.field.SettlmntTyp.T_PLUS_5),
+    TPlus1(quickfix.field.SettlmntTyp.T_PLUS_1);
+    
     
     public char getFIXValue() {
         return mFIXValue;

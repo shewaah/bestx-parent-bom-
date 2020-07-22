@@ -35,12 +35,10 @@ public class PastSettlementControl implements OrderValidator {
         OrderResultBean result = new OrderResultBean();
         result.setOrder(order);
         result.setReason("");
+        result.setValid(true);
         if (order.getFutSettDate() != null) {
             result.setValid(DateService.newLocalDate().before(order.getFutSettDate()));
-        } else {
-            result.setValid(false);
         }
-
         if (!result.isValid()) {
             result.setReason(Messages.getString("PastSettlement.0", order.getFutSettDate()));
         }

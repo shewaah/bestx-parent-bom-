@@ -825,6 +825,7 @@ public class TradewebMarket extends MarketCommon
 	   }
 	   String contractNo = tsExecutionReport.getExecID();
 	   Date futSettDate = tsExecutionReport.getSettlDate();
+	   String settlType = (tsExecutionReport.getSettlType() != null ? tsExecutionReport.getSettlType().getFIXValue() : null);
 	   Date transactTime = tsExecutionReport.getTransactTime();
 	   String text = tsExecutionReport.getText();
 	   String executionBroker = null;
@@ -1034,7 +1035,7 @@ public class TradewebMarket extends MarketCommon
 		   }
 		   LOGGER.debug("Passing to executor message with status {} for order {} for management", ordStatus, cleanClOrdId);
 		   executor.execute(new OnExecutionReportRunnable(operation, this, market, cleanClOrdId, execType, ordStatus, accruedInterestAmount, accruedInterestRate, lastPrice, contractNo, futSettDate,
-				   transactTime, (textTruncated != null ? textTruncated : cleanText), mmm, executionBroker, micCode, numDaysInterest, factor));
+				   transactTime, (textTruncated != null ? textTruncated : cleanText), mmm, executionBroker, micCode, numDaysInterest, factor, settlType));
 	   }
 	   catch (OperationNotExistingException e) {
 		   LOGGER.warn("[MktMsg] Operation not found for clOrdID {} , ignoring ExecutionReport/{}/{}", cleanClOrdId, execType, ordStatus);

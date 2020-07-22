@@ -88,6 +88,7 @@ public class OnExecutionReportRunnable implements Runnable {
 	private final String lastMkt; //AKA MifidMIC
 	private final TSExecutionReport tsExecutionReport;
 	private final MarketMakerFinder marketMakerFinder;
+	private final String settlType;
 
 	public OnExecutionReportRunnable(Operation operation, BloombergMarket market, Market counterMarket, TSExecutionReport tsExecutionReport, MarketMakerFinder marketMakerFinder) {
 		this.tsExecutionReport = tsExecutionReport;
@@ -113,6 +114,7 @@ public class OnExecutionReportRunnable implements Runnable {
 		this.factor = tsExecutionReport.getFactor() != null ? BigDecimal.valueOf(tsExecutionReport.getFactor()) : BigDecimal.ZERO;  
 		this.lastMkt = tsExecutionReport.getCustomFieldString(23068); //MifidMIC
 		this.marketMakerFinder = marketMakerFinder;
+		this.settlType = (tsExecutionReport.getSettlType() != null ? tsExecutionReport.getSettlType().getFIXValue() : null);
 	}
 
 	//FIXME verify the values reported here are compliant
@@ -183,6 +185,7 @@ public class OnExecutionReportRunnable implements Runnable {
 		marketExecutionReport.setMarketOrderID(clOrdID); // <-- market order id is buy side's clOrdID
 		marketExecutionReport.setTicket(contractNo);
 		marketExecutionReport.setFutSettDate(futSettDate);
+		marketExecutionReport.setSettlType(settlType);
 		marketExecutionReport.setText(text);
 		marketExecutionReport.setAccruedInterestAmount(new Money(order.getInstrument().getCurrency(), 
 				accruedInterestAmount == null ? BigDecimal.ZERO : accruedInterestAmount));

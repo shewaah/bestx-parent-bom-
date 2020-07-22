@@ -61,6 +61,8 @@ public class OnExecutionReportRunnable implements Runnable {
     private BigDecimal accruedInterestAmount;
     private BigDecimal accruedInterestRate;
     private Integer numDaysInterest;
+    private final String settlType;
+    
     //BESTX-385: SP-20190116 manage factor (228) field
     private BigDecimal factor;
 
@@ -110,7 +112,7 @@ public class OnExecutionReportRunnable implements Runnable {
      */
     public OnExecutionReportRunnable(Operation operation, TradewebMarket market, Market counterMarket, String clOrdID, ExecType execType, OrdStatus ordStatus, BigDecimal accruedInterestAmount, 
                    BigDecimal accruedInterestRate, BigDecimal lastPrice, String contractNo, Date futSettDate,
-                   Date transactTime, String text, MarketMarketMaker executionBroker, String executionDealerCode, String micCode, Integer numDaysInterest, BigDecimal factor) {
+                   Date transactTime, String text, MarketMarketMaker executionBroker, String executionDealerCode, String micCode, Integer numDaysInterest, BigDecimal factor, String settlType) {
         this.operation = operation;
         this.counterMarket = counterMarket;
         this.lastPrice = lastPrice;
@@ -129,6 +131,7 @@ public class OnExecutionReportRunnable implements Runnable {
         this.accruedInterestRate = accruedInterestRate;
         this.numDaysInterest = numDaysInterest;
         this.factor = factor;
+        this.settlType = settlType;
     }
 
     @Override
@@ -187,6 +190,7 @@ public class OnExecutionReportRunnable implements Runnable {
                                                          // clOrdID
         marketExecutionReport.setTicket(contractNo);
         marketExecutionReport.setFutSettDate(futSettDate);
+        marketExecutionReport.setSettlType(settlType);
         marketExecutionReport.setText(text);
         marketExecutionReport.setAccruedInterestAmount(new Money(order.getInstrument().getCurrency(), accruedInterestAmount));
         marketExecutionReport.setAccruedInterestRate(accruedInterestRate);

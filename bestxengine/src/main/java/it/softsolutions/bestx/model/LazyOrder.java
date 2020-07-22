@@ -13,11 +13,11 @@
  */
 package it.softsolutions.bestx.model;
 
-import it.softsolutions.bestx.Operation;
-import it.softsolutions.jsscommon.Money;
-
 import java.math.BigDecimal;
 import java.util.Date;
+
+import it.softsolutions.bestx.Operation;
+import it.softsolutions.jsscommon.Money;
 
 /**  
 *
@@ -83,7 +83,7 @@ public class LazyOrder {
         return order.getSecExchange();
     }
 
-    public Integer getSettlementType() {
+    public String getSettlementType() {
         loadOrderIfNull();
         return order.getSettlementType();
     }

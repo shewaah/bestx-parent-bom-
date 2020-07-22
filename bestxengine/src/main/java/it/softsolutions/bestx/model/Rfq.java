@@ -121,7 +121,7 @@ public class Rfq {
     private Instrument instrument;
     private Date transactTime;
     private String secExchange;
-    private Integer settlementType;
+    private String settlementType;
     private BigDecimal qty;
     
     /**
@@ -226,14 +226,14 @@ public class Rfq {
      * Set the settlement type
      * @param settlementType : the settlement type
      */
-    public void setSettlementType(Integer settlementType) {
+    public void setSettlementType(String settlementType) {
         this.settlementType = settlementType;
     }
     /**
      * Get the settlement type
      * @return the type
      */
-    public Integer getSettlementType() {
+    public String getSettlementType() {
         return settlementType;
     }
     /**

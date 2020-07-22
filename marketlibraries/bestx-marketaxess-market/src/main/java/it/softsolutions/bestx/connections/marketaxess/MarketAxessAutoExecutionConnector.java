@@ -59,6 +59,7 @@ import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.RefSeqNum
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.SecurityID;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.SecurityIDSource;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.SettlDate;
+import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.SettlType;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.Side;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.Symbol;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.Text;
@@ -295,10 +296,15 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 		Double orderQty = marketOrder.getQty().doubleValue();
 		Date settlDate = marketOrder.getFutSettDate();
 		Double price = marketOrder.getLimit().getAmount().doubleValue();
+      String settlementType = marketOrder.getSettlementType();
+		
 
 		NewOrderSingle newOrderSingle = new NewOrderSingle();
 		newOrderSingle.set(new ClOrdID(clOrdID));
-		newOrderSingle.set(new SettlDate(DateService.formatAsUTC(DateService.dateISO, settlDate)));
+		if (settlDate != null) {
+	      newOrderSingle.set(new SettlDate(DateService.formatAsUTC(DateService.dateISO, settlDate)));
+		}
+		newOrderSingle.set(new SettlType(settlementType));
 		newOrderSingle.set(new HandlInst(HandlInst.AUTOMATED_EXECUTION_ORDER_PRIVATE));
 
 		newOrderSingle.set(new Symbol("N/A"));

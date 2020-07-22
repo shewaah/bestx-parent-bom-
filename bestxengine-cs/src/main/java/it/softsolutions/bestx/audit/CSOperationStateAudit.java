@@ -53,9 +53,7 @@ import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.MarketExecutionReport;
 import it.softsolutions.bestx.model.Order;
-import it.softsolutions.bestx.model.CSPOBexExecutionReport.CSDealerGroup;
 import it.softsolutions.bestx.services.DateService;
-import it.softsolutions.bestx.services.financecalc.SettlementDateCalculator;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.ManualManageState;
 import it.softsolutions.bestx.states.WarningState;
@@ -95,7 +93,6 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
     private List<String> regulatedMarketPolicies;
     private String internalMMcodes;
     private List<String> internalMMcodesList;
-    private SettlementDateCalculator settlementDateCalculator;
     static private String dateFormat = "dd/MM/yyyy";
     
     private boolean isLogEnabled = false;
@@ -188,25 +185,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         }
     }
 
-    /**
-     * Gets the settlement date calculator.
-     * 
-     * @return the settlement date calculator
-     */
-    public SettlementDateCalculator getSettlementDateCalculator() {
-        return settlementDateCalculator;
-    }
-
-    /**
-     * Sets the settlement date calculator.
-     * 
-     * @param settlementDateCalculator
-     *            the new settlement date calculator
-     */
-    public void setSettlementDateCalculator(SettlementDateCalculator settlementDateCalculator) {
-        this.settlementDateCalculator = settlementDateCalculator;
-    }
-
+    
     /**
      * Gets the regulated mkt isins loader.
      * 
@@ -460,7 +439,9 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             // 20111026 - Ruggero - AKR-1207
             // in the formal validation there could be an update of the order field futSettDate because we could receive it empty.
             // Here we save on the db the eventual change, rewriting the same value if the field has been received with a valid date.
-            operationStateAuditDao.updateOrderSettlementDate(order);
+           
+           //20200722 - SP - BESTX-703 - No need to update because we don't recalculate empty settlement date
+            //operationStateAuditDao.updateOrderSettlementDate(order);
         }
         break;
         case ManualManage:

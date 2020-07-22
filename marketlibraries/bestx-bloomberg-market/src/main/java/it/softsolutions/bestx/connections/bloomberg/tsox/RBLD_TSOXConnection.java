@@ -41,6 +41,7 @@ import it.softsolutions.tradestac.fix.field.PartyRole;
 import it.softsolutions.tradestac.fix.field.PartyRoleQualifier;
 import it.softsolutions.tradestac.fix.field.PriceType;
 import it.softsolutions.tradestac.fix.field.SecurityIDSource;
+import it.softsolutions.tradestac.fix.field.SettlType;
 import it.softsolutions.tradestac.fix.field.Side;
 import it.softsolutions.tradestac.fix.field.TimeInForce;
 import it.softsolutions.tradestac.fix50.TSBusinessMessageReject;
@@ -348,6 +349,7 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
       Side side = Side.getInstanceForFIXValue(marketOrder.getSide().getFixCode().charAt(0));
       Double orderQty = marketOrder.getQty().doubleValue();
       Date settlDate = marketOrder.getFutSettDate();
+      String settlementType = marketOrder.getSettlementType();
       Currency currency = Currency.getInstanceForFIXValue(marketOrder.getCurrency());
 
       Date validUntilTime = new Date(DateService.currentTimeMillis() + tsoxEnquiryTime * 1000); // got from configuration
@@ -403,6 +405,7 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
       tsNewOrderSingle.setTSInstrument(tsInstrument);
       tsNewOrderSingle.setTSOrderQtyData(tsOrderQtyData);
       tsNewOrderSingle.setTSParties(tsParties);
+      tsNewOrderSingle.setSettlType(SettlType.getInstanceForFIXValue(settlementType));
       tsNewOrderSingle.setSettlDate(settlDate);
       tsNewOrderSingle.setTransactTime(transactTime);
       tsNewOrderSingle.setCurrency(currency);

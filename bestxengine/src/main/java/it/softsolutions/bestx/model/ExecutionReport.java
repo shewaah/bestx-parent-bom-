@@ -87,6 +87,7 @@ public class ExecutionReport implements Cloneable {
     private BigDecimal accruedInterestRate;
     private Integer accruedInterestDays;
     private Date futSettDate;
+    private String settlType;
 
     private String account;
     private String text;
@@ -409,8 +410,17 @@ public class ExecutionReport implements Cloneable {
     public void setSendingTime(Date sendingTime) {
         this.sendingTime = sendingTime;
     }
-        
-    @Override
+    
+   public String getSettlType() {
+      return settlType;
+   }
+
+   
+   public void setSettlType(String settlType) {
+      this.settlType = settlType;
+   }
+
+   @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("ExecutionReport [id=");
@@ -443,6 +453,8 @@ public class ExecutionReport implements Cloneable {
         builder.append(accruedInterestDays);
         builder.append(", futSettDate=");
         builder.append(futSettDate);
+        builder.append(", settlType=");
+        builder.append(settlType);
         builder.append(", account=");
         builder.append(account);
         builder.append(", text=");

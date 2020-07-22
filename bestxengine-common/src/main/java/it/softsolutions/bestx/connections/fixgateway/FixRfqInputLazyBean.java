@@ -121,8 +121,8 @@ public class FixRfqInputLazyBean extends Rfq {
         Instrument instrument = instrumentFinder.getInstrumentByIsin(getIsin());
         return instrument;
     }
-    public Integer getSettlementType() {
-        return getIntField(FixMessageFields.FIX_SettlmntTyp);
+    public String getSettlementType() {
+        return getStringField(FixMessageFields.FIX_SettlmntTyp);
     }
     public Date getTransactTime() {
         String stringFormattedDate = getStringField(FixMessageFields.FIX_TransactTime);

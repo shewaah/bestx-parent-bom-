@@ -126,7 +126,7 @@ public class OMS1FixExecutionReportOutputLazyBean extends FixExecutionReportOutp
 
         cumQty = BigDecimal.ZERO;
         settlementType = null;
-        strSettlementType = "6";
+        strSettlementType = executionReport.getSettlType();
         executionReportId += "_CANCEL";
        
         if(order != null)
@@ -225,7 +225,7 @@ public class OMS1FixExecutionReportOutputLazyBean extends FixExecutionReportOutp
 //	        price = lastPx.setScale(6, RoundingMode.HALF_UP);  //BESTX-426 AMC 20190612
 	        avgPx = lastPx.setScale(6, RoundingMode.HALF_UP);
 	        settlementType = null;
-           strSettlementType = "6";
+           strSettlementType = executionReport.getSettlType();
 	
 	        // Magnet partial fills
 	        if (order.getQty().compareTo(executionReport.getActualQty()) != 0 && executionReport.getActualQty().compareTo(BigDecimal.ZERO) != 0 ) {
@@ -284,7 +284,7 @@ public class OMS1FixExecutionReportOutputLazyBean extends FixExecutionReportOutp
 	        price = lastPx.setScale(6, RoundingMode.HALF_UP);
 	        avgPx = lastPx.setScale(6, RoundingMode.HALF_UP);
 	        settlementType = null;
-	        strSettlementType = "6";
+	        strSettlementType = executionReport.getSettlType();
 	
         	
 	        buildMessage();

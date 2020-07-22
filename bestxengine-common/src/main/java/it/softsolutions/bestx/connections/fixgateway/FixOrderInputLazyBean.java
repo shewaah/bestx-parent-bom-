@@ -401,8 +401,8 @@ public class FixOrderInputLazyBean extends Order {
 	}
 
 	@Override
-	public Integer getSettlementType() {
-		return getIntField(FixMessageFields.FIX_SettlmntTyp);
+	public String getSettlementType() {
+		return getStringField(FixMessageFields.FIX_SettlmntTyp);
 	}
 
 	@Override
