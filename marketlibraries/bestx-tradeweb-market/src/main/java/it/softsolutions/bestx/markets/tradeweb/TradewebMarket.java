@@ -888,6 +888,7 @@ public class TradewebMarket extends MarketCommon
 				   for (int i = 0; i < prices.length; i++) {
 					   String data[] = prices[i].split(":");
 					   ExecutablePrice price = new ExecutablePrice();
+					   price.setMarket(this.market);
 					   price.setAuditQuoteState("Rejected");
 					   price.setOriginatorID(data[0].trim());
 					   price.setPrice(new Money(operation.getOrder().getCurrency(), new BigDecimal(data[1].trim())));
@@ -915,6 +916,7 @@ public class TradewebMarket extends MarketCommon
 			   if(OrdStatus.Filled.equals(tsExecutionReport.getOrdStatus()) || OrdStatus.PartiallyFilled.equals(tsExecutionReport.getOrdStatus()) ) {
 				   //BESTX-363 SP20181010 : Added executable price of execution broker
 				   ExecutablePrice priceExec = new ExecutablePrice();
+				   priceExec.setMarket(this.market);
 				   priceExec.setAuditQuoteState("Done");
 				   if(mmm == null) {
 					   priceExec.setOriginatorID(executionBroker);
@@ -954,6 +956,7 @@ public class TradewebMarket extends MarketCommon
 								   }
 
 								   ExecutablePrice price = new ExecutablePrice();
+								   price.setMarket(this.market);
 								   //0= Error, 1= Pass, 2= Timed out, 3= Rejected, 4= Expired, 5= Ended, 6= Pass on Last Look
 								   switch (status) {
 								   case 0:

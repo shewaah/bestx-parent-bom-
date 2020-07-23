@@ -71,6 +71,7 @@ public class OnExecutionReportRunnable implements Runnable {
 
 	private final Operation operation;
 	private final Market counterMarket;
+	private final Market executionMarket;
 	private final BigDecimal lastPrice;
 	private final ExecType execType;
 	private final OrdStatus ordStatus;
@@ -90,10 +91,11 @@ public class OnExecutionReportRunnable implements Runnable {
 	private final MarketMakerFinder marketMakerFinder;
 	private final String settlType;
 
-	public OnExecutionReportRunnable(Operation operation, BloombergMarket market, Market counterMarket, TSExecutionReport tsExecutionReport, MarketMakerFinder marketMakerFinder) {
+	public OnExecutionReportRunnable(Operation operation, BloombergMarket market, Market counterMarket, Market executionMarket, TSExecutionReport tsExecutionReport, MarketMakerFinder marketMakerFinder) {
 		this.tsExecutionReport = tsExecutionReport;
 		this.operation = operation;
 		this.counterMarket = counterMarket;
+		this.executionMarket = executionMarket;
 		this.clOrdID = tsExecutionReport.getClOrdID();
 		this.market = market;
 		this.execType = tsExecutionReport.getExecType();
@@ -220,6 +222,7 @@ public class OnExecutionReportRunnable implements Runnable {
 				List<ExecutablePrice> prices = new ArrayList<ExecutablePrice>();
 				// add to prices the executed quote
 				ExecutablePrice executedPrice = new ExecutablePrice();
+				executedPrice.setMarket(this.executionMarket);
 				executedPrice.setOriginatorID(dealerCode);
 				try {
 //					executedPrice.setMarketMarketMaker(marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), dealerCode));
@@ -246,6 +249,7 @@ public class OnExecutionReportRunnable implements Runnable {
 
 						for (int i = 0; i < groups.size(); i++) {
 							ExecutablePrice price = new ExecutablePrice();
+							price.setMarket(this.executionMarket);
 							MarketMarketMaker tempMM = null;
 							if (groups.get(i).isSetField(CompDealerID.FIELD)) {
 								String quotingDealer = groups.get(i).getField(new StringField(CompDealerID.FIELD)).getValue();

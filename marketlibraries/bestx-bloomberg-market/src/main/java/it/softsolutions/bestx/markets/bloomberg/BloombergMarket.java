@@ -119,7 +119,10 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
 	private Map<String, ConnectionListener> connectionListener;
 
 	private Market market;
+	private Market executionMarket;
+	
 	private static final Market.MarketCode marketCode = Market.MarketCode.BLOOMBERG;
+	private static final Market.MarketCode executionMarketCode = Market.MarketCode.TSOX;
 
 	private MarketMakerFinder marketMakerFinder;
 	private VenueFinder venueFinder;
@@ -220,6 +223,7 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
 		checkPreRequisites();
 		connectionListener = new HashMap<String, ConnectionListener>();
 		market = marketFinder.getMarketByCode(marketCode, null);
+		executionMarket = marketFinder.getMarketByCode(executionMarketCode, null);
 
 		JobExecutionDispatcher.INSTANCE.addTimerEventListener(BloombergMarket.class.getSimpleName(), this);
 
@@ -877,7 +881,7 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
 				}
 			}
 
-			executor.execute(new OnExecutionReportRunnable(operation, this, market, tsExecutionReport, marketMakerFinder));
+			executor.execute(new OnExecutionReportRunnable(operation, this, market, executionMarket, tsExecutionReport, marketMakerFinder));
 
 		} catch (OperationNotExistingException e) {
 			LOGGER.warn("[MktMsg] Operation not found for quoteReqID {} , ignoring ExecutionReport/{}/{}", clOrdID, execType, ordStatus);
