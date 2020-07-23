@@ -96,7 +96,12 @@ public class OnExecutionReportRunnable implements Runnable {
         LOGGER.info("orderID={}, mapped execType={} - ordStatus={} to executionReportState={}", order.getFixOrderId(), execType, ordStatus, executionReportState);
         executionReport.setState(executionReportState);
         executionReport.setSequenceId(null); // ID only
-        if (order.getInstrument().getBBSettlementDate() != null && order.getInstrument().getCurrency() != null && order.getInstrument().getRateo() != null && order.getFutSettDate().equals(order.getInstrument().getBBSettlementDate()) && order.getCurrency().equals(order.getInstrument().getCurrency())) {
+        if (order.getInstrument().getBBSettlementDate() != null && 
+              order.getInstrument().getCurrency() != null && 
+              order.getInstrument().getRateo() != null && 
+              order.getFutSettDate() != null &&
+              order.getFutSettDate().equals(order.getInstrument().getBBSettlementDate()) && 
+              order.getCurrency().equals(order.getInstrument().getCurrency())) {
 
             BigDecimal interestAmount;
             BigDecimal rateo = order.getInstrument().getRateo();

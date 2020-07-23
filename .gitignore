@@ -2,6 +2,7 @@
 **/.settings/
 **/.project
 **/.classpath
+/log/
 /bestxengine-cs/log/
 /bestx-sod-loader/log/
 /bestxengine-cs/katalon-bx.log

@@ -194,7 +194,12 @@ public class OnExecutionReportRunnable implements Runnable {
         marketExecutionReport.setText(text);
         marketExecutionReport.setAccruedInterestAmount(new Money(order.getInstrument().getCurrency(), accruedInterestAmount));
         marketExecutionReport.setAccruedInterestRate(accruedInterestRate);
-        if (order.getInstrument().getBBSettlementDate() != null && order.getInstrument().getCurrency() != null && order.getInstrument().getRateo() != null && order.getFutSettDate().equals(order.getInstrument().getBBSettlementDate()) && order.getCurrency().equals(order.getInstrument().getCurrency())) {
+        if (order.getInstrument().getBBSettlementDate() != null && 
+              order.getInstrument().getCurrency() != null && 
+              order.getInstrument().getRateo() != null && 
+              order.getFutSettDate() != null &&
+              order.getFutSettDate().equals(order.getInstrument().getBBSettlementDate()) && 
+              order.getCurrency().equals(order.getInstrument().getCurrency())) {
 
             BigDecimal interestAmount;
             BigDecimal rateo = order.getInstrument().getRateo();
