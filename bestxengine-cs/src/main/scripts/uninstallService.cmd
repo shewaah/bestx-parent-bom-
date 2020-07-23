@@ -1,5 +1,8 @@
 REM
-REM This script installs the <%=@servicename%> as a Windows service
+REM Copyright 1997-2016 SoftSolutions! srl
+REM All Rights Reserved.
+REM
+REM This script uninstalls the <%=@servicename%> service.
 REM
 REM artifact ref.: <%=@servicename%>
 REM script version 1.0 - 2016/03/10
@@ -11,13 +14,8 @@ REM are protected by trade secret or copyright law.
 REM Dissemination of this information or reproduction of this material is strictly forbidden
 REM unless prior written permission is obtained from SoftSolutions! srl.
 REM Any additional licenses, terms and conditions, if any, are defined in
-REM Arguments to nssm see related Web Page (below)
-REM https://nssm.cc/commands
+REM Arguments to nssm https://nssm.cc/commands
 REM
 REM
 REM
-REM using now new service wrappwer nssm https://nssm.cc
-<%=@servicename%> install <%=@servicename%> %CD%/start.cmd
-<%=@servicename%> set <%=@servicename%> AppDirectory %CD%
-<%=@servicename%> set <%=@servicename%> Description <%=@description%>
-<%=@servicename%> set <%=@servicename%> Start SERVICE_DEMAND_START
+<%=@servicename%> remove <%=@servicename%>

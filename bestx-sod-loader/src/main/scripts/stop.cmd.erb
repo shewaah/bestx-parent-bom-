@@ -1,11 +1,10 @@
-#!/bin/bash
 # /*
-# * Copyright 1997-2016 SoftSolutions! srl
+# * Copyright 1997-2017 SoftSolutions! srl
 # * All Rights Reserved.
 # *
-# * This script starts the <%=@servicename%> application.
+# * This script stops the <%=@servicename %> application.
 # *
-# * artifact ref.: <%=@servicename%>
+# * artifact ref.: <%=@servicename %>
 # * script version 1.0 - 2016/03/10
 # *
 # * NOTICE: All information contained herein is, and remains the property of SoftSolutions! srl
@@ -17,10 +16,6 @@
 # * Any additional licenses, terms and conditions, if any, are defined in file 'LICENSE.txt',
 # * which may be part of this software package.
 # */
-PIDFILE=<%=@exedir%>/<%=@servicename%>.pid
-if [ -f $PIDFILE ] && ps -p $(cat "$PIDFILE"); then
-       echo "Service <%=@servicename%> is running" >&2
-       exit 0
-fi
-echo "Service <%=@servicename%> is not running" >&2
-exit 1
+for /f "delims=" %%x in (../pid.out) do set PID=%%x
+echo %PID%
+taskkill /PID %PID% /F
