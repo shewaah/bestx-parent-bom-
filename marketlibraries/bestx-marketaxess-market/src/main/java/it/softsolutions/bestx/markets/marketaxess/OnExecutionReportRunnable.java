@@ -66,6 +66,7 @@ public class OnExecutionReportRunnable implements Runnable {
         	operation.onApplicationError(operation.getState(), new NullPointerException(), "Operation " + operation.getId() + " has no order!");
         	return;
         }
+        
         executionReport.setMarket(market.getMarket());
         executionReport.setSide(order.getSide());
         char ordStatus = executionReport.getOrdStatus();

@@ -13,10 +13,6 @@ package it.softsolutions.bestx.handlers.marketaxess;
  * which may be part of this software package.
  */
 
-
-
-
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -79,484 +75,514 @@ import quickfix.FieldNotFound;
  **/
 public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
 
-	private static final long serialVersionUID = -1021253573602664973L;
+   private static final long serialVersionUID = -1021253573602664973L;
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(MA_SendOrderEventHandler.class);
-	
-	public static final String REVOKE_TIMER_SUFFIX="#REVOKE";
-	private SerialNumberService serialNumberService;
-	protected long waitingExecutionDelay;
-	protected MarketBuySideConnection connection;
-	protected long orderCancelDelay;
-	@SuppressWarnings("unused")
-	private BestXConfigurationDao bestXConfigurationDao;
+   private static final Logger LOGGER = LoggerFactory.getLogger(MA_SendOrderEventHandler.class);
 
-	private MarketMakerFinder marketMakerFinder;
-	private Market market;
-	private VenueFinder venueFinder;
+   public static final String REVOKE_TIMER_SUFFIX = "#REVOKE";
+   private SerialNumberService serialNumberService;
+   protected long waitingExecutionDelay;
+   protected MarketBuySideConnection connection;
+   protected long orderCancelDelay;
+   @SuppressWarnings("unused")
+   private BestXConfigurationDao bestXConfigurationDao;
 
-	protected boolean isCancelBestXInitiative = false;
-	protected boolean isCancelRequestedByUser = false;
+   private MarketMakerFinder marketMakerFinder;
+   private Market market;
+   private VenueFinder venueFinder;
 
-	public MA_SendOrderEventHandler(Operation operation, MarketBuySideConnection connection, SerialNumberService serialNumberService, long waitingExecutionDelay, long orderCancelDelay, BestXConfigurationDao bestXConfigurationDao, MarketMakerFinder marketMakerFinder, Market market, VenueFinder venueFinder) {
-		super(operation);
-		this.serialNumberService = serialNumberService;
-		this.waitingExecutionDelay = waitingExecutionDelay;
-		this.connection = connection;
-		this.orderCancelDelay = orderCancelDelay;
-		this.bestXConfigurationDao = bestXConfigurationDao;
-		this.marketMakerFinder = marketMakerFinder;
-		this.market = market;
-		this.venueFinder = venueFinder;
-	}
+   protected boolean isCancelBestXInitiative = false;
+   protected boolean isCancelRequestedByUser = false;
 
-	@Override
-	public void onNewState(OperationState currentState) {
-		try {
-			setupDefaultTimer(waitingExecutionDelay, false);
-			connection.sendFokOrder(operation, operation.getLastAttempt().getMarketOrder());
-		} catch (BestXException e) {
-			LOGGER.error("An error occurred while sending FOK Order to MarketAxess", e);
-			operation.setStateResilient(new WarningState(currentState, e, Messages.getString("MARKETAXESS_MarketSendOrderError.0")), ErrorState.class);
-			stopDefaultTimer();
-		}
-	}
+   public MA_SendOrderEventHandler(Operation operation, MarketBuySideConnection connection, SerialNumberService serialNumberService, long waitingExecutionDelay, long orderCancelDelay,
+         BestXConfigurationDao bestXConfigurationDao, MarketMakerFinder marketMakerFinder, Market market, VenueFinder venueFinder){
+      super(operation);
+      this.serialNumberService = serialNumberService;
+      this.waitingExecutionDelay = waitingExecutionDelay;
+      this.connection = connection;
+      this.orderCancelDelay = orderCancelDelay;
+      this.bestXConfigurationDao = bestXConfigurationDao;
+      this.marketMakerFinder = marketMakerFinder;
+      this.market = market;
+      this.venueFinder = venueFinder;
+   }
 
-	@Override
-	public void onMarketOrderReject(MarketBuySideConnection source, Order order, String reason, String sessionId) {
+   @Override
+   public void onNewState(OperationState currentState) {
+      try {
+         setupDefaultTimer(waitingExecutionDelay, false);
+         connection.sendFokOrder(operation, operation.getLastAttempt().getMarketOrder());
+      }
+      catch (BestXException e) {
+         LOGGER.error("An error occurred while sending FOK Order to MarketAxess", e);
+         operation.setStateResilient(new WarningState(currentState, e, Messages.getString("MARKETAXESS_MarketSendOrderError.0")), ErrorState.class);
+         stopDefaultTimer();
+      }
+   }
 
-		if (source.getMarketCode() != MarketCode.MARKETAXESS) {
-			return;
-		}
-		stopDefaultTimer();
-		// we have sent an order related to the last attempt, thus we could
-		// receive rejects only for it
-		String executionProposalQuoteId = operation.getLastAttempt().getMarketOrder().getMarketSessionId();
-		if (executionProposalQuoteId != null && executionProposalQuoteId.equals(sessionId)) {
-			stopDefaultTimer();
-			if (!checkCustomerRevoke(order)) {
-				if (reason != null && reason.length() > 0) {
-					operation.setStateResilient(new MA_RejectedState(Messages.getString("MARKETAXESS_RejectPrefix", reason)), ErrorState.class);
-				} else {
-					operation.setStateResilient(new MA_RejectedState(""), ErrorState.class);
-				}
-			}
-		} else {
-			LOGGER.warn("Received reject with sessionId {}, expected sessionId {}. Ignore the reject.", sessionId, executionProposalQuoteId);
-		}
-	}
+   @Override
+   public void onMarketOrderReject(MarketBuySideConnection source, Order order, String reason, String sessionId) {
 
-	@Override
-	public void onMarketExecutionReport(MarketBuySideConnection source, Order order, MarketExecutionReport marketExecutionReport) {
-		Attempt currentAttempt = operation.getLastAttempt();
-		if (currentAttempt == null) {
-			LOGGER.error("No current Attempt found");
-			operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("MARKETAXESS_MarketAttemptNotFoundError.0")), ErrorState.class);
-			return;
-		}
+      if (source.getMarketCode() != MarketCode.MARKETAXESS) {
+         return;
+      }
+      stopDefaultTimer();
+      // we have sent an order related to the last attempt, thus we could
+      // receive rejects only for it
+      String executionProposalQuoteId = operation.getLastAttempt().getMarketOrder().getMarketSessionId();
+      if (executionProposalQuoteId != null && executionProposalQuoteId.equals(sessionId)) {
+         stopDefaultTimer();
+         if (!checkCustomerRevoke(order)) {
+            if (reason != null && reason.length() > 0) {
+               operation.setStateResilient(new MA_RejectedState(Messages.getString("MARKETAXESS_RejectPrefix", reason)), ErrorState.class);
+            }
+            else {
+               operation.setStateResilient(new MA_RejectedState(""), ErrorState.class);
+            }
+         }
+      }
+      else {
+         LOGGER.warn("Received reject with sessionId {}, expected sessionId {}. Ignore the reject.", sessionId, executionProposalQuoteId);
+      }
+   }
 
-		List<MarketExecutionReport> marketExecutionReports = currentAttempt.getMarketExecutionReports();
-		if (marketExecutionReports == null) {
-			marketExecutionReports = new ArrayList<MarketExecutionReport>();
-			currentAttempt.setMarketExecutionReports(marketExecutionReports);
-		}
-		marketExecutionReports.add(marketExecutionReport);
+   @Override
+   public void onMarketExecutionReport(MarketBuySideConnection source, Order order, MarketExecutionReport marketExecutionReport) {
+      Attempt currentAttempt = operation.getLastAttempt();
+      if (currentAttempt == null) {
+         LOGGER.error("No current Attempt found");
+         operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("MARKETAXESS_MarketAttemptNotFoundError.0")), ErrorState.class);
+         return;
+      }
 
-		// Create Customer Execution Report from Market Execution Report
-		ExecutionReport executionReport;
-		try {
-			executionReport = marketExecutionReport.clone();
-		} catch (CloneNotSupportedException e1) {
-			LOGGER.error("Error while trying to create Execution Report from Market Execution Report");
-			operation.setStateResilient(new WarningState(operation.getState(), e1, Messages.getString("MARKETAXESS_MarketExecutionReportError.0")), ErrorState.class);
-			return;
-		}
+      List<MarketExecutionReport> marketExecutionReports = currentAttempt.getMarketExecutionReports();
+      if (marketExecutionReports == null) {
+         marketExecutionReports = new ArrayList<MarketExecutionReport>();
+         currentAttempt.setMarketExecutionReports(marketExecutionReports);
+      }
+      marketExecutionReports.add(marketExecutionReport);
 
-		long executionReportId = serialNumberService.getSerialNumber("EXEC_REP");
+      // Create Customer Execution Report from Market Execution Report
+      ExecutionReport executionReport;
+      try {
+         executionReport = marketExecutionReport.clone();
+      }
+      catch (CloneNotSupportedException e1) {
+         LOGGER.error("Error while trying to create Execution Report from Market Execution Report");
+         operation.setStateResilient(new WarningState(operation.getState(), e1, Messages.getString("MARKETAXESS_MarketExecutionReportError.0")), ErrorState.class);
+         return;
+      }
 
-		ExecutionReportState execRepState = marketExecutionReport.getState();
-		if (execRepState == null) {
-			String errorMsg = "Execution report with null state!"; 
-			LOGGER.error(errorMsg);
-			operation.setStateResilient(new WarningState(operation.getState(), null, errorMsg), ErrorState.class);
-			return;
-		} else {
-			String ordCancelRejTimer = super.getDefaultTimerJobName() + REVOKE_TIMER_SUFFIX;
-			switch (execRepState) {
-			case NEW:
-				LOGGER.info("Order {}, received exec report in NEW state", operation.getOrder().getFixOrderId());
-				break;
-			case CANCELLED:
-				stopDefaultTimer();
-		        currentAttempt.setAttemptState(AttemptState.EXPIRED);
-				LOGGER.info("Order {}, received exec report in CANCELLED state with message {}", operation.getOrder().getFixOrderId(), marketExecutionReport.getText());
-				try {
-					//this timer could not exist, in this case nothing will happen with this call
-					stopTimer(ordCancelRejTimer);
-				} catch (SchedulerException e) {
-					LOGGER.warn("Error while stopping timer {}", ordCancelRejTimer, e);
-				}
-				// MA market execution report may have the MarketMaker code inside
-				if(marketExecutionReport.getMarketMaker() != null){
-					executionReport.setExecBroker(marketExecutionReport.getMarketMaker().getCode());
-					executionReport.setCounterPart(marketExecutionReport.getMarketMaker().getCode());
-				} else {
-					String execBroker =  marketExecutionReport.getExecBroker();
-					executionReport.setExecBroker(execBroker);
-					executionReport.setCounterPart(execBroker);
-				}
-				executionReport.setMarketOrderID(marketExecutionReport.getMarketOrderID());
-				// set quotes
-				addQuotesToAttempt(currentAttempt, marketExecutionReport);
-				
-				if(isCancelRequestedByUser)
-					operation.setStateResilient(new MA_CancelledState("Revoke requested by the customer"),
-							ErrorState.class);				
-				else if(isCancelBestXInitiative)
-					operation.setStateResilient(new MA_CancelledState("No answer received after the configurated number of seconds. Order has been automatically cancelled by BestX!"),
-							ErrorState.class);
-				else 
-					operation.setStateResilient(new MA_CancelledState(), ErrorState.class);
-				break;
-			case REJECTED:
-				stopDefaultTimer();    
-		        currentAttempt.setAttemptState(AttemptState.REJECTED);
-				if(marketExecutionReport.getMarketMaker() != null){
-					executionReport.setExecBroker(marketExecutionReport.getMarketMaker().getCode());
-					executionReport.setCounterPart(marketExecutionReport.getMarketMaker().getCode());
-				} else {
-					String execBroker =  marketExecutionReport.getExecBroker();
-					executionReport.setExecBroker(execBroker);
-					executionReport.setCounterPart(execBroker);
-				}
-				executionReport.setMarketOrderID(marketExecutionReport.getMarketOrderID());
-				// set quotes
-				addQuotesToAttempt(currentAttempt, marketExecutionReport);
+      long executionReportId = serialNumberService.getSerialNumber("EXEC_REP");
 
-				operation.setStateResilient(new MA_RejectedState(marketExecutionReport.getText()), ErrorState.class);
-				break;
-			case FILLED:
-				stopDefaultTimer();
-				currentAttempt.setAttemptState(AttemptState.EXECUTED);
-				try {
-					//this timer could not exist, in this case nothing will happen with this call
-					stopTimer(ordCancelRejTimer);
-				} catch (SchedulerException e) {
-					LOGGER.warn("Error while stopping timer {}", ordCancelRejTimer, e);
-				}
-		        executionReport.setLastPx(marketExecutionReport.getLastPx());
-		        executionReport.setAveragePrice(marketExecutionReport.getAveragePrice());
-		        executionReport.setPrice(operation.getOrder().getLimit());
-		        executionReport.setPriceType(operation.getOrder().getPriceType());
-//				executionReport.setLastPx(executionReport.getPrice().getAmount());
-//				marketExecutionReport.setLastPx(executionReport.getPrice().getAmount());
-				executionReport.setSequenceId(Long.toString(executionReportId));
+      ExecutionReportState execRepState = marketExecutionReport.getState();
+      if (execRepState == null) {
+         String errorMsg = "Execution report with null state!";
+         LOGGER.error(errorMsg);
+         operation.setStateResilient(new WarningState(operation.getState(), null, errorMsg), ErrorState.class);
+         return;
+      }
+      else {
+         String ordCancelRejTimer = super.getDefaultTimerJobName() + REVOKE_TIMER_SUFFIX;
+         switch (execRepState) {
+            case NEW:
+               LOGGER.info("Order {}, received exec report in NEW state", operation.getOrder().getFixOrderId());
+            break;
+            case CANCELLED:
+               stopDefaultTimer();
+               currentAttempt.setAttemptState(AttemptState.EXPIRED);
+               LOGGER.info("Order {}, received exec report in CANCELLED state with message {}", operation.getOrder().getFixOrderId(), marketExecutionReport.getText());
+               try {
+                  //this timer could not exist, in this case nothing will happen with this call
+                  stopTimer(ordCancelRejTimer);
+               }
+               catch (SchedulerException e) {
+                  LOGGER.warn("Error while stopping timer {}", ordCancelRejTimer, e);
+               }
+               // MA market execution report may have the MarketMaker code inside
+               if (marketExecutionReport.getMarketMaker() != null) {
+                  executionReport.setExecBroker(marketExecutionReport.getMarketMaker().getCode());
+                  executionReport.setCounterPart(marketExecutionReport.getMarketMaker().getCode());
+               }
+               else {
+                  String execBroker = marketExecutionReport.getExecBroker();
+                  executionReport.setExecBroker(execBroker);
+                  executionReport.setCounterPart(execBroker);
+               }
+               executionReport.setMarketOrderID(marketExecutionReport.getMarketOrderID());
+               // set quotes
+               addQuotesToAttempt(currentAttempt, marketExecutionReport);
 
-				// MA market execution report has the MarketMaker code inside
-				if(marketExecutionReport.getMarketMaker() != null){
-					executionReport.setExecBroker(marketExecutionReport.getMarketMaker().getCode());
-					executionReport.setCounterPart(marketExecutionReport.getMarketMaker().getCode());
-				} else {
-					LOGGER.info("Unknown MarketMaker code for ExecutionReport {}", marketExecutionReport);
-					String execBroker =  marketExecutionReport.getExecBroker();
-					executionReport.setExecBroker(execBroker);
-					executionReport.setCounterPart(execBroker);
-				}
-				executionReport.setMarketOrderID(marketExecutionReport.getMarketOrderID());
-				operation.getExecutionReports().add(executionReport);
+               if (isCancelRequestedByUser)
+                  operation.setStateResilient(new MA_CancelledState("Revoke requested by the customer"), ErrorState.class);
+               else if (isCancelBestXInitiative)
+                  operation.setStateResilient(new MA_CancelledState("No answer received after the configurated number of seconds. Order has been automatically cancelled by BestX!"), ErrorState.class);
+               else operation.setStateResilient(new MA_CancelledState(), ErrorState.class);
+            break;
+            case REJECTED:
+               stopDefaultTimer();
+               currentAttempt.setAttemptState(AttemptState.REJECTED);
+               if (marketExecutionReport.getMarketMaker() != null) {
+                  executionReport.setExecBroker(marketExecutionReport.getMarketMaker().getCode());
+                  executionReport.setCounterPart(marketExecutionReport.getMarketMaker().getCode());
+               }
+               else {
+                  String execBroker = marketExecutionReport.getExecBroker();
+                  executionReport.setExecBroker(execBroker);
+                  executionReport.setCounterPart(execBroker);
+               }
+               executionReport.setMarketOrderID(marketExecutionReport.getMarketOrderID());
+               // set quotes
+               addQuotesToAttempt(currentAttempt, marketExecutionReport);
 
-				// set quotes
-				addQuotesToAttempt(currentAttempt, marketExecutionReport);
-				operation.setStateResilient(new MA_ExecutedState(), ErrorState.class);
-					break;
-				default:
-					LOGGER.error("Order {}, received unexpected exec report state {}", operation.getOrder().getFixOrderId(), execRepState);
-					break;
-				}
-			}
+               operation.setStateResilient(new MA_RejectedState(marketExecutionReport.getText()), ErrorState.class);
+            break;
+            case FILLED:
+               stopDefaultTimer();
+               currentAttempt.setAttemptState(AttemptState.EXECUTED);
+               try {
+                  //this timer could not exist, in this case nothing will happen with this call
+                  stopTimer(ordCancelRejTimer);
+               }
+               catch (SchedulerException e) {
+                  LOGGER.warn("Error while stopping timer {}", ordCancelRejTimer, e);
+               }
 
-		}
+               if (executionReport.getPriceType() != null && executionReport.getPriceType() != it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.PriceType.PER_UNIT) {
+                  operation.onApplicationError(operation.getState(), null, Messages.getString("NoExecutionPriceError.0"));
+                  return;
+               }
 
-	/**
-	 * @param marketExecutionReport
-	 * @param currentAttempt
-	 * @param maExecutionReport
-	 * @throws NumberFormatException
-	 */
-	private void addQuotesToAttempt(Attempt currentAttempt, MarketExecutionReport marketExecutionReport) throws NumberFormatException {
-		MarketAxessExecutionReport maExecutionReport = (MarketAxessExecutionReport) marketExecutionReport;
-		for (NoDealers dealer : maExecutionReport.getDealers()) {
-			ExecutablePrice quote = new ExecutablePrice();
-			quote.setMarket(maExecutionReport.getMarket());
-			MarketMarketMaker mmm = null;
-			String quotingDealer = "Unknown";
-			quote.setType(ProposalType.COUNTER);
-			try {
-				quotingDealer = dealer.getDealerID().getValue();
-				mmm = marketMakerFinder.getMarketMarketMakerByCode(maExecutionReport.getMarket().getMarketCode(), quotingDealer);
-				if(mmm == null) {
-					LOGGER.warn("IMPORTANT! MarketAxess returned dealer {} not configured in BestX!. Please configure it", quotingDealer);
-					quote.setOriginatorID(quotingDealer);
-				} else {
-					quote.setMarketMarketMaker(mmm);
-				}
-				quote.setAuditQuoteState(dealer.getCompetitiveStatus().getValue());
-				boolean foundStatus = convertState(quote, dealer.getCompetitiveStatus());
-				if (! foundStatus) {
-					LOGGER.info("Competitive Status for MarketAxess not found: {}. Setting proposal status to dropped", dealer.getCompetitiveStatus());
-				}
-				try {
-					quote.setReason(dealer.getDealerQuoteText().getValue());
-				} catch (@SuppressWarnings("unused") Exception e) {
-				; // no text from dealer
-				}
-			} catch (FieldNotFound e) {
-				LOGGER.info("Field not found", e);
-				quote = null;
-				continue;
-			} catch(@SuppressWarnings("unused") BestXException e1) {
-				LOGGER.info("Can't Be!");
-				quote.setOriginatorID(quotingDealer);
-			}
-			try {  //BESTX-314 get dealer quote from alternative tag ReferencePrice (5691) if original was not in percentage of par
-				if(PriceType.PRICE == convertPriceType(dealer.getDealerQuotePriceType())) {
-					try {
-						quote.setPrice(new Money(maExecutionReport.getInstrument().getCurrency(), new BigDecimal(Double.toString(dealer.getDealerQuotePrice().getValue()))));
-						quote.setPriceType(convertPriceType(dealer.getDealerQuotePriceType()));
-						quote.setQty(new BigDecimal(Double.toString(dealer.getDealerQuoteOrdQty().getValue())));
-					} catch (@SuppressWarnings("unused") FieldNotFound e) {
-						quote.setPrice(new Money(currentAttempt.getMarketOrder().getCurrency(), new BigDecimal("0")));
-						quote.setQty(currentAttempt.getMarketOrder().getQty());
-					}
-				} else { //let's hope tag 7761 equals 1 
-					try {
-						quote.setPrice(new Money(maExecutionReport.getInstrument().getCurrency(), new BigDecimal(Double.toString(dealer.getReferencePrice().getValue()))));
-						quote.setPriceType(convertPriceType(dealer.getDealerQuotePriceType()));
-						quote.setQty(new BigDecimal(Double.toString(dealer.getDealerQuoteOrdQty().getValue())));
-					} catch (@SuppressWarnings("unused") FieldNotFound e) {
-						quote.setPrice(new Money(currentAttempt.getMarketOrder().getCurrency(), new BigDecimal("0")));
-						quote.setQty(currentAttempt.getMarketOrder().getQty());
-					}
-				}
-					quote.setSide(maExecutionReport.getSide() == OrderSide.BUY ? ProposalSide.ASK : ProposalSide.BID);
-					quote.setTimestamp(DateService.convertUTCToLocal(currentAttempt.getMarketOrder().getTransactTime())); // there is no timestamp in MA returned values - MarketOrder TransactTime is in UTC
-					quote.setQuoteReqId(currentAttempt.getMarketOrder().getFixOrderId());
-					int rank = Integer.parseInt(dealer.getQuoteRank().getValue());
-					if(mmm == null) {
-						LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", 
-								operation.getOrder().getFixOrderId(), operation.getAttemptNo(), quote.getOriginatorID(), quote.getPrice().getAmount().toString(), quote.getAuditQuoteState());
-					} else {
-						LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", 
-								operation.getOrder().getFixOrderId(), operation.getAttemptNo(), quote.getMarketMarketMaker().getMarketMaker().getName(), quote.getPrice().getAmount().toString(), quote.getAuditQuoteState());
-					}
-					currentAttempt.addExecutablePrice(quote, rank);
-					if(mmm != null && mmm.getMarketMaker() != null)
-						quote.setVenue(venueFinder.getMarketMakerVenue(mmm.getMarketMaker()));
-				} catch (@SuppressWarnings("unused") FieldNotFound e) {
-					LOGGER.info("Quote not valid for dealer {}", quotingDealer);
-				} catch (@SuppressWarnings("unused") NullPointerException|BestXException e) {
-					// no venue available for this MM
-					if(mmm != null) {
-						LOGGER.info("Unable to find venue for Market code of Market Maker {}", mmm.getMarketSpecificCode());
-						Venue dummyVenue = new Venue();
-						dummyVenue.setCode(mmm.getMarketMaker().getCode());
-						dummyVenue.setMarket(market);
-						dummyVenue.setMarketMaker(mmm.getMarketMaker());
-						dummyVenue.setVenueType(VenueType.MARKET_MAKER);
-						quote.setVenue(dummyVenue);
-					} else {
-						LOGGER.info("Unable to find Market Maker for MarketAxess dealer code {}", quote.getOriginatorID());
-					}
-				}
-			}
-		}
-//	}
+               executionReport.setLastPx(marketExecutionReport.getLastPx());
+               executionReport.setAveragePrice(marketExecutionReport.getAveragePrice());
+               executionReport.setPrice(operation.getOrder().getLimit());
+               executionReport.setPriceType(operation.getOrder().getPriceType());
+               //				executionReport.setLastPx(executionReport.getPrice().getAmount());
+               //				marketExecutionReport.setLastPx(executionReport.getPrice().getAmount());
+               executionReport.setSequenceId(Long.toString(executionReportId));
 
-		private PriceType convertPriceType(DealerQuotePriceType dealerQuotePriceType) {
-			if (dealerQuotePriceType == null)
-				return null;
-			switch(dealerQuotePriceType.getValue()) {
-			case "1":
-				return PriceType.PRICE;
-			case "6":
-				return PriceType.SPREAD;
-			case "9":
-			case "10":
-				return PriceType.YIELD;
-			default:
-				return null;
-			}
-		}
+               // MA market execution report has the MarketMaker code inside
+               if (marketExecutionReport.getMarketMaker() != null) {
+                  executionReport.setExecBroker(marketExecutionReport.getMarketMaker().getCode());
+                  executionReport.setCounterPart(marketExecutionReport.getMarketMaker().getCode());
+               }
+               else {
+                  LOGGER.info("Unknown MarketMaker code for ExecutionReport {}", marketExecutionReport);
+                  String execBroker = marketExecutionReport.getExecBroker();
+                  executionReport.setExecBroker(execBroker);
+                  executionReport.setCounterPart(execBroker);
+               }
+               executionReport.setMarketOrderID(marketExecutionReport.getMarketOrderID());
+               operation.getExecutionReports().add(executionReport);
 
-		/**
-		 * 
-		 * @param proposal
-		 * @param competitiveStatus
-		 * @return true iff the competitiveStatus is one of the recognised strings
-		 */
-		private boolean convertState(ExecutablePrice proposal, CompetitiveStatus competitiveStatus) {
-			if(competitiveStatus.getValue().startsWith("Done-"))
-				proposal.setAuditQuoteState("Done");					
-			else
-				proposal.setAuditQuoteState(competitiveStatus.getValue());
-			switch (proposal.getAuditQuoteState()) {
-			case "Done":
-			case "Covered":
-			case "Tied for Best":
-			case "Missed":
-			case "EXP-Price":
-				// do not change audit status, since it is acceptable value
-				proposal.setProposalState(ProposalState.NEW);
-				proposal.setProposalSubState(ProposalSubState.NONE);
-				return true;
-			case "Order Accepted":	// suspecting this is for dealer only
-			case "Resp Req": 		//suspecting this is for dealer only
-				proposal.setAuditQuoteState("Done");
-				proposal.setProposalState(ProposalState.NEW);
-				proposal.setProposalSubState(ProposalSubState.NONE);
-				return true;
-			case "Tied for Cover":
-				proposal.setAuditQuoteState("Tied-For-Cover");
-				proposal.setProposalState(ProposalState.NEW);
-				proposal.setProposalSubState(ProposalSubState.NONE);
-				return true;
-			case "EXP-DNQ":
-			case "DNT":
-				proposal.setAuditQuoteState("EXP-DNQ");
-				proposal.setProposalState(ProposalState.REJECTED);
-				proposal.setProposalSubState(ProposalSubState.NOT_TRADING);
-				return true;
-			case "Client CXL":
-			case "Timed Out":
-			case "Timed Out (R)":
-				proposal.setAuditQuoteState("Timed Out");
-				proposal.setProposalState(ProposalState.REJECTED);
-				proposal.setProposalSubState(ProposalSubState.NOT_TRADING);
-				return true;
-			case "Passed":
-				// do not change audit status, since it is acceptable value
-				proposal.setProposalState(ProposalState.REJECTED);
-				proposal.setProposalSubState(ProposalSubState.REJECTED_BY_DEALER);
-				return true;
-			case "Withdrawn":
-			case "Cancelled":
-				proposal.setAuditQuoteState("Cancelled");
-				proposal.setProposalState(ProposalState.REJECTED);
-				proposal.setProposalSubState(ProposalSubState.REJECTED_BY_DEALER);
-				return true;
-			case "Cxl-Amended":
-			case "You CXL":
-			default:
-				proposal.setAuditQuoteState("Cancelled");
-				proposal.setProposalState(ProposalState.DROPPED);
-				proposal.setProposalSubState(ProposalSubState.NOT_TRADING);
-				return false;
-			}
-		}
+               // set quotes
+               addQuotesToAttempt(currentAttempt, marketExecutionReport);
+               operation.setStateResilient(new MA_ExecutedState(), ErrorState.class);
+            break;
+            default:
+               LOGGER.error("Order {}, received unexpected exec report state {}", operation.getOrder().getFixOrderId(), execRepState);
+            break;
+         }
+      }
 
-		@Override
-		public void onTimerExpired(String jobName, String groupName) {
-			String handlerJobName = super.getDefaultTimerJobName();
+   }
 
-			if (jobName.equals(handlerJobName)) {
-				LOGGER.debug("Order {} : Timer: {} expired.", operation.getOrder().getFixOrderId(), jobName);
-				try {
-					//create the timer for the order cancel
-					handlerJobName += REVOKE_TIMER_SUFFIX;
-					setupTimer(handlerJobName, orderCancelDelay, false);
-					// send order cancel message to the market
-					isCancelBestXInitiative = true;
-					connection.revokeOrder(operation, operation.getLastAttempt().getMarketOrder(), Messages.getString("MARKETAXESS_RevokeOrderForTimeout"));
-				} catch (BestXException e) {
-					try {
-						stopTimer(handlerJobName);
-					} catch (SchedulerException e1) {
-						LOGGER.error("Error in stop timer " + handlerJobName, e1);
-					}
-					LOGGER.error("Error {} while revoking the order {}", e.getMessage(), operation.getOrder().getFixOrderId(), e);
-					operation.setStateResilient(new WarningState(operation.getState(), e,
-							Messages.getString("MARKETAXESS_MarketRevokeOrderError",  operation.getOrder().getFixOrderId())),
-							ErrorState.class);	
-				}            
-			} else if (jobName.equals(handlerJobName + REVOKE_TIMER_SUFFIX)) {
-				//The timer created after receiving an Order Cancel Reject is expired without receiving an execution or a cancellation
-				LOGGER.debug("Order {} : Timer: {} expired.", operation.getOrder().getFixOrderId(), jobName);
-				operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("CancelRejectWithNoExecutionReportTimeout.0", operation.getLastAttempt().getMarketOrder().getMarket().getName())), ErrorState.class);
-			} else {
-				super.onTimerExpired(jobName, groupName);
-			}
-		}
+   /**
+    * @param marketExecutionReport
+    * @param currentAttempt
+    * @param maExecutionReport
+    * @throws NumberFormatException
+    */
+   private void addQuotesToAttempt(Attempt currentAttempt, MarketExecutionReport marketExecutionReport) throws NumberFormatException {
+      MarketAxessExecutionReport maExecutionReport = (MarketAxessExecutionReport) marketExecutionReport;
+      for (NoDealers dealer : maExecutionReport.getDealers()) {
+         ExecutablePrice quote = new ExecutablePrice();
+         quote.setMarket(maExecutionReport.getMarket());
+         MarketMarketMaker mmm = null;
+         String quotingDealer = "Unknown";
+         quote.setType(ProposalType.COUNTER);
+         try {
+            quotingDealer = dealer.getDealerID().getValue();
+            mmm = marketMakerFinder.getMarketMarketMakerByCode(maExecutionReport.getMarket().getMarketCode(), quotingDealer);
+            if (mmm == null) {
+               LOGGER.warn("IMPORTANT! MarketAxess returned dealer {} not configured in BestX!. Please configure it", quotingDealer);
+               quote.setOriginatorID(quotingDealer);
+            }
+            else {
+               quote.setMarketMarketMaker(mmm);
+            }
+            quote.setAuditQuoteState(dealer.getCompetitiveStatus().getValue());
+            boolean foundStatus = convertState(quote, dealer.getCompetitiveStatus());
+            if (!foundStatus) {
+               LOGGER.info("Competitive Status for MarketAxess not found: {}. Setting proposal status to dropped", dealer.getCompetitiveStatus());
+            }
+            try {
+               quote.setReason(dealer.getDealerQuoteText().getValue());
+            }
+            catch (@SuppressWarnings("unused")
+            Exception e) {
+               ; // no text from dealer
+            }
+         }
+         catch (FieldNotFound e) {
+            LOGGER.info("Field not found", e);
+            quote = null;
+            continue;
+         }
+         catch (@SuppressWarnings("unused")
+         BestXException e1) {
+            LOGGER.info("Can't Be!");
+            quote.setOriginatorID(quotingDealer);
+         }
+         try { //BESTX-314 get dealer quote from alternative tag ReferencePrice (5691) if original was not in percentage of par
+            if (PriceType.PRICE == convertPriceType(dealer.getDealerQuotePriceType())) {
+               try {
+                  quote.setPrice(new Money(maExecutionReport.getInstrument().getCurrency(), new BigDecimal(Double.toString(dealer.getDealerQuotePrice().getValue()))));
+                  quote.setPriceType(convertPriceType(dealer.getDealerQuotePriceType()));
+                  quote.setQty(new BigDecimal(Double.toString(dealer.getDealerQuoteOrdQty().getValue())));
+               }
+               catch (@SuppressWarnings("unused")
+               FieldNotFound e) {
+                  quote.setPrice(new Money(currentAttempt.getMarketOrder().getCurrency(), new BigDecimal("0")));
+                  quote.setQty(currentAttempt.getMarketOrder().getQty());
+               }
+            }
+            else { //let's hope tag 7761 equals 1 
+               try {
+                  quote.setPrice(new Money(maExecutionReport.getInstrument().getCurrency(), new BigDecimal(Double.toString(dealer.getReferencePrice().getValue()))));
+                  quote.setPriceType(convertPriceType(dealer.getDealerQuotePriceType()));
+                  quote.setQty(new BigDecimal(Double.toString(dealer.getDealerQuoteOrdQty().getValue())));
+               }
+               catch (@SuppressWarnings("unused")
+               FieldNotFound e) {
+                  quote.setPrice(new Money(currentAttempt.getMarketOrder().getCurrency(), new BigDecimal("0")));
+                  quote.setQty(currentAttempt.getMarketOrder().getQty());
+               }
+            }
+            quote.setSide(maExecutionReport.getSide() == OrderSide.BUY ? ProposalSide.ASK : ProposalSide.BID);
+            quote.setTimestamp(DateService.convertUTCToLocal(currentAttempt.getMarketOrder().getTransactTime())); // there is no timestamp in MA returned values - MarketOrder TransactTime is in UTC
+            quote.setQuoteReqId(currentAttempt.getMarketOrder().getFixOrderId());
+            int rank = Integer.parseInt(dealer.getQuoteRank().getValue());
+            if (mmm == null) {
+               LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", operation.getOrder().getFixOrderId(), operation.getAttemptNo(),
+                     quote.getOriginatorID(), quote.getPrice().getAmount().toString(), quote.getAuditQuoteState());
+            }
+            else {
+               LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", operation.getOrder().getFixOrderId(), operation.getAttemptNo(),
+                     quote.getMarketMarketMaker().getMarketMaker().getName(), quote.getPrice().getAmount().toString(), quote.getAuditQuoteState());
+            }
+            currentAttempt.addExecutablePrice(quote, rank);
+            if (mmm != null && mmm.getMarketMaker() != null)
+               quote.setVenue(venueFinder.getMarketMakerVenue(mmm.getMarketMaker()));
+         }
+         catch (@SuppressWarnings("unused")
+         FieldNotFound e) {
+            LOGGER.info("Quote not valid for dealer {}", quotingDealer);
+         }
+         catch (@SuppressWarnings("unused")
+               NullPointerException | BestXException e) {
+            // no venue available for this MM
+            if (mmm != null) {
+               LOGGER.info("Unable to find venue for Market code of Market Maker {}", mmm.getMarketSpecificCode());
+               Venue dummyVenue = new Venue();
+               dummyVenue.setCode(mmm.getMarketMaker().getCode());
+               dummyVenue.setMarket(market);
+               dummyVenue.setMarketMaker(mmm.getMarketMaker());
+               dummyVenue.setVenueType(VenueType.MARKET_MAKER);
+               quote.setVenue(dummyVenue);
+            }
+            else {
+               LOGGER.info("Unable to find Market Maker for MarketAxess dealer code {}", quote.getOriginatorID());
+            }
+         }
+      }
+   }
+   //	}
 
-		@Override
-		public void onFixRevoke(CustomerConnection source) {
-			MarketOrder marketOrder = operation.getLastAttempt().getMarketOrder();
-			
-			String reason = Messages.getString("EventRevocationRequest.0");
-			updateOperationToRevocated(reason);
-			try {
-				isCancelBestXInitiative = true;
-				isCancelRequestedByUser = true;
-				connection.revokeOrder(operation, marketOrder, reason);
-			} catch (BestXException e) {
-				LOGGER.error("An error occurred while revoking the order {}", operation.getOrder().getFixOrderId(), e);
-				operation.setStateResilient(new WarningState(operation.getState(), e,
-						Messages.getString("MARKETAXESS_MarketRevokeOrderError",  operation.getOrder().getFixOrderId())),
-						ErrorState.class);	
-			}
-			
-		}
-		
-		@Override
-		public void onMarketOrderCancelRequestReject(MarketBuySideConnection source, Order order, String reason) {
-			String handlerJobName = super.getDefaultTimerJobName() + REVOKE_TIMER_SUFFIX;
-			try {
-				isCancelBestXInitiative = false;
-				stopTimer(handlerJobName);
-				LOGGER.info("Order {} cancel rejected, waiting for the order execution or cancellation", order.getFixOrderId());
-				//recreate the timer with a longer timeout (the same used for the execution)
-				setupTimer(handlerJobName, waitingExecutionDelay, false);
-			} catch (SchedulerException e) {
-				LOGGER.error("Cannot stop timer {}", handlerJobName, e);
-			}
-		}
-		
-//		@Override
-		public void onRevoke() {
+   private PriceType convertPriceType(DealerQuotePriceType dealerQuotePriceType) {
+      if (dealerQuotePriceType == null)
+         return null;
+      switch (dealerQuotePriceType.getValue()) {
+         case "1":
+            return PriceType.PRICE;
+         case "6":
+            return PriceType.SPREAD;
+         case "9":
+         case "10":
+            return PriceType.YIELD;
+         default:
+            return null;
+      }
+   }
 
-			String handlerJobName = super.getDefaultTimerJobName();
-			try {
-				stopTimer(handlerJobName);
-			} catch (SchedulerException e2) {
-				LOGGER.error("Error in stop timer " + handlerJobName, e2);
-			}
+   /**
+    * 
+    * @param proposal
+    * @param competitiveStatus
+    * @return true iff the competitiveStatus is one of the recognised strings
+    */
+   private boolean convertState(ExecutablePrice proposal, CompetitiveStatus competitiveStatus) {
+      if (competitiveStatus.getValue().startsWith("Done-"))
+         proposal.setAuditQuoteState("Done");
+      else proposal.setAuditQuoteState(competitiveStatus.getValue());
+      switch (proposal.getAuditQuoteState()) {
+         case "Done":
+         case "Covered":
+         case "Tied for Best":
+         case "Missed":
+         case "EXP-Price":
+            // do not change audit status, since it is acceptable value
+            proposal.setProposalState(ProposalState.NEW);
+            proposal.setProposalSubState(ProposalSubState.NONE);
+            return true;
+         case "Order Accepted": // suspecting this is for dealer only
+         case "Resp Req": //suspecting this is for dealer only
+            proposal.setAuditQuoteState("Done");
+            proposal.setProposalState(ProposalState.NEW);
+            proposal.setProposalSubState(ProposalSubState.NONE);
+            return true;
+         case "Tied for Cover":
+            proposal.setAuditQuoteState("Tied-For-Cover");
+            proposal.setProposalState(ProposalState.NEW);
+            proposal.setProposalSubState(ProposalSubState.NONE);
+            return true;
+         case "EXP-DNQ":
+         case "DNT":
+            proposal.setAuditQuoteState("EXP-DNQ");
+            proposal.setProposalState(ProposalState.REJECTED);
+            proposal.setProposalSubState(ProposalSubState.NOT_TRADING);
+            return true;
+         case "Client CXL":
+         case "Timed Out":
+         case "Timed Out (R)":
+            proposal.setAuditQuoteState("Timed Out");
+            proposal.setProposalState(ProposalState.REJECTED);
+            proposal.setProposalSubState(ProposalSubState.NOT_TRADING);
+            return true;
+         case "Passed":
+            // do not change audit status, since it is acceptable value
+            proposal.setProposalState(ProposalState.REJECTED);
+            proposal.setProposalSubState(ProposalSubState.REJECTED_BY_DEALER);
+            return true;
+         case "Withdrawn":
+         case "Cancelled":
+            proposal.setAuditQuoteState("Cancelled");
+            proposal.setProposalState(ProposalState.REJECTED);
+            proposal.setProposalSubState(ProposalSubState.REJECTED_BY_DEALER);
+            return true;
+         case "Cxl-Amended":
+         case "You CXL":
+         default:
+            proposal.setAuditQuoteState("Cancelled");
+            proposal.setProposalState(ProposalState.DROPPED);
+            proposal.setProposalSubState(ProposalSubState.NOT_TRADING);
+            return false;
+      }
+   }
 
-			handlerJobName += REVOKE_TIMER_SUFFIX;
+   @Override
+   public void onTimerExpired(String jobName, String groupName) {
+      String handlerJobName = super.getDefaultTimerJobName();
 
-			try {
-				//create the timer for the order cancel
-				setupTimer(handlerJobName, orderCancelDelay, false);
+      if (jobName.equals(handlerJobName)) {
+         LOGGER.debug("Order {} : Timer: {} expired.", operation.getOrder().getFixOrderId(), jobName);
+         try {
+            //create the timer for the order cancel
+            handlerJobName += REVOKE_TIMER_SUFFIX;
+            setupTimer(handlerJobName, orderCancelDelay, false);
+            // send order cancel message to the market
+            isCancelBestXInitiative = true;
+            connection.revokeOrder(operation, operation.getLastAttempt().getMarketOrder(), Messages.getString("MARKETAXESS_RevokeOrderForTimeout"));
+         }
+         catch (BestXException e) {
+            try {
+               stopTimer(handlerJobName);
+            }
+            catch (SchedulerException e1) {
+               LOGGER.error("Error in stop timer " + handlerJobName, e1);
+            }
+            LOGGER.error("Error {} while revoking the order {}", e.getMessage(), operation.getOrder().getFixOrderId(), e);
+            operation.setStateResilient(new WarningState(operation.getState(), e, Messages.getString("MARKETAXESS_MarketRevokeOrderError", operation.getOrder().getFixOrderId())), ErrorState.class);
+         }
+      }
+      else if (jobName.equals(handlerJobName + REVOKE_TIMER_SUFFIX)) {
+         //The timer created after receiving an Order Cancel Reject is expired without receiving an execution or a cancellation
+         LOGGER.debug("Order {} : Timer: {} expired.", operation.getOrder().getFixOrderId(), jobName);
+         operation.setStateResilient(
+               new WarningState(operation.getState(), null, Messages.getString("CancelRejectWithNoExecutionReportTimeout.0", operation.getLastAttempt().getMarketOrder().getMarket().getName())),
+               ErrorState.class);
+      }
+      else {
+         super.onTimerExpired(jobName, groupName);
+      }
+   }
 
-				// send order cancel message to the market
-				isCancelBestXInitiative = true;
-				isCancelRequestedByUser = true;
-				connection.revokeOrder(operation, operation.getLastAttempt().getMarketOrder(), Messages.getString("TW_RevokeOrder"));
-			} catch (BestXException e) {
-				try {
-					stopTimer(handlerJobName);
-				} catch (SchedulerException e1) {
-					LOGGER.error("Error in stop timer " + handlerJobName, e1);
-				}
-				LOGGER.error("An error occurred while revoking the order {}", operation.getOrder().getFixOrderId(), e);
-				operation.setStateResilient(
-						new WarningState(
-								operation.getState(), 
-								e, 
-								Messages.getString("MA_MarketRevokeOrderError", operation.getOrder().getFixOrderId())
-								),
-						ErrorState.class
-						);   
-			}            
+   @Override
+   public void onFixRevoke(CustomerConnection source) {
+      MarketOrder marketOrder = operation.getLastAttempt().getMarketOrder();
 
-		}
+      String reason = Messages.getString("EventRevocationRequest.0");
+      updateOperationToRevocated(reason);
+      try {
+         isCancelBestXInitiative = true;
+         isCancelRequestedByUser = true;
+         connection.revokeOrder(operation, marketOrder, reason);
+      }
+      catch (BestXException e) {
+         LOGGER.error("An error occurred while revoking the order {}", operation.getOrder().getFixOrderId(), e);
+         operation.setStateResilient(new WarningState(operation.getState(), e, Messages.getString("MARKETAXESS_MarketRevokeOrderError", operation.getOrder().getFixOrderId())), ErrorState.class);
+      }
+
+   }
+
+   @Override
+   public void onMarketOrderCancelRequestReject(MarketBuySideConnection source, Order order, String reason) {
+      String handlerJobName = super.getDefaultTimerJobName() + REVOKE_TIMER_SUFFIX;
+      try {
+         isCancelBestXInitiative = false;
+         stopTimer(handlerJobName);
+         LOGGER.info("Order {} cancel rejected, waiting for the order execution or cancellation", order.getFixOrderId());
+         //recreate the timer with a longer timeout (the same used for the execution)
+         setupTimer(handlerJobName, waitingExecutionDelay, false);
+      }
+      catch (SchedulerException e) {
+         LOGGER.error("Cannot stop timer {}", handlerJobName, e);
+      }
+   }
+
+   //		@Override
+   public void onRevoke() {
+
+      String handlerJobName = super.getDefaultTimerJobName();
+      try {
+         stopTimer(handlerJobName);
+      }
+      catch (SchedulerException e2) {
+         LOGGER.error("Error in stop timer " + handlerJobName, e2);
+      }
+
+      handlerJobName += REVOKE_TIMER_SUFFIX;
+
+      try {
+         //create the timer for the order cancel
+         setupTimer(handlerJobName, orderCancelDelay, false);
+
+         // send order cancel message to the market
+         isCancelBestXInitiative = true;
+         isCancelRequestedByUser = true;
+         connection.revokeOrder(operation, operation.getLastAttempt().getMarketOrder(), Messages.getString("TW_RevokeOrder"));
+      }
+      catch (BestXException e) {
+         try {
+            stopTimer(handlerJobName);
+         }
+         catch (SchedulerException e1) {
+            LOGGER.error("Error in stop timer " + handlerJobName, e1);
+         }
+         LOGGER.error("An error occurred while revoking the order {}", operation.getOrder().getFixOrderId(), e);
+         operation.setStateResilient(new WarningState(operation.getState(), e, Messages.getString("MA_MarketRevokeOrderError", operation.getOrder().getFixOrderId())), ErrorState.class);
+      }
+
+   }
 
 }

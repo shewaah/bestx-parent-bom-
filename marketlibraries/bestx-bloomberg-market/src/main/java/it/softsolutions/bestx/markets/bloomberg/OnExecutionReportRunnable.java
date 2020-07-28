@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.softsolutions.bestx.BestXException;
+import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.finders.MarketMakerFinder;
 import it.softsolutions.bestx.model.Attempt;
@@ -155,6 +156,10 @@ public class OnExecutionReportRunnable implements Runnable {
 		if(order == null) {
 			operation.onApplicationError(operation.getState(), new NullPointerException(), "Operation " + operation.getId() + " has no order!");
 			return;
+		}
+		if (lastPrice == null) {
+         operation.onApplicationError(operation.getState(), null, Messages.getString("NoExecutionPriceError.0"));
+         return;
 		}
 
 		MarketExecutionReport marketExecutionReport = new MarketExecutionReport();

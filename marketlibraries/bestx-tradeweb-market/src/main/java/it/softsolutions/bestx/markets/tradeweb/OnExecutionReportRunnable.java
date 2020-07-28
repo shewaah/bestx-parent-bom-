@@ -19,6 +19,7 @@ import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.model.Market;
@@ -144,6 +145,11 @@ public class OnExecutionReportRunnable implements Runnable {
         	operation.onApplicationError(operation.getState(), new NullPointerException(), "Operation " + operation.getId() + " has no order!");
         	return;
         }
+        if (BigDecimal.ZERO.equals(lastPrice)) {
+           operation.onApplicationError(operation.getState(), null, Messages.getString("NoExecutionPriceError.0"));
+           return;
+        }
+
     	// ClassifiedProposal executionProposal =
         // operation.getLastAttempt().getExecutionProposal();
         marketExecutionReport.setActualQty(order.getQty());
