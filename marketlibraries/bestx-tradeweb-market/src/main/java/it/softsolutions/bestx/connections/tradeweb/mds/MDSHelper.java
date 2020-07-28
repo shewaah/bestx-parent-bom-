@@ -236,9 +236,12 @@ public class MDSHelper extends MarketPriceDiscoveryHelper {
          							case Yield:
          								priceType = PriceType.YIELD;
          								break;
-                              case Spread:
-                                 priceType = PriceType.SPREAD;
-                                 break;
+         							case Spread:
+         								priceType = PriceType.SPREAD;
+         								break;
+         							case PerUnit:
+         								priceType = PriceType.UNIT;
+         								break;
          							default:
          								LOGGER.debug("PriceType = {} not managed yet", tsNoMDEntries.getPriceType());
          								break;

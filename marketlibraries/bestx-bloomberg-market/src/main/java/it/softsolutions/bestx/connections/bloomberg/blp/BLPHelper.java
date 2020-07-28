@@ -242,6 +242,11 @@ public class BLPHelper {
                               case Spread:
                                  priceType = Proposal.PriceType.SPREAD;
                                  break;
+                                 //price in unit changes
+                              case PerUnit:
+                            	  priceType = Proposal.PriceType.UNIT;
+                            	  break;
+                                 
                               default:
                                  LOGGER.debug("PriceType = {} not managed yet", tsNoMDEntries.getPriceType());
                                  break;

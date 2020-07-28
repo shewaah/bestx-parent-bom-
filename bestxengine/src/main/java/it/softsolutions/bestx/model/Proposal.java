@@ -84,7 +84,7 @@ public class Proposal implements Cloneable, Comparable<Proposal> {
     }
     
     public static enum PriceType {
-        PRICE, YIELD, SPREAD
+        PRICE, YIELD, SPREAD, UNIT
     }
     @SuppressWarnings("unused")
     private Long id;
@@ -116,6 +116,7 @@ public class Proposal implements Cloneable, Comparable<Proposal> {
     private BigDecimal originalPrice;
     private BigDecimal yield;
     private PriceType priceType;
+    private BigDecimal unit;
 
     private boolean isInternal = false;
 
@@ -209,6 +210,7 @@ public class Proposal implements Cloneable, Comparable<Proposal> {
         setSpread(proposal.getSpread());
         setOriginalPrice(proposal.getOriginalPrice());
         setYield(proposal.getYield());
+        setUnit(proposal.getUnit());
     }
 
     @Override
@@ -624,7 +626,22 @@ public class Proposal implements Cloneable, Comparable<Proposal> {
     public void setYield(BigDecimal yield) {
         this.yield = yield;
     }
-    
+    /**
+     * Gets the unit.
+     * 
+     * @return the unit
+     */
+    public BigDecimal getUnit() {
+    	return unit;
+    }
+    /**
+     * Sets the unit.
+     * 
+     * @param unit the new unit
+     */
+    public void setUnit(BigDecimal unit) {
+    	this.unit = unit;
+    }
     @Override
     public int compareTo(Proposal prop) {
         if (prop == null) {

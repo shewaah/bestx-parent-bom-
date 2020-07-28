@@ -312,6 +312,9 @@ public class MarketAxessHelper extends MarketPriceDiscoveryHelper {
                case PriceType.SPREAD:
                   priceType = Proposal.PriceType.SPREAD;
                   break;
+               case PriceType.PER_UNIT:
+            	  priceType = Proposal.PriceType.UNIT;
+            	  break;
                default:
                   LOGGER.debug("PriceType = {} not managed yet", entry.getInt(PriceType.FIELD));
                   break;

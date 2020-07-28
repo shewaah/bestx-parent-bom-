@@ -918,6 +918,7 @@
 			<list>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardSpreadProposalClassifier"></bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardYieldProposalClassifier"></bean>
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnitProposalClassifier"></bean>				
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.SubstituteCounterProposalClassifier"></bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnavailableVenueProposalClassifier"></bean>
 
@@ -960,6 +961,7 @@
 			<list>
  				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardSpreadProposalClassifier"></bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardYieldProposalClassifier"></bean>
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnitProposalClassifier"></bean>				
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnavailableVenueProposalClassifier"></bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroProposalClassifier">
                 	<property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
