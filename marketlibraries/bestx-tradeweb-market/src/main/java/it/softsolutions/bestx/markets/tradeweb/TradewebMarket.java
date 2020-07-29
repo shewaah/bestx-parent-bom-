@@ -820,7 +820,7 @@ public class TradewebMarket extends MarketCommon
 		   if (tsExecutionReport.getAvgPx() != null) {
 			   lastPrice = BigDecimal.valueOf(tsExecutionReport.getAvgPx());
 		   } else {
-			   lastPrice = tsExecutionReport.getLastPx() != null ? BigDecimal.valueOf(tsExecutionReport.getLastPx()) : BigDecimal.ZERO;
+			   lastPrice = tsExecutionReport.getLastParPrice() != null ? BigDecimal.valueOf(tsExecutionReport.getLastParPrice()) : BigDecimal.ZERO;
 		   }
 	   }
 	   String contractNo = tsExecutionReport.getExecID();
@@ -857,8 +857,11 @@ public class TradewebMarket extends MarketCommon
 		   final Operation operation = operationRegistry.getExistingOperationById(OperationIdType.TRADEWEB_CLORD_ID, cleanClOrdId);
 
 		   if (operation.getOrder() == null) {
-			   throw new BestXException("Operation order is null");
+	        	operation.onApplicationError(operation.getState(), new NullPointerException(), "Operation " + operation.getId() + " has no order!");
+	        	return;
 		   }
+		   
+		   
 		   MarketMarketMaker mmm = marketMakerFinder.getMarketMarketMakerByCode(this.getMarketCode(), executionBroker);
 		   if (mmm != null)
 			   executionBroker = mmm.getMarketMaker().getCode();
@@ -914,6 +917,7 @@ public class TradewebMarket extends MarketCommon
 			   }
 		   } else {
 			   if(OrdStatus.Filled.equals(tsExecutionReport.getOrdStatus()) || OrdStatus.PartiallyFilled.equals(tsExecutionReport.getOrdStatus()) ) {
+
 				   //BESTX-363 SP20181010 : Added executable price of execution broker
 				   ExecutablePrice priceExec = new ExecutablePrice();
 				   priceExec.setMarket(this.market);

@@ -30,6 +30,7 @@ import it.softsolutions.bestx.model.Rfq;
 import it.softsolutions.jsscommon.Money;
 import it.softsolutions.tradestac.fix.field.ExecType;
 import it.softsolutions.tradestac.fix.field.OrdStatus;
+import it.softsolutions.tradestac.fix.field.PriceType;
 
 /**
  * All the instances of this class must be executed using a Thread. Purpose:
@@ -145,11 +146,11 @@ public class OnExecutionReportRunnable implements Runnable {
         	operation.onApplicationError(operation.getState(), new NullPointerException(), "Operation " + operation.getId() + " has no order!");
         	return;
         }
-        if (BigDecimal.ZERO.equals(lastPrice)) {
-           operation.onApplicationError(operation.getState(), null, Messages.getString("NoExecutionPriceError.0"));
-           return;
-        }
-
+		if (this.lastPrice == null || this.lastPrice.equals(new BigDecimal("0"))) {
+			operation.onApplicationError(operation.getState(), null, Messages.getString("NoExecutionPriceError.0"));
+			return;
+		}
+		   
     	// ClassifiedProposal executionProposal =
         // operation.getLastAttempt().getExecutionProposal();
         marketExecutionReport.setActualQty(order.getQty());

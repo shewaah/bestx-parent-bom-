@@ -248,7 +248,7 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
                   LOGGER.warn("Error while stopping timer {}", ordCancelRejTimer, e);
                }
 
-               if (executionReport.getPriceType() != null && executionReport.getPriceType() != it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.PriceType.PER_UNIT) {
+               if (executionReport.getPriceType() != null && executionReport.getPriceType() != it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.PriceType.PERCENTAGE) {
                   operation.onApplicationError(operation.getState(), null, Messages.getString("NoExecutionPriceError.0"));
                   return;
                }

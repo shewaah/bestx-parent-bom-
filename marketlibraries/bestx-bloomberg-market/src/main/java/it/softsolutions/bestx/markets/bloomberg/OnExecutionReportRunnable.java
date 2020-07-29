@@ -105,7 +105,8 @@ public class OnExecutionReportRunnable implements Runnable {
 		if(tsExecutionReport.getPriceType() == PriceType.Percentage) {
 			this.lastPrice = tsExecutionReport.getLastPx() == null ? null : new BigDecimal(tsExecutionReport.getLastPx().toString());
 		} else {
-			this.lastPrice = tsExecutionReport.getLastParPrice() == null ? null : new BigDecimal(tsExecutionReport.getLastParPrice().toString());
+			this.lastPrice = tsExecutionReport.getLastParPrice() != null ? BigDecimal.valueOf(tsExecutionReport.getLastParPrice()) : BigDecimal.ZERO;
+			//this.lastPrice = tsExecutionReport.getLastParPrice() == null ? null : new BigDecimal(tsExecutionReport.getLastParPrice().toString());
 		}
 		this.contractNo = tsExecutionReport.getExecID();
 		this.futSettDate = tsExecutionReport.getSettlDate();
@@ -157,9 +158,9 @@ public class OnExecutionReportRunnable implements Runnable {
 			operation.onApplicationError(operation.getState(), new NullPointerException(), "Operation " + operation.getId() + " has no order!");
 			return;
 		}
-		if (lastPrice == null) {
-         operation.onApplicationError(operation.getState(), null, Messages.getString("NoExecutionPriceError.0"));
-         return;
+		if (this.lastPrice == null || this.lastPrice.equals(new BigDecimal("0"))) {
+			operation.onApplicationError(operation.getState(), null, Messages.getString("NoExecutionPriceError.0"));
+			return;
 		}
 
 		MarketExecutionReport marketExecutionReport = new MarketExecutionReport();
