@@ -28,6 +28,7 @@ import it.softsolutions.bestx.Operation.RevocationState;
 import it.softsolutions.bestx.OperationIdType;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.connections.CustomerConnection;
+import it.softsolutions.bestx.dao.OperationStateAuditDao;
 import it.softsolutions.bestx.model.Commission;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.ExecutionReport;
@@ -55,6 +56,7 @@ public class SendExecutionReportEventHandler extends BaseOperationEventHandler {
     private static final long serialVersionUID = 6528789682264435894L;
 	private static BigDecimal HUNDRED = new BigDecimal(100);
     private final int sendExecRepTimeout;
+    private final OperationStateAuditDao operationStateAudit;
     
     // totalFills : number of fills to be sent through AMOS connection
     private AtomicInteger totalFills = new AtomicInteger();
@@ -68,9 +70,10 @@ public class SendExecutionReportEventHandler extends BaseOperationEventHandler {
     /**
      * @param operation
      */
-    public SendExecutionReportEventHandler(Operation operation, CommissionService commissionService, int sendExecRepTimeout) {
+    public SendExecutionReportEventHandler(Operation operation, CommissionService commissionService, int sendExecRepTimeout, OperationStateAuditDao operationStateAudit) {
         super(operation, commissionService);
         this.sendExecRepTimeout = sendExecRepTimeout;
+        this.operationStateAudit = operationStateAudit;
     }
 
     @Override
@@ -110,6 +113,12 @@ public class SendExecutionReportEventHandler extends BaseOperationEventHandler {
         Money quantity = new Money(ordCurrency, lastExecutionReport.getActualQty() == null? BigDecimal.ZERO : lastExecutionReport.getActualQty());
 
         Commission comm = null;
+        
+        if (operation.getOrder().getFutSettDate() == null) {
+           operation.getOrder().setFutSettDate(lastExecutionReport.getFutSettDate());
+           this.operationStateAudit.updateOrderSettlementDate(operation.getOrder());
+        }
+
 
         try {
             comm = commissionService.getCommission(customer, instrument, quantity, operation.getOrder().getSide());

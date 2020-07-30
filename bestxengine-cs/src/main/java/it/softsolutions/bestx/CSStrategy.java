@@ -670,7 +670,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 			handler = new SendNotExecutionReportEventHandler(operation, serialNumberService);
 			break;
 		case SendExecutionReport:
-			handler = new CSSendExecutionReportEventHandler(operation, commissionService, sendExecRepTimeout, pobExMaxSize);
+			handler = new CSSendExecutionReportEventHandler(operation, commissionService, sendExecRepTimeout, pobExMaxSize, operationStateAuditDao);
 			break;
 		case SendOrder:
 			switch (marketCode) {

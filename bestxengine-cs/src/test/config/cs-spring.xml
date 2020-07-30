@@ -185,6 +185,9 @@
 
 	
 	<!-- Hibernate DAOs -->
+    <bean id="dbBasedHolidayFinder" class="it.softsolutions.bestx.finders.db.SetHolidayFinder" lazy-init="false" init-method="init">
+        <property name="holidayDao"><ref bean="hibernateHolidayDao"></ref></property>
+	</bean>
     <bean id="dbBasedExchangeRateFinder" class="it.softsolutions.bestx.finders.db.MapExchangeRateFinder" lazy-init="false" init-method="init">
         <property name="exchangeRateDao"><ref bean="hibernateExchangeRateDao"></ref></property>
 	</bean>
@@ -241,10 +244,17 @@
         <property name="sessionFactory"><ref bean="sessionFactory"></ref></property>
         <property name="customerFilterFactory"><ref bean="defaultCustomerFilterFactory"/></property>
 	</bean>
+    <bean id="hibernateHolidayDao" class="it.softsolutions.bestx.dao.hibernate.HibernateHolidayDao">
+        <property name="sessionFactory"><ref bean="sessionFactory"></ref></property>
+        <property name="allCountryCode"><value>${SettlementLimitControl.allCountries}</value></property>
+	</bean>
     <bean id="hibernateOutlawTickerDao" class="it.softsolutions.bestx.dao.hibernate.HibernateOutlawTickerDAO">
         <property name="sessionFactory"><ref bean="sessionFactory"></ref></property>
 	</bean>
     <bean id="hibernateMarketSecurityStatusDao" class="it.softsolutions.bestx.dao.hibernate.HibernateMarketSecurityStatusDao">
+        <property name="sessionFactory"><ref bean="sessionFactory"></ref></property>
+	</bean>
+    <bean id="hibernateSettlementLimitDao" class="it.softsolutions.bestx.dao.hibernate.HibernateSettlementLimitDao">
         <property name="sessionFactory"><ref bean="sessionFactory"></ref></property>
 	</bean>
     <bean id="hibernateCustomerParamDao" class="it.softsolutions.bestx.dao.hibernate.HibernateCustomerParamDao" init-method="init">
@@ -362,6 +372,7 @@
 	</bean>
 
 	<!-- SERVICES -->
+    <bean id="settlementDateCalculator" class="it.softsolutions.bestx.services.financecalc.SettlementDateCalculator"></bean>
     <bean id="flyingRFQService" class="it.softsolutions.bestx.services.flyingrfqservice.MapFlyingRFQServer"></bean>
     <bean id="serialNumberService" class="it.softsolutions.bestx.services.serial.SerialNumberServer">
         <property name="serialNumberDao"><ref bean="sqlSerialNumberDao"></ref></property>
@@ -737,6 +748,13 @@
                 <bean class="it.softsolutions.bestx.services.ordervalidation.CurrencyControl"/>
                 <bean class="it.softsolutions.bestx.services.ordervalidation.IncQuantityControl"/>
                 <bean class="it.softsolutions.bestx.services.ordervalidation.MinQuantityControl"/>
+				<bean class="it.softsolutions.bestx.services.ordervalidation.SettlementDateLimitControl">
+                    <property name="settlementLimitDao"><ref bean="hibernateSettlementLimitDao"/></property>
+                    <property name="settlementHolidayFinder"><ref bean="dbBasedHolidayFinder"/></property>
+                    <property name="settlementDateCalculator"><ref bean="settlementDateCalculator"/></property>
+                    <property name="allCountryCode"><value>${SettlementLimitControl.allCountries}</value></property>
+                    <property name="allCurrencyCode"><value>${SettlementLimitControl.allCurrencies}</value></property>
+				</bean>                
                 <bean class="it.softsolutions.bestx.services.ordervalidation.LimitFileParkTagFilter">
 					<property name="custOrderHandlingInstrValue"><value>TMO</value></property>
 				</bean>         
@@ -935,11 +953,6 @@
 				<!-- Next bean uncommented for AUTOMATIC TESTS --> 
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardInsufficientQuantityProposalClassifier"></bean>
 				
-				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardInadequateOrderedQuantityProposalClassifier">
-					<property name="marketSecurityStatusService"><ref bean="marketSecurityStatusService"></ref></property>
-					<property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
-				</bean>
-
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardMarketTriedInEarlierAttemptProposalClassifier"></bean>
 
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardWorstPriceProposalClassifier">
