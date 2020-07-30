@@ -531,6 +531,7 @@
         <property name="intervalTimeInSecs"><value>${Order.monitor.intervalInSeconds}</value></property>
         <property name="sqlInstrumentDao"><ref bean="sqlInstrumentDao"></ref></property>
         <property name="channelName"><value>OMS1</value></property>
+        <property name="settlementDateCalculator"><ref bean="settlementDateCalculator"/></property>
 	</bean>
 
     <bean id="oms2CustomerAdapter" class="it.softsolutions.bestx.connections.OMS2CustomerAdapter" init-method="init">
