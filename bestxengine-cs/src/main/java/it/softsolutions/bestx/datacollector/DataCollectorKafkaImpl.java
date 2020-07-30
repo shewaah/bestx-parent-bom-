@@ -36,8 +36,10 @@ import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.connections.BaseOperatorConsoleAdapter;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
+import it.softsolutions.bestx.model.ExecutablePrice;
 import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Proposal.PriceType;
+import it.softsolutions.bestx.model.Proposal.ProposalSide;
 import it.softsolutions.bestx.model.SortedBook;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -69,6 +71,9 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
    private Producer<String, String> kafkaProducer;
    private boolean active = false;
    
+   private DataCollectorKafkaKeyStrategy priceKeyStrategy;
+   private DataCollectorKafkaKeyStrategy bookKeyStrategy;
+   private DataCollectorKafkaKeyStrategy pobexKeyStrategy;
    
    public void init() throws BestXException {
       connectKafka();
@@ -111,24 +116,19 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
       return active;
    }
    
-
-   @Override
-   public void sendPrice(Proposal proposal) {
-      
-
-   }
-
     @Override
-	public void sendBook(Operation operation) {
+	public void sendBookAndPrices(Operation operation) {
+		Attempt currentAttempt = operation.getLastAttempt();
+		int attemptNo = operation.getAttemptNo();
+		
 		if (active) {
 			this.executor.execute(() -> {
 
-				Attempt currentAttempt = operation.getLastAttempt();
 
 				JSONObject message = new JSONObject();
 				message.put("isin", operation.getOrder().getInstrument().getIsin());
 				message.put("ordID", operation.getOrder().getFixOrderId());
-				message.put("attempt", operation.getAttemptNo());
+				message.put("attempt", attemptNo);
 
 				SortedBook book = currentAttempt.getSortedBook();
 
@@ -153,12 +153,20 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 					ClassifiedProposal askProp = askProposals.get(askMmm);
 					ClassifiedProposal bidProp = bidProposals.get(askMmm);
 
-					JSONObject proposal = new JSONObject();
+					JSONObject proposal = new JSONObject(); // Proposal element to be sent in the book JSON message
+					JSONObject rawProposal = new JSONObject(); // Raw proposal to be sent as an independent price JSON message
+					
+					rawProposal.put("isin", operation.getOrder().getInstrument().getIsin());
+					rawProposal.put("ordID", operation.getOrder().getFixOrderId());
+					rawProposal.put("attempt", operation.getAttemptNo());
+					
 					ClassifiedProposal goodProp = null;
 					boolean goodPrice = false;
 					if (askProp != null) {
 						proposal.element("askPrice", askProp.getPrice().getAmount());
 						proposal.element("askQty", askProp.getQty());
+						rawProposal.element("askPrice", askProp.getPrice().getAmount());
+						rawProposal.element("askQty", askProp.getQty());
 						goodProp = askProp;
 						if (BigDecimal.ZERO.compareTo(askProp.getPrice().getAmount()) < 0) {
 							goodPrice = true;
@@ -167,6 +175,8 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 					if (bidProp != null) {
 						proposal.element("bidPrice", bidProp.getPrice().getAmount());
 						proposal.element("bidQty", bidProp.getQty());
+						rawProposal.element("bidPrice", bidProp.getPrice().getAmount());
+						rawProposal.element("bidQty", bidProp.getQty());
 						goodProp = bidProp;
 						if (BigDecimal.ZERO.compareTo(bidProp.getPrice().getAmount()) < 0) {
 							goodPrice = true;
@@ -177,12 +187,17 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 					}
 					proposal.element("PriceType", goodProp.getPriceType() == PriceType.PRICE ? 1 : 0);
 					proposal.element("PriceQuality", marketMakerCompositeCodes.contains(askMmm) ? "CMP" : "IND");
+					rawProposal.element("PriceType", goodProp.getPriceType() == PriceType.PRICE ? 1 : 0);
+					rawProposal.element("PriceQuality", marketMakerCompositeCodes.contains(askMmm) ? "CMP" : "IND");
 
 					SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
 					proposal.element("timestamp", df.format(goodProp.getTimestamp()));
+					rawProposal.element("timestamp", df.format(goodProp.getTimestamp()));
 
 					proposal.element("market", goodProp.getMarket().getMarketCode());
 					proposal.element("marketmaker", goodProp.getMarketMarketMaker().getMarketSpecificCode());
+					rawProposal.element("market", goodProp.getMarket().getMarketCode());
+					rawProposal.element("marketmaker", goodProp.getMarketMarketMaker().getMarketSpecificCode());
 
 					if (goodProp.getProposalSubState() != null
 							&& goodProp.getProposalSubState() != Proposal.ProposalSubState.NONE) {
@@ -193,12 +208,22 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 					proposal.element("comment", goodProp.getReason());
 
 					jsonMap.add(proposal);
+
+					LOGGER.trace("Sending message to topic {}: {}", priceTopic, rawProposal.toString());
+					kafkaProducer.send(new ProducerRecord<String, String>(priceTopic,
+							this.priceKeyStrategy.calculateKey(operation, attemptNo), rawProposal.toString()), (metadata, exception) -> {
+								if (exception != null) {
+									LOGGER.warn("Error while trying to send message: " + message.toString(), exception);
+								}
+							});
+
+					
 				}
 				message.element("prices", jsonMap);
 
 				LOGGER.trace("Sending message to topic {}: {}", bookTopic, message.toString());
 				kafkaProducer.send(new ProducerRecord<String, String>(bookTopic,
-						operation.getOrder().getInstrument().getIsin(), message.toString()), (metadata, exception) -> {
+						this.bookKeyStrategy.calculateKey(operation, attemptNo), message.toString()), (metadata, exception) -> {
 							if (exception != null) {
 								LOGGER.warn("Error while trying to send message: " + message.toString(), exception);
 							}
@@ -208,9 +233,70 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 	}
 
    @Override
-   public void sendPobex() {
-      
+   public void sendPobex(Operation operation) {
+	    Attempt currentAttempt = operation.getLastAttempt();
+	    int attemptNo = operation.getAttemptNo();
+		if (active) {
+			this.executor.execute(() -> {
 
+				
+
+				JSONObject message = new JSONObject();
+				message.put("isin", operation.getOrder().getInstrument().getIsin());
+				message.put("ordID", operation.getOrder().getFixOrderId());
+				message.put("attempt", attemptNo);
+
+				message.element("PriceQuality", "FRM");
+				
+				JSONArray jsonMap = new JSONArray();
+				
+				ExecutablePrice goodPrice = null;
+				
+				for (ExecutablePrice ep : currentAttempt.getExecutablePrices()) {
+					if (goodPrice == null) {
+						goodPrice = ep;
+					}
+					
+					JSONObject proposal = new JSONObject(); // Proposal element to be sent in the book JSON message
+
+					if (ep.getSide() == ProposalSide.ASK) {
+						proposal.element("askPrice", ep.getPrice().getAmount());
+						proposal.element("askQty", ep.getQty());
+					} else if (ep.getSide() == ProposalSide.BID) {
+						proposal.element("bidPrice", ep.getPrice().getAmount());
+						proposal.element("bidQty", ep.getQty());
+					}
+					
+					proposal.element("PriceType", ep.getPriceType() == PriceType.PRICE ? 1 : 0);
+					
+					if (ep.getMarketMarketMaker() != null && ep.getMarketMarketMaker().getMarketSpecificCode() != null) {
+						proposal.element("marketmaker", ep.getMarketMarketMaker().getMarketSpecificCode());
+					} else {
+						proposal.element("marketmaker", ep.getOriginatorID());
+					}
+
+					proposal.element("status", ep.getAuditQuoteState());
+					
+					jsonMap.add(proposal);
+
+				}
+				message.element("prices", jsonMap);
+
+				if (goodPrice != null) {
+					SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
+					message.element("timestamp", df.format(goodPrice.getTimestamp()));
+					message.element("market", goodPrice.getMarket().getMarketCode());
+
+					LOGGER.trace("Sending message to topic {}: {}", pobexTopic, message.toString());
+					kafkaProducer.send(new ProducerRecord<String, String>(pobexTopic,
+							this.pobexKeyStrategy.calculateKey(operation, attemptNo), message.toString()), (metadata, exception) -> {
+								if (exception != null) {
+									LOGGER.warn("Error while trying to send message: " + message.toString(), exception);
+								}
+							});
+				}
+			});
+		}
    }
 
    
@@ -270,6 +356,31 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 	public void setExecutor(Executor executor) {
 		this.executor = executor;
 	}
+
+	public DataCollectorKafkaKeyStrategy getPriceKeyStrategy() {
+		return priceKeyStrategy;
+	}
+
+	public void setPriceKeyStrategy(DataCollectorKafkaKeyStrategy priceKeyStrategy) {
+		this.priceKeyStrategy = priceKeyStrategy;
+	}
+
+	public DataCollectorKafkaKeyStrategy getBookKeyStrategy() {
+		return bookKeyStrategy;
+	}
+
+	public void setBookKeyStrategy(DataCollectorKafkaKeyStrategy bookKeyStrategy) {
+		this.bookKeyStrategy = bookKeyStrategy;
+	}
+
+	public DataCollectorKafkaKeyStrategy getPobexKeyStrategy() {
+		return pobexKeyStrategy;
+	}
+
+	public void setPobexKeyStrategy(DataCollectorKafkaKeyStrategy pobexKeyStrategy) {
+		this.pobexKeyStrategy = pobexKeyStrategy;
+	}
    
+	
    
 }

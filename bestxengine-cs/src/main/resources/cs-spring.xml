@@ -1332,7 +1332,9 @@
 				<ref bean="marketAxessMarket" />
 			</list>
 		</property>
-	</bean>   
+	</bean>
+	
+	<bean id="dataCollectorKafkaKeyStrategy" class="it.softsolutions.bestx.datacollector.DataCollectorKafkaKeyStrategyISINImpl" />   
 	<bean id="dataCollector" class="it.softsolutions.bestx.datacollector.DataCollectorKafkaImpl" init-method="init">
         <property name="configFilename" value="classpath:kafkaConnection.properties" />
         <property name="priceTopic" value="${Kafka.TopicName.Price}" />
@@ -1340,5 +1342,8 @@
         <property name="pobexTopic" value="${Kafka.TopicName.Pobex}" />
         <property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
         <property name="executor" ref="threadPoolKafka" />
+        <property name="priceKeyStrategy" ref="dataCollectorKafkaKeyStrategy" />
+        <property name="bookKeyStrategy" ref="dataCollectorKafkaKeyStrategy" />
+        <property name="pobexKeyStrategy" ref="dataCollectorKafkaKeyStrategy" />
 	</bean>
 </beans>

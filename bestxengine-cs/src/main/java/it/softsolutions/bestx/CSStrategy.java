@@ -596,7 +596,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 			break;
 		case Rejected: {
 			if (marketCode == null) {
-				handler = new CSRejectedEventHandler(operation, rejectWhenBloombergIsBest, serialNumberService);
+				handler = new CSRejectedEventHandler(operation, rejectWhenBloombergIsBest, serialNumberService, this.dataCollector);
 				break;
 			}
 			else {
@@ -670,7 +670,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 			handler = new SendNotExecutionReportEventHandler(operation, serialNumberService);
 			break;
 		case SendExecutionReport:
-			handler = new CSSendExecutionReportEventHandler(operation, commissionService, sendExecRepTimeout, pobExMaxSize, operationStateAuditDao);
+			handler = new CSSendExecutionReportEventHandler(operation, commissionService, sendExecRepTimeout, pobExMaxSize, operationStateAuditDao, this.dataCollector);
 			break;
 		case SendOrder:
 			switch (marketCode) {

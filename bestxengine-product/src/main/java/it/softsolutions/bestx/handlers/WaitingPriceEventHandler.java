@@ -318,7 +318,9 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		Attempt currentAttempt = operation.getLastAttempt();
 		currentAttempt.setSortedBook(priceResult.getSortedBook());
 
-		dataCollector.sendBook(operation);
+		if (dataCollector != null) {
+			dataCollector.sendBookAndPrices(operation);
+		}
 
 		LOGGER.debug("Order {}, End of the price discovery, check if we received a customer revoke for this order and, if so, start the revoking routine.", operation.getOrder().getFixOrderId());
 		if (checkCustomerRevoke(operation.getOrder())) {
@@ -544,7 +546,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 
 		// bestInternalMMCode will be used for internalization, if needed
 		MarketMaker proposalMM = null;
-		MarketCode proposalMktCode = null;
 		for (ClassifiedProposal proposal : proposals) {
 			proposalMM = null;
 

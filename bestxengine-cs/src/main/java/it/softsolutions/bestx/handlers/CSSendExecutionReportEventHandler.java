@@ -3,6 +3,7 @@ package it.softsolutions.bestx.handlers;
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.dao.OperationStateAuditDao;
+import it.softsolutions.bestx.datacollector.DataCollector;
 import it.softsolutions.bestx.model.CSPOBexExecutionReport;
 import it.softsolutions.bestx.model.ExecutionReport;
 import it.softsolutions.bestx.services.CommissionService;
@@ -12,8 +13,8 @@ public class CSSendExecutionReportEventHandler extends SendExecutionReportEventH
 	private static final long serialVersionUID = 6628132626341746242L;
 	private int pobExMaxSize;
 	
-	public CSSendExecutionReportEventHandler(Operation operation, CommissionService commissionService, int sendExecRepTimeout, int pobExMaxSize, OperationStateAuditDao operationStateAudit) {
-        super(operation, commissionService, sendExecRepTimeout, operationStateAudit);
+	public CSSendExecutionReportEventHandler(Operation operation, CommissionService commissionService, int sendExecRepTimeout, int pobExMaxSize, OperationStateAuditDao operationStateAudit, DataCollector dataCollector) {
+        super(operation, commissionService, sendExecRepTimeout, operationStateAudit, dataCollector);
         this.pobExMaxSize = pobExMaxSize;
     }
 	
