@@ -28,7 +28,11 @@ rem ERR=%CURRENT_DIR%\log\stderr.log
 set OPT_1=-server -Dss.app.name=<%=@servicename-%> -XX:+UseParallelGC -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -Xms1024m -Xmx2048m -XX:PermSize=128m -XX:MaxPermSize=256m -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=??? -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.password=false
 set OPT_2=-cp ../cfg;../lib/* -Duser.timezone=CET -Dlogback.configurationFile=cfg\logback.xml -Dcom.ibm.mq.cfg.useIBMCipherMappings=false
 
-"%JDK_HOME%\bin\java" %OPT_1% %OPT_2%  %START_CLASS% %ARGS%
+REM Required by CS
+set JAVA_AGENT_DIR=C:\PROGRA~1\AppDynamics\javaAgent\ver4.2.7.0
+set OPT_EXT=-javaagent:%JAVA_AGENT_DIR%\javaagent.jar -Dappdynamics.agent.nodeName=BestX_chwu9004529 -Dappdynamics.agent.tierName=BestX -Dappdynamics.agent.applicationName=24212_BestX_UAT
+
+"%JDK_HOME%\bin\java" %OPT_1% %OPT_2% %OPT_EXT%  %START_CLASS% %ARGS%
 
 
 
