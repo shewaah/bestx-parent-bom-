@@ -65,6 +65,8 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
    private String pobexTopic;
    private String marketMakerCompositeCodes;
    
+   private Set<String> compositeMarketMakers;
+   
    private Executor executor;
    
    //Class properties
@@ -76,6 +78,13 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
    private DataCollectorKafkaKeyStrategy pobexKeyStrategy;
    
    public void init() throws BestXException {
+	   this.compositeMarketMakers = new HashSet<>();
+	   
+	   String[] marketMakerCompositeStrings = marketMakerCompositeCodes.split(",");
+	   for (String marketMakerCompositeString : marketMakerCompositeStrings) {
+		   this.compositeMarketMakers.add(marketMakerCompositeString.trim());
+	   }
+	   
       connectKafka();
    }
    
@@ -123,8 +132,6 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 		
 		if (active) {
 			this.executor.execute(() -> {
-
-
 				JSONObject message = new JSONObject();
 				message.put("isin", operation.getOrder().getInstrument().getIsin());
 				message.put("ordID", operation.getOrder().getFixOrderId());
@@ -185,19 +192,23 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 					if (!goodPrice) {
 						continue;
 					}
+
+					String marketMakerCode = goodProp.getMarketMarketMaker().getMarketMaker().getCode();
+					boolean isComposite = this.compositeMarketMakers.contains(marketMakerCode);
+					
 					proposal.element("PriceType", goodProp.getPriceType() == PriceType.PRICE ? 1 : 0);
-					proposal.element("PriceQuality", marketMakerCompositeCodes.contains(askMmm) ? "CMP" : "IND");
+					proposal.element("PriceQuality", isComposite ? "CMP" : "IND");
 					rawProposal.element("PriceType", goodProp.getPriceType() == PriceType.PRICE ? 1 : 0);
-					rawProposal.element("PriceQuality", marketMakerCompositeCodes.contains(askMmm) ? "CMP" : "IND");
+					rawProposal.element("PriceQuality", isComposite ? "CMP" : "IND");
 
 					SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
 					proposal.element("timestamp", df.format(goodProp.getTimestamp()));
 					rawProposal.element("timestamp", df.format(goodProp.getTimestamp()));
 
 					proposal.element("market", goodProp.getMarket().getMarketCode());
-					proposal.element("marketmaker", goodProp.getMarketMarketMaker().getMarketSpecificCode());
+					proposal.element("marketmaker", marketMakerCode);
 					rawProposal.element("market", goodProp.getMarket().getMarketCode());
-					rawProposal.element("marketmaker", goodProp.getMarketMarketMaker().getMarketSpecificCode());
+					rawProposal.element("marketmaker", marketMakerCode);
 
 					if (goodProp.getProposalSubState() != null
 							&& goodProp.getProposalSubState() != Proposal.ProposalSubState.NONE) {
