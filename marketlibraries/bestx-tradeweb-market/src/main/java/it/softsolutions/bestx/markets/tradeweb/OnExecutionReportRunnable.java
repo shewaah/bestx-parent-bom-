@@ -146,10 +146,6 @@ public class OnExecutionReportRunnable implements Runnable {
          operation.onApplicationError(operation.getState(), new NullPointerException(), "Operation " + operation.getId() + " has no order!");
          return;
       }
-      if (this.lastPrice == null || this.lastPrice.equals(new BigDecimal("0"))) {
-         operation.onApplicationError(operation.getState(), null, Messages.getString("NoExecutionPriceError.0"));
-         return;
-      }
 
       // ClassifiedProposal executionProposal =
       // operation.getLastAttempt().getExecutionProposal();
@@ -171,6 +167,10 @@ public class OnExecutionReportRunnable implements Runnable {
          case Filled:
             if (execType == ExecType.Trade) {
                executionReportState = ExecutionReportState.FILLED;
+               if (this.lastPrice == null || this.lastPrice.equals(new BigDecimal("0"))) {
+                  operation.onApplicationError(operation.getState(), null, Messages.getString("NoExecutionPriceError.0"));
+                  return;
+               }
             }
          break;
          case Canceled:
