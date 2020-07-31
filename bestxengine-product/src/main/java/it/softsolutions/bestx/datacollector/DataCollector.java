@@ -15,7 +15,6 @@
 package it.softsolutions.bestx.datacollector;
 
 import it.softsolutions.bestx.Operation;
-import it.softsolutions.bestx.model.Proposal;
 
 /**  
 *
@@ -29,20 +28,13 @@ import it.softsolutions.bestx.model.Proposal;
 public interface DataCollector {
 
    /**
-    * Sends a single proposal
-    * 
-    * @param proposal
+    * Send a whole book and all proposals
     */
-   public void sendPrice(Proposal proposal);
-   
-   /**
-    * Send a whole book
-    */
-   public void sendBook(Operation operation);
+   public void sendBookAndPrices(Operation operation);
    
    /**
     * Sends executable prices coming from market execution reports
     */
-   public void sendPobex();
+   public void sendPobex(Operation operation);
    
 }

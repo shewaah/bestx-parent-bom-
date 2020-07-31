@@ -28,6 +28,8 @@ import it.softsolutions.bestx.Operation.RevocationState;
 import it.softsolutions.bestx.OperationIdType;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.connections.CustomerConnection;
+import it.softsolutions.bestx.dao.OperationStateAuditDao;
+import it.softsolutions.bestx.datacollector.DataCollector;
 import it.softsolutions.bestx.model.Commission;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.ExecutionReport;
@@ -55,6 +57,7 @@ public class SendExecutionReportEventHandler extends BaseOperationEventHandler {
     private static final long serialVersionUID = 6528789682264435894L;
 	private static BigDecimal HUNDRED = new BigDecimal(100);
     private final int sendExecRepTimeout;
+    private final OperationStateAuditDao operationStateAudit;
     
     // totalFills : number of fills to be sent through AMOS connection
     private AtomicInteger totalFills = new AtomicInteger();
@@ -65,16 +68,24 @@ public class SendExecutionReportEventHandler extends BaseOperationEventHandler {
     // nackArrived : true if we received a nack on a fill or exec report
     private AtomicBoolean nackArrived = new AtomicBoolean();
 
+	private DataCollector dataCollector;
+
     /**
      * @param operation
      */
-    public SendExecutionReportEventHandler(Operation operation, CommissionService commissionService, int sendExecRepTimeout) {
+    public SendExecutionReportEventHandler(Operation operation, CommissionService commissionService, int sendExecRepTimeout, OperationStateAuditDao operationStateAudit, DataCollector dataCollector) {
         super(operation, commissionService);
         this.sendExecRepTimeout = sendExecRepTimeout;
+        this.operationStateAudit = operationStateAudit;
+        this.dataCollector = dataCollector;
     }
 
     @Override
     public void onNewState(OperationState currentState) {
+    	if (this.dataCollector != null) {
+    		this.dataCollector.sendPobex(operation);
+    	}
+    	
         Customer customer = operation.getOrder().getCustomer();
         Instrument instrument = operation.getOrder().getInstrument();
         if (operation.getRevocationState() == RevocationState.ACKNOWLEDGED) {
@@ -110,6 +121,12 @@ public class SendExecutionReportEventHandler extends BaseOperationEventHandler {
         Money quantity = new Money(ordCurrency, lastExecutionReport.getActualQty() == null? BigDecimal.ZERO : lastExecutionReport.getActualQty());
 
         Commission comm = null;
+        
+        if (operation.getOrder().getFutSettDate() == null) {
+           operation.getOrder().setFutSettDate(lastExecutionReport.getFutSettDate());
+           this.operationStateAudit.updateOrderSettlementDate(operation.getOrder());
+        }
+
 
         try {
             comm = commissionService.getCommission(customer, instrument, quantity, operation.getOrder().getSide());
@@ -298,4 +315,6 @@ public class SendExecutionReportEventHandler extends BaseOperationEventHandler {
         }
     }
 
+    
+    
 }

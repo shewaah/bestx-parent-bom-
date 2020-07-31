@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
+import it.softsolutions.bestx.datacollector.DataCollector;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyService;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyServiceFactory;
 import it.softsolutions.bestx.services.price.PriceResult;
@@ -46,19 +47,25 @@ public class RejectedEventHandler extends BaseOperationEventHandler {
 	protected PriceResult priceResult;
 	protected boolean rejectWhenBloombergIsBest;
 
+	protected DataCollector dataCollector;
+	
     /**
      * Instantiates a new rejected event handler.
      *
      * @param operation the operation
      * @param serialNumberService the serial number service
      */
-    public RejectedEventHandler(Operation operation, SerialNumberService serialNumberService) {
+    public RejectedEventHandler(Operation operation, SerialNumberService serialNumberService, DataCollector dataCollector) {
         super(operation);
 		this.serialNumberService = serialNumberService;
+		this.dataCollector = dataCollector;
     }
 
     @Override
     public void onNewState(OperationState currentState) {
+    	if (this.dataCollector != null) {
+    		this.dataCollector.sendPobex(operation);
+    	}
        	/* ask to the CSExecutionStrategy for the next steps */
     	ExecutionStrategyService executionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, priceResult, rejectWhenBloombergIsBest);
     	try {

@@ -60,6 +60,9 @@ public class SettlementDateLimitControl implements OrderValidator
       result.setValid(true);
       result.setReason("");
       
+      //SP-20200730 BESTX-694 - Do nothing if settlement date in the order is null
+      if (order.getFutSettDate() == null) return result;
+      
       if (order.getInstrument() != null && order.getCurrency() != null) {
          String currencyCode = order.getCurrency();
          
