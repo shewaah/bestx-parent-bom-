@@ -77,6 +77,21 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
    private DataCollectorKafkaKeyStrategy bookKeyStrategy;
    private DataCollectorKafkaKeyStrategy pobexKeyStrategy;
    
+	private int convertPriceTypeToInt(PriceType priceType) {
+		switch (priceType) {
+		case PRICE:
+			return 1;
+		case SPREAD:
+			return 6;
+		case YIELD:
+			return 9;
+		case UNIT:
+			return 2;
+		default:
+			return 0;
+		}
+	}
+   
    public void init() throws BestXException {
 	   this.compositeMarketMakers = new HashSet<>();
 	   
@@ -196,9 +211,9 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 					String marketMakerCode = goodProp.getMarketMarketMaker().getMarketMaker().getCode();
 					boolean isComposite = this.compositeMarketMakers.contains(marketMakerCode);
 					
-					proposal.element("PriceType", goodProp.getPriceType() == PriceType.PRICE ? 1 : 0);
+					proposal.element("PriceType", this.convertPriceTypeToInt(goodProp.getPriceType()));
 					proposal.element("PriceQuality", isComposite ? "CMP" : "IND");
-					rawProposal.element("PriceType", goodProp.getPriceType() == PriceType.PRICE ? 1 : 0);
+					rawProposal.element("PriceType", this.convertPriceTypeToInt(goodProp.getPriceType()));
 					rawProposal.element("PriceQuality", isComposite ? "CMP" : "IND");
 
 					SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
@@ -278,10 +293,10 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 						proposal.element("bidQty", ep.getQty());
 					}
 					
-					proposal.element("PriceType", ep.getPriceType() == PriceType.PRICE ? 1 : 0);
+					proposal.element("PriceType", this.convertPriceTypeToInt(ep.getPriceType()));
 					
 					if (ep.getMarketMarketMaker() != null && ep.getMarketMarketMaker().getMarketSpecificCode() != null) {
-						proposal.element("marketmaker", ep.getMarketMarketMaker().getMarketSpecificCode());
+						proposal.element("marketmaker", ep.getMarketMarketMaker().getMarketMaker().getCode());
 					} else {
 						proposal.element("marketmaker", ep.getOriginatorID());
 					}
