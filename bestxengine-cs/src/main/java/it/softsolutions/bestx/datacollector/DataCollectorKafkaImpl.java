@@ -40,6 +40,7 @@ import it.softsolutions.bestx.model.ExecutablePrice;
 import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Proposal.PriceType;
 import it.softsolutions.bestx.model.Proposal.ProposalSide;
+import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.SortedBook;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -182,14 +183,12 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 					rawProposal.put("ordID", operation.getOrder().getFixOrderId());
 					rawProposal.put("attempt", operation.getAttemptNo());
 					
-					ClassifiedProposal goodProp = null;
 					boolean goodPrice = false;
 					if (askProp != null) {
 						proposal.element("askPrice", askProp.getPrice().getAmount());
 						proposal.element("askQty", askProp.getQty());
 						rawProposal.element("askPrice", askProp.getPrice().getAmount());
 						rawProposal.element("askQty", askProp.getQty());
-						goodProp = askProp;
 						if (BigDecimal.ZERO.compareTo(askProp.getPrice().getAmount()) < 0) {
 							goodPrice = true;
 						}
@@ -199,12 +198,26 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 						proposal.element("bidQty", bidProp.getQty());
 						rawProposal.element("bidPrice", bidProp.getPrice().getAmount());
 						rawProposal.element("bidQty", bidProp.getQty());
-						goodProp = bidProp;
 						if (BigDecimal.ZERO.compareTo(bidProp.getPrice().getAmount()) < 0) {
 							goodPrice = true;
 						}
 					}
 					if (!goodPrice) {
+						continue;
+					}
+
+					ClassifiedProposal goodProp = null;
+					if (askProp != null && bidProp != null) {
+						if (operation.getOrder().getSide() == OrderSide.BUY) {
+							goodProp = askProp;
+						} else {
+							goodProp = bidProp;
+						}
+					} else if (askProp != null) {
+						goodProp = askProp;
+					} else if (bidProp != null) {
+						goodProp = bidProp;
+					} else {
 						continue;
 					}
 
