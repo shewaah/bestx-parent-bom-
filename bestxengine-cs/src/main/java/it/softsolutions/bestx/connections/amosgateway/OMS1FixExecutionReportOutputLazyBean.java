@@ -77,7 +77,7 @@ public class OMS1FixExecutionReportOutputLazyBean extends FixExecutionReportOutp
         futSettDate = null;
         if(executionReport != null && executionReport.getFutSettDate() != null) {
            strFutSettDate =  sdf.format(executionReport.getFutSettDate());
-        } else if (order != null && order.getFutSettDate() != null) {
+        } else if (order != null) {
            strFutSettDate = sdf.format(order.getFutSettDate());
         }
         
