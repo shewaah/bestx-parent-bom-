@@ -947,7 +947,7 @@
                 </bean>
 
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardOldProposalClassifier">
-                    <property name="configValue"><value>12</value></property>
+                    <property name="configValue"><value>${ProposalClassifiers.discard.limitHours}</value></property>
                     <property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
 				</bean>
 
@@ -984,7 +984,7 @@
                 	<property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
                 </bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardOldProposalClassifier">
-                    <property name="configValue"><value>12</value></property>
+                    <property name="configValue"><value>${ProposalClassifiers.discard.limitHours}</value></property>
                     <property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
 				</bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.TagInsufficientQtyProposalClassifier">
