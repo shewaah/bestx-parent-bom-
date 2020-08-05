@@ -959,7 +959,6 @@
                     <!--  Flag per abilitare o disabilitare il controllo che un ordine sia o meno un matching tramite query -->
                     <property name="matchByQueryEnabled"><value>false</value></property>
 				</bean>
-				<!-- <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTooWideQuoteSpread"></bean> -->
 			</list>
 		</property>
 		<property name="bookClassifierList">
