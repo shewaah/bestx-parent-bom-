@@ -18,12 +18,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.softsolutions.bestx.BestXException;
-import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.connections.MarketPriceDiscoveryHelper;
 import it.softsolutions.bestx.finders.InstrumentFinder;
 import it.softsolutions.bestx.finders.MarketFinder;
@@ -254,7 +252,7 @@ public class MDSHelper extends MarketPriceDiscoveryHelper {
             // [DR20130924] Come concordato verbalmente con AMC, tutti i prezzi
             // provenienti da Bloomberg sono e saranno sempre INDICATIVE
             ProposalType proposalType = ProposalType.INDICATIVE;
-            String reason = null;
+//            String reason = null;
 
             // [FA20120518] Workaround the market maker might not have prices
             // (one or both side)
@@ -295,6 +293,7 @@ public class MDSHelper extends MarketPriceDiscoveryHelper {
             Money price = new Money(instrument.getCurrency(), amount);
             classifiedProposal.setPrice(price);
 
+            /* SP20200805 - BESTX-723 - Removed in order to use only DiscardOldProposalClassifier 
             Date today = DateService.newLocalDate();
             if (!DateUtils.isSameDay(timestamp, today)) {
                 String todayStr = DateService.format(DateService.dateISO,today);
@@ -304,12 +303,11 @@ public class MDSHelper extends MarketPriceDiscoveryHelper {
                 classifiedProposal.setProposalState(ProposalState.REJECTED);
                 reason = Messages.getString("RejectProposalPriceTooOld", "" + dateStr);
             }
-
             if (reason != null) {
                 classifiedProposal.setReason(reason);
-            }
+            }*/
 
-            LOGGER.info("{} {} {} {} {} {} {} {} {}", instrument.getIsin(), market.getMarketCode(), marketMarketMaker.getMarketSpecificCode(), classifiedProposal.getProposalState().name(), proposalType.name(), mdEntryType, amount, qty, reason);
+            LOGGER.info("{} {} {} {} {} {} {} {} {}", instrument.getIsin(), market.getMarketCode(), marketMarketMaker.getMarketSpecificCode(), classifiedProposal.getProposalState().name(), proposalType.name(), mdEntryType, amount, qty, null);
         } catch (Exception e) {
             throw new MDSException("Error retrieving classifiedProposal for [" + tsMarketDataSnapshotFullRefresh + "]: " + e.getMessage(), e);
         }

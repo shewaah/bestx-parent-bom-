@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -257,7 +256,7 @@ public class BLPHelper {
             }
             // [DR20130924] Come concordato verbalmente con AMC, tutti i prezzi provenienti da Bloomberg sono e saranno sempre INDICATIVE
             ProposalType proposalType = ProposalType.INDICATIVE;
-            String reason = null;
+//            String reason = null;
 
             // [FA20120518] Workaround the market maker might not have prices (one or both side)
             if (amount == null) {
@@ -296,6 +295,7 @@ public class BLPHelper {
             classifiedProposal.setPrice(price);
             classifiedProposal.setPriceType(priceType);
 
+            /* SP20200805 - BESTX-723 - Removed in order to use only DiscardOldProposalClassifier 
             Date today = DateService.newLocalDate();
             if (!DateUtils.isSameDay(timestamp, today)) {
                 String todayStr = DateService.format(DateService.dateISO, today);
@@ -306,13 +306,12 @@ public class BLPHelper {
                 reason = Messages.getString("RejectProposalPriceTooOld", "" + dateStr);
                 // classifiedProposal.setReason(Messages.getString("RejectProposalPriceTooOld", "" + dateStr));
             }
-
             if (reason != null) {
                 classifiedProposal.setReason(reason);
-            }
+            }*/
 
             LOGGER.info("{} {} {} {} {} {} {} {} {}", instrument.getIsin(), market.getMarketCode(), marketMarketMaker.getMarketSpecificCode(),
-                            classifiedProposal.getProposalState().name(), proposalType.name(), mdEntryType, amount, qty, reason);
+                            classifiedProposal.getProposalState().name(), proposalType.name(), mdEntryType, amount, qty, null);
         } catch (Exception e) {
             throw new BLPException("Error retrieving classifiedProposal for [" + tsMarketDataSnapshotFullRefresh + "]: " + e.getMessage(), e);
         }
