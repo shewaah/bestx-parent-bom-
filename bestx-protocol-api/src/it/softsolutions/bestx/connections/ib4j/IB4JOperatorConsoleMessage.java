@@ -330,6 +330,12 @@ public class IB4JOperatorConsoleMessage {
     public static final String FLD_MQ_CHANNEL_NAME = "BESTX_RR_RESP_FLD_MQ_CHANNEL_NAME_";
     public static final String FLD_MQ_CHANNEL_STATUS = "BESTX_RR_RESP_FLD_MQ_CHANNEL_STATUS_";
     
+    /** Datalake constants */
+    public static final String FLD_DL_CHANNEL_NAME = "BESTX_DATALAKE_CHANNEL_NAME";
+    public static final String FLD_DL_CHANNEL_STATUS = "BESTX_DATALAKE_CHANNEL_STATUS";
+    
+    
+    
     
     /** The Constant FLD_MKT_PRICE_CONNECTION_ENABLED. */
     public static final String FLD_MKT_PRICE_CONNECTION_ENABLED = "FLD_MKT_PRICE_CONNECTION_ENABLED_"; // int

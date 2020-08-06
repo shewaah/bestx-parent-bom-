@@ -121,6 +121,16 @@ public class ChannelStatusReplyMessage extends IBcsMessage {
         	setIntProperty(IB4JOperatorConsoleMessage.FLD_MQ_CHANNEL_STATUS + MqQueues.GRDLITE, 0);
         }     
         
+        //Kafka status
+        Connection datalakeConnection = connectionRegistry.getDatalakeConnection();
+        if (datalakeConnection != null) {
+           setStringProperty(IB4JOperatorConsoleMessage.FLD_DL_CHANNEL_NAME, datalakeConnection.getConnectionName());
+           setIntProperty(IB4JOperatorConsoleMessage.FLD_DL_CHANNEL_STATUS, datalakeConnection.isConnected() ? 1 : 0);
+        } else {
+           setStringProperty(IB4JOperatorConsoleMessage.FLD_DL_CHANNEL_NAME, "kafkaDatalakeConnection");
+           setIntProperty(IB4JOperatorConsoleMessage.FLD_DL_CHANNEL_STATUS, 0);
+        }
+        
         LOGGER.debug("ChannelStatusReplyMessage = {}", this);
     }
 }

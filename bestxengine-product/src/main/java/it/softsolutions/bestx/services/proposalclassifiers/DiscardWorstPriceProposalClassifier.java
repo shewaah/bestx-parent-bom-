@@ -43,7 +43,7 @@ public class DiscardWorstPriceProposalClassifier implements ProposalClassifier {
 			 * if NOT enabled from config we don't go for the old way : we check if we have already done the call to
 			 * isAMatch, if so we won't do it again making the query only once.
 			 */
-	 			if (!isMatchByQueryEnabled()) {
+ 			if (!isMatchByQueryEnabled()) {
 				if (order.getIsMatchingFromQuery() == Order.IsMatchingFromQueryStates.NONE) {
 					isAMatchOrder = titoliIncrociabiliService.isAMatch(order);
 					order.setIsMatchingFromQuery(isAMatchOrder ? Order.IsMatchingFromQueryStates.TRUE : Order.IsMatchingFromQueryStates.FALSE);

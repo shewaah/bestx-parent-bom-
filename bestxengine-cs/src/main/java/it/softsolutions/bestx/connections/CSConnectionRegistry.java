@@ -36,6 +36,7 @@ public class CSConnectionRegistry implements ConnectionRegistry, ConnectionListe
 	
 	private Connection mqPriceDiscoveryConnection;
 	private Connection grdLiteConnection;
+	private Connection datalakeConnection;
 	
 
 	/**
@@ -172,5 +173,18 @@ public class CSConnectionRegistry implements ConnectionRegistry, ConnectionListe
     */
    public void setGrdLiteConnection(Connection grdLiteConnection) {
       this.grdLiteConnection = grdLiteConnection;
+   }
+   
+   /**
+    * 
+    * @param datalakeConnection the datalake connection (eg. Kafka)
+    */
+   public void setDatalakeConnection(Connection datalakeConnection) {
+      this.datalakeConnection = datalakeConnection;
+   }
+
+   @Override
+   public Connection getDatalakeConnection() {
+      return datalakeConnection;
    }
 }

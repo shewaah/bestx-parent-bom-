@@ -15,4 +15,6 @@ public interface ConnectionRegistry {
     Connection getMqPriceDiscoveryConnection();
     
     Connection getGrdLiteConnection();
+    
+    Connection getDatalakeConnection();
 }

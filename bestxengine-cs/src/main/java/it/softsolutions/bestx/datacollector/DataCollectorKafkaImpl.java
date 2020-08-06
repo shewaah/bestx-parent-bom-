@@ -73,6 +73,7 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
    //Class properties
    private Producer<String, String> kafkaProducer;
    private boolean active = false;
+   private boolean connected = false;
    
    private DataCollectorKafkaKeyStrategy priceKeyStrategy;
    private DataCollectorKafkaKeyStrategy bookKeyStrategy;
@@ -100,13 +101,11 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 	   for (String marketMakerCompositeString : marketMakerCompositeStrings) {
 		   this.compositeMarketMakers.add(marketMakerCompositeString.trim());
 	   }
-	   
-      connectKafka();
    }
    
    @Override
    public void connect() {
-      if (!active) {
+      if (!connected) {
          try {
             connectKafka();
          }
@@ -119,9 +118,12 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
    private void connectKafka() throws BestXException {
       Properties props = new Properties();
       try {
+         active = true;
          props.load(configFilename.getInputStream());
          kafkaProducer = new KafkaProducer<>(props);
-         active = true;
+         if (kafkaProducer.partitionsFor(priceTopic) != null && kafkaProducer.partitionsFor(priceTopic).size() > 0) {
+            connected = true;
+         }
       }
       catch (IOException e) {
          active = false;
@@ -133,12 +135,12 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
    public void disconnect() {
       kafkaProducer.close();
       kafkaProducer = null;
-      active = false;
+      connected = false;
    }
 
    @Override
    public boolean isConnected() {
-      return active;
+      return active && connected;
    }
    
     @Override
@@ -252,6 +254,7 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 					kafkaProducer.send(new ProducerRecord<String, String>(priceTopic,
 							this.priceKeyStrategy.calculateKey(operation, attemptNo), rawProposal.toString()), (metadata, exception) -> {
 								if (exception != null) {
+								   connected = false;
 									LOGGER.warn("Error while trying to send message: " + message.toString(), exception);
 								}
 							});
@@ -264,6 +267,7 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 				kafkaProducer.send(new ProducerRecord<String, String>(bookTopic,
 						this.bookKeyStrategy.calculateKey(operation, attemptNo), message.toString()), (metadata, exception) -> {
 							if (exception != null) {
+							   connected = false;
 								LOGGER.warn("Error while trying to send message: " + message.toString(), exception);
 							}
 						});
@@ -336,6 +340,7 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 					kafkaProducer.send(new ProducerRecord<String, String>(pobexTopic,
 							this.pobexKeyStrategy.calculateKey(operation, attemptNo), message.toString()), (metadata, exception) -> {
 								if (exception != null) {
+                           connected = false;
 									LOGGER.warn("Error while trying to send message: " + message.toString(), exception);
 								}
 							});

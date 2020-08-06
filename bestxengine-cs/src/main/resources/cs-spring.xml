@@ -803,6 +803,7 @@
         <property name="customerConnection"><ref bean="oms1CustomerAdapter"/></property>
         <property name="mqPriceDiscoveryConnection"><ref bean="mqPriceDiscoveryOperatorConsoleAdapter"/></property>
         <property name="grdLiteConnection"><ref bean="grdLiteService"/></property>
+        <property name="datalakeConnection" ref="dataCollector" />
 	</bean>
 
 	<!-- OPERATION LIFECYCLE MANAGER -->
@@ -1336,6 +1337,7 @@
 	
 	<bean id="dataCollectorKafkaKeyStrategy" class="it.softsolutions.bestx.datacollector.DataCollectorKafkaKeyStrategyISINImpl" />   
 	<bean id="dataCollector" class="it.softsolutions.bestx.datacollector.DataCollectorKafkaImpl" init-method="init">
+		<property name="serviceName" value="KafkaDatalakeConnection" />
         <property name="configFilename" value="classpath:kafkaConnection.properties" />
         <property name="priceTopic" value="${Kafka.TopicName.Price}" />
         <property name="bookTopic" value="${Kafka.TopicName.Book}" />
