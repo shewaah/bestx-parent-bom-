@@ -298,17 +298,23 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 					
 					JSONObject proposal = new JSONObject(); // Proposal element to be sent in the book JSON message
 
-					if (ep.getSide() == ProposalSide.ASK) {
+					if (operation.getOrder().getSide() == OrderSide.BUY) {
 						proposal.element("askPrice", ep.getPrice().getAmount());
-						proposal.element("askQty", ep.getQty());
-					} else if (ep.getSide() == ProposalSide.BID) {
+						if (ep.getQty() != null) {
+							proposal.element("askQty", ep.getQty());
+						}
+					} else {
 						proposal.element("bidPrice", ep.getPrice().getAmount());
-						proposal.element("bidQty", ep.getQty());
+						if (ep.getQty() != null) {
+							proposal.element("bidQty", ep.getQty());
+						}
 					}
 					
-					proposal.element("PriceType", this.convertPriceTypeToInt(ep.getPriceType()));
+					if (ep.getPriceType() != null) {
+						proposal.element("PriceType", this.convertPriceTypeToInt(ep.getPriceType()));
+					}
 					
-					if (ep.getMarketMarketMaker() != null && ep.getMarketMarketMaker().getMarketSpecificCode() != null) {
+					if (ep.getMarketMarketMaker() != null && ep.getMarketMarketMaker().getMarketMaker() != null) {
 						proposal.element("marketmaker", ep.getMarketMarketMaker().getMarketMaker().getCode());
 					} else {
 						proposal.element("marketmaker", ep.getOriginatorID());
