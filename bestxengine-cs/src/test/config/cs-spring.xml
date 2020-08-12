@@ -1363,6 +1363,7 @@
         <property name="priceTopic" value="${Kafka.TopicName.Price}" />
         <property name="bookTopic" value="${Kafka.TopicName.Book}" />
         <property name="pobexTopic" value="${Kafka.TopicName.Pobex}" />
+        <property name="monitorTopic" value="${Kafka.TopicName.Monitor:#{null}}" />
         <property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
         <property name="executor" ref="threadPoolKafka" />
         <property name="priceKeyStrategy" ref="dataCollectorKafkaKeyStrategy" />
