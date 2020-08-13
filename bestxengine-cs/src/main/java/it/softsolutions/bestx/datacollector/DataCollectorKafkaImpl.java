@@ -16,6 +16,7 @@ package it.softsolutions.bestx.datacollector;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -78,6 +79,7 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 	private KafkaConnectionChecker kafkaConnectionChecker;
 	private boolean active = false;
 	private boolean connected = false;
+	private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
 
 	private int convertPriceTypeToInt(PriceType priceType) {
 		switch (priceType) {
@@ -105,6 +107,7 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 
 	@Override
 	public void connect() {
+		LOGGER.info("Received request to connect to Datalake service");
 		if (!this.connected) {
 			try {
 				this.active = true;
@@ -118,19 +121,19 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 					this.connected = true;
 				}
 				(new Thread(this.kafkaConnectionChecker)).start();
-				if (kafkaProducer.partitionsFor(priceTopic) != null
-						&& kafkaProducer.partitionsFor(priceTopic).size() > 0) {
-					this.connected = true;
-				}
+				LOGGER.info("Request to connect to Datalake service completed successfully");
 			} catch (Exception e) {
 				this.active = false;
 				LOGGER.error("Unable to connect to Kafka datalake service", e);
 			}
+		} else {
+			LOGGER.warn("Connection request will be ignored, already connected");
 		}
 	}
 
 	@Override
 	public void disconnect() {
+		LOGGER.info("Request received to disconnect from Datalake Service");
 		try {
 			if (this.kafkaConnectionChecker != null) {
 				this.kafkaConnectionChecker.stop();
@@ -138,6 +141,7 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 			if (this.kafkaProducer != null) {
 				this.kafkaProducer.close();
 			}
+			LOGGER.info("Request received to disconnect from Datalake Service completed successfully");
 		} finally {
 			this.kafkaProducer = null;
 			this.connected = false;
@@ -239,7 +243,6 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 					rawProposal.element("PriceType", this.convertPriceTypeToInt(goodProp.getPriceType()));
 					rawProposal.element("PriceQuality", isComposite ? "CMP" : "IND");
 
-					SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
 					proposal.element("timestamp", df.format(goodProp.getTimestamp()));
 					rawProposal.element("timestamp", df.format(goodProp.getTimestamp()));
 
@@ -345,7 +348,6 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 				message.element("prices", jsonMap);
 
 				if (goodPrice != null) {
-					SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
 					message.element("timestamp", df.format(goodPrice.getTimestamp()));
 					message.element("market", goodPrice.getMarket().getMarketCode());
 
@@ -453,18 +455,21 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 		public void run() {
 			while (keepChecking) {
 				try {
-					String messageValue = "HEARTBEAT: " + System.currentTimeMillis();
+					String messageValue = "HEARTBEAT: " + df.format(new Date());
 					ProducerRecord<String, String> rec = new ProducerRecord<>(monitorTopic, messageValue);
+					LOGGER.info("Sending heartbeat message... {}", messageValue);
 					kafkaProducer.send(rec, (metadata, exception) -> {
 						if (exception != null) {
 							connected = false;
-							LOGGER.warn("Error while trying to send message: " + messageValue, exception);
+							LOGGER.warn("Error while trying to send heartbeat message: " + messageValue, exception);
 						} else {
 							connected = true;
+							LOGGER.info("Successfully sent heartbeat message! {}", messageValue);
 						}
 					});
 					Thread.sleep(CHECK_PERIOD);
 				} catch (Exception e) {
+					LOGGER.error("Error while trying to check connection status: ", e);
 					if (keepChecking) connected = false;
 				}
 			}
