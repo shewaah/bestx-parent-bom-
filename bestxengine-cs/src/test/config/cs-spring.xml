@@ -91,6 +91,7 @@
 				<entry key="it.softsolutions.bestx.cs:name=OrdersEndOfDayService" value-ref="ordersEndOfDayService" />
 				<entry key="it.softsolutions.bestx.cs:name=BusinessValuesMonitor" value-ref="businessValuesMonitor" />
 				<entry key="it.softsolutions.bestx.cs:name=CSStrategy" value-ref="csStrategy" />
+				<entry key="it.softsolutions.bestx.cs:name=ExecutionStrategyServiceFactory" value-ref="executionStrategyServiceFactory" />
 				<entry key="it.softsolutions.bestx.cs:name=PooledDataSource" value-ref="pooledDataSource" />
 				<entry key="it.softsolutions.bestx.cs:name=jdbcPooledDataSource" value-ref="jdbcPooledDataSource" />
 				<entry key="it.softsolutions.bestx.cs:name=NonCommittedPooledDataSource" value-ref="nonCommittedPooledDataSource" />
@@ -123,6 +124,7 @@
 						<prop key="it.softsolutions.bestx.cs:name=PooledDataSource">org.apache.commons.dbcp2.BasicDataSourceMXBean </prop>
 						<prop key="it.softsolutions.bestx.cs:name=jdbcPooledDataSource">org.apache.commons.dbcp2.BasicDataSourceMXBean </prop>
 						<prop key="it.softsolutions.bestx.cs:name=NonCommittedPooledDataSource">org.apache.commons.dbcp2.BasicDataSourceMXBean </prop>
+						<prop key="it.softsolutions.bestx.cs:name=ExecutionStrategyServiceFactory">it.softsolutions.bestx.services.executionstrategy.CSExecutionStrategyServiceFactoryMBean</prop>
 					</props>
 				</property>
 			</bean>
@@ -1017,6 +1019,7 @@
     	</property>
     	<property name="applicationStatus" ref="applicationStatus" />
     	<property name="minimumRequiredBookDepth"><value>${Execution.minimumRequiredBookDepth}</value></property>
+    	<property name="centsLFTolerance" value="${Execution.centsLFTolerance:0}" />
     </bean>
 
 

@@ -48,15 +48,19 @@ import it.softsolutions.bestx.states.WarningState;
  **/
 public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyService {
 
+	private int centsLFTolerance;
+	
    static final Logger LOGGER = LoggerFactory.getLogger(CSLimitFileExecutionStrategyService.class);
 
    @Deprecated
-   public CSLimitFileExecutionStrategyService(ExecutionStrategyServiceCallback executionStrategyServiceCallback, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus, int minimumRequiredBookDepth){
+   public CSLimitFileExecutionStrategyService(ExecutionStrategyServiceCallback executionStrategyServiceCallback, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus, int minimumRequiredBookDepth, int centsLFTolerance){
       super(executionStrategyServiceCallback, priceResult, rejectOrderWhenBloombergIsBest, applicationStatus, minimumRequiredBookDepth);
+      this.centsLFTolerance = centsLFTolerance;
    }
 
-   public CSLimitFileExecutionStrategyService(Operation operation, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus, int minimumRequiredBookDepth){
+   public CSLimitFileExecutionStrategyService(Operation operation, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus, int minimumRequiredBookDepth, int centsLFTolerance){
       super(operation, priceResult, rejectOrderWhenBloombergIsBest, applicationStatus, minimumRequiredBookDepth);
+      this.centsLFTolerance = centsLFTolerance;
    }
 
    @Override
