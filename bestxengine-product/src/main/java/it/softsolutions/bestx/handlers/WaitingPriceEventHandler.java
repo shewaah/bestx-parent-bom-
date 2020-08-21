@@ -435,7 +435,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			
 			boolean executable = !operation.isNotAutoExecute() && (!operation.getOrder().isLimitFile() || !doNotExecute);
 			
-			if(executable && BondTypesService.isUST(operation.getOrder().getInstrument())) { 
+			if (executable && (BondTypesService.isUST(operation.getOrder().getInstrument()) || customerOrder.isLimitFile())) { 
 				// it is an executable UST order and there are no prices on consolidated book
 				csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
 			} else {
