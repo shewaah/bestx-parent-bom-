@@ -199,22 +199,24 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 			List<ClassifiedProposal> proposalsDiscardedByLimitPrice = sortedBook.getProposalBySubState(
 					Arrays.asList(ProposalSubState.PRICE_WORST_THAN_LIMIT), order.getSide());
 			// TODO Confirm the sortedBook contains the "invalid" proposals also sorted by price
-			ClassifiedProposal proposal = proposalsDiscardedByLimitPrice.get(0);
-			BigDecimal proposalPrice = proposal.getPrice().getAmount();
-			BigDecimal limitPrice = order.getLimit().getAmount();
-			BigDecimal differenceAbs = proposalPrice.subtract(limitPrice).abs();
-			BigDecimal differenceCents = differenceAbs.multiply(new BigDecimal(100));
-			if (differenceCents.compareTo(new BigDecimal(this.centsLFTolerance)) <= 0) {
-				priceInToleranceFound = true;
-				if (createOrder) {
-					MarketOrder marketOrder = new MarketOrder();
-					currentAttempt.setMarketOrder(marketOrder);
-					marketOrder.setValues(operation.getOrder());
-					marketOrder.setTransactTime(DateService.newUTCDate());
-					marketOrder.setMarket(proposal.getMarket());
-					marketOrder.setMarketMarketMaker(proposal.getMarketMarketMaker());
-					marketOrder.setLimit(operation.getOrder().getLimit());  // if order limit is null, send a market order to TW
-					LOGGER.info("Order={}, Selecting for execution market market maker: {} and price {}", operation.getOrder().getFixOrderId(), marketOrder.getMarketMarketMaker(), limitPrice.toString());
+			if (!proposalsDiscardedByLimitPrice.isEmpty()) {
+				ClassifiedProposal proposal = proposalsDiscardedByLimitPrice.get(0);
+				BigDecimal proposalPrice = proposal.getPrice().getAmount();
+				BigDecimal limitPrice = order.getLimit().getAmount();
+				BigDecimal differenceAbs = proposalPrice.subtract(limitPrice).abs();
+				BigDecimal differenceCents = differenceAbs.multiply(new BigDecimal(100));
+				if (differenceCents.compareTo(new BigDecimal(this.centsLFTolerance)) <= 0) {
+					priceInToleranceFound = true;
+					if (createOrder) {
+						MarketOrder marketOrder = new MarketOrder();
+						currentAttempt.setMarketOrder(marketOrder);
+						marketOrder.setValues(operation.getOrder());
+						marketOrder.setTransactTime(DateService.newUTCDate());
+						marketOrder.setMarket(proposal.getMarket());
+						marketOrder.setMarketMarketMaker(proposal.getMarketMarketMaker());
+						marketOrder.setLimit(operation.getOrder().getLimit());  // if order limit is null, send a market order to TW
+						LOGGER.info("Order={}, Selecting for execution market market maker: {} and price {}", operation.getOrder().getFixOrderId(), marketOrder.getMarketMarketMaker(), limitPrice.toString());
+					}
 				}
 			}
 		}
