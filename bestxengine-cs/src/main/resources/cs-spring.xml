@@ -341,8 +341,8 @@
         <property name="username"><value>${dbcp.connection.username}</value></property>
         <property name="password"><value>${dbcp.connection.password}</value></property>
         <property name="initialSize"><value>0</value></property>
-        <property name="maxTotal"><value>2</value></property>
-        <property name="maxIdle"><value>2</value></property>
+        <property name="maxTotal"><value>${Spring.pooledDataSource.maxTotal:2}</value></property>
+        <property name="maxIdle"><value>${Spring.pooledDataSource.maxIdle:2}</value></property>
         <property name="minIdle"><value>0</value></property>
 		<property name="validationQuery"><value>select 1</value></property>
 	</bean>
@@ -704,7 +704,7 @@
 	<bean id="applicationStatusController" class="it.softsolutions.bestx.appstatus.ApplicationStatusController">
 		<property name="applicationStatus" ref="applicationStatus" />
 	</bean>
-	
+
 	<!-- VALIDATION FOR ORDERS -->
     <bean id="csOrderValidationService" class="it.softsolutions.bestx.services.CSOrderValidationService">
 		<property name="formalValidatorList">
@@ -748,7 +748,6 @@
 				<!-- ExistInstrumentControl must be the first -->
                 <bean class="it.softsolutions.bestx.services.ordervalidation.ExistInstrumentControl"/>
                 <bean class="it.softsolutions.bestx.services.ordervalidation.CurrencyControl"/>
-				<!--<bean class="it.softsolutions.bestx.services.ordervalidation.CustomerCurrencyValidator"/> -->
                 <bean class="it.softsolutions.bestx.services.ordervalidation.IncQuantityControl"/>
                 <bean class="it.softsolutions.bestx.services.ordervalidation.MinQuantityControl"/>
 				<bean class="it.softsolutions.bestx.services.ordervalidation.SettlementDateLimitControl">
@@ -761,7 +760,7 @@
                 <bean class="it.softsolutions.bestx.services.ordervalidation.LimitFileParkTagFilter">
 					<property name="custOrderHandlingInstrValue"><value>TMO</value></property>
 				</bean>         
-               <bean class="it.softsolutions.bestx.services.ordervalidation.StopAutoExecHandlInst">
+                <bean class="it.softsolutions.bestx.services.ordervalidation.StopAutoExecHandlInst">
 				</bean>               
 			</list>
 		</property>
@@ -940,7 +939,7 @@
 			<list>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardSpreadProposalClassifier"></bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardYieldProposalClassifier"></bean>
-				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnitProposalClassifier"></bean>				
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnitProposalClassifier"></bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.SubstituteCounterProposalClassifier"></bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnavailableVenueProposalClassifier"></bean>
 
@@ -953,14 +952,12 @@
                     <property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
 				</bean>
 				
-                <!-- bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardInsufficientQuantityProposalClassifier"></bean -->
-                
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardMarketTriedInEarlierAttemptProposalClassifier"></bean>
-                
-                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardWorstPriceProposalClassifier">
-                    <property name="titoliIncrociabiliService"><ref bean="titoliIncrociabiliServer"></ref></property>
-                    <!--  Flag per abilitare o disabilitare il controllo che un ordine sia o meno un matching tramite query -->
-                    <property name="matchByQueryEnabled"><value>false</value></property>
+
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardWorstPriceProposalClassifier">
+					<property name="titoliIncrociabiliService"><ref bean="titoliIncrociabiliServer"></ref></property>
+					<!--  Flag per abilitare o disabilitare il controllo che un ordine sia o meno un matching tramite query -->
+					<property name="matchByQueryEnabled"><value>false</value></property>
 				</bean>
 			</list>
 		</property>
@@ -977,7 +974,7 @@
 			<list>
  				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardSpreadProposalClassifier"></bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardYieldProposalClassifier"></bean>
-				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnitProposalClassifier"></bean>				
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnitProposalClassifier"></bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnavailableVenueProposalClassifier"></bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroProposalClassifier">
                 	<property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
@@ -988,7 +985,7 @@
 				</bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.TagInsufficientQtyProposalClassifier">
                 	<property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
-                </bean>
+				</bean>
 				<!-- <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTooWideQuoteSpread"></bean> -->
 			</list>
 		</property>
@@ -1003,7 +1000,7 @@
 <!-- Execution strategy -->
     <bean id="executionStrategyServiceFactory" class="it.softsolutions.bestx.services.executionstrategy.CSExecutionStrategyServiceFactory">
         <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
-        <property name="marketConnectionRegistry"><ref bean="configurableMarketConnectionRegistry"/></property>
+		<property name="marketConnectionRegistry"><ref bean="configurableMarketConnectionRegistry"/></property>
         <property name="bookClassifier"><ref bean="bookClassifierBean"/></property>
  		<property name="bookSorter"><bean class="it.softsolutions.bestx.services.booksorter.BookSorterImpl"></bean></property>
     	<property name="allMarketsToTry">
@@ -1052,7 +1049,7 @@
         <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
         <property name="venueFinder"><ref bean="dbBasedVenueFinder"/></property>
         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
-        <property name="tradeStacPreTradeConnection"><ref bean="blpConnector"/></property>
+		<property name="tradeStacPreTradeConnection"><ref bean="blpConnector"/></property>
         <property name="tsoxConnection"><ref bean="tsoxConnector"/></property>
     </bean>
 
@@ -1084,7 +1081,7 @@
         <property name="fixConfigFileName" value="fix-tradestac-tsox.properties" />
 	</bean>
 
-	<!-- ====================================================================== -->
+    <!-- ====================================================================== -->
     <!-- ==== Tradeweb ======================================================== -->
     <!-- ====================================================================== -->
     <bean id="tradewebMarket" class="it.softsolutions.bestx.markets.tradeweb.TradewebMarket" init-method="init" lazy-init="true">
@@ -1109,12 +1106,11 @@
         <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
         <property name="venueFinder"><ref bean="dbBasedVenueFinder"/></property>
         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
-        <!-- <property name="tradeStacPreTradeConnection"><ref bean="simulatedMdsConnector"/></property> -->
         <property name="tradeStacPreTradeConnection"><ref bean="mdsConnector"/></property>
         <property name="tradeXpressConnection"><ref bean="tradexpressConnector"/></property>
 	</bean>
 
-    <bean id="mdsConnector" class="it.softsolutions.bestx.connections.tradeweb.mds.MDSConnectionImpl" init-method="init">
+	<bean id="mdsConnector" class="it.softsolutions.bestx.connections.tradeweb.mds.MDSConnectionImpl" init-method="init">
         <property name="executor"><ref bean="threadPoolTradeweb"/></property>
         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
         <property name="marketMakerFinder"><ref bean="dbBasedMarketMakerFinder"/></property>
@@ -1143,6 +1139,7 @@
 		<property name="defaultTradingCapacity"><value>${Tradeweb.defaultCapacity}</value></property>
         <property name="fixConfigFileName" value="fix-tradestac-tradexpress.properties" />
 	</bean>
+
 	<!-- ====================================================================== -->
     <!-- ==== MarketAxess ======================================================== -->
     <!-- ====================================================================== -->
@@ -1166,21 +1163,6 @@
         <property name="tradeStacPreTradeConnection"><ref bean="marketAxessPreTradeConnector"/></property>
         <property name="tradeConnection"><ref bean="autoExecutionTradeConnector"/></property>
 	</bean>
-    <!-- bean id="simulatedMarketAxessConnector" class="it.softsolutions.bestx.connections.tradestac.TradeStacMarketSimulatorConnectionImpl" init-method="init">
-        <property name="marketCode"><value>MARKETAXESS</value></property>
-        <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
-        <property name="marketMakerFinder"><ref bean="dbBasedMarketMakerFinder"/></property>
-        <property name="marketFinder"><ref bean="dbBasedMarketFinder"/></property>
-        <property name="venueFinder"><ref bean="dbBasedVenueFinder"/></property>
-        <property name="tradeStacPreTradeConnectionListener"><ref bean="marketAxessMarket"/></property>
-        <property name="tradeStacConnectionListener"><ref bean="marketAxessMarket"/></property>
-		<property name="connectionName"><value>UNIVERSAL-MARKET-SESSION</value></property>
-        <property name="tradeStacClientSession">
-            <bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
-        </property>
-        <property name="fixConfigFileName"><value>fix-tradestac-simulated-marketaxess.properties</value></property>
-    </bean>
-      -->
 
     <bean id="marketAxessPreTradeConnector" class="it.softsolutions.bestx.connections.marketaxess.MarketAxessInventoryAndLiveMarketFeedConnector" init-method="init">
          <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"/></property>
@@ -1318,7 +1300,7 @@
         <property name="active"><value>true</value></property>
         <!-- maximum number of reconnections, -1 means never stop trying to reconnect, it
             is also the default value -->
-        <property name="reconnectionMaxTries"><value>-1</value></property>
+        <property name="reconnectionMaxTries"><value>${Spring.grdLiteService.reconnectionMaxTries:-1}</value></property>
         <property name="encryptor"><ref bean="configurationEncryptor"></ref></property>
         <property name="serviceName"><value>GRDLite</value></property>
 	</bean>
@@ -1337,7 +1319,7 @@
 			</list>
 		</property>
 	</bean>
-	
+
 	<bean id="dataCollectorKafkaKeyStrategy" class="it.softsolutions.bestx.datacollector.DataCollectorKafkaKeyStrategyISINImpl" />   
 	<bean id="dataCollector" class="it.softsolutions.bestx.datacollector.DataCollectorKafkaImpl" init-method="init">
 		<property name="serviceName" value="KafkaDatalakeConnection" />
