@@ -214,7 +214,7 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 					marketOrder.setMarket(proposal.getMarket());
 					marketOrder.setMarketMarketMaker(proposal.getMarketMarketMaker());
 					marketOrder.setLimit(operation.getOrder().getLimit());  // if order limit is null, send a market order to TW
-					LOGGER.info("Order={}, Selecting for execution market market maker: {} and price {}", operation.getOrder().getFixOrderId(), marketOrder.getMarketMarketMaker(), limitPrice == null ? "null" : limitPrice.toString());
+					LOGGER.info("Order={}, Selecting for execution market market maker: {} and price {}", operation.getOrder().getFixOrderId(), marketOrder.getMarketMarketMaker(), limitPrice.toString());
 				}
 			}
 		}
