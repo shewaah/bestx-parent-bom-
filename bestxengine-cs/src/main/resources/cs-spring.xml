@@ -1187,11 +1187,7 @@
 		<property name="tradeStacClientSession">
 			<bean class="it.softsolutions.tradestac2.client.TradeStacClient"/>
 		</property>
-		<property name="tolerance"><value>${Marketaxess.Order.Tolerance}</value></property>
 		<property name="includeDealers"><value>${Marketaxess.Order.MinDealers}</value></property>
-		<property name="numCompetitiveQuotes"><value>${Marketaxess.Order.NumCompetitiveQuotes}</value></property>
-		<property name="minTimeDelay"><value>${Marketaxess.Order.MinTimeDelay}</value></property>
-		<property name="validSeconds"><value>${Marketaxess.Order.ValidSeconds}</value></property>
 		<property name="traderPartyID"><value>${Marketaxess.Order.TraderPartyID}</value></property>
 		<property name="investmentDecisionIDSource"><value>${MarketAxess.InvestmentDecisionMakerIDSource}</value></property>
 		<property name="investmentDecisionQualifier"><value>${MarketAxess.InvestmentDecisionQualifier}</value></property>
