@@ -36,5 +36,9 @@ public interface MarketAxessConnectorMBean {
 	 * @param traderPartyID the trader id used to send orders
 	 */
 	void setTraderPartyID(String traderPartyID);
+	
+	void setIncludeDealers(int minDealers);
+	
+	int getIncludeDealers();
 
 }
