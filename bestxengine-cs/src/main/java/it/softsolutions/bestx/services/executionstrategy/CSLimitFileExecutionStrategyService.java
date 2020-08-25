@@ -221,7 +221,7 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 			}
 		}
 
-		if (priceInToleranceFound && this.applicationStatus.getType() == ApplicationStatus.Type.EXECUTION) {
+		if (priceInToleranceFound) {
 			LOGGER.debug("OrderId: {}. Going to execution because price is inside tolerance parmaeter",
 					operation.getOrder().getFixOrderId());
 			super.startExecution(operation, currentAttempt, serialNumberService);

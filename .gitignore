@@ -2,6 +2,7 @@
 **/.settings/
 **/.project
 **/.classpath
+**/.springBeans
 /log/
 /bestxengine-cs/log/
 /bestx-sod-loader/log/
