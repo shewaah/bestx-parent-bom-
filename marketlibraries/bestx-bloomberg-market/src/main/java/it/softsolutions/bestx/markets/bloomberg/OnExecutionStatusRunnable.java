@@ -87,10 +87,12 @@ public class OnExecutionStatusRunnable implements Runnable {
       
       //if a second message with POBEX information come from the market it will be ignored
       if (attempt.getExecutablePrices() != null && attempt.getExecutablePrices().size() > 0) {
+         LOGGER.info("OrderID: {} - Discarded Execution report staus message for operation with executable prices already present", operation.getOrder().getFixOrderId());
          return;
       }
       
       if (!(this.operation.getState() instanceof BBG_SendRfqState)) {
+         LOGGER.info("OrderID: {} - Discarded Execution report staus message for operation not in correct state", operation.getOrder().getFixOrderId());
          return;
       }
       
@@ -135,11 +137,18 @@ public class OnExecutionStatusRunnable implements Runnable {
                      price.setSide(operation.getOrder().getSide() == OrderSide.BUY ? ProposalSide.ASK : ProposalSide.BID);
                      price.setQuoteReqId(attempt.getMarketOrder().getFixOrderId());
                      
-                     //Calculate status from 22606 tag
-                     if ("PASSED".equals(tsExecutionReport.getCustomFieldString(22606).toString())) {
+                     //Calculate status from 22606 tag can contains: Expired, Canceled, Passed, Rejected, or Other
+
+                     if ("PASSED".equalsIgnoreCase(tsExecutionReport.getCustomFieldString(22606).toString())) {
                         price.setAuditQuoteState("Passed");
-                     } else {
+                     } else if ("EXPIRED".equalsIgnoreCase((tsExecutionReport.getCustomFieldString(22606).toString()))) {
+                        price.setAuditQuoteState("Expired");
+                     } else if ("Canceled".equalsIgnoreCase((tsExecutionReport.getCustomFieldString(22606).toString()))) {
+                        price.setAuditQuoteState("Cancelled");
+                     } else if ("Rejected".equalsIgnoreCase((tsExecutionReport.getCustomFieldString(22606).toString()))) {
                         price.setAuditQuoteState("Missed");
+                     } else {
+                        price.setAuditQuoteState("Expired");
                      }
                      
                      if (tempMM == null) {
