@@ -176,7 +176,8 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 						operation.getOrder().getFixOrderId());
 				super.startExecution(operation, currentAttempt, serialNumberService);
 			} else {
-				this.checkToleranceAndDecide(operation, currentAttempt, serialNumberService, false);
+				boolean createOrder = this.applicationStatus.getType() == ApplicationStatus.Type.MONITOR;
+				this.checkToleranceAndDecide(operation, currentAttempt, serialNumberService, createOrder);
 			}
 		} else {
 			if (priceResult.getState() == PriceResult.PriceResultState.COMPLETE) {
