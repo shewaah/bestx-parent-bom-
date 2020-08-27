@@ -3,8 +3,6 @@
  */
 package it.softsolutions.bestx.handlers.bloomberg;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,14 +11,12 @@ import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.handlers.BaseOperationEventHandler;
-import it.softsolutions.bestx.handlers.BookHelper;
 import it.softsolutions.bestx.handlers.ExecutionReportHelper;
 import it.softsolutions.bestx.handlers.LimitFileHelper;
 import it.softsolutions.bestx.model.Attempt;
-import it.softsolutions.bestx.model.ClassifiedProposal;
+import it.softsolutions.bestx.model.Attempt.AttemptState;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.model.Order;
-import it.softsolutions.bestx.model.Attempt.AttemptState;
 import it.softsolutions.bestx.services.serial.SerialNumberService;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.RejectedState;
@@ -47,7 +43,9 @@ public class CS_BBG_RejectedEventHandler extends BaseOperationEventHandler {
 
     @Override
     public void onNewState(OperationState currentState) {
-
+       if(customerSpecificHandler != null) {
+          customerSpecificHandler.onNewState(currentState);
+       }
         
         boolean mustSendAutoNotExecution = false;
         Order order = operation.getOrder();

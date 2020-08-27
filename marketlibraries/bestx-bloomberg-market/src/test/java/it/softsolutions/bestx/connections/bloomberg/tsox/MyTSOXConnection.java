@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.softsolutions.bestx.BestXException;
-import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.connections.Connection;
 import it.softsolutions.bestx.connections.ConnectionListener;
 import it.softsolutions.bestx.model.Instrument;
@@ -156,6 +155,11 @@ public class MyTSOXConnection {
 		public void onCancelReject(String sessionId, String quoteReqId, String reason) {
 			
 		}
+
+      @Override
+      public void onExecutionStatus(String sessionId, String clOrdId, TSExecutionReport tsExecutionReport) {
+         
+      }
         
     }
 }

@@ -603,6 +603,12 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 				switch (marketCode) {
 				case BLOOMBERG:
 					handler = new CS_BBG_RejectedEventHandler(operation, serialNumberService);
+               if (CSExecutionReportHelper.isPOBex(operation)) {
+                  CSSendPOBExEventHandler customerHandler = new CSSendPOBExEventHandler(operation, orderBookDepth, priceDecimals, priceDiscoveryConnection, serialNumberService, pobExMaxSize, true);
+                  customerHandler.setCustomerConnection(customerConnection);
+                  customerHandler.setOperatorConsoleConnection(operatorConsoleConnection);
+                  handler.setCustomerSpecificHandler(customerHandler);
+               }
 					break;
 				case TW:
 					handler = new TW_RejectedEventHandler(operation, serialNumberService, bestXConfigurationDao);

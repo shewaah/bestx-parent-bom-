@@ -254,10 +254,10 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
    public void onExecutionReport(SessionID sessionID, TSExecutionReport tsExecutionReport) throws TradeStacException {
       LOGGER.debug("{}, {}", sessionID, tsExecutionReport);
 
-      // [DR20131126]
+      //Check if the exec type (150) is NEW
       if (tsExecutionReport.getExecType() == ExecType.New) {
-         LOGGER.info("ExecutionReport with execType = {} has been ignored: {} {}", tsExecutionReport.getExecType(), tsExecutionReport, sessionID);
-         return;
+            LOGGER.info("ExecutionReport with execType = {} has been ignored: {} {}", tsExecutionReport.getExecType(), tsExecutionReport, sessionID);
+            return;
       }
 
       /**
@@ -268,7 +268,10 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
        */
       char execType = tsExecutionReport.getExecType().getFIXValue();
       // when RFQ with traders has been closed for any reason, free the trader pool counter  
-      if (quickfix.field.ExecType.REJECTED == execType) {
+      if (quickfix.field.ExecType.ORDER_STATUS == execType) {
+         tsoxConnectionListener.onExecutionStatus(sessionID.toString(), tsExecutionReport.getClOrdID(), tsExecutionReport);
+      }
+      else if (quickfix.field.ExecType.REJECTED == execType) {
          tsoxConnectionListener.onOrderReject(sessionID.toString(), tsExecutionReport.getClOrdID(), tsExecutionReport.getText());
       }
       else if(quickfix.field.ExecType.CANCELED == execType && tsExecutionReport.getOrigClOrdID() != null) {

@@ -890,6 +890,27 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
 			LOGGER.error("[MktMsg] Exception while handling ExecutionReport/{}/{} for quoteReqID {}, ignoring it", execType, ordStatus, clOrdID, e);
 		}
 	}
+	
+   @Override
+   public void onExecutionStatus(String sessionId, String clOrdID, TSExecutionReport tsExecutionReport) {
+      //SP-20200825 - BESTX-725 - Manage competing quotes for cancel
+      try {
+         final Operation operation = operationRegistry.getExistingOperationById(OperationIdType.TSOX_CLORD_ID, clOrdID);
+         if (operation.getOrder() == null) {
+            throw new BestXException("Operation order is null");
+         }
+         String orderId = operation.getOrder().getFixOrderId();
+         LOGGER.debug("Execution status received for the order {}, registering statistics.", orderId);
+      
+         executor.execute(new OnExecutionStatusRunnable(operation, tsExecutionReport, executionMarket, marketMakerFinder));
+
+      } catch (OperationNotExistingException e) {
+         LOGGER.warn("[MktMsg] Operation not found for quoteReqID {} , ignoring Execution Status", clOrdID, e);
+      } catch (BestXException e) {
+         LOGGER.error("[MktMsg] Exception while handling Execution Status for quoteReqID {}, ignoring it", clOrdID, e);
+      }
+   }
+	
 
 	@Override
 	public void onOrderReject(final String sessionId, String quoteReqId, final String reason) {
