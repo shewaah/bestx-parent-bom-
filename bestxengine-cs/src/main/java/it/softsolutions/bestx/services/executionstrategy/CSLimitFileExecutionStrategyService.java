@@ -16,7 +16,9 @@ package it.softsolutions.bestx.services.executionstrategy;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,8 +32,9 @@ import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Customer;
-import it.softsolutions.bestx.model.MarketOrder;
+import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
+import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal.ProposalSubState;
 import it.softsolutions.bestx.model.SortedBook;
@@ -180,7 +183,7 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 				this.checkToleranceAndDecide(operation, currentAttempt, serialNumberService, createOrder);
 			}
 		} else {
-			if (priceResult.getState() == PriceResult.PriceResultState.COMPLETE) {
+			if (currentAttempt.getMarketOrder() != null || (priceResult != null && priceResult.getState() == PriceResult.PriceResultState.COMPLETE)) {
 				LOGGER.debug("OrderId: {}. Going to execution because there is a not empty consolidated book",
 						operation.getOrder().getFixOrderId());
 				super.startExecution(operation, currentAttempt, serialNumberService);
@@ -199,7 +202,24 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 		if (sortedBook != null) {
 			List<ClassifiedProposal> proposalsDiscardedByLimitPrice = sortedBook.getProposalBySubState(
 					Arrays.asList(ProposalSubState.PRICE_WORST_THAN_LIMIT), order.getSide());
-			// TODO Confirm the sortedBook contains the "invalid" proposals also sorted by price
+
+			Set<Market> marketsAlreadyTried = new HashSet<>(); 
+			for (Attempt previousAttempt : operation.getAttemptsInCurrentCycle()) {
+				if (previousAttempt.getMarketOrder() != null && previousAttempt.getMarketOrder().getMarket() != null) {
+					marketsAlreadyTried.add(previousAttempt.getMarketOrder().getMarket());
+				}
+			}
+			
+			if (!marketsAlreadyTried.isEmpty()) {
+				List<ClassifiedProposal> filteredList = new ArrayList<>();
+				for (ClassifiedProposal proposal : proposalsDiscardedByLimitPrice) {
+					if (!marketsAlreadyTried.contains(proposal.getMarket())) {
+						filteredList.add(proposal);
+					}
+				}
+				proposalsDiscardedByLimitPrice = filteredList;
+			}
+			
 			if (!proposalsDiscardedByLimitPrice.isEmpty()) {
 				ClassifiedProposal proposal = proposalsDiscardedByLimitPrice.get(0);
 				BigDecimal proposalPrice = proposal.getPrice().getAmount();

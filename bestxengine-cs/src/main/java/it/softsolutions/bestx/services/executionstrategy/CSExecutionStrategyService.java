@@ -355,6 +355,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 			return;
 		}
 		// ###  End
+		
 		List<MarketMaker> doNotIncludeMM = new ArrayList<MarketMaker>();
 		// move book to a new attempt
 		operation.addAttempt();
@@ -375,6 +376,13 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 				}
 			});
 		});
+
+		// BESTX-736 Only if Limit File and consolidated book is empty
+		boolean emptyConsolidatedBook = newAttempt.getSortedBook().getValidSideProposals(operation.getOrder().getSide()).isEmpty();
+		if (operation.getOrder().isLimitFile() && !operation.isNotAutoExecute() && emptyConsolidatedBook) {
+			this.startExecution(operation, newAttempt, serialNumberService);
+			return;
+		}
 
 		ClassifiedProposal executionProposal = newAttempt.getSortedBook().getBestProposalBySide(customerOrder.getSide());
 		if(executionProposal == null) {
