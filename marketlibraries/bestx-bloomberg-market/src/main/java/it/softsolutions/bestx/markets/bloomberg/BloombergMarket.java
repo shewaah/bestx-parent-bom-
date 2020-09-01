@@ -15,6 +15,7 @@ package it.softsolutions.bestx.markets.bloomberg;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.HashMap;
@@ -106,7 +107,7 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
 
 	public static final String BBG_TRADE = "BBG_TRADE_SEQNO";
 	
-	private Map<Operation, TSExecutionReport> pobexExecutionReports;
+	private Map<Operation, TSExecutionReport> pobexExecutionReports = Collections.synchronizedMap(new HashMap<>());
 
 	// Price Connection
 	private TradeStacPreTradeConnection tradeStacPreTradeConnection;
