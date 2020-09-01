@@ -105,6 +105,8 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
 	private static final Logger LOGGER = LoggerFactory.getLogger(BloombergMarket.class);
 
 	public static final String BBG_TRADE = "BBG_TRADE_SEQNO";
+	
+	private Map<Operation, TSExecutionReport> pobexExecutionReports;
 
 	// Price Connection
 	private TradeStacPreTradeConnection tradeStacPreTradeConnection;
@@ -882,8 +884,12 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
 				}
 			}
 
-			executor.execute(new OnExecutionReportRunnable(operation, this, market, executionMarket, tsExecutionReport, marketMakerFinder));
-
+			if (execType == ExecType.Canceled && this.pobexExecutionReports.containsKey(operation)) {
+				executor.execute(new OnExecutionReportRunnable(operation, this, market, executionMarket, tsExecutionReport, marketMakerFinder, this.pobexExecutionReports.remove(operation)));
+			} else {
+				executor.execute(new OnExecutionReportRunnable(operation, this, market, executionMarket, tsExecutionReport, marketMakerFinder));
+			}
+			
 		} catch (OperationNotExistingException e) {
 			LOGGER.warn("[MktMsg] Operation not found for quoteReqID {} , ignoring ExecutionReport/{}/{}", clOrdID, execType, ordStatus);
 		} catch (BestXException e) {
@@ -902,7 +908,8 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
          String orderId = operation.getOrder().getFixOrderId();
          LOGGER.debug("Execution status received for the order {}, registering statistics.", orderId);
       
-         executor.execute(new OnExecutionStatusRunnable(operation, tsExecutionReport, executionMarket, marketMakerFinder));
+         this.pobexExecutionReports.put(operation, tsExecutionReport);
+         //executor.execute(new OnExecutionStatusRunnable(operation, tsExecutionReport, executionMarket, marketMakerFinder));
 
       } catch (OperationNotExistingException e) {
          LOGGER.warn("[MktMsg] Operation not found for quoteReqID {} , ignoring Execution Status", clOrdID, e);
