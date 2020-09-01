@@ -140,6 +140,16 @@ public class OnExecutionReportRunnable implements Runnable {
    }
 
    public void run() {
+
+      if (quickfix.field.ExecType.CANCELED == tsExecutionReport.getExecType().getFIXValue()) {
+         try {
+            Thread.sleep(1000);
+         }
+         catch (InterruptedException e2) {
+            LOGGER.error("Unexpected error: {}", e2);
+         }
+      }
+      LOGGER.info("On Execution Report Runnable {}, {}", tsExecutionReport.getClOrdID(), tsExecutionReport.getExecType());
       String dealerCode = null;
 
       TSParties parties = tsExecutionReport.getTSParties();

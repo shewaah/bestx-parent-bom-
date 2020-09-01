@@ -78,6 +78,7 @@ public class OnExecutionStatusRunnable implements Runnable {
 
    @Override
    public void run() {
+      LOGGER.info("On Execution Status Runnable {}, {}", tsExecutionReport.getClOrdID(), tsExecutionReport.getExecType() );
       Order order = this.operation.getLastAttempt().getMarketOrder();
       Attempt attempt = operation.getLastAttempt();
       if (order == null) {
