@@ -59,6 +59,7 @@ import quickfix.MessageComponent;
 import quickfix.StringField;
 import quickfix.field.CompDealerID;
 import quickfix.field.CompDealerQuote;
+import quickfix.field.CompDealerQuoteOrdQty;
 
 /**
  * 
@@ -297,9 +298,18 @@ public class OnExecutionReportRunnable implements Runnable {
                         Double compDealerQuote = groups.get(i).getField(new DoubleField(CompDealerQuote.FIELD)).getValue();
                         price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerQuote)));
                      }
-                     else price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
+                     else {
+                        price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
+                     }
                      price.setPriceType(Proposal.PriceType.PRICE);
-                     price.setQty(operation.getOrder().getQty());
+                     //BESTX-725 manage qty coming from pobex market informations
+                     if (groups.get(i).isSetField(CompDealerQuoteOrdQty.FIELD)) {
+                        Double compDealerQty = groups.get(i).getField(new DoubleField(CompDealerQuoteOrdQty.FIELD)).getValue();
+                        price.setQty(new BigDecimal(compDealerQty));
+                     }
+                     else {
+                        price.setQty(operation.getOrder().getQty());
+                     }
                      // calculate status
                      price.setTimestamp(tsExecutionReport.getTransactTime());
                      price.setType(ProposalType.COUNTER);
@@ -393,7 +403,14 @@ public class OnExecutionReportRunnable implements Runnable {
 	                     }
 	                     else price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
 	                     price.setPriceType(Proposal.PriceType.PRICE);
-	                     price.setQty(operation.getOrder().getQty());
+	                     //BESTX-725 manage qty coming from pobex market informations
+	                     if (groups.get(i).isSetField(CompDealerQuoteOrdQty.FIELD)) {
+	                        Double compDealerQty = groups.get(i).getField(new DoubleField(CompDealerQuoteOrdQty.FIELD)).getValue();
+	                        price.setQty(new BigDecimal(compDealerQty));
+	                     }
+	                     else {
+	                        price.setQty(operation.getOrder().getQty());
+	                     }
 	                     // calculate status
 	                     price.setTimestamp(pobexExecutionReport.getTransactTime());
 	                     price.setType(ProposalType.COUNTER);
