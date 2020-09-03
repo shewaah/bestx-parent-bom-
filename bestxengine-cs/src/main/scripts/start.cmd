@@ -20,9 +20,6 @@ REM @ECHO OFF
 
 SET JDK_HOME=C:\Program Files\Java\jre1.8.0_181
 
-
-
-
 SET CURRENT_DIR=C:\SoftSolutions\BestX\bestx_engine
 SET JMX_PORT=29300
 
