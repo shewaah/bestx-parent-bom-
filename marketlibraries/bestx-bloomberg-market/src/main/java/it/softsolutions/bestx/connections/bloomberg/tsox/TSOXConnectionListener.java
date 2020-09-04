@@ -21,8 +21,6 @@ import it.softsolutions.bestx.connections.tradestac.TradeStacConnectionListener;
 import it.softsolutions.bestx.exceptions.OperationNotExistingException;
 import it.softsolutions.bestx.model.Proposal.ProposalSide;
 import it.softsolutions.bestx.model.Proposal.ProposalType;
-import it.softsolutions.tradestac.fix.field.ExecType;
-import it.softsolutions.tradestac.fix.field.OrdStatus;
 import it.softsolutions.tradestac.fix50.TSExecutionReport;
 
 /**  
@@ -48,4 +46,6 @@ public interface TSOXConnectionListener extends TradeStacConnectionListener {
     
 //    void onExecutionReport(String sessionId, String clOrdId, ExecType execType, OrdStatus ordStatus, BigDecimal accruedInterestAmount, BigDecimal accruedInterestRate, BigDecimal lastPrice, String contractNo, Date futSettDate, Date transactTime, String text);
     void onExecutionReport(String sessionId, String clOrdId, @SuppressWarnings("deprecation") TSExecutionReport tsExecutionReport);
+    
+    void onExecutionStatus(String sessionId, String clOrdId, @SuppressWarnings("deprecation") TSExecutionReport tsExecutionReport);
 }

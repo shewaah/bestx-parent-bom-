@@ -792,8 +792,9 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         	else {
         		reason = orderMarketMaker;
         	}
-        	Boolean isTW = marketCode != null && marketCode.equals(Market.MarketCode.TW);
-            comment = getComment(isTW, marketCode, type, comment, isTW ? createPobexInformation(operation) : reason);
+        	//BESTX-725 - SP03092020 - also BBG send POBEX in the reject state
+        	Boolean isPOBEXMkt = marketCode != null && (marketCode.equals(Market.MarketCode.TW) || marketCode.equals(Market.MarketCode.BLOOMBERG));
+            comment = getComment(isPOBEXMkt, marketCode, type, comment, isPOBEXMkt ? createPobexInformation(operation) : reason);
             break;
         case ManageCounter: {
             String counterOfferAmount = df.format(operation.getLastAttempt().getExecutablePrice(0).getClassifiedProposal().getPrice().getAmount());

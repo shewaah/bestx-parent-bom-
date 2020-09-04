@@ -15,6 +15,7 @@ package it.softsolutions.bestx.markets.bloomberg;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.HashMap;
@@ -105,6 +106,8 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
 	private static final Logger LOGGER = LoggerFactory.getLogger(BloombergMarket.class);
 
 	public static final String BBG_TRADE = "BBG_TRADE_SEQNO";
+	
+	private Map<Operation, TSExecutionReport> pobexExecutionReports = Collections.synchronizedMap(new HashMap<>());
 
 	// Price Connection
 	private TradeStacPreTradeConnection tradeStacPreTradeConnection;
@@ -882,14 +885,40 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
 				}
 			}
 
-			executor.execute(new OnExecutionReportRunnable(operation, this, market, executionMarket, tsExecutionReport, marketMakerFinder));
-
+			if (execType == ExecType.Canceled && this.pobexExecutionReports.containsKey(operation)) {
+				executor.execute(new OnExecutionReportRunnable(operation, this, market, executionMarket, tsExecutionReport, marketMakerFinder, this.pobexExecutionReports.remove(operation)));
+			} else {
+				executor.execute(new OnExecutionReportRunnable(operation, this, market, executionMarket, tsExecutionReport, marketMakerFinder));
+			}
+			
 		} catch (OperationNotExistingException e) {
 			LOGGER.warn("[MktMsg] Operation not found for quoteReqID {} , ignoring ExecutionReport/{}/{}", clOrdID, execType, ordStatus);
 		} catch (BestXException e) {
 			LOGGER.error("[MktMsg] Exception while handling ExecutionReport/{}/{} for quoteReqID {}, ignoring it", execType, ordStatus, clOrdID, e);
 		}
 	}
+	
+   @Override
+   public void onExecutionStatus(String sessionId, String clOrdID, TSExecutionReport tsExecutionReport) {
+      //SP-20200825 - BESTX-725 - Manage competing quotes for cancel
+      try {
+         final Operation operation = operationRegistry.getExistingOperationById(OperationIdType.TSOX_CLORD_ID, clOrdID);
+         if (operation.getOrder() == null) {
+            throw new BestXException("Operation order is null");
+         }
+         String orderId = operation.getOrder().getFixOrderId();
+         LOGGER.debug("Execution status received for the order {}, registering statistics.", orderId);
+      
+         this.pobexExecutionReports.put(operation, tsExecutionReport);
+         //executor.execute(new OnExecutionStatusRunnable(operation, tsExecutionReport, executionMarket, marketMakerFinder));
+
+      } catch (OperationNotExistingException e) {
+         LOGGER.warn("[MktMsg] Operation not found for quoteReqID {} , ignoring Execution Status", clOrdID, e);
+      } catch (BestXException e) {
+         LOGGER.error("[MktMsg] Exception while handling Execution Status for quoteReqID {}, ignoring it", clOrdID, e);
+      }
+   }
+	
 
 	@Override
 	public void onOrderReject(final String sessionId, String quoteReqId, final String reason) {

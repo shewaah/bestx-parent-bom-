@@ -27,33 +27,6 @@ package it.softsolutions.bestx.connections.marketaxess;
 
 public interface MarketAxessConnectorMBean {
 
-	double getTolerance();
-
-	/**
-	 * 
-	 * @param tolerance If the value is set &gt; 0 then it requires a tolerance (fat finger sanity check) .
-	 * If value = 0 then MarketAxess will accept any price. Example: 1% tolerance is written as 0.01
-	 */
-	void setTolerance(double tolerance);
-
-	int getMinTimeDelay();
-
-	/**
-	 * 
-	 * @param minTimeDelay If the value is set &gt; 0 then it requires a specific min and max time.
-	 * If value = 0 then MarketAxess will use the  default value
-	 */
-	void setMinTimeDelay(int minTimeDelay);
-
-	int getValidSeconds();
-
-	/**
-	 * 
-	 * @param validSeconds If the value is set &gt; 0 then it requires a specific validity time.
-	 * If value = 0 then MarketAxess will use the standard default value
-	 */
-	void setValidSeconds(int validSeconds);
-
 	/**
 	 * @return the trader id used to send orders
 	 */
@@ -63,5 +36,9 @@ public interface MarketAxessConnectorMBean {
 	 * @param traderPartyID the trader id used to send orders
 	 */
 	void setTraderPartyID(String traderPartyID);
+	
+	void setIncludeDealers(int minDealers);
+	
+	int getIncludeDealers();
 
 }

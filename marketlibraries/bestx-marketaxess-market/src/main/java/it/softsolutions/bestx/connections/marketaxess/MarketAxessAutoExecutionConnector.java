@@ -39,11 +39,8 @@ import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.HandlInst
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.IncludeDealers;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.MKTXESCBStblty;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.MKTXTargetLevel;
-import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.MaxTimeDelay;
-import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.MinTimeDelay;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.NoPartyIDs;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.Notes;
-import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.NumCompetitiveQuotes;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.OrdStatus;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.OrdType;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.OrderQty;
@@ -63,9 +60,7 @@ import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.SettlType
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.Side;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.Symbol;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.Text;
-import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.Tolerance;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.TransactTime;
-import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.ValidSeconds;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.messages.ExecutionReport;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.messages.NewOrderSingle;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.messages.OrderCancelRequest;
@@ -206,20 +201,7 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 		tradeStacTradeConnectionListener.onOrderReject(sessionID.toString(), requestID, reason);
 	}
 
-	private int minTimeDelay = 0;
-	private int validSeconds = 0;
 	private String traderPartyID;
-	private int numCompetitiveQuotes = 1;
-
-	public int getNumCompetitiveQuotes() {
-		return numCompetitiveQuotes;
-	}
-
-	public void setNumCompetitiveQuotes(int numCompetitiveQuotes) {
-		this.numCompetitiveQuotes = numCompetitiveQuotes;
-	}
-
-	private double tolerance = 0.0;
 
 	private SessionID sessionID;
 	private int includeDealers = 0;
@@ -238,50 +220,6 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 		this.includeDealers = includeDealers;
 	}
 
-	/* (non-Javadoc)
-	 * @see it.softsolutions.bestx.connections.marketaxess.MarketAxessMBean#getTolerance()
-	 */
-	@Override
-	public double getTolerance() {
-		return tolerance;
-	}
-
-	/* (non-Javadoc)
-	 * @see it.softsolutions.bestx.connections.marketaxess.MarketAxessMBean#setTolerance(double)
-	 */	
-	@Override
-	public void setTolerance(double tolerance) {
-		this.tolerance = tolerance;
-	}
-
-	/* (non-Javadoc)
-	 * @see it.softsolutions.bestx.connections.marketaxess.MarketAxessMBean#getMinTimeDelay()
-	 */
-	@Override
-	public int getMinTimeDelay() {
-		return minTimeDelay;
-	}
-	/* (non-Javadoc)
-	 * @see it.softsolutions.bestx.connections.marketaxess.MarketAxessMBean#setMinTimeDelay(int)
-	 */
-	@Override
-	public void setMinTimeDelay(int minTimeDelay) {
-		this.minTimeDelay = minTimeDelay;
-	}
-	/* (non-Javadoc)
-	 * @see it.softsolutions.bestx.connections.marketaxess.MarketAxessMBean#getValidSeconds()
-	 */
-	@Override
-	public int getValidSeconds() {
-		return validSeconds;
-	}
-	/* (non-Javadoc)
-	 * @see it.softsolutions.bestx.connections.marketaxess.MarketAxessMBean#setValidSeconds(int)
-	 */
-	@Override
-	public void setValidSeconds(int validSeconds) {
-		this.validSeconds = validSeconds;
-	}
 	public void setSessionID(SessionID sessionID) {
 		this.sessionID = sessionID;
 	}
@@ -332,21 +270,6 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 		} else {
 			newOrderSingle.setField(new MarketSegmentID(marketSegmentID));
 		}
-
-		// Start of configuration managed fields BESTX-441
-		// MaxTimeDelay required if MinTimeDelay is specified
-		if(this.minTimeDelay > 0) {
-			newOrderSingle.setField(new MinTimeDelay(this.minTimeDelay));
-			newOrderSingle.setField(new MaxTimeDelay(this.minTimeDelay)); //MaxTimeDelay.FIELD
-		}
-		if(this.validSeconds > 0)
-			newOrderSingle.setField(new ValidSeconds(this.validSeconds)); //ValidSeconds.FIELD
-		if(this.numCompetitiveQuotes > 0)
-			newOrderSingle.setField(new NumCompetitiveQuotes(this.numCompetitiveQuotes));
-
-		if(this.tolerance > 0.0)
-			newOrderSingle.setField(new Tolerance(this.tolerance));
-		// End of configuration managed fields BESTX-441
 		
 		newOrderSingle.set(new Currency(marketOrder.getCurrency()));
 		newOrderSingle.setField(new Notes(clOrdID));
