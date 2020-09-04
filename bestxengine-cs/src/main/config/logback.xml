@@ -6,7 +6,7 @@
     <appender name="TradeStacLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <prudent>false</prudent>
         <encoder>
-            <pattern>%date{ISO8601} %-5level [%.-30thread] %50.50logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>../log/TradeStac.%d.%i.log.gz</fileNamePattern>
@@ -19,7 +19,7 @@
 	<appender name="MetricsLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <prudent>false</prudent>
         <encoder>
-            <pattern>%date{ISO8601} %-5level [%.-30thread] %50.50logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>../log/Metrics.%d.%i.log.gz</fileNamePattern>
@@ -32,7 +32,7 @@
     <appender name="BestXLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <prudent>false</prudent>
         <encoder>
-            <pattern>%date{ISO8601} %-5level [%.-30thread] %50.50logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>../log/BestX.%d.%i.log.gz</fileNamePattern>
@@ -45,7 +45,7 @@
     <appender name="BestXCommonsLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <prudent>false</prudent>
         <encoder>
-            <pattern>%date{ISO8601} %-5level [%.-30thread] %50.50logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>../log/BestX-Commons.%d.%i.log.gz</fileNamePattern>
@@ -58,7 +58,7 @@
     <appender name="QuickfixLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <prudent>false</prudent>
         <encoder>
-            <pattern>%date{ISO8601} %-5level [%.-30thread] %50.50logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>../log/Quickfix.%d.%i.log.gz</fileNamePattern>
@@ -71,7 +71,7 @@
     <appender name="QuartzLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <prudent>false</prudent>
         <encoder>
-            <pattern>%date{ISO8601} %-5level [%.-30thread] %50.50logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>../log/Quartz.%d.%i.log.gz</fileNamePattern>
@@ -84,7 +84,7 @@
     <appender name="HibernateLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <prudent>false</prudent>
         <encoder>
-            <pattern>%date{ISO8601} %-5level [%.-30thread] %50.50logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>../log/Hibernate.%d.%i.log.gz</fileNamePattern>
@@ -97,7 +97,7 @@
     <appender name="EhCacheLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <prudent>false</prudent>
         <encoder>
-            <pattern>%date{ISO8601} %-5level [%.-30thread] %50.50logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>../log/EhCache.%d.%i.log.gz</fileNamePattern>
@@ -110,7 +110,7 @@
     <appender name="SpringLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <prudent>false</prudent>
         <encoder>
-            <pattern>%date{ISO8601} %-5level [%.-30thread] %50.50logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>../log/Spring.%d.%i.log.gz</fileNamePattern>
@@ -123,7 +123,7 @@
     <appender name="StatisticsLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <prudent>false</prudent>
         <encoder>
-            <pattern>%date{ISO8601} [%-5level] [%.-30thread] | %message | %logger{0}.%method\(%line\)%n</pattern>
+            <pattern>%date{ISO8601} [%-5level] [%thread] | %message | %logger{0}.%method\(%line\)%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>../log/stats/BestX-Statistics.%d.%i.log.gz</fileNamePattern>
@@ -149,7 +149,7 @@
     <appender name="OrdersMonitorLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <prudent>false</prudent>
         <encoder>
-            <pattern>%date{ISO8601} [%-5level] [%.-30thread] | %message | %logger{0}.%method\(%line\)%n</pattern>
+            <pattern>%date{ISO8601} [%-5level] [%thread] | %message | %logger{0}.%method\(%line\)%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>../log/stats/BestX-OrdersQueueStatistics.%d.%i.log.gz</fileNamePattern>
@@ -163,7 +163,7 @@
 	<appender name="SaveBookLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <prudent>false</prudent>
         <encoder>
-            <pattern>%date{ISO8601} %-5level [%.-30thread] %50.50logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>../log/BestX-SaveBookStatistics.%d.%i.log.gz</fileNamePattern>
@@ -176,7 +176,7 @@
 	<appender name="EntitlementLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
 	    <prudent>false</prudent>
 	    <encoder>
-	       <pattern>%date{ISO8601} %-5level [%.-30thread] %50.50logger{0}-&gt; %-35.35method:%-3line - %message%n</pattern>
+	       <pattern>%date{ISO8601} %-5level %35.35logger{0}-&gt; %-35.35method:%-3line - %message%n</pattern>
 	    </encoder>
 	    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 	       <fileNamePattern>../log/EntitlementLogger.%d.%i.log.gz</fileNamePattern>
@@ -192,7 +192,7 @@
 	 <appender name="InfobusLogger" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <prudent>false</prudent>
         <encoder>
-            <pattern>%date{ISO8601} %-5level [%.-30thread] %50.50logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
+            <pattern>%date{ISO8601} %-5level %35.35logger{0} -&gt; %-35.35method:%-4line - %message%n</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>../log/ib4j.%d.%i.log.gz</fileNamePattern>
@@ -208,8 +208,8 @@
 	
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <Pattern>%d{HH:mm:ss.SSS} [%.-30thread] %-5level %15.15logger{0} - %message%n</Pattern>
-<!--             <Pattern>%date{ISO8601} %-5level %50.50logger{0} -> %-35.35method:%-4line - %message%n</Pattern> -->
+            <Pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %15.15logger{0} - %message%n</Pattern>
+<!--             <Pattern>%date{ISO8601} %-5level %35.35logger{0} -> %-35.35method:%-4line - %message%n</Pattern> -->
         </encoder>
     </appender>
     <logger name="org.quartz" additivity="false" level="INFO">
@@ -242,7 +242,7 @@
 	<logger name="it.softsolutions.bestx.dao.sql.SqlCSOperationStateAuditDao" additivity="false" level="DEBUG">
         <appender-ref ref="BestXLogger" />
     </logger>
-    <logger name="it.softsolutions.bestx.services.CSOrdersEndOfDayService" additivity="false" level="INFO">
+    <logger name="it.softsolutions.bestx.services.CSOrdersEndOfDayService" additivity="false" level="DEBUG">
         <appender-ref ref="BestXLogger" />
     </logger>
     <logger name="it.softsolutions.bestx" additivity="false" level="INFO">
@@ -268,7 +268,7 @@
 	</logger>
 	
 	<!-- added by Stefano 2019-07-29 -->
-    <logger name="it.softsolutions.ib4j.clientserver" additivity="false" level="INFO">
+    <logger name="it.softsolutions.ib4j.clientserver" additivity="false" level="DEBUG">
         <appender-ref ref="InfobusLogger" />
     </logger>
 
