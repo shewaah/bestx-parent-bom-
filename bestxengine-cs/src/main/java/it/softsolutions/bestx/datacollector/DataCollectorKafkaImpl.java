@@ -165,6 +165,7 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 				message.put("isin", operation.getOrder().getInstrument().getIsin());
 				message.put("ordID", operation.getOrder().getFixOrderId());
 				message.put("attempt", attemptNo);
+				message.put("timestamp", df.format(new Date()));
 
 				SortedBook book = currentAttempt.getSortedBook();
 
