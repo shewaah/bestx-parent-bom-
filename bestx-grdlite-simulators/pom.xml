@@ -3,7 +3,7 @@
   	<parent>
 		<groupId>it.softsolutions.bestx</groupId>
 		<artifactId>bestxengine-parent</artifactId>
-		<version>4.6.0-SNAPSHOT</version>
+		<version>4.6.0-NEUTRONSTAR-200916-SNAPSHOT</version>
 	</parent>
 
   
