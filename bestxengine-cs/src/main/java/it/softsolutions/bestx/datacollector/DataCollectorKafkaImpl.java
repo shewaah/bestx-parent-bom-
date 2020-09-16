@@ -27,6 +27,7 @@ import java.util.concurrent.Executor;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -54,6 +55,10 @@ import net.sf.json.JSONObject;
  **/
 public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implements DataCollector {
 
+	private static final String SSL_TRUSTSTORE_PASSWORD = "ssl.truststore.password";
+	private static final String SSL_KEYSTORE_PASSWORD = "ssl.keystore.password";
+	private static final String SSL_KEY_PASSWORD = "ssl.key.password";
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(DataCollectorKafkaImpl.class);
 
 	private static final int CHECK_PERIOD = 30000;
@@ -80,6 +85,8 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 	private boolean active = false;
 	private boolean connected = false;
 	private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
+	
+	private PBEStringEncryptor encryptor;
 
 	private int convertPriceTypeToInt(PriceType priceType) {
 		switch (priceType) {
@@ -113,6 +120,7 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 				this.active = true;
 				Properties props = new Properties();
 				props.load(configFilename.getInputStream());
+				this.decryptPasswordsFromKafkaProperties(props);
 				this.kafkaProducer = new KafkaProducer<>(props);
 				if (this.monitorTopic != null) {
 					this.connected = false;
@@ -482,7 +490,32 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 		}
 		
 	}
+
+	public PBEStringEncryptor getEncryptor() {
+		return encryptor;
+	}
+
+	public void setEncryptor(PBEStringEncryptor encryptor) {
+		this.encryptor = encryptor;
+	}
 	
+	private void decryptPasswordsFromKafkaProperties(Properties props) {
+		this.decryptPasswordFromKafkaProperties(props, SSL_TRUSTSTORE_PASSWORD);
+		this.decryptPasswordFromKafkaProperties(props, SSL_KEYSTORE_PASSWORD);
+		this.decryptPasswordFromKafkaProperties(props, SSL_KEY_PASSWORD);
+	}
 	
+	private void decryptPasswordFromKafkaProperties(Properties props, String key) {
+		String origPassword = props.getProperty(key);
+		if (origPassword != null && origPassword.startsWith("ENC(")) {
+			try {
+				String encryptedPassword = origPassword.substring(4, origPassword.length() - 1);
+				String decryptedPassword = encryptor.decrypt(encryptedPassword);
+				props.setProperty(key, decryptedPassword);
+			} catch (Exception e) {
+				LOGGER.warn("Unable to decrypt password from property {}, doing nothing. Reason: {}", key, e.getMessage());
+			}
+		}		
+	}
 	
 }

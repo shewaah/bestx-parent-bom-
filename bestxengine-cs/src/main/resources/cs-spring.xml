@@ -1329,5 +1329,6 @@
         <property name="priceKeyStrategy" ref="dataCollectorKafkaKeyStrategy" />
         <property name="bookKeyStrategy" ref="dataCollectorKafkaKeyStrategy" />
         <property name="pobexKeyStrategy" ref="dataCollectorKafkaKeyStrategy" />
+        <property name="encryptor" ref="configurationEncryptor" />
 	</bean>
 </beans>
