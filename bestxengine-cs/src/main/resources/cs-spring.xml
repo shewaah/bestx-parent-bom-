@@ -108,7 +108,7 @@
 						<prop key="it.softsolutions.bestx.cs:name=ApplicationControl">it.softsolutions.bestx.management.EngineControllerMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=AutomaticCurandoStatus">it.softsolutions.bestx.management.AutoCurandoStatusMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=Oms1FixCustomerConnection">it.softsolutions.bestx.management.FixCustomerAdapterMBean</prop>
-						<prop key="it.softsolutions.bestx.cs:name=Oms2FixCustomerConnection">it.softsolutions.bestx.management.FixCustomerAdapterMBean</prop>
+<!-- 						<prop key="it.softsolutions.bestx.cs:name=Oms2FixCustomerConnection">it.softsolutions.bestx.management.FixCustomerAdapterMBean</prop> -->
 						<prop key="it.softsolutions.bestx.cs:name=BloombergMarketConnection">it.softsolutions.bestx.management.MarketMXBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=TradewebMarketConnection">it.softsolutions.bestx.management.MarketMXBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=MarketAxessMarketConnection">it.softsolutions.bestx.management.MarketMXBean</prop>
@@ -433,10 +433,15 @@
 	</bean>
 
 	<!-- THREAD MANAGEMENT -->
-    <bean id="threadPoolOMS1" class="it.softsolutions.bestx.ThreadPoolExecutor" init-method="initialize">
+    <bean id="threadPoolOMS1Orders" class="it.softsolutions.bestx.ThreadPoolExecutor" init-method="initialize">
         <property name="corePoolSize" value="64"/>
 		<property name="maxPoolSize" value="64"/>
-		<property name="threadNamePrefix" value="TP-OMS1"/>
+		<property name="threadNamePrefix" value="TP-OMS1-ORD"/>
+    </bean>
+    <bean id="threadPoolOMS1Acks" class="it.softsolutions.bestx.ThreadPoolExecutor" init-method="initialize">
+        <property name="corePoolSize" value="64"/>
+		<property name="maxPoolSize" value="64"/>
+		<property name="threadNamePrefix" value="TP-OMS1-ACK"/>
     </bean>
     <bean id="threadPoolEOD" class="it.softsolutions.bestx.ThreadPoolExecutor" init-method="initialize">
         <property name="corePoolSize" value="1"/>
@@ -503,7 +508,8 @@
         <property name="operationRegistry"><ref bean="defaultOperationRegistry"></ref></property>
         <property name="customerFinder"><ref bean="dbBasedCustomerFinder"></ref></property>
         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"></ref></property>
-        <property name="executor"><ref bean="threadPoolOMS1"></ref></property>
+        <property name="ordersExecutor" ref="threadPoolOMS1Orders" />
+        <property name="acksExecutor" ref="threadPoolOMS1Acks" />
 		<property name="connectionHelper">
 			<bean class="it.softsolutions.bestx.ConnectionHelper" />
 		</property>
@@ -536,39 +542,39 @@
         <property name="settlementDateCalculator"><ref bean="settlementDateCalculator"/></property>
 	</bean>
 
-    <bean id="oms2CustomerAdapter" class="it.softsolutions.bestx.connections.OMS2CustomerAdapter" init-method="init">
+<!--     <bean id="oms2CustomerAdapter" class="it.softsolutions.bestx.connections.OMS2CustomerAdapter" init-method="init"> -->
 		<!-- BUSINESS PARAMETERS -->
 
 		<!-- TECHNICAL PARAMETERS -->
-        <property name="operationRegistry"><ref bean="defaultOperationRegistry"></ref></property>
-        <property name="customerFinder"><ref bean="dbBasedCustomerFinder"></ref></property>
-        <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"></ref></property>
-        <property name="executor"><ref bean="threadPoolOMS1"></ref></property>
-		<property name="connectionHelper">
-			<bean class="it.softsolutions.bestx.ConnectionHelper" />
-		</property>
-		<property name="fixGatewayConnection">
-            <bean class="it.softsolutions.bestx.connections.amosgateway.OMS2GatewayConnector">
-                <property name="serviceName"><value>Oms2FixGateway</value></property>
-				<property name="xt2ConnectionProvider">
-					<bean class="it.softsolutions.bestx.connections.xt2.XT2Adapter">
-                        <constructor-arg><value>${XT2.Environment}</value></constructor-arg>
-                        <constructor-arg><value>${XT2.Username}</value></constructor-arg>
-                        <constructor-arg><value>${XT2.Password}</value></constructor-arg>
-                        <constructor-arg><value>true</value></constructor-arg>
-					</bean>
-				</property>
-                <property name="dateFormat"><value>yyyyMMdd</value></property>
-                <property name="dateTimeFormat"><value>yyyyMMdd-HH:mm:ss.SSS</value></property>
-				<property name="privateClientId" value="0800" />
-			</bean>
-		</property>
-        <property name="marketMakerFinder"><ref bean="dbBasedMarketMakerFinder"></ref></property>
-        <property name="micCodeService"><ref bean="micCodeService"></ref></property>
-        <property name="intervalTimeInSecs"><value>${Order.monitor.intervalInSeconds}</value></property>
-        <property name="sqlInstrumentDao"><ref bean="sqlInstrumentDao"></ref></property>
-        <property name="channelName"><value>OMS2</value></property>
-	</bean>
+<!--         <property name="operationRegistry"><ref bean="defaultOperationRegistry"></ref></property> -->
+<!--         <property name="customerFinder"><ref bean="dbBasedCustomerFinder"></ref></property> -->
+<!--         <property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"></ref></property> -->
+<!--         <property name="executor"><ref bean="threadPoolOMS1"></ref></property> -->
+<!-- 		<property name="connectionHelper"> -->
+<!-- 			<bean class="it.softsolutions.bestx.ConnectionHelper" /> -->
+<!-- 		</property> -->
+<!-- 		<property name="fixGatewayConnection"> -->
+<!--             <bean class="it.softsolutions.bestx.connections.amosgateway.OMS2GatewayConnector"> -->
+<!--                 <property name="serviceName"><value>Oms2FixGateway</value></property> -->
+<!-- 				<property name="xt2ConnectionProvider"> -->
+<!-- 					<bean class="it.softsolutions.bestx.connections.xt2.XT2Adapter"> -->
+<!--                         <constructor-arg><value>${XT2.Environment}</value></constructor-arg> -->
+<!--                         <constructor-arg><value>${XT2.Username}</value></constructor-arg> -->
+<!--                         <constructor-arg><value>${XT2.Password}</value></constructor-arg> -->
+<!--                         <constructor-arg><value>true</value></constructor-arg> -->
+<!-- 					</bean> -->
+<!-- 				</property> -->
+<!--                 <property name="dateFormat"><value>yyyyMMdd</value></property> -->
+<!--                 <property name="dateTimeFormat"><value>yyyyMMdd-HH:mm:ss.SSS</value></property> -->
+<!-- 				<property name="privateClientId" value="0800" /> -->
+<!-- 			</bean> -->
+<!-- 		</property> -->
+<!--         <property name="marketMakerFinder"><ref bean="dbBasedMarketMakerFinder"></ref></property> -->
+<!--         <property name="micCodeService"><ref bean="micCodeService"></ref></property> -->
+<!--         <property name="intervalTimeInSecs"><value>${Order.monitor.intervalInSeconds}</value></property> -->
+<!--         <property name="sqlInstrumentDao"><ref bean="sqlInstrumentDao"></ref></property> -->
+<!--         <property name="channelName"><value>OMS2</value></property> -->
+<!-- 	</bean> -->
 
 	<!-- Helper class used to hide different customer adapters from the operation -->
     <bean id="customerAdapterHelper" class="it.softsolutions.bestx.connections.CustomerAdapterHelper" init-method="init">
@@ -576,7 +582,7 @@
 			<map>
 				<entry key="${Client.FIX.Session}" value-ref="oms1CustomerAdapter" />
 				<entry key="FIX.4.2:SOFT1->OMS1" value-ref="oms1CustomerAdapter" />
-				<entry key="FIX.4.1:SOFT2->OMS2" value-ref="oms2CustomerAdapter" />
+<!-- 				<entry key="FIX.4.1:SOFT2->OMS2" value-ref="oms2CustomerAdapter" /> -->
 				<entry key="FIX.4.2:SOFT1->CSZURTest" value-ref="oms1CustomerAdapter" />
 				<entry key="FIX.4.2:SOFT1->CSZURProd" value-ref="oms1CustomerAdapter" />
 			</map>
@@ -1214,7 +1220,7 @@
         <property name="servicePartition"><value>Production</value></property>
         <property name="username"><value></value></property>
         <property name="password"><value></value></property>
-        <property name="executor"><ref bean="threadPoolOMS1"></ref></property>
+        <property name="executor"><ref bean="threadPoolOMS1Orders"></ref></property>
 		<property name="visibleStatesList">
 			<list>
 				<value>WarningState</value>

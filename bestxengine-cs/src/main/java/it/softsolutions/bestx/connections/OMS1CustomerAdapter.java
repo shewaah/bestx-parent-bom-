@@ -73,7 +73,8 @@ public class OMS1CustomerAdapter extends CustomerAdapterStatistics implements Cu
    private static final Logger LOGGER = LoggerFactory.getLogger(OMS1CustomerAdapter.class);
 
    private OperationRegistry operationRegistry;
-   private Executor executor;
+   private Executor ordersExecutor;
+   private Executor acksExecutor;
    private CustomerFinder customerFinder;
    private InstrumentFinder instrumentFinder;
    private FixGatewayConnection fixGatewayConnection;
@@ -129,8 +130,11 @@ public class OMS1CustomerAdapter extends CustomerAdapterStatistics implements Cu
       if (operationRegistry == null) {
          throw new ObjectNotInitializedException("Operation registry not set");
       }
-      if (executor == null) {
-         throw new ObjectNotInitializedException("Executor not set");
+      if (ordersExecutor == null) {
+         throw new ObjectNotInitializedException("Order Executor not set");
+      }
+      if (acksExecutor == null) {
+         throw new ObjectNotInitializedException("Acks Executor not set");
       }
       if (customerFinder == null) {
          throw new ObjectNotInitializedException("Operation finder not set");
@@ -154,10 +158,6 @@ public class OMS1CustomerAdapter extends CustomerAdapterStatistics implements Cu
 
    public void setOperationRegistry(OperationRegistry operationRegistry) {
       this.operationRegistry = operationRegistry;
-   }
-
-   public void setExecutor(Executor executor) {
-      this.executor = executor;
    }
 
    public void setCustomerFinder(CustomerFinder customerFinder) {
@@ -208,7 +208,7 @@ public class OMS1CustomerAdapter extends CustomerAdapterStatistics implements Cu
    public void onFixOrderNotification(final FixGatewayConnection source, final FixOrderInputLazyBean fixOrder) {
       LOGGER.info("New order from FIX interface - OrderId: {} - {}", fixOrder.getFixOrderId(), fixOrder);
 
-      executor.execute(new Runnable() {
+      this.ordersExecutor.execute(new Runnable() {
 
          @Override
          public void run() {
@@ -303,7 +303,7 @@ public class OMS1CustomerAdapter extends CustomerAdapterStatistics implements Cu
          // move all work to child thread, while preserving object-orientation, sending around only full featured objects, not IDs
          final LazyExecutionReport executionReport = new LazyExecutionReport(operation);
          LOGGER.debug("Forward event to operation in new thread");
-         executor.execute(new Runnable() {
+         this.acksExecutor.execute(new Runnable() {
 
             public void run() {
                operation.onCustomerExecutionReportAcknowledged(OMS1CustomerAdapter.this, executionReport);
@@ -335,7 +335,7 @@ public class OMS1CustomerAdapter extends CustomerAdapterStatistics implements Cu
          // move all work to child thread, while preserving object-orientation, sending around only full featured objects, not IDs
          final LazyExecutionReport executionReport = new LazyExecutionReport(operation);
          LOGGER.debug("Forward event to operation in new thread");
-         executor.execute(new Runnable() {
+         this.acksExecutor.execute(new Runnable() {
 
             public void run() {
                operation.onCustomerExecutionReportNotAcknowledged(OMS1CustomerAdapter.this, executionReport, errorCode, errorMessage);
@@ -665,7 +665,7 @@ public class OMS1CustomerAdapter extends CustomerAdapterStatistics implements Cu
                operation.onFixRevoke(OMS1CustomerAdapter.this);
             }
          };
-         executor.execute(runnable);
+         this.ordersExecutor.execute(runnable);
          long stop_time = DateService.currentTimeMillis();
          LOGGER.info("[REGISTRYTIME]-STOP: registry Operation load time {}, Operation call time {}", mid_time - start_time, stop_time - mid_time);
       }
@@ -757,4 +757,14 @@ public class OMS1CustomerAdapter extends CustomerAdapterStatistics implements Cu
    public void setSettlementDateCalculator(SettlementDateCalculator settlementDateCalculator) {
       this.settlementDateCalculator = settlementDateCalculator;
    }
+
+	public void setOrdersExecutor(Executor ordersExecutor) {
+		this.ordersExecutor = ordersExecutor;
+	}
+	
+	public void setAcksExecutor(Executor acksExecutor) {
+		this.acksExecutor = acksExecutor;
+	}
+  
+   
 }
