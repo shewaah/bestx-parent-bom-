@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.concurrent.Executor;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -84,7 +85,13 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 	private KafkaConnectionChecker kafkaConnectionChecker;
 	private boolean active = false;
 	private boolean connected = false;
-	private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
+	
+	private String timeFormatString;
+	private String timeZoneString;
+	
+	private SimpleDateFormat df;
+	
+	private boolean sendEmptyBook = true;
 	
 	private PBEStringEncryptor encryptor;
 
@@ -104,6 +111,14 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 	}
 
 	public void init() throws BestXException {
+		this.df = new SimpleDateFormat(this.timeFormatString);
+		if (this.timeZoneString != null && !"".equals(this.timeZoneString.trim())) {
+			this.df.setTimeZone(TimeZone.getTimeZone(this.timeZoneString));
+		}
+		
+		LOGGER.info("Initialized SimpleDateFormat with {} pattern and {} timezone",
+				this.df.toPattern(), this.df.getTimeZone().toString());
+		
 		this.compositeMarketMakers = new HashSet<>();
 
 		String[] marketMakerCompositeStrings = marketMakerCompositeCodes.split(",");
@@ -286,19 +301,24 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 				}
 				message.element("prices", jsonMap);
 
-				LOGGER.trace("Sending message to topic {}: {}", bookTopic, message.toString());
-				kafkaProducer.send(
-						new ProducerRecord<String, String>(bookTopic,
-								this.bookKeyStrategy.calculateKey(operation, attemptNo), message.toString()),
-						(metadata, exception) -> {
-							if (exception != null) {
-								connected = false;
-								LOGGER.warn("Error while trying to send message: " + message.toString(), exception);
-							} else {
-								connected = true;
-							}
-						});
+				if (this.sendEmptyBook || !jsonMap.isEmpty()) {
+					LOGGER.trace("Sending message to topic {}: {}", bookTopic, message.toString());
+					kafkaProducer.send(
+							new ProducerRecord<String, String>(bookTopic,
+									this.bookKeyStrategy.calculateKey(operation, attemptNo), message.toString()),
+							(metadata, exception) -> {
+								if (exception != null) {
+									connected = false;
+									LOGGER.warn("Error while trying to send message: " + message.toString(), exception);
+								} else {
+									connected = true;
+								}
+							});
+				} else {
+					LOGGER.trace("Skipping message to topic because of empty book {}: {}", bookTopic, message.toString());
+				}
 			});
+
 		}
 	}
 
@@ -517,5 +537,31 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 			}
 		}		
 	}
+
+	public String getTimeFormatString() {
+		return timeFormatString;
+	}
+
+	public void setTimeFormatString(String timeFormatString) {
+		this.timeFormatString = timeFormatString;
+	}
+
+	public String getTimeZoneString() {
+		return timeZoneString;
+	}
+
+	public void setTimeZoneString(String timeZoneString) {
+		this.timeZoneString = timeZoneString;
+	}
+
+	public boolean isSendEmptyBook() {
+		return sendEmptyBook;
+	}
+
+	public void setSendEmptyBook(boolean sendEmptyBook) {
+		this.sendEmptyBook = sendEmptyBook;
+	}
+	
+	
 	
 }

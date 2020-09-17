@@ -1330,5 +1330,8 @@
         <property name="bookKeyStrategy" ref="dataCollectorKafkaKeyStrategy" />
         <property name="pobexKeyStrategy" ref="dataCollectorKafkaKeyStrategy" />
         <property name="encryptor" ref="configurationEncryptor" />
+        <property name="timeFormatString" value="${Kafka.Timestamp.Format:yyyy-MM-dd'T'HH:mm:ss.SSS'Z'}" />
+        <property name="timeZoneString" value="${Kafka.Timestamp.Timezone:UTC}" />
+        <property name="sendEmptyBook" value="${Kafka.Book.SendEmptyBook:false}" />
 	</bean>
 </beans>
