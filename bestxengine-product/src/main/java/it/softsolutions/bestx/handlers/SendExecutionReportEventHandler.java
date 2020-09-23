@@ -122,10 +122,10 @@ public class SendExecutionReportEventHandler extends BaseOperationEventHandler {
 
         Commission comm = null;
         
-        if (operation.getOrder().getFutSettDate() == null) {
+          if (lastExecutionReport.getFutSettDate() != null) {
            operation.getOrder().setFutSettDate(lastExecutionReport.getFutSettDate());
            this.operationStateAudit.updateOrderSettlementDate(operation.getOrder());
-        }
+          }
 
 
         try {
