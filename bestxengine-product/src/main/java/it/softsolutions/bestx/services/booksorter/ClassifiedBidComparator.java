@@ -49,7 +49,7 @@ public class ClassifiedBidComparator implements Comparator<ClassifiedProposal> {
 		}
 
 		// counter offers have best rank in book
-		if(result == 0 && (o1.getType() == ProposalType.COUNTER || o1.getType() == ProposalType.COUNTER)) {
+		if(result == 0 && (o1.getType() == ProposalType.COUNTER || o2.getType() == ProposalType.COUNTER)) {
 			result = o1.getType().compareTo(o2.getType());
 		}
 		
@@ -87,10 +87,10 @@ public class ClassifiedBidComparator implements Comparator<ClassifiedProposal> {
 		}
 
 		// youngest proposal has a better rank
-		if (result == 0) { 
+		if (result == 0) {
 			if (o2.getTimestamp().after(o1.getTimestamp())) {
 				result = 1;
-			} else {
+			} else if (o1.getTimestamp().after(o2.getTimestamp())) {
 				result = -1;
 			}
 		}

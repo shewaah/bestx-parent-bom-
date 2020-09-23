@@ -14,19 +14,19 @@
 
 package it.softsolutions.bestx.services.booksorter;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Date;
+
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.MarketMaker;
-import it.softsolutions.bestx.model.MarketMarketMaker;
 import it.softsolutions.bestx.model.Proposal.ProposalSide;
 import it.softsolutions.bestx.model.Proposal.ProposalState;
 import it.softsolutions.bestx.model.Proposal.ProposalType;
 import it.softsolutions.bestx.model.Venue;
 import it.softsolutions.bestx.model.Venue.VenueType;
 import it.softsolutions.jsscommon.Money;
-
-import java.math.BigDecimal;
-import java.util.Date;
 
 /**  
  *
@@ -58,8 +58,10 @@ public class ClassifieProposalGeneratorHelper {
     
     public static ClassifiedProposal getProposal(BigDecimal price, ProposalSide side, ProposalType type, Date timestamp, Venue venue, Market market)
     {
+       double qty = Math.random() * 10000;
+       
         ClassifiedProposal proposal = new ClassifiedProposal();
-        proposal.setQty(new BigDecimal(10000));
+        proposal.setQty(new BigDecimal(qty).setScale(2, RoundingMode.HALF_UP));
         proposal.setPrice(new Money("EUR", price));
         proposal.setSide(side);
         proposal.setMarket(market);
@@ -68,12 +70,13 @@ public class ClassifieProposalGeneratorHelper {
         proposal.setTimestamp(timestamp);
         proposal.setVenue(venue);
 
+        /*
         MarketMarketMaker mmm = new MarketMarketMaker();
         mmm.setMarket(market);
         mmm.setMarketMaker(null);
         mmm.setMarketSpecificCode("mktcode");
         proposal.setMarketMarketMaker(mmm);
-
+*/
         return proposal;
     }
 
