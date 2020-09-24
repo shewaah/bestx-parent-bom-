@@ -740,7 +740,11 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         String executionMarketMaker = getExecutionReportMarketMaker(operation.getExecutionReports());
         String executionReportPrice = getExecutionReportPrice(operation.getExecutionReports());
         String executionProposalAmount = getLimitAttemptPrice(operation.getLastAttempt());
-        String executionProposalFutSettDate = order.getFutSettDate() != null ? DateService.format(dateFormat, order.getFutSettDate()) : null;
+        String executionProposalFutSettDate = null; 
+        
+        if (operation.getLastAttempt() != null && operation.getLastAttempt().getMarketOrder() != null && operation.getLastAttempt().getMarketOrder().getFutSettDate() != null) {
+           executionProposalFutSettDate = DateService.format(dateFormat, operation.getLastAttempt().getMarketOrder().getFutSettDate());
+        }
 
         OperationState.Type type = newState.getType();
         Market.MarketCode marketCode = newState.getMarketCode();
