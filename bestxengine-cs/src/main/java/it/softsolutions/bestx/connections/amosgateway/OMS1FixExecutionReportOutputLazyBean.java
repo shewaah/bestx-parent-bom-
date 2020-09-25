@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -37,6 +38,7 @@ import it.softsolutions.bestx.model.Quote;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.MICCodeService;
+import it.softsolutions.bestx.services.financecalc.SettlementDateCalculator;
 
 /**  
  *
@@ -145,7 +147,7 @@ public class OMS1FixExecutionReportOutputLazyBean extends FixExecutionReportOutp
     }
 
     // Usato per riempire il messaggio per TAS
-    public OMS1FixExecutionReportOutputLazyBean(String sessionId, Quote quote, Order order, String orderId, Attempt attempt, ExecutionReport executionReport, MICCodeService micCodeService) {
+    public OMS1FixExecutionReportOutputLazyBean(String sessionId, Quote quote, Order order, String orderId, Attempt attempt, ExecutionReport executionReport, MICCodeService micCodeService, SettlementDateCalculator settlementDateCalculator) {
         super(sessionId, quote, order, orderId, attempt, executionReport, micCodeService);
         if(order != null && executionReport != null) {
 	
@@ -167,7 +169,20 @@ public class OMS1FixExecutionReportOutputLazyBean extends FixExecutionReportOutp
 	        if(executionReport.getFutSettDate() != null) {
 	           strFutSettDate =  sdf.format(executionReport.getFutSettDate());
 	        } else if (order != null) {
-	           strFutSettDate = sdf.format(order.getFutSettDate());
+	           //SP-20200730 - BESTX-694 Manage null order settlement date
+	           if (settlementDateCalculator != null && order.getFutSettDate() == null) {
+	              Integer instrumentStdSettlDays = 2;
+	              if (order.getInstrument() != null) {
+	                 instrumentStdSettlDays = order.getInstrument().getStdSettlementDays();
+	              }
+	              Date startDate = order.getTransactTime();
+	              if (startDate == null) {
+	                  startDate = DateService.newLocalDate();
+	              }
+	              strFutSettDate = sdf.format(settlementDateCalculator.getCalculatedSettlementDate(instrumentStdSettlDays, null, startDate));
+	           } else {
+	              strFutSettDate = sdf.format(order.getFutSettDate());
+	           }
 	        }
            
            /* SP 24-05-2018 - togliere appena fix gateway accettera' la data come un long
@@ -244,7 +259,7 @@ public class OMS1FixExecutionReportOutputLazyBean extends FixExecutionReportOutp
     }
     
     // Usato per riempire il messaggio per TAS
-    public OMS1FixExecutionReportOutputLazyBean(String sessionId, Quote quote, Order order, String orderId, Attempt attempt, CSPOBexExecutionReport executionReport, MICCodeService micCodeService) {
+    public OMS1FixExecutionReportOutputLazyBean(String sessionId, Quote quote, Order order, String orderId, Attempt attempt, CSPOBexExecutionReport executionReport, MICCodeService micCodeService, SettlementDateCalculator settlementDateCalculator) {
         super(sessionId, quote, order, orderId, attempt, executionReport, micCodeService);
         if(order != null && executionReport != null) {
 	
@@ -258,7 +273,20 @@ public class OMS1FixExecutionReportOutputLazyBean extends FixExecutionReportOutp
            if(executionReport.getFutSettDate() != null) {
               strFutSettDate =  sdf.format(executionReport.getFutSettDate());
            } else if (order != null) {
-              strFutSettDate = sdf.format(order.getFutSettDate());
+              //SP-20200730 - BESTX-694 Manage null order settlement date
+              if (settlementDateCalculator != null && order.getFutSettDate() == null) {
+                 Integer instrumentStdSettlDays = 2;
+                 if (order.getInstrument() != null) {
+                    instrumentStdSettlDays = order.getInstrument().getStdSettlementDays();
+                 }
+                 Date startDate = order.getTransactTime();
+                 if (startDate == null) {
+                     startDate = DateService.newLocalDate();
+                 }
+                 strFutSettDate = sdf.format(settlementDateCalculator.getCalculatedSettlementDate(instrumentStdSettlDays, null, startDate));
+              } else {
+                 strFutSettDate = sdf.format(order.getFutSettDate());
+              }
            }
            
            /* SP 24-05-2018 - togliere appena fix gateway accettera' la data come un long

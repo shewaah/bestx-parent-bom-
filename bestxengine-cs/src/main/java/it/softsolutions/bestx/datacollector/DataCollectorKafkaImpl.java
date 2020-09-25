@@ -22,11 +22,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.concurrent.Executor;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -54,6 +56,10 @@ import net.sf.json.JSONObject;
  **/
 public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implements DataCollector {
 
+	private static final String SSL_TRUSTSTORE_PASSWORD = "ssl.truststore.password";
+	private static final String SSL_KEYSTORE_PASSWORD = "ssl.keystore.password";
+	private static final String SSL_KEY_PASSWORD = "ssl.key.password";
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(DataCollectorKafkaImpl.class);
 
 	private static final int CHECK_PERIOD = 30000;
@@ -79,7 +85,15 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 	private KafkaConnectionChecker kafkaConnectionChecker;
 	private boolean active = false;
 	private boolean connected = false;
-	private SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm a z");
+	
+	private String timeFormatString;
+	private String timeZoneString;
+	
+	private SimpleDateFormat df;
+	
+	private boolean sendEmptyBook = true;
+	
+	private PBEStringEncryptor encryptor;
 
 	private int convertPriceTypeToInt(PriceType priceType) {
 		switch (priceType) {
@@ -97,6 +111,14 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 	}
 
 	public void init() throws BestXException {
+		this.df = new SimpleDateFormat(this.timeFormatString);
+		if (this.timeZoneString != null && !"".equals(this.timeZoneString.trim())) {
+			this.df.setTimeZone(TimeZone.getTimeZone(this.timeZoneString));
+		}
+		
+		LOGGER.info("Initialized SimpleDateFormat with {} pattern and {} timezone",
+				this.df.toPattern(), this.df.getTimeZone().toString());
+		
 		this.compositeMarketMakers = new HashSet<>();
 
 		String[] marketMakerCompositeStrings = marketMakerCompositeCodes.split(",");
@@ -113,6 +135,7 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 				this.active = true;
 				Properties props = new Properties();
 				props.load(configFilename.getInputStream());
+				this.decryptPasswordsFromKafkaProperties(props);
 				this.kafkaProducer = new KafkaProducer<>(props);
 				if (this.monitorTopic != null) {
 					this.connected = false;
@@ -278,19 +301,24 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 				}
 				message.element("prices", jsonMap);
 
-				LOGGER.trace("Sending message to topic {}: {}", bookTopic, message.toString());
-				kafkaProducer.send(
-						new ProducerRecord<String, String>(bookTopic,
-								this.bookKeyStrategy.calculateKey(operation, attemptNo), message.toString()),
-						(metadata, exception) -> {
-							if (exception != null) {
-								connected = false;
-								LOGGER.warn("Error while trying to send message: " + message.toString(), exception);
-							} else {
-								connected = true;
-							}
-						});
+				if (this.sendEmptyBook || !jsonMap.isEmpty()) {
+					LOGGER.trace("Sending message to topic {}: {}", bookTopic, message.toString());
+					kafkaProducer.send(
+							new ProducerRecord<String, String>(bookTopic,
+									this.bookKeyStrategy.calculateKey(operation, attemptNo), message.toString()),
+							(metadata, exception) -> {
+								if (exception != null) {
+									connected = false;
+									LOGGER.warn("Error while trying to send message: " + message.toString(), exception);
+								} else {
+									connected = true;
+								}
+							});
+				} else {
+					LOGGER.trace("Skipping message to topic because of empty book {}: {}", bookTopic, message.toString());
+				}
 			});
+
 		}
 	}
 
@@ -481,6 +509,57 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 			this.keepChecking = false;
 		}
 		
+	}
+
+	public PBEStringEncryptor getEncryptor() {
+		return encryptor;
+	}
+
+	public void setEncryptor(PBEStringEncryptor encryptor) {
+		this.encryptor = encryptor;
+	}
+	
+	private void decryptPasswordsFromKafkaProperties(Properties props) {
+		this.decryptPasswordFromKafkaProperties(props, SSL_TRUSTSTORE_PASSWORD);
+		this.decryptPasswordFromKafkaProperties(props, SSL_KEYSTORE_PASSWORD);
+		this.decryptPasswordFromKafkaProperties(props, SSL_KEY_PASSWORD);
+	}
+	
+	private void decryptPasswordFromKafkaProperties(Properties props, String key) {
+		String origPassword = props.getProperty(key);
+		if (origPassword != null && origPassword.startsWith("ENC(")) {
+			try {
+				String encryptedPassword = origPassword.substring(4, origPassword.length() - 1);
+				String decryptedPassword = encryptor.decrypt(encryptedPassword);
+				props.setProperty(key, decryptedPassword);
+			} catch (Exception e) {
+				LOGGER.warn("Unable to decrypt password from property {}, doing nothing. Reason: {}", key, e.getMessage());
+			}
+		}		
+	}
+
+	public String getTimeFormatString() {
+		return timeFormatString;
+	}
+
+	public void setTimeFormatString(String timeFormatString) {
+		this.timeFormatString = timeFormatString;
+	}
+
+	public String getTimeZoneString() {
+		return timeZoneString;
+	}
+
+	public void setTimeZoneString(String timeZoneString) {
+		this.timeZoneString = timeZoneString;
+	}
+
+	public boolean isSendEmptyBook() {
+		return sendEmptyBook;
+	}
+
+	public void setSendEmptyBook(boolean sendEmptyBook) {
+		this.sendEmptyBook = sendEmptyBook;
 	}
 	
 	

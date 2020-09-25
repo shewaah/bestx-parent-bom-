@@ -409,25 +409,12 @@ public class OMS1CustomerAdapter extends CustomerAdapterStatistics implements Cu
       statFillExecutionReport.incrementAndGet();
       String fixSessionId = source.getIdentifier(OperationIdType.FIX_SESSION);
       
-      //SP-20200730 - BESTX-694 Manage null order settlement date
-      if (settlementDateCalculator != null && order.getFutSettDate() == null) {
-         Integer instrumentStdSettlDays = 2;
-         if (order.getInstrument() != null) {
-            instrumentStdSettlDays = order.getInstrument().getStdSettlementDays();
-         }
-         Date startDate = order.getTransactTime();
-         if (startDate == null) {
-             startDate = DateService.newLocalDate();
-         }
-         order.setFutSettDate(settlementDateCalculator.getCalculatedSettlementDate(instrumentStdSettlDays, null, startDate));
-      }
-      
       OMS1FixExecutionReportOutputLazyBean bean = null;
       if (executionReport instanceof CSPOBexExecutionReport && ExecutionReportState.NEW.equals(executionReport.getState())) {
-         bean = new OMS1FixExecutionReportOutputLazyBean(fixSessionId, quote, order, orderId, attempt, (CSPOBexExecutionReport) executionReport, micCodeService);
+         bean = new OMS1FixExecutionReportOutputLazyBean(fixSessionId, quote, order, orderId, attempt, (CSPOBexExecutionReport) executionReport, micCodeService, settlementDateCalculator);
       }
       else {
-         bean = new OMS1FixExecutionReportOutputLazyBean(fixSessionId, quote, order, orderId, attempt, executionReport, micCodeService);
+         bean = new OMS1FixExecutionReportOutputLazyBean(fixSessionId, quote, order, orderId, attempt, executionReport, micCodeService, settlementDateCalculator);
       }
       fixGatewayConnection.sendExecutionReport(this, bean);
    }
