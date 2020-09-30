@@ -418,7 +418,9 @@ public class OnExecutionReportRunnable implements Runnable {
 	                     price.setQuoteReqId(attempt.getMarketOrder().getFixOrderId());
 	                     
 	                     //Calculate status from 22606 tag can contains: Expired, Canceled, Passed, Rejected, or Other
-	                     if ("PASSED".equalsIgnoreCase(pobexExecutionReport.getCustomFieldString(22606).toString())) {
+	                     if (pobexExecutionReport.getCustomFieldString(22606) == null) {
+                           price.setAuditQuoteState("Expired");
+	                     } else if ("PASSED".equalsIgnoreCase(pobexExecutionReport.getCustomFieldString(22606).toString())) {
 	                        price.setAuditQuoteState("Passed");
 	                     } else if ("EXPIRED".equalsIgnoreCase((pobexExecutionReport.getCustomFieldString(22606).toString()))) {
 	                        price.setAuditQuoteState("Expired");
@@ -441,7 +443,7 @@ public class OnExecutionReportRunnable implements Runnable {
 	                     prices.add(price);
 	                  }
 	               }
-	               catch (FieldNotFound | BestXException e) {
+	               catch (FieldNotFound | BestXException | NullPointerException e) {
 	                  LOGGER.warn("[MktMsg] Field not found in component dealers", e);
 	               }
 	            }
