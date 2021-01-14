@@ -85,10 +85,6 @@
 		</dependency>
 		<dependency>
 			<groupId>it.softsolutions.bestx</groupId>
-			<artifactId>bestx-bondvision-market</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>it.softsolutions.bestx</groupId>
 			<artifactId>bestx-marketaxess-market</artifactId>
 			</dependency>
 		<dependency>

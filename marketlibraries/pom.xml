@@ -14,7 +14,6 @@
         <module>bestx-bloomberg-market</module>
         <module>bestx-marketaxess-market</module>
         <module>bestx-tradeweb-market</module>
-    	<module>bestx-bondvision-market</module>    
    </modules>
 
 </project>
