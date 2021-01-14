@@ -279,9 +279,6 @@
 	<bean id="sqlSerialNumberDao" class="it.softsolutions.bestx.dao.sql.SqlSerialNumberDao">
         <property name="jdbcTemplate"><ref bean="jdbcTemplate"/></property>
 	</bean>
-    <bean id="sqlTitoliIncrociabiliMultipliDao" class="it.softsolutions.bestx.dao.sql.SqlTitoliIncrociabiliMultipliDao">
-        <property name="jdbcTemplate"><ref bean="jdbcTemplate"/></property>
-	</bean>
 	
 	<bean id="transMgr" class="org.springframework.jdbc.datasource.DataSourceTransactionManager"> 
                   <property name="dataSource"><ref bean="nonCommittedPooledDataSource"></ref></property> 
@@ -603,13 +600,6 @@
         <property name="marketExecutionListener"><ref bean="operationStateAudit"></ref></property>
 	</bean>
 
-	<!-- Stefano 20080807 - Nuova gestione matching -->
-    <bean id="titoliIncrociabiliServer" class="it.softsolutions.bestx.services.titoliincrociabili.TitoliIncrociabiliServer">
-		<property name="titoliIncrociabiliDao">
-			<ref bean="sqlTitoliIncrociabiliMultipliDao" />
-		</property>
-	</bean>
-
     <!-- Global Bean containing the list of the policies that allow customers to operate on regulated markets.
             Used for the automatic curando  -->
 	<bean id="regulatedMarketPoliciesBean" class="java.util.ArrayList">
@@ -652,7 +642,6 @@
         <property name="serialNumberService"><ref bean="serialNumberService"></ref></property>
         <property name="orderValidationService"><ref bean="csOrderValidationService"></ref></property>
         <property name="priceDiscoveryValidationService"><ref bean="csPDValidationService"></ref></property>
-        <property name="titoliIncrociabiliService"><ref bean="titoliIncrociabiliServer"></ref></property>
         <property name="marketConnectionRegistry"><ref bean="configurableMarketConnectionRegistry"></ref></property>
         <property name="marketSecurityStatusService"><ref bean="marketSecurityStatusService"></ref></property>
 		<property name="customerFinder" ref="dbBasedCustomerFinder" />
@@ -954,11 +943,7 @@
 				
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardMarketTriedInEarlierAttemptProposalClassifier"></bean>
 
-				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardWorstPriceProposalClassifier">
-					<property name="titoliIncrociabiliService"><ref bean="titoliIncrociabiliServer"></ref></property>
-					<!--  Flag per abilitare o disabilitare il controllo che un ordine sia o meno un matching tramite query -->
-					<property name="matchByQueryEnabled"><value>false</value></property>
-				</bean>
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardWorstPriceProposalClassifier"></bean>
 			</list>
 		</property>
 		<property name="bookClassifierList">

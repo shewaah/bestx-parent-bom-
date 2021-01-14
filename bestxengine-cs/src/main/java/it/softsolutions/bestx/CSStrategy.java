@@ -88,7 +88,6 @@ import it.softsolutions.bestx.handlers.marketaxess.MA_ExecutedEventHandler;
 import it.softsolutions.bestx.handlers.marketaxess.MA_RejectedEventHandler;
 import it.softsolutions.bestx.handlers.marketaxess.MA_SendOrderEventHandler;
 import it.softsolutions.bestx.handlers.marketaxess.MA_StartExecutionEventHandler;
-import it.softsolutions.bestx.handlers.matching.MATCH_ExecutedEventHandler;
 import it.softsolutions.bestx.handlers.tradeweb.TW_CancelledEventHandler;
 import it.softsolutions.bestx.handlers.tradeweb.TW_ExecutedEventHandler;
 import it.softsolutions.bestx.handlers.tradeweb.TW_RejectedEventHandler;
@@ -108,7 +107,6 @@ import it.softsolutions.bestx.services.ExecutionDestinationService;
 import it.softsolutions.bestx.services.MarketSecurityStatusService;
 import it.softsolutions.bestx.services.OrderValidationService;
 import it.softsolutions.bestx.services.PriceServiceProvider;
-import it.softsolutions.bestx.services.TitoliIncrociabiliService;
 import it.softsolutions.bestx.services.customservice.CustomService;
 import it.softsolutions.bestx.services.grdlite.GRDLiteService;
 import it.softsolutions.bestx.services.instrumentstatus.InstrumentStatusNotifier;
@@ -128,7 +126,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CSStrategy.class);
 	private static final long LIMIT_FILE_MINIMUM_PD_INTERVAL = 15;
-	private TitoliIncrociabiliService titoliIncrociabiliService = null;
 	private MarketConnectionRegistry marketConnectionRegistry;
 	private int marketCommunicationTimeout;
 	private long waitPriceTimeoutMSec;
@@ -288,16 +285,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 	 */
 	public void setMarketConnectionRegistry(MarketConnectionRegistry marketConnectionRegistry) {
 		this.marketConnectionRegistry = marketConnectionRegistry;
-	}
-
-	/**
-	 * Set the titoli incorciabili service.
-	 * 
-	 * @param titoliIncrociabiliService
-	 *            : the service
-	 */
-	public void setTitoliIncrociabiliService(TitoliIncrociabiliService titoliIncrociabiliService) {
-		this.titoliIncrociabiliService = titoliIncrociabiliService;
 	}
 
 	/**
@@ -538,9 +525,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 			case INTERNALIZZAZIONE:
 				handler = new INT_ExecutedEventHandler(operation, serialNumberService, marketFinder);
 				break;
-			case MATCHING:
-				handler = new MATCH_ExecutedEventHandler(operation);
-				break;
 			case BLOOMBERG:
 				handler = new BBG_ExecutedEventHandler(operation);
 				break;
@@ -550,13 +534,8 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 			case MARKETAXESS:
 				handler = new MA_ExecutedEventHandler(operation);
 				break;
-				/*
-               case BV:
-                   handler = new BV_ExecutedEventHandler(operation);
-                break;
-				 */
-               default:
-            	   throw new BestXException(Messages.getString("StrategyUnexpectedMarketCode.0", marketCode));
+         default:
+      	   throw new BestXException(Messages.getString("StrategyUnexpectedMarketCode.0", marketCode));
 			}
 			break;
 		}
@@ -745,7 +724,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 				doNotExecuteMEW = true;
 			}
 
-			handler = new ManualExecutionWaitingPriceEventHandler(operation, getPriceService(operation.getOrder()), titoliIncrociabiliService, customerFinder, serialNumberService,
+			handler = new ManualExecutionWaitingPriceEventHandler(operation, getPriceService(operation.getOrder()), customerFinder, serialNumberService,
 					regulatedMktIsinsLoader, regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout, marketSecurityStatusService,
 					executionDestinationService, rejectWhenBloombergIsBest, doNotExecuteMEW, bookDepthValidator, operationStateAuditDao, applicationStatus, dataCollector);
 			break;
@@ -755,7 +734,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 				doNotExecuteWP = true;
 			}
 
-			handler = new WaitingPriceEventHandler(operation, getPriceService(operation.getOrder()), titoliIncrociabiliService, customerFinder, serialNumberService, regulatedMktIsinsLoader,
+			handler = new WaitingPriceEventHandler(operation, getPriceService(operation.getOrder()), customerFinder, serialNumberService, regulatedMktIsinsLoader,
 					regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout, marketSecurityStatusService, executionDestinationService,
 					rejectWhenBloombergIsBest, doNotExecuteWP, bookDepthValidator, internalMMcodesList, operationStateAuditDao, targetPriceMaxLevel, applicationStatus, dataCollector);
 			break;
@@ -818,9 +797,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 		}
 		if (marketConnectionRegistry == null) {
 			throw new ObjectNotInitializedException("Market connection registry not set");
-		}
-		if (titoliIncrociabiliService == null) {
-			; // do nothing, it's OK not to have this service
 		}
 		if (customerConnection == null) {
 			throw new ObjectNotInitializedException("Customer connection not set");

@@ -58,7 +58,6 @@ import it.softsolutions.bestx.finders.VenueFinder;
 import it.softsolutions.bestx.management.MarketMXBean;
 import it.softsolutions.bestx.markets.MarketCommon;
 import it.softsolutions.bestx.markets.ProposalDiscarder;
-import it.softsolutions.bestx.markets.bloomberg.services.BloombergTradeMatchingService;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.Instrument.QuotingStatus;
@@ -134,7 +133,6 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
 
 	private SerialNumberService serialNumberService;
 	private OperationRegistry operationRegistry;
-	private BloombergTradeMatchingService bloombergTradeMatchingService;
 
 	private List<ProposalDiscarder> proposalDiscarders;
 	private List<ConnectionListener> symbioticConnectionListeners;
@@ -206,10 +204,6 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
 		if (operationRegistry == null) {
 			throw new ObjectNotInitializedException("Operation registry not set");
 		}
-		if (tsoxConnection != null && bloombergTradeMatchingService == null) {
-			LOGGER.warn("Trade Matching service not set");
-			// throw new ObjectNotInitializedException("Trade Matching service not set");
-		}
 		if (proposalDiscarders == null) {
 			throw new ObjectNotInitializedException("Proposal Discarders not set");
 		}
@@ -261,10 +255,6 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
 
 		if (tsoxConnection != null) {
 			tsoxConnection.connect();
-
-			if (bloombergTradeMatchingService != null) {
-				bloombergTradeMatchingService.start();
-			}
 		} else {
 			LOGGER.info("Unable to start BuySide connection: tsoxConnection is null");
 		}
@@ -277,10 +267,6 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
 
 		if (tsoxConnection != null) {
 			tsoxConnection.disconnect();
-
-			if (bloombergTradeMatchingService != null) {
-				bloombergTradeMatchingService.stop();
-			}
 		} else {
 			LOGGER.info("Unable to stop BuySide connection: tsoxConnection is null");
 		}
@@ -654,13 +640,7 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
 	@Override
 	public MarketExecutionReport getMatchingTrade(Order order, Money executionPrice, MarketMaker marketMaker, Date minArrivalDate) {
 		LOGGER.debug("Match Order: {} to stored MarketExecutionReport", (order != null ? order.getFixOrderId() : order));
-
-		if (bloombergTradeMatchingService != null) {
-			return bloombergTradeMatchingService.matchTrade(order, executionPrice, marketMaker, minArrivalDate);
-		} else {
-			LOGGER.warn("tradeMatchingService not avaliable, matchingTrade can not be retrieved for [{}]", order);
-			return null;
-		}
+		return null;
 	}
 
 	@Override
@@ -754,10 +734,6 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
 
 	public void setSymbioticConnectionListeners(List<ConnectionListener> symbioticConnectionListeners) {
 		this.symbioticConnectionListeners = symbioticConnectionListeners;
-	}
-
-	public void setTradeMatchingService(BloombergTradeMatchingService tradeMatchingService) {
-		this.bloombergTradeMatchingService = tradeMatchingService;
 	}
 
 	public void setBlpConnection(TradeStacPreTradeConnection blpConnection) {

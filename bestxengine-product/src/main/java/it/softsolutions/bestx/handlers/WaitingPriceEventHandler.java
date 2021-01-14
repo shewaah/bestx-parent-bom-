@@ -51,7 +51,6 @@ import it.softsolutions.bestx.services.BookDepthValidator;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.ExecutionDestinationService;
 import it.softsolutions.bestx.services.MarketSecurityStatusService;
-import it.softsolutions.bestx.services.TitoliIncrociabiliService;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyService;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyService.Result;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyServiceCallback;
@@ -93,7 +92,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 	protected final SerialNumberService serialNumberService;
 	protected final long waitingPriceDelay;
 	protected final long marketPriceTimeout;
-	private final TitoliIncrociabiliService titoliIncrociabiliService;
 	private final int maxAttemptNo;
 	//private final Venue INTERNAL_MM_VENUE;
 	private List<String> internalMMcodes;
@@ -113,7 +111,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 	 *
 	 * @param operation the operation
 	 * @param priceService the price service
-	 * @param titoliIncrociabiliService the titoli incrociabili service
 	 * @param customerFinder the customer finder
 	 * @param marketFinder the market finder
 	 * @param venueFinder the venue finder
@@ -133,7 +130,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 	 * @throws BestXException the best x exception
 	 */
 
-	public WaitingPriceEventHandler(Operation operation, PriceService priceService, TitoliIncrociabiliService titoliIncrociabiliService, CustomerFinder customerFinder,
+	public WaitingPriceEventHandler(Operation operation, PriceService priceService, CustomerFinder customerFinder,
 			SerialNumberService serialNumberService, RegulatedMktIsinsLoader regulatedMktIsinsLoader, List<String> regulatedMarketPolicies, long waitingPriceDelay, int maxAttemptNo,
 			long marketPriceTimeout, MarketSecurityStatusService marketSecurityStatusService, ExecutionDestinationService executionDestinationService, boolean rejectOrderWhenBloombergIsBest,
 			boolean doNotExecute, BookDepthValidator bookDepthValidator, List<String> internalMMcodes, OperationStateAuditDao operationStateAuditDao, int targetPriceMaxLevel,
@@ -141,7 +138,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		super(operation);
 		this.priceService = priceService;
 		String priceServiceName = priceService.getPriceServiceName();
-		this.titoliIncrociabiliService = titoliIncrociabiliService;
 		if (!totalPriceRequestsMonitors.containsKey(priceServiceName)) {
 			totalPriceRequestsMonitors.put(priceServiceName, new NumericValueMonitor("waitingPricesPriceRequests_" + priceServiceName, "Price Service", true, "info", "[PRICE_SERVICE_STATISTICS]"));
 		}
@@ -347,20 +343,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		}
 
 		MarketCode mktCode = null;
-		// CS non usa e non ha mai usato il match tra ordini
-		if (titoliIncrociabiliService != null)
-			try {
-				if (titoliIncrociabiliService.isAMatch(operation.getOrder()) && !operation.getOrder().isMatchingOrder()) {
-					// Here management of particular cases, such as Matching orders and internalized orders
-					titoliIncrociabiliService.setMatchingOperation(operation);
-					operation.getOrder().setMatchingOrder(true);
-					mktCode = MarketCode.MATCHING;
-				}
-			} catch (BestXException e) {
-				LOGGER.error(Messages.getString("WaitingPriceEventHandler.1", operation.getOrder().getFixOrderId()));
-				operation.setStateResilient(new WarningState(operation.getState(), e, Messages.getString("WaitingPriceEventHandler.1", operation.getOrder().getFixOrderId())), ErrorState.class);
-			}
-
 		ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, priceResult, rejectOrderWhenBloombergIsBest);
 		// AMC 20190208 BESTX-385 best on bloomberg requires to be managed with auto unexecution when best on bloomberg is configured for auto unexecution
 		ClassifiedProposal executionProposal = currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide());
@@ -369,7 +351,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			LOGGER.debug("Best price on Bloomberg. Order {} must be rejected back to OMS", customerOrder.getFixOrderId());
 		else
 			LOGGER.debug("Best not on Bloomberg or flag rejectOrderWhenBloombergIsBest is false");
-		if (priceResult.getState() == PriceResult.PriceResultState.COMPLETE || mktCode == MarketCode.MATCHING) {
+		if (priceResult.getState() == PriceResult.PriceResultState.COMPLETE) {
 			// Fill Attempt
 			currentAttempt.setExecutionProposal(currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide()));
 			if (operation.hasPassedMaxAttempt(maxAttemptNo)/*&& !operation.getOrder().isLimitFile() AMC 20181210 removed because maxAttemptNo is in current lifecycle BESTX-380 */) {

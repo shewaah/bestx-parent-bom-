@@ -16,24 +16,6 @@ package it.softsolutions.bestx.services.proposalclassifiers.utils;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import it.softsolutions.bestx.model.Book;
-import it.softsolutions.bestx.model.ClassifiedProposal;
-import it.softsolutions.bestx.model.Instrument;
-import it.softsolutions.bestx.model.Market;
-import it.softsolutions.bestx.model.Market.MarketCode;
-import it.softsolutions.bestx.model.Market.SubMarketCode;
-import it.softsolutions.bestx.model.MarketMaker;
-import it.softsolutions.bestx.model.MarketMarketMaker;
-import it.softsolutions.bestx.model.Order;
-import it.softsolutions.bestx.model.Rfq.OrderSide;
-import it.softsolutions.bestx.model.Order.OrderType;
-import it.softsolutions.bestx.model.Proposal;
-import it.softsolutions.bestx.model.Proposal.ProposalSide;
-import it.softsolutions.bestx.model.Proposal.ProposalState;
-import it.softsolutions.bestx.model.Proposal.ProposalType;
-import it.softsolutions.bestx.model.Venue;
-import it.softsolutions.bestx.model.Venue.VenueType;
-import it.softsolutions.jsscommon.Money;
 
 import java.math.BigDecimal;
 import java.util.Calendar;
@@ -44,6 +26,25 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import it.softsolutions.bestx.model.Book;
+import it.softsolutions.bestx.model.ClassifiedProposal;
+import it.softsolutions.bestx.model.Instrument;
+import it.softsolutions.bestx.model.Market;
+import it.softsolutions.bestx.model.Market.MarketCode;
+import it.softsolutions.bestx.model.Market.SubMarketCode;
+import it.softsolutions.bestx.model.MarketMaker;
+import it.softsolutions.bestx.model.MarketMarketMaker;
+import it.softsolutions.bestx.model.Order;
+import it.softsolutions.bestx.model.Order.OrderType;
+import it.softsolutions.bestx.model.Proposal;
+import it.softsolutions.bestx.model.Proposal.ProposalSide;
+import it.softsolutions.bestx.model.Proposal.ProposalState;
+import it.softsolutions.bestx.model.Proposal.ProposalType;
+import it.softsolutions.bestx.model.Rfq.OrderSide;
+import it.softsolutions.bestx.model.Venue;
+import it.softsolutions.bestx.model.Venue.VenueType;
+import it.softsolutions.jsscommon.Money;
 
 /**  
  *
@@ -231,8 +232,6 @@ public class BookClassifiersTestHelper {
             ret = 8;
         else if (mktCode.equals(MarketCode.TW))
             ret = 9;
-        else if (mktCode.equals(MarketCode.MATCHING))
-            ret = 10;
         else if (mktCode.equals(MarketCode.BV))
             ret = 11;
         else if (mktCode.equals(MarketCode.XBRIDGE))

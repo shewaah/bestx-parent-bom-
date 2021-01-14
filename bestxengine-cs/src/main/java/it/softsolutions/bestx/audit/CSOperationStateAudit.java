@@ -57,7 +57,6 @@ import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.ManualManageState;
 import it.softsolutions.bestx.states.WarningState;
-import it.softsolutions.bestx.states.matching.MATCH_ExecutedState;
 import it.softsolutions.manageability.sl.monitoring.NumericValueMonitor;
 
 /**
@@ -367,9 +366,6 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             }
             break;
         case StartExecution:
-            if (marketCode == MarketCode.MATCHING) {
-                actions = matchBaseActions;
-            }
             break;
         case MatchFound:
             actions = matchFoundActions;
@@ -525,10 +521,6 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
                 }
             }
             break;
-            case MATCHING: {
-            	;
-            }
-            break;
             default:
                 break;
             }
@@ -570,19 +562,6 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         break;
         case SendExecutionReport: {
             ExecutionReport executionReport = operation.getExecutionReports().get(operation.getExecutionReports().size() - 1);
-            // 25-03-2009 Ruggero MATCHING: it's always CONTO PROPRIO and the property must always be BEST
-            if (oldState instanceof MATCH_ExecutedState) {
-                LOGGER.debug("Order {} is a MATCHING, setting property to BEST.", order.getFixOrderId());
-
-                operationStateAuditDao.updateOrderPropName(order.getFixOrderId(), "BEST");
-                executionReport.setProperty("BEST");
-                List<MarketExecutionReport> mktExecRepList = operation.getLastAttempt().getMarketExecutionReports();
-                if (mktExecRepList != null) {
-                    MarketExecutionReport mer = mktExecRepList.get(mktExecRepList.size() - 1);
-                    mer.setProperty("BEST");
-                }
-                LOGGER.debug("property set to BEST for order {}", order.getFixOrderId());
-            }
             String marketMaker = (executionReport != null) ? executionReport.getExecBroker() : null;
             if (marketMaker == null) {
                 marketMaker = "";
@@ -885,7 +864,6 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         break;
         case StartExecution:
             switch (marketCode) {
-            case MATCHING:
             case INTERNALIZZAZIONE: {
                 comment = getComment(marketCode, type, comment);
             }

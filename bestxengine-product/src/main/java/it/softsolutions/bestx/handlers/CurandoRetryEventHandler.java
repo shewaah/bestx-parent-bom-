@@ -42,7 +42,6 @@ import it.softsolutions.bestx.model.Portfolio;
 import it.softsolutions.bestx.model.Venue;
 import it.softsolutions.bestx.services.BookDepthValidator;
 import it.softsolutions.bestx.services.ExecutionDestinationService;
-import it.softsolutions.bestx.services.TitoliIncrociabiliService;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyService;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyService.Result;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyServiceCallback;
@@ -117,7 +116,7 @@ public class CurandoRetryEventHandler extends BaseOperationEventHandler implemen
     * @param operationRegistry the operation registry
     * @throws BestXException the best x exception
     */
-   public CurandoRetryEventHandler(Operation operation, PriceService priceService, TitoliIncrociabiliService titoliIncrociabiliService, MarketFinder marketFinder, VenueFinder venueFinder,
+   public CurandoRetryEventHandler(Operation operation, PriceService priceService, MarketFinder marketFinder, VenueFinder venueFinder,
          SerialNumberService serialNumberService, long waitingPriceDelay, int maxAttemptNo, long marketPriceTimeout, ExecutionDestinationService executionDestinationService,
          boolean rejectOrderWhenBloombergIsBest, boolean doNotExecute, BookDepthValidator bookDepthValidator, OperationStateAuditDao operationStateAuditDao, int targetPriceMaxLevel)
          throws BestXException{

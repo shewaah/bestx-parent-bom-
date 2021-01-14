@@ -15,7 +15,6 @@ package it.softsolutions.bestx.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -32,7 +31,7 @@ public class Market implements Serializable, Cloneable {
 
     public static enum MarketCode {
         INTERNALIZZAZIONE, BLOOMBERG, TSOX/* technical enumerated for execution on TSOX*/,  //AMC TSOX dealer codes are not the same in BPipe and trading systems
-        MOT, TLX, MATCHING, TDS, HIMTF, BV, TW, XBRIDGE, MTSPRIME, MARKETAXESS 
+        MOT, TLX, TDS, HIMTF, BV, TW, XBRIDGE, MTSPRIME, MARKETAXESS 
     }
 
     public static enum SubMarketCode {
