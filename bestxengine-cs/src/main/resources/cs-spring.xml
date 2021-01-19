@@ -376,17 +376,7 @@
     <bean id="serialNumberService" class="it.softsolutions.bestx.services.serial.SerialNumberServer">
         <property name="serialNumberDao"><ref bean="sqlSerialNumberDao"></ref></property>
 	</bean>
-    <bean id="instrStatusNotifierBean" class="it.softsolutions.bestx.services.InstrumentStatusNotifierImpl" init-method="init">
-        <property name="instrStatusNotifierDAO"><ref bean="sqlInstrStatusNotifierDao"></ref></property>
-	</bean>
-    <bean id="marketSecurityStatusService" class="it.softsolutions.bestx.services.marketsecuritystatus.MarketSecurityStatusServer" init-method="init">
-		<property name="marketSecurityStatusDao" ref="hibernateMarketSecurityStatusDao" />
-		<property name="marketFinder" ref="dbBasedMarketFinder" />
-		<property name="instrStatusNotifier" ref="instrStatusNotifierBean" />
-	</bean>
-    <bean id="micCodeService" class="it.softsolutions.bestx.services.miccodeservice.MicCodeServer">
-		<property name="marketSecurityStatusServer" ref="marketSecurityStatusService" />
-	</bean>
+    <bean id="micCodeService" class="it.softsolutions.bestx.services.miccodeservice.MicCodeServer"></bean>
     <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
 		<property name="dataSource" ref="pooledDataSource" />
 		<property name="mappingResources">
@@ -643,7 +633,6 @@
         <property name="orderValidationService"><ref bean="csOrderValidationService"></ref></property>
         <property name="priceDiscoveryValidationService"><ref bean="csPDValidationService"></ref></property>
         <property name="marketConnectionRegistry"><ref bean="configurableMarketConnectionRegistry"></ref></property>
-        <property name="marketSecurityStatusService"><ref bean="marketSecurityStatusService"></ref></property>
 		<property name="customerFinder" ref="dbBasedCustomerFinder" />
 		<property name="marketFinder" ref="dbBasedMarketFinder" />
         <property name="commissionService"><ref bean="commissionService"/></property>
@@ -653,7 +642,6 @@
         <property name="autoCurandoStatus"><ref bean="autoCurandoStatusManager"></ref></property>
         <property name="regulatedMarketPolicies"><ref bean="regulatedMarketPoliciesBean"></ref></property>
         <property name="operationRegistry"><ref bean="defaultOperationRegistry"></ref></property>
-		<property name="instrStatusNotifier" ref="instrStatusNotifierBean" />
 		<!-- Reject orders when Bloomberg is Best : set to false to deactivate -->
         <property name="rejectWhenBloombergIsBest"><value>${Bloomberg.rejectWhenIsBest}</value></property>
         <!-- Reject orders when book depth is < (x) : set to 0 to deactivate, default = 3 -->
@@ -1253,7 +1241,6 @@
     <bean id="defaultBookProposalBuilder" class="it.softsolutions.bestx.services.BookProposalBuilder" init-method="init">
         <property name="marketFinder"><ref bean="dbBasedMarketFinder"></ref></property>
         <property name="venueFinder"><ref bean="dbBasedVenueFinder"></ref></property>
-        <property name="marketSecurityStatusService"><ref bean="marketSecurityStatusService"></ref></property>
 	</bean>
     <bean id="priceForgeCustomerManager" class="it.softsolutions.bestx.services.PriceForgeCustomerManager" init-method="init">
         <property name="customerManagerDAO"><ref bean="sqlCustomerManagerDAO"></ref></property>

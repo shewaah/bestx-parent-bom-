@@ -166,9 +166,6 @@ public class IB4JOperatorConsoleMessage {
     /** The Constant CMD_SEND_DES. */
     public static final String CMD_SEND_DES = "SEND_DES_DATA";
 
-    /** The Constant CMD_UNRECONCILED_TRADE_MATCHED. */
-    public static final String CMD_UNRECONCILED_TRADE_MATCHED = "UNRECONCILED_TRADE_MATCHED";
-
     // system state
     /** The Constant CMD_SYSTEM_ACTIVITY_ON. */
     public static final String CMD_SYSTEM_ACTIVITY_ON = "BESTX_RR_REQ_VAL_SYSTEM_ON";

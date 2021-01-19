@@ -57,7 +57,6 @@ import it.softsolutions.bestx.states.OrderNotExecutableState;
 import it.softsolutions.bestx.states.SendAutoNotExecutionReportState;
 import it.softsolutions.bestx.states.WarningState;
 import it.softsolutions.bestx.states.bloomberg.BBG_StartExecutionState;
-import it.softsolutions.bestx.states.bondvision.BV_StartExecutionState;
 import it.softsolutions.bestx.states.marketaxess.MA_StartExecutionState;
 import it.softsolutions.bestx.states.tradeweb.TW_StartExecutionState;
 
@@ -280,17 +279,6 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 				// requested on March 2019 rendez vous un Zurich currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
 				currentAttempt.getMarketOrder().setMarketMarketMaker(null);
 				operation.setStateResilient(new MA_StartExecutionState(), ErrorState.class);
-				break;
-			case BV:
-				String bvSessionId = operation.getIdentifier(OperationIdType.BV_RFQ_ID);
-				if(bvSessionId == null) {
-					operation.removeIdentifier(OperationIdType.BV_RFQ_ID);
-				}
-				MarketOrder marketOrder = currentAttempt.getMarketOrder();
-				List<MarketMarketMakerSpec> dealers = currentAttempt.getSortedBook().getValidProposalDealersByMarket(MarketCode.BV, marketOrder.getSide());
-				marketOrder.setDealers(dealers);
-				marketOrder.setMarketMarketMaker(null);
-				operation.setStateResilient(new BV_StartExecutionState(), ErrorState.class);
 				break;
 			default:
 				operation.removeLastAttempt();

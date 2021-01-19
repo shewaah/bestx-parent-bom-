@@ -2,7 +2,6 @@ package it.softsolutions.bestx.connections;
 
 import java.math.BigDecimal;
 
-import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.model.UserModel;
 import it.softsolutions.jsscommon.Money;
@@ -68,8 +67,6 @@ public interface OperatorConsoleConnectionListener {
     /**
      * The unreconciled trade has been matched manually by the dashboard operator, now we must save the trade data in the operation
      */
-    void onOperatorUnreconciledTradeMatched(OperatorConsoleConnection source, BigDecimal executionPrice, String executionMarketMaker, String ticketNumber) throws BestXException;
-    
     void onOperatorMoveToLimitFileNoPrice(OperatorConsoleConnection source, String comment);
     
     void onOperatorPriceDiscovery(OperatorConsoleConnection source);

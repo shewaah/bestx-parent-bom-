@@ -156,14 +156,6 @@
 		<subclass
 			name="it.softsolutions.bestx.states.SendAutoNotExecutionReportState"
 			discriminator-value="it.softsolutions.bestx.states.SendAutoNotExecutionReportState" />
-		<subclass name="it.softsolutions.bestx.states.matching.MATCH_ExecutedState"
-			discriminator-value="it.softsolutions.bestx.states.matching.MATCH_ExecutedState" />
-		<subclass
-			name="it.softsolutions.bestx.states.matching.MATCH_MatchFoundState"
-			discriminator-value="it.softsolutions.bestx.states.matching.MATCH_MatchFoundState" />
-		<subclass
-			name="it.softsolutions.bestx.states.matching.MATCH_StartExecutionState"
-			discriminator-value="it.softsolutions.bestx.states.matching.MATCH_StartExecutionState" />
 		<subclass name="it.softsolutions.bestx.states.bloomberg.BBG_ExecutedState" discriminator-value="it.softsolutions.bestx.states.bloomberg.BBG_ExecutedState" />
 		<subclass name="it.softsolutions.bestx.states.bloomberg.BBG_RejectedState" discriminator-value="it.softsolutions.bestx.states.bloomberg.BBG_RejectedState" />
 		<subclass name="it.softsolutions.bestx.states.bloomberg.BBG_SendRfqState" discriminator-value="it.softsolutions.bestx.states.bloomberg.BBG_SendRfqState" />

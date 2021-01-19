@@ -679,29 +679,6 @@ public void init() throws BestXException {
                }
             });
             return;
-         } else if (IB4JOperatorConsoleMessage.CMD_UNRECONCILED_TRADE_MATCHED.equals(commandType)) {
-            /*
-             * AkrosIB4JOperatorConsoleMessage.FLD_EXECUTION_TICKET_NUMBER
-             * AkrosIB4JOperatorConsoleMessage.FLD_EXECUTION_PRICE
-             * AkrosIB4JOperatorConsoleMessage.FLD_EXECUTION_MARKET_MAKER
-             */
-            try
-            {
-               final BigDecimal executionPrice = new BigDecimal(msg.getDoubleProperty(IB4JOperatorConsoleMessage.FLD_EXECUTION_PRICE));
-               final String executionMarketMaker = msg.getStringProperty(IB4JOperatorConsoleMessage.FLD_EXECUTION_MARKET_MAKER);
-               final String ticketNumber = msg.getStringProperty(IB4JOperatorConsoleMessage.FLD_EXECUTION_TICKET_NUMBER);
-
-               executeTask(new Runnable() {
-                  @Override
-				public void run() {
-                     operation.onOperatorUnreconciledTradeMatched(CSIB4JOperatorConsoleAdapter.this, executionPrice, executionMarketMaker, ticketNumber);
-                  }
-               });
-            } catch (IBException e) {
-               LOGGER.error("Error while extracting price, market maker and ticket number from the message [{}]", msg, e);
-               this.reqRespService.sendReply(new InternalErrorReplyMessage(sessionId, "Error while retrieving operation corresponding to Order Id: " + orderId + "(" + e.getMessage() + ")"), clientId);
-               return;
-            }
          }  else if (IB4JOperatorConsoleMessage.CMD_SEND_TO_LFNP.equals(commandType)) {
              try {
                  final String finalOrderId = msg.getStringProperty(IB4JOperatorConsoleMessage.FLD_ORDER_ID);
@@ -719,28 +696,6 @@ public void init() throws BestXException {
                  return;
               }
            } else if (IB4JOperatorConsoleMessage.CMD_TAKE_OWNERSHIP.equals(commandType)) {
-              
-              /*try {
-              
-                 final String finalOrderId   = orderId;
-                 final String finalSessionId = sessionId;
-                 String assignToUserName = msg.getStringProperty(IB4JOperatorConsoleMessage.FLD_OWNERSHIP_USER);
-                 
-                 UserModel userToAssign = userModelFinder.getUserByUserName(assignToUserName);
-                 
-                 if (!operation.getState().isTerminal()) {
-                    operation.setOwner(userToAssign);
-                    operationStateAuditDao.updateTabHistoryOperatorCode(finalOrderId, assignToUserName);
-                 }
-              
-              } catch (@SuppressWarnings("unused") Exception e) {
-                 incrementNumberOfExceptions();
-                 LOGGER.error("Missing property: '{}' from message", IB4JOperatorConsoleMessage.FLD_OWNERSHIP_USER);
-                 this.reqRespService.sendReply(new IllegalArgumentReplyMessage(sessionId, "Missing property: '" + IB4JOperatorConsoleMessage.FLD_OWNERSHIP_USER + "' from message"), clientId);
-                 return;
-              }*/
-              
-              
               try {
                  
                  final String finalOrderId   = orderId;

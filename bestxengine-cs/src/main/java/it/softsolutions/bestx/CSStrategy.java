@@ -75,14 +75,6 @@ import it.softsolutions.bestx.handlers.bloomberg.BBG_ExecutedEventHandler;
 import it.softsolutions.bestx.handlers.bloomberg.BBG_SendEnquiryEventHandler;
 import it.softsolutions.bestx.handlers.bloomberg.BBG_StartExecutionEventHandler;
 import it.softsolutions.bestx.handlers.bloomberg.CS_BBG_RejectedEventHandler;
-import it.softsolutions.bestx.handlers.bloomberg.UnreconciledTradeEventHandler;
-import it.softsolutions.bestx.handlers.bondvision.BV_SendOrderEventHandler;
-import it.softsolutions.bestx.handlers.bondvision.BV_SendRFCQEventHandler;
-import it.softsolutions.bestx.handlers.bondvision.BV_StartExecutionEventHandler;
-import it.softsolutions.bestx.handlers.internal.INT_ExecutedEventHandler;
-import it.softsolutions.bestx.handlers.internal.INT_ManageCounterEventHandler;
-import it.softsolutions.bestx.handlers.internal.INT_RejectedEventHandler;
-import it.softsolutions.bestx.handlers.internal.INT_StartExecutionEventHandler;
 import it.softsolutions.bestx.handlers.marketaxess.MA_CancelledEventHandler;
 import it.softsolutions.bestx.handlers.marketaxess.MA_ExecutedEventHandler;
 import it.softsolutions.bestx.handlers.marketaxess.MA_RejectedEventHandler;
@@ -104,12 +96,10 @@ import it.softsolutions.bestx.services.CSBookDepthController;
 import it.softsolutions.bestx.services.CSConfigurationPropertyLoader;
 import it.softsolutions.bestx.services.CommissionService;
 import it.softsolutions.bestx.services.ExecutionDestinationService;
-import it.softsolutions.bestx.services.MarketSecurityStatusService;
 import it.softsolutions.bestx.services.OrderValidationService;
 import it.softsolutions.bestx.services.PriceServiceProvider;
 import it.softsolutions.bestx.services.customservice.CustomService;
 import it.softsolutions.bestx.services.grdlite.GRDLiteService;
-import it.softsolutions.bestx.services.instrumentstatus.InstrumentStatusNotifier;
 import it.softsolutions.bestx.services.price.PriceService;
 import it.softsolutions.bestx.services.price.PriceService.PriceDiscoveryType;
 import it.softsolutions.bestx.services.serial.SerialNumberService;
@@ -142,7 +132,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 	private MarketFinder marketFinder;
 	private VenueFinder venueFinder;
 	private MarketMakerFinder marketMakerFinder;
-	private MarketSecurityStatusService marketSecurityStatusService;
 	@SuppressWarnings("unused")
 	private long bbgWaitFillMSec;
 	@SuppressWarnings("unused")
@@ -168,7 +157,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 	private AutoCurandoStatus autoCurandoStatus;
 	private List<String> regulatedMarketPolicies;
 	private OperationRegistry operationRegistry;
-	private InstrumentStatusNotifier instrStatusNotifier;
 	private ExecutionDestinationService executionDestinationService;
 	private long waitingCMFTimeout = 90000; // default value is 90 seconds
 	private PriceServiceProvider priceServiceProvider;
@@ -522,9 +510,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 		case DifferentDatesExecuted:
 		case MarketExecuted: {
 			switch (marketCode) {
-			case INTERNALIZZAZIONE:
-				handler = new INT_ExecutedEventHandler(operation, serialNumberService, marketFinder);
-				break;
 			case BLOOMBERG:
 				handler = new BBG_ExecutedEventHandler(operation);
 				break;
@@ -547,9 +532,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 			break;
 		case Initial:
 			handler = new CSInitialEventHandler(operation);
-			break;
-		case ManageCounter:
-			handler = new INT_ManageCounterEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.INTERNALIZZAZIONE).getBuySideConnection());
 			break;
 		case ManualManage:
 			handler = new ManualManageEventHandler(operation, serialNumberService, marketFinder, marketConnectionRegistry.getMarketConnection(MarketCode.BLOOMBERG));
@@ -607,14 +589,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 						handler.setCustomerSpecificHandler(customerHandler);
 					}
 					break;
-					/*
-                  case BV:
-                      handler = new BV_RejectedEventHandler(operation, serialNumberService, bestXConfigurationDao);
-                  break;
-					 */
-				case INTERNALIZZAZIONE:
-					handler = new INT_RejectedEventHandler(operation);
-					break;
 				default:
 					throw new BestXException(Messages.getString("StrategyUnexpectedMarketCode.0", marketCode));
 				}
@@ -667,10 +641,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 				handler = new MA_SendOrderEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.MARKETAXESS).getBuySideConnection(), serialNumberService,
 						marketAxessExecTimeout, orderCancelDelay, bestXConfigurationDao, marketMakerFinder, marketFinder.getMarketByCode(MarketCode.MARKETAXESS, null), venueFinder);
 				break;
-			case BV:
-				handler = new BV_SendOrderEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BV).getBuySideConnection(), serialNumberService,
-						bondVisionExecTimeout, orderCancelDelay, bestXConfigurationDao, marketMakerFinder, marketFinder.getMarketByCode(MarketCode.BV, null), venueFinder);
-				break;
 			default:
 				throw new BestXException(Messages.getString("StrategyUnexpectedMarketCode.0", marketCode));
 			}
@@ -681,10 +651,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 				handler = new BBG_SendEnquiryEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BLOOMBERG).getBuySideConnection(), 
 						serialNumberService, this.bloombergExecTimeout, orderCancelDelay, tsoxTechnicalRejectReasons);
 				break;
-			case BV:
-				handler = new BV_SendRFCQEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BV).getBuySideConnection(), serialNumberService,
-						bondVisionExecTimeout, orderCancelDelay, bestXConfigurationDao, marketMakerFinder, marketFinder.getMarketByCode(MarketCode.BV, null), venueFinder);
-				break;
 			default:
 				throw new BestXException(Messages.getString("StrategyUnexpectedMarketCode.0", marketCode));
 			}
@@ -692,12 +658,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 
 		case StartExecution: {
 			switch (marketCode) {
-			case INTERNALIZZAZIONE:
-				handler = new INT_StartExecutionEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.INTERNALIZZAZIONE).getBuySideConnection(), waitingCMFTimeout);
-				break;
-				//               case MATCHING:
-					//                  handler = new MATCH_StartExecutionEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.MATCHING).getBuySideConnection(), titoliIncrociabiliService);
-				//               break;
 			case BLOOMBERG:
 				handler = new BBG_StartExecutionEventHandler(operation);
 				break;
@@ -706,9 +666,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 				break;
 			case MARKETAXESS:
 				handler = new MA_StartExecutionEventHandler(operation);
-				break;
-			case BV:
-				handler = new BV_StartExecutionEventHandler(operation);
 				break;
 			default:
 				throw new BestXException(Messages.getString("StrategyUnexpectedMarketCode.0", marketCode));
@@ -725,7 +682,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 			}
 
 			handler = new ManualExecutionWaitingPriceEventHandler(operation, getPriceService(operation.getOrder()), customerFinder, serialNumberService,
-					regulatedMktIsinsLoader, regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout, marketSecurityStatusService,
+					regulatedMktIsinsLoader, regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout,
 					executionDestinationService, rejectWhenBloombergIsBest, doNotExecuteMEW, bookDepthValidator, operationStateAuditDao, applicationStatus, dataCollector);
 			break;
 		case WaitingPrice:
@@ -735,14 +692,8 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 			}
 
 			handler = new WaitingPriceEventHandler(operation, getPriceService(operation.getOrder()), customerFinder, serialNumberService, regulatedMktIsinsLoader,
-					regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout, marketSecurityStatusService, executionDestinationService,
+					regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout, executionDestinationService,
 					rejectWhenBloombergIsBest, doNotExecuteWP, bookDepthValidator, internalMMcodesList, operationStateAuditDao, targetPriceMaxLevel, applicationStatus, dataCollector);
-			break;
-			//        case WaitingFill:
-			//            handler = new BBG_WaitingFillEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BLOOMBERG), bbgWaitFillMSec, bbgFillPollingMSec);
-			//            break;
-		case UnreconciledTrade:
-			handler = new UnreconciledTradeEventHandler(operation, marketMakerFinder, serialNumberService);
 			break;
 		case Error:
 		case Warning:
@@ -819,14 +770,8 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 		if (regulatedMarketPolicies == null) {
 			throw new ObjectNotInitializedException("RegulatedMarketPolicies not set");
 		}
-		if (marketSecurityStatusService == null) {
-			throw new ObjectNotInitializedException("MarketSecurityStatusService not set");
-		}
 		if (operationRegistry == null) {
 			throw new ObjectNotInitializedException("OperationRegistry not set");
-		}
-		if (instrStatusNotifier == null) {
-			throw new ObjectNotInitializedException("InstrumentStatusNotifier not set");
 		}
 		if (priceDiscoveryCustomer == null) {
 			priceDiscoveryCustomer = customerFinder.getCustomerByFixId(priceDiscoveryCustomerId);
@@ -1033,16 +978,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 	}
 
 	/**
-	 * Set the market security status service.
-	 * 
-	 * @param marketSecurityStatusService
-	 *            : the service
-	 */
-	public void setMarketSecurityStatusService(MarketSecurityStatusService marketSecurityStatusService) {
-		this.marketSecurityStatusService = marketSecurityStatusService;
-	}
-
-	/**
 	 * Set the operation registry.
 	 * 
 	 * @param operationRegistry
@@ -1050,25 +985,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 	 */
 	public void setOperationRegistry(OperationRegistry operationRegistry) {
 		this.operationRegistry = operationRegistry;
-	}
-
-	/**
-	 * Get the instrument status notifier.
-	 * 
-	 * @return the instrument status notifier
-	 */
-	public InstrumentStatusNotifier getInstrStatusNotifier() {
-		return instrStatusNotifier;
-	}
-
-	/**
-	 * Set the instrument status notifier.
-	 * 
-	 * @param instrStatusNotifier
-	 *            : the notifier
-	 */
-	public void setInstrStatusNotifier(InstrumentStatusNotifier instrStatusNotifier) {
-		this.instrStatusNotifier = instrStatusNotifier;
 	}
 
 	/**

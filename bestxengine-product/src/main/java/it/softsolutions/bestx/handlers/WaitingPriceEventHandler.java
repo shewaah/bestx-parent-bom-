@@ -50,7 +50,6 @@ import it.softsolutions.bestx.model.Venue;
 import it.softsolutions.bestx.services.BookDepthValidator;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.ExecutionDestinationService;
-import it.softsolutions.bestx.services.MarketSecurityStatusService;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyService;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyService.Result;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyServiceCallback;
@@ -132,7 +131,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 
 	public WaitingPriceEventHandler(Operation operation, PriceService priceService, CustomerFinder customerFinder,
 			SerialNumberService serialNumberService, RegulatedMktIsinsLoader regulatedMktIsinsLoader, List<String> regulatedMarketPolicies, long waitingPriceDelay, int maxAttemptNo,
-			long marketPriceTimeout, MarketSecurityStatusService marketSecurityStatusService, ExecutionDestinationService executionDestinationService, boolean rejectOrderWhenBloombergIsBest,
+			long marketPriceTimeout, ExecutionDestinationService executionDestinationService, boolean rejectOrderWhenBloombergIsBest,
 			boolean doNotExecute, BookDepthValidator bookDepthValidator, List<String> internalMMcodes, OperationStateAuditDao operationStateAuditDao, int targetPriceMaxLevel,
 			ApplicationStatus applicationStatus, DataCollector dataCollector) throws BestXException{
 		super(operation);

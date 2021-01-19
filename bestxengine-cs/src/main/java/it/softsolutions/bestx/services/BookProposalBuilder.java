@@ -13,6 +13,9 @@
 */
 package it.softsolutions.bestx.services;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.exceptions.ObjectNotInitializedException;
 import it.softsolutions.bestx.finders.MarketFinder;
@@ -24,9 +27,6 @@ import it.softsolutions.bestx.model.MarketMarketMaker;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal.ProposalState;
 import it.softsolutions.jsscommon.Money;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * When we do not receive proposals from a market or a market maker we must notify
@@ -46,7 +46,6 @@ public class BookProposalBuilder
 {
    public MarketFinder marketFinder;
    public VenueFinder venueFinder;
-   private MarketSecurityStatusService marketSecurityStatusService;
    
    public void init()
    {
@@ -86,21 +85,12 @@ public class BookProposalBuilder
        * 
        * If nothing has been found, throws an exception.
        */
-      Market quotingMarket = marketSecurityStatusService.getQuotingMarket(marketCode, order.getInstrument().getIsin());
       Market market = null;
       
-      List<Market> markets = null;
-      if (quotingMarket == null)
+      List<Market> markets = marketFinder.getMarketsByCode(marketCode);
+      if (markets != null)
       {
-         markets = marketFinder.getMarketsByCode(marketCode);
-         if (markets != null)
-         {
-            market = markets.get(0);
-         }
-      }
-      else
-      {
-         market = quotingMarket;
+         market = markets.get(0);
       }
       
       if (market != null)
@@ -146,15 +136,4 @@ public class BookProposalBuilder
    {
       this.venueFinder = venueFinder;
    }
-
-   public MarketSecurityStatusService getMarketSecurityStatusService()
-   {
-      return marketSecurityStatusService;
-   }
-
-   public void setMarketSecurityStatusService(MarketSecurityStatusService marketSecurityStatusService)
-   {
-      this.marketSecurityStatusService = marketSecurityStatusService;
-   }
-
 }

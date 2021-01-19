@@ -1983,20 +1983,6 @@ public final class Operation implements OperationEventListener {
 	}
 
 	@Override
-	public void onOperatorUnreconciledTradeMatched(OperatorConsoleConnection source, BigDecimal executionPrice, String executionMarketMaker, String ticketNumber) {
-		try {
-			handler.onOperatorUnreconciledTradeMatched(source, executionPrice, executionMarketMaker, ticketNumber);
-		} catch (DataAccessException sqle) {
-			LOGGER.error("SQL Exception while handling operator request: {}", sqle.getMessage(), sqle);
-			String warningMsg = Messages.getString("DatabaseError");
-			onApplicationError(getState(), sqle, warningMsg);
-		} catch (Exception e) {
-			LOGGER.error("Application Exception while handling event {} : ", e.getMessage(), e);
-			onApplicationError(getState(), e, e.getMessage() != null ? e.getMessage() : null);
-		}
-	}
-
-	@Override
 	public void onCustomServiceResponse(boolean error, String securityId) {
 		try {
 			handler.onCustomServiceResponse(error, securityId);

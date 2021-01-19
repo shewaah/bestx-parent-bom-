@@ -753,7 +753,6 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         case SendNotExecutionReport:
         case SendOrder:
         case SendRfq:
-        case UnreconciledTrade:
         case ValidateByPunctualFilter:
         case WaitingPrice:
         case Warning:

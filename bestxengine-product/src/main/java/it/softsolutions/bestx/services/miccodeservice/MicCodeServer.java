@@ -13,12 +13,9 @@
 */
 package it.softsolutions.bestx.services.miccodeservice;
 
-import it.softsolutions.bestx.exceptions.ObjectNotInitializedException;
 import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.Market;
-import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.services.MICCodeService;
-import it.softsolutions.bestx.services.MarketSecurityStatusService;
 
 /**
  * 
@@ -30,14 +27,11 @@ import it.softsolutions.bestx.services.MarketSecurityStatusService;
  * 
  **/
 public class MicCodeServer implements MICCodeService {
-    MarketSecurityStatusService marketSecurityStatusServer;
 
     public MicCodeServer() {
     }
 
     public void init() {
-        if (marketSecurityStatusServer == null)
-            throw new ObjectNotInitializedException("marketSecurityStatusServer not initialized");
     }
 
     //FIXME is MIC code chosen still this way for BondVision?
@@ -46,30 +40,11 @@ public class MicCodeServer implements MICCodeService {
         if (m == null) {
             return "XXXX";
         }
-        if (m.getMarketCode() == MarketCode.BV) {
-            int marketAffiliation = marketSecurityStatusServer.getMarketAffiliation(m.getMarketCode(), i.getIsin());
-            switch (marketAffiliation) {
-            case 0:
-                break;
-            case 1:
-                return "BOND";
-            case 2:
-                return "SSOB";
-            }
-        }
         return m.getMicCode();
     }
 
     @Override
     public boolean isOTCMarket(Market m) {
         return "XXXX".equalsIgnoreCase(m.getMicCode());
-    }
-
-    public MarketSecurityStatusService getMarketSecurityStatusServer() {
-        return this.marketSecurityStatusServer;
-    }
-
-    public void setMarketSecurityStatusServer(MarketSecurityStatusService marketSecurityStatusServer) {
-        this.marketSecurityStatusServer = marketSecurityStatusServer;
     }
 }

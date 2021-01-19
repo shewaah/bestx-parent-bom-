@@ -463,11 +463,6 @@ public class DefaultOperationEventHandler implements OperationEventListener {
 	}
 
 	@Override
-	public void onOperatorUnreconciledTradeMatched(OperatorConsoleConnection source, BigDecimal executionPrice, String executionMarketMaker, String ticketNumber) throws BestXException {
-		defaultAction();
-	}
-
-	@Override
 	public void onCustomServiceResponse(boolean error, String securityId) {
 		defaultAction();
 	}

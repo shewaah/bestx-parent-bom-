@@ -39,7 +39,6 @@ import it.softsolutions.bestx.model.Venue.VenueType;
 import it.softsolutions.bestx.services.BookDepthValidator;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.ExecutionDestinationService;
-import it.softsolutions.bestx.services.MarketSecurityStatusService;
 import it.softsolutions.bestx.services.price.PriceResult;
 import it.softsolutions.bestx.services.price.PriceService;
 import it.softsolutions.bestx.services.serial.SerialNumberService;
@@ -71,11 +70,11 @@ public class ManualExecutionWaitingPriceEventHandler extends WaitingPriceEventHa
     public ManualExecutionWaitingPriceEventHandler(Operation operation, PriceService priceService, CustomerFinder customerFinder,
             SerialNumberService serialNumberService, RegulatedMktIsinsLoader regulatedMktIsinsLoader,
             List<String> regulatedMarketPolicies, long waitingPriceDelay, int maxAttemptNo, long marketPriceTimeout,
-            MarketSecurityStatusService marketSecurityStatusService, ExecutionDestinationService executionDestinationService, boolean rejectWhenBloombergIsBest, boolean doNotExecute, 
+            ExecutionDestinationService executionDestinationService, boolean rejectWhenBloombergIsBest, boolean doNotExecute, 
             BookDepthValidator bookDepthValidator, OperationStateAuditDao operationStateAuditDao, ApplicationStatus applicationStatus, DataCollector dataCollector) throws BestXException {
 
         super(operation, priceService, customerFinder, serialNumberService, regulatedMktIsinsLoader, 
-                regulatedMarketPolicies, waitingPriceDelay, maxAttemptNo, marketPriceTimeout, marketSecurityStatusService, executionDestinationService, rejectWhenBloombergIsBest, doNotExecute, bookDepthValidator, null, operationStateAuditDao, 2/*ignored*/, applicationStatus, dataCollector);
+                regulatedMarketPolicies, waitingPriceDelay, maxAttemptNo, marketPriceTimeout, executionDestinationService, rejectWhenBloombergIsBest, doNotExecute, bookDepthValidator, null, operationStateAuditDao, 2/*ignored*/, applicationStatus, dataCollector);
             }
 
     @Override
