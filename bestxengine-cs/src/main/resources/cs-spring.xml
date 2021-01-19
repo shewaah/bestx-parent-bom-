@@ -299,9 +299,6 @@
         <property name="jdbcTemplate"><ref bean="jdbcTemplate"/></property>
         <constructor-arg><value>${Internal.MM.Codes}</value></constructor-arg>
 	</bean>
-	<bean id="sqlPriceForgeRuleDao" class="it.softsolutions.bestx.dao.sql.SqlPriceForgeRuleDAO">
-        <property name="jdbcTemplate"><ref bean="jdbcTemplate"/></property>
-	</bean>
     <bean id="sqlInstrStatusNotifierDao" class="it.softsolutions.bestx.dao.sql.SqlInstrumentStatusNotifierDAO">
         <property name="jdbcTemplate"><ref bean="jdbcTemplate"/></property>
 	</bean>
@@ -1241,9 +1238,6 @@
     <bean id="defaultBookProposalBuilder" class="it.softsolutions.bestx.services.BookProposalBuilder" init-method="init">
         <property name="marketFinder"><ref bean="dbBasedMarketFinder"></ref></property>
         <property name="venueFinder"><ref bean="dbBasedVenueFinder"></ref></property>
-	</bean>
-    <bean id="priceForgeCustomerManager" class="it.softsolutions.bestx.services.PriceForgeCustomerManager" init-method="init">
-        <property name="customerManagerDAO"><ref bean="sqlCustomerManagerDAO"></ref></property>
 	</bean>
 
 	<bean id="priceServiceProvider" class="it.softsolutions.bestx.services.PriceServiceProvider">

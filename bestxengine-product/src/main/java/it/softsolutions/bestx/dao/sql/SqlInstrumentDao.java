@@ -72,12 +72,6 @@ public class SqlInstrumentDao implements InstrumentDao {
 		return instrument;
 	}
 
-	@Override
-	public Instrument getPriceForgeInstrumentByIsin(String isin) {
-		// not needed
-		return null;
-	}
-
 	/**
 	 * Set the jdbcTemplate used to execute queries
 	 * 

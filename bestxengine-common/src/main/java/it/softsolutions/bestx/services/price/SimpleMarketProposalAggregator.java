@@ -249,14 +249,9 @@ public class SimpleMarketProposalAggregator implements MarketProposalAggregator 
                         }
                         LOGGER.info("Order {}, all the market makers replied with prices, the book is complete for the market {}, send it onward.", order.getFixOrderId(), marketCode);
 
-                        // BV SDP is the only BondVision that could arrive here
-                        if (marketCode.equals(MarketCode.BV)) {
-                            isinBookListener.onMarketBookComplete(marketPriceConnection, propMarketBook);
-                        } else {
-                            // book complete for BBG
-                            isinBookListener.onMarketBookComplete(marketPriceConnection, propMarketBook);
-                            buildAndNotifyDependingMarketsBook(isinBookListener, order, modifiedMarketBook);
-                        }
+                         // book complete for BBG
+                         isinBookListener.onMarketBookComplete(marketPriceConnection, propMarketBook);
+                         buildAndNotifyDependingMarketsBook(isinBookListener, order, modifiedMarketBook);
 
                         if (isinBookListener.getNumWaitingReplyMarketPriceConnection() == 0) {
                             LOGGER.info("Order {}, price discovery complete", order.getFixOrderId());
@@ -287,12 +282,9 @@ public class SimpleMarketProposalAggregator implements MarketProposalAggregator 
         BaseBook depMktMarketBook = null;
         Set<MarketPriceConnection> priceConns = isinBookListener.getRemainingMarketPriceConnections();
         MarketPriceConnection twMktPriceConn = null;
-        MarketPriceConnection bvMktPriceConn = null;
         for (MarketPriceConnection priceConn : priceConns) {
             if (priceConn.getMarketCode().equals(MarketCode.TW)) {
                 twMktPriceConn = priceConn;
-            } else if (priceConn.getMarketCode().equals(MarketCode.BV)) {
-                bvMktPriceConn = priceConn;
             }
         }
 
@@ -307,23 +299,11 @@ public class SimpleMarketProposalAggregator implements MarketProposalAggregator 
             LOGGER.debug("Order {}, instrument {} not quoted on TW, do not add proposals for it in the TW book.", order.getFixOrderId(), instrument.getIsin());
         }
 
-        if (!marketNotQuoting.containsKey(MarketCode.BV) && !marketNotNegotiating.containsKey(MarketCode.BV)) {
-            if (bvMktPriceConn != null && bvMktPriceConn.isInstrumentQuotedOnMarket(instrument)) {
-                createDependingMarketsBook(MarketCode.BV, instrument, marketBook, isinBookListener, order, ProposalSide.BID);
-                createDependingMarketsBook(MarketCode.BV, instrument, marketBook, isinBookListener, order, ProposalSide.ASK);
-            }
-        }
-
         boolean keepNotValidProposals = false;
         // notify TW/BV book
         if (twMktPriceConn != null) {
             depMktMarketBook = fillCompleteMarketBook(marketBook, MarketCode.TW, keepNotValidProposals);
             isinBookListener.onMarketBookComplete(twMktPriceConn, depMktMarketBook);
-        }
-
-        if (bvMktPriceConn != null) {
-            depMktMarketBook = fillCompleteMarketBook(marketBook, MarketCode.BV, keepNotValidProposals);
-            isinBookListener.onMarketBookComplete(bvMktPriceConn, depMktMarketBook);
         }
     }
 
@@ -810,7 +790,7 @@ public class SimpleMarketProposalAggregator implements MarketProposalAggregator 
                         availableMktPriceConnections.addAll(mktPriceConns);
                         for (MarketPriceConnection mktPriceConn : availableMktPriceConnections) {
                             MarketCode mktPriceConnCode = mktPriceConn.getMarketCode();
-                            if (mktPriceConnCode != null && (mktPriceConnCode.equals(MarketCode.TW) || mktPriceConnCode.equals(MarketCode.BV))) {
+                            if (mktPriceConnCode != null && mktPriceConnCode.equals(MarketCode.TW)) {
                                 LOGGER.debug("Order {}, building book on timer {} expiration for the market {}", order.getFixOrderId(), jobName, mktPriceConnCode);
                                 try {
                                     createDependingMarketsBook(mktPriceConnCode, order.getInstrument(), allProposalsMarketBook, isinBookListener, order, ProposalSide.ASK);

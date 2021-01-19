@@ -13,18 +13,18 @@
  */
 package it.softsolutions.bestx.dao.hibernate;
 
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.springframework.dao.DataAccessException;
+
 import it.softsolutions.bestx.BestXException;
-import it.softsolutions.bestx.InstrumentedEhcache;
 import it.softsolutions.bestx.CommonMetricRegistry;
+import it.softsolutions.bestx.InstrumentedEhcache;
 import it.softsolutions.bestx.dao.InstrumentDao;
 import it.softsolutions.bestx.exceptions.ObjectNotInitializedException;
 import it.softsolutions.bestx.model.Instrument;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
-
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.springframework.dao.DataAccessException;
 
 /**
  * 
@@ -89,20 +89,6 @@ public class HibernateInstrumentDao implements InstrumentDao {
 	    return instrument;
 	   }
 	
-	@Override
-	public Instrument getPriceForgeInstrumentByIsin(String isin) {
-		Instrument instrument = null;
-//		Session session = null;
-//		try {
-//			session = sessionFactory.openSession();
-//			instrument = (Instrument) session.createQuery("from PriceForgeInstrumentsView where isin = :isin").setString("isin", isin).uniqueResult();
-//		} finally {
-//			if (session != null) {
-//				session.close();
-//			}
-//		}
-		return instrument;
-	}
 
 	@Override
 	public long getInstrumentCount() {

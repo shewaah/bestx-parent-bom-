@@ -510,7 +510,6 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         case StartExecution: {
             switch (marketCode) {
             case BLOOMBERG:
-            case INTERNALIZZAZIONE:
             case TW: 
             case MARKETAXESS: {
                 operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);
@@ -581,11 +580,6 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
                 }
                 Market execMkt = executionReport != null ? executionReport.getMarket() : null;
                 boolean executingOnInternalMarket = false;
-                if (execMkt != null) {
-                    if (MarketCode.INTERNALIZZAZIONE.equals(execMkt.getMarketCode())) {
-                        executingOnInternalMarket = true;
-                    }
-                }
                 // 20110610 - Ruggero
                 // The execution destination can be AKIS only for customer for which the IS has been allowed
                 // and ONLY WHEN we are executing on the internal market
@@ -605,7 +599,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
                 LOGGER.error("Managing an execution report with no market associated");
             }
             MarketCode executionReportMarketCode = executionReport != null && executionReport.getMarket() != null ? executionReport.getMarket().getMarketCode() : null;
-            if (executionReport != null && executionReport.getTicket() != null && (executionReportMarketCode == MarketCode.BLOOMBERG || executionReportMarketCode == MarketCode.INTERNALIZZAZIONE)) {
+            if (executionReport != null && executionReport.getTicket() != null && executionReportMarketCode == MarketCode.BLOOMBERG) {
                 operationStateAuditDao.updateOrderFill(order, executionReport.getTicket(), executionReport.getAccruedInterestAmount(), executionReport.getAccruedInterestDays());
             }
         }
@@ -863,10 +857,6 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         break;
         case StartExecution:
             switch (marketCode) {
-            case INTERNALIZZAZIONE: {
-                comment = getComment(marketCode, type, comment);
-            }
-            break;
             case BLOOMBERG:
             case TW:
             case MARKETAXESS: {

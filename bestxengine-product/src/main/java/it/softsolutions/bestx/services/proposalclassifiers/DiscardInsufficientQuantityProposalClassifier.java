@@ -27,7 +27,6 @@ import it.softsolutions.bestx.bestexec.ProposalClassifier;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedBook;
 import it.softsolutions.bestx.model.ClassifiedProposal;
-import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
@@ -48,9 +47,7 @@ public class DiscardInsufficientQuantityProposalClassifier extends BaseMarketMak
 		if(order.getQty() == null || isCompositePriceMarketMaker(proposal)) {
 			return proposal;
 		}
-		if (!((order.getInstrument().getInstrumentAttributes() != null && order.getInstrument().getInstrumentAttributes().getPortfolio().isInternalizable())
-		        || proposal.getMarket().getMarketCode() == MarketCode.MOT || proposal.getMarket().getMarketCode() == MarketCode.TLX || proposal.getMarket().getMarketCode() == MarketCode.HIMTF
-		        || proposal.getMarket().getMarketCode() == MarketCode.MTSPRIME)) {
+		if (!(order.getInstrument().getInstrumentAttributes() != null && order.getInstrument().getInstrumentAttributes().getPortfolio().isInternalizable())) {
 			if (order.getSide() == OrderSide.BUY && proposal.getSide() == Proposal.ProposalSide.ASK || order.getSide() == OrderSide.SELL && proposal.getSide() == Proposal.ProposalSide.BID) {
 				if (proposal.getQty().compareTo(order.getQty()) < 0) {
 					proposal.setProposalState(Proposal.ProposalState.REJECTED);

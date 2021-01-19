@@ -21,16 +21,16 @@
  */
 package it.softsolutions.bestx.helpers;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Market.SubMarketCode;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class __FakeMarketFinder implements MarketFinder
 {
@@ -42,19 +42,9 @@ public class __FakeMarketFinder implements MarketFinder
 		markets = new HashMap<MarketCode, Market>();
 
 		Market market = new Market();
-		market.setName("TLXFIX");
-		market.setMarketCode(MarketCode.TLX);
-		market.setSubMarketCode(SubMarketCode.ETX);
-		markets.put(market.getMarketCode(), market);
-
 		market = new Market();
 		market.setName("BLOOMBERG");
 		market.setMarketCode(MarketCode.BLOOMBERG);
-		markets.put(market.getMarketCode(), market);
-
-		market = new Market();
-		market.setName("BVS");
-		market.setMarketCode(MarketCode.BV);
 		markets.put(market.getMarketCode(), market);
 
 		market = new Market();

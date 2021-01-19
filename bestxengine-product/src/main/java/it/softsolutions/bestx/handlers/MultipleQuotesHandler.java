@@ -157,7 +157,6 @@ public class MultipleQuotesHandler {
 
         switch (mktCode) {
         case BLOOMBERG:
-        case BV:
             return true;
         default:
             return false;

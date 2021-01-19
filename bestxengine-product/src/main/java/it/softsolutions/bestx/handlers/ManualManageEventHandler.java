@@ -3,6 +3,13 @@
  */
 package it.softsolutions.bestx.handlers;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.CustomerAttributes;
 import it.softsolutions.bestx.Messages;
@@ -17,7 +24,6 @@ import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.Instrument.InstrumentAttributes;
 import it.softsolutions.bestx.model.Market;
-import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.MarketExecutionReport;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Portfolio;
@@ -31,14 +37,6 @@ import it.softsolutions.bestx.states.SendExecutionReportState;
 import it.softsolutions.bestx.states.SendNotExecutionReportState;
 import it.softsolutions.bestx.states.WarningState;
 import it.softsolutions.jsscommon.Money;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author anna
@@ -117,12 +115,6 @@ public class ManualManageEventHandler extends BaseOperationEventHandler {
 				mktExecRep.setMarket(tmpMkt);
 			}
 			boolean executingOnInternalMarket = false;
-			if (tmpMkt != null) {
-				if (MarketCode.INTERNALIZZAZIONE.equals(tmpMkt.getMarketCode())) {
-					executingOnInternalMarket = true;
-				}
-			}
-
 			newExecution.setExecBroker(marketMaker);
 			// set counterpart for AMOS
 			newExecution.setCounterPart(marketMaker);

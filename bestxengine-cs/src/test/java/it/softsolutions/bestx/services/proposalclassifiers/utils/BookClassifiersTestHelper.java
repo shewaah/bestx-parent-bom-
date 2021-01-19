@@ -204,39 +204,12 @@ public class BookClassifiersTestHelper {
     private static int getMarketRanking(MarketCode mktCode, SubMarketCode subMktCode)
     {
         int ret = -1;
-        if (mktCode.equals(MarketCode.INTERNALIZZAZIONE))
-            ret = 0;
-        else if (mktCode.equals(MarketCode.TLX)) {
-            if (subMktCode == null)
-                ret = 1;
-            else if (subMktCode.equals(SubMarketCode.TLX))
-                ret = 1;
-            else if (subMktCode.equals(SubMarketCode.TLX))
-                ret = 2;
-        }
-        else if (mktCode.equals(MarketCode.HIMTF))
-            ret = 3;
-        else if (mktCode.equals(MarketCode.MOT)) {
-            if (subMktCode == null)
-                ret = 4;
-            else if (subMktCode.equals(SubMarketCode.MOT))
-                ret = 4;
-            else if (subMktCode.equals(SubMarketCode.MEM))
-                ret = 5;
-            else if (subMktCode.equals(SubMarketCode.XMOT))
-                ret = 6;
-        }
-        else if (mktCode.equals(MarketCode.MARKETAXESS))
+        if (mktCode.equals(MarketCode.MARKETAXESS))
             ret = 15;
         else if (mktCode.equals(MarketCode.BLOOMBERG))
             ret = 8;
         else if (mktCode.equals(MarketCode.TW))
             ret = 9;
-        else if (mktCode.equals(MarketCode.BV))
-            ret = 11;
-        else if (mktCode.equals(MarketCode.XBRIDGE))
-            ret = 12;
-
         return ret;
     }
 

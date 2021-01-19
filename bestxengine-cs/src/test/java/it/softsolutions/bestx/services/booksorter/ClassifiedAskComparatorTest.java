@@ -211,7 +211,7 @@ public class ClassifiedAskComparatorTest {
         Map<MarketCode, Market> mkts = new HashMap<MarketCode, Market>();
 
         String[] mktNames = new String[] {"INTERNALIZZAZIONE","BLOOMBERG","MARKETAXESS", "MATCHING", "TW"};
-        MarketCode[] mktCodes = new MarketCode[] {MarketCode.INTERNALIZZAZIONE, MarketCode.BLOOMBERG, MarketCode.MARKETAXESS, MarketCode.TW};
+        MarketCode[] mktCodes = new MarketCode[] {MarketCode.BLOOMBERG, MarketCode.MARKETAXESS, MarketCode.TW};
         String[] subMarketCodes = new String[] {"","","","",""};
         long[] marketIds = new long[] {0,1,2,5,6};
         int[] rankings = new int[] {0,3,2,4,1};

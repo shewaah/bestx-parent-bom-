@@ -32,7 +32,6 @@ import it.softsolutions.bestx.model.CSPOBexExecutionReport.CSDealerGroup;
 import it.softsolutions.bestx.model.Commission.CommissionType;
 import it.softsolutions.bestx.model.ExecutionReport;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
-import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Quote;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
@@ -196,16 +195,6 @@ public class OMS1FixExecutionReportOutputLazyBean extends FixExecutionReportOutp
 	    	accruedInterest = (executionReport.getAccruedInterestAmount() != null ? executionReport.getAccruedInterestAmount().getAmount() : BigDecimal.ZERO);
 	    	accruedDays = executionReport.getAccruedInterestDays();
 	    	tipoConto = executionReport.getTipoConto();
-	    	// vedi richiesta della mail di FA a AMC del 21 ottobre 2009 12:26
-	    	if (executionReport.getMarket()!=null && Market.MarketCode.INTERNALIZZAZIONE.compareTo(executionReport.getMarket().getMarketCode()) == 0) {
-	    		// aggiungo campo al bean
-	    		internalizationIndicator = "2";
-	    	}
-	    	// 20110801 - Ruggero Ticket 7610 : insert the market pdu for tas orders on tlx
-	    	if (executionReport.getMarket()!=null && Market.MarketCode.TLX.compareTo(executionReport.getMarket().getMarketCode()) == 0) {
-	    		marketOrderId = executionReport.getMarketOrderID();
-	    		LOGGER.debug("TLX market, setting the field 37 with value {}", marketOrderId);
-	    	}
 	
 	    	if (executionReport.getExecType()!=null) {
 	    		execTransType = executionReport.getExecType();

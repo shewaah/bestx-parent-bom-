@@ -35,15 +35,6 @@ public interface InstrumentDao {
 	 */
 	Instrument getInstrumentByIsin(String isin);
 
-	/**
-	 * Load the given PriceForge instrument data.
-	 * 
-	 * @param isin
-	 *            : required instrument
-	 * @return the instrument.
-	 */
-	Instrument getPriceForgeInstrumentByIsin(String isin);
-	
 	Instrument getLastIssuedInstrument();
 
 	/**

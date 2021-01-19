@@ -209,7 +209,6 @@ public class CSPOBexExecutionReport extends ExecutionReport {
 		if(marketExecutionReport != null && (marketExecutionReport.getMarket().getMarketCode() == MarketCode.MARKETAXESS
 									|| marketExecutionReport.getMarket().getMarketCode() == MarketCode.TW
 									|| marketExecutionReport.getMarket().getMarketCode() == MarketCode.BLOOMBERG
-									|| marketExecutionReport.getMarket().getMarketCode() == MarketCode.BV
 									)) {
 			// manage MarketAxess more rich execution report
 			// get all quotes from attempt

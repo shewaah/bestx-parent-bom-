@@ -19,9 +19,9 @@
 */
 package it.softsolutions.bestx.dao;
 
-import it.softsolutions.bestx.model.Order;
-
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import it.softsolutions.bestx.model.Order;
 
 public interface CustomerManagerDAO {
    
@@ -31,16 +31,6 @@ public interface CustomerManagerDAO {
     * @param jdbcTemplate the JDBCTemplate to set
     */
    public void setJdbcTemplate(JdbcTemplate jdbcTemplate);
-   
-   /**
-    * Check the UnwantedCustomerTable to see if the customer is available, if not
-    * this is a valid Price Forge customer, if the query returns a result than this
-    * customer is an uwanted customer for the Price Forge.
-    * 
-    * @param order Order class used to retrieve the customer object
-    * @return true if the customer IS NOT in the table, false otherwise
-    */
-   public boolean isAPriceForgeCustomer(Order order);
    
    /**
     * Check the CustomerNotAllowedTicker to verify if the RTFI ticker

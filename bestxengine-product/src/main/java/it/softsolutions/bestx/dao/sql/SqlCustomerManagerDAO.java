@@ -13,14 +13,6 @@
  */
 package it.softsolutions.bestx.dao.sql;
 
-import it.softsolutions.bestx.dao.CustomerManagerDAO;
-import it.softsolutions.bestx.exceptions.ObjectNotInitializedException;
-import it.softsolutions.bestx.model.Customer;
-import it.softsolutions.bestx.model.Instrument;
-import it.softsolutions.bestx.model.Order;
-import it.softsolutions.bestx.model.Rfq.OrderSide;
-import it.softsolutions.bestx.services.PriceForgeCustomerManager;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,6 +24,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.ResultSetExtractor;
 
+import it.softsolutions.bestx.dao.CustomerManagerDAO;
+import it.softsolutions.bestx.exceptions.ObjectNotInitializedException;
+import it.softsolutions.bestx.model.Customer;
+import it.softsolutions.bestx.model.Instrument;
+import it.softsolutions.bestx.model.Order;
+import it.softsolutions.bestx.model.Rfq.OrderSide;
+
 /**  
 *
 * Purpose : this class verify if the order customer is set to use Price Forge and if the ticker 
@@ -42,7 +41,7 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 * 
 **/
 public class SqlCustomerManagerDAO implements CustomerManagerDAO {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PriceForgeCustomerManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SqlCustomerManagerDAO.class);
 
     private JdbcTemplate jdbcTemplate;
 

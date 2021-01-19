@@ -111,9 +111,6 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 	private List<String> marketsNotEnabled;
 	private Map<String, String> magnetMarkets;
 	private Map<MarketConnection, Boolean> magnetMarketsEnabled;
-	private PriceForgeService priceForgeService;
-	private PriceForgeInstrumentsManager priceForgeInstrManager;
-	private PriceForgeCustomerManager priceForgeCustManager;
 	private List<MarketCode> marketCodes;
 	private MarketConnectionRegistry marketConnectionRegistry;
 	private VenueFinder venueFinder;
@@ -555,8 +552,7 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 			venues.addAll(venueFinder.getAllVenues());
 		}
 		final MarketPriceListener marketPriceListener = new MarketPriceListener(requestor, order.getInstrument(), order, previousAttempts, venues, marketPriceConnectionsEnabled, this, executor,
-				bookClassifier, bookSorter, marketMakerFinder, bookProposalBuilder, marketFinder, checkDisabledInternalMarketMaker, venueFinder, priceForgeService,
-				priceForgeCustManager, priceForgeInstrManager, serialNumberService);
+				bookClassifier, bookSorter, marketMakerFinder, bookProposalBuilder, marketFinder, checkDisabledInternalMarketMaker, venueFinder, serialNumberService);
 		marketPriceListeners.add(marketPriceListener);
 		marketPriceListener.addErrorsInReport(unavailableMarketErrors);
 		int marketsNotAvailable = 0;
@@ -680,10 +676,6 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 		lastAvgTimePriceDiscovery = avgTimePriceDiscovery;
 		priceDiscoveryIntervalNumber = 0;
 		avgTimePriceDiscovery = 0;
-	}
-
-	public void setPriceForgeService(PriceForgeService priceForgeService) {
-		this.priceForgeService = priceForgeService;
 	}
 
 	public List<String> getMarketsNotEnabled() {
@@ -825,14 +817,6 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 
 	public void setBookProposalBuilder(BookProposalBuilder bookProposalBuilder) {
 		this.bookProposalBuilder = bookProposalBuilder;
-	}
-
-	public void setPriceForgeInstrManager(PriceForgeInstrumentsManager priceForgeInstrManager) {
-		this.priceForgeInstrManager = priceForgeInstrManager;
-	}
-
-	public void setPriceForgeCustManager(PriceForgeCustomerManager priceForgeCustManager) {
-		this.priceForgeCustManager = priceForgeCustManager;
 	}
 
 	@Override
