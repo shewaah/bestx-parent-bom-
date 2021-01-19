@@ -150,8 +150,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		this.serialNumberService = serialNumberService;
 		this.waitingPriceDelay = waitingPriceDelay;
 		this.marketPriceTimeout = marketPriceTimeout;
-		//this.INTERNAL_VENUE = venueFinder.getMarketVenue(marketFinder.getMarketByCode(MarketCode.INTERNALIZZAZIONE, null));
-		//this.MATCHING_VENUE = venueFinder.getMarketVenue(marketFinder.getMarketByCode(MarketCode.MATCHING, null));
 		this.executionDestinationService = executionDestinationService;
 		this.rejectOrderWhenBloombergIsBest = rejectOrderWhenBloombergIsBest;
 
