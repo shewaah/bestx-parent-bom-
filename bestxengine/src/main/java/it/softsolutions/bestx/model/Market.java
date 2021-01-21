@@ -31,7 +31,7 @@ public class Market implements Serializable, Cloneable {
 
     public static enum MarketCode {
         BLOOMBERG, TSOX/* technical enumerated for execution on TSOX*/,  //AMC TSOX dealer codes are not the same in BPipe and trading systems
-        MARKETAXESS, TW 
+        MARKETAXESS, TW
     }
 
     public static enum SubMarketCode {
