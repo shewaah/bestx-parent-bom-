@@ -75,10 +75,6 @@ import it.softsolutions.bestx.states.WaitingPriceState;
 import it.softsolutions.bestx.states.WarningState;
 import it.softsolutions.bestx.states.bloomberg.BBG_AcceptQuoteState;
 import it.softsolutions.bestx.states.bloomberg.BBG_ExecutedState;
-import it.softsolutions.bestx.states.bloomberg.BBG_INT_AcceptBestIfStillValidState;
-import it.softsolutions.bestx.states.bloomberg.BBG_INT_AcceptInternalAndRejectBestState;
-import it.softsolutions.bestx.states.bloomberg.BBG_INT_RejectInternalAndAcceptBestState;
-import it.softsolutions.bestx.states.bloomberg.BBG_INT_SendInternalRfqState;
 import it.softsolutions.bestx.states.bloomberg.BBG_ReceiveQuoteState;
 import it.softsolutions.bestx.states.bloomberg.BBG_RejectQuoteState;
 import it.softsolutions.bestx.states.bloomberg.BBG_RejectedState;
@@ -327,9 +323,7 @@ public class BBG_StatesTest  extends OrderStatesTestHelper{
                             BBG_StartExecutionState.class.getSimpleName(),
                             BBG_SendRfqState.class.getSimpleName(),
                             BBG_ReceiveQuoteState.class.getSimpleName(),
-                            BBG_INT_SendInternalRfqState.class.getSimpleName(),
                             // reject from internal MM, accept external quote
-                            BBG_INT_AcceptBestIfStillValidState.class.getSimpleName(),
                             BBG_AcceptQuoteState.class.getSimpleName(),
                             BBG_ExecutedState.class.getSimpleName(),
                             SendExecutionReportState.class.getSimpleName(),
@@ -364,10 +358,7 @@ public class BBG_StatesTest  extends OrderStatesTestHelper{
                             BBG_StartExecutionState.class.getSimpleName(),
                             BBG_SendRfqState.class.getSimpleName(),
                             BBG_ReceiveQuoteState.class.getSimpleName(),
-                            BBG_INT_SendInternalRfqState.class.getSimpleName(),
-                            BBG_INT_AcceptInternalAndRejectBestState.class.getSimpleName(),
                             // internal MM rejects hit/lift, accept external quote
-                            BBG_INT_AcceptBestIfStillValidState.class.getSimpleName(),
                             BBG_AcceptQuoteState.class.getSimpleName(),
                             BBG_ExecutedState.class.getSimpleName(),
                             SendExecutionReportState.class.getSimpleName(),
@@ -402,10 +393,7 @@ public class BBG_StatesTest  extends OrderStatesTestHelper{
                             BBG_StartExecutionState.class.getSimpleName(),
                             BBG_SendRfqState.class.getSimpleName(),
                             BBG_ReceiveQuoteState.class.getSimpleName(),
-                            BBG_INT_SendInternalRfqState.class.getSimpleName(),
                             // reject internal MM's quote, accept external
-                            BBG_INT_RejectInternalAndAcceptBestState.class.getSimpleName(),
-                            BBG_INT_AcceptBestIfStillValidState.class.getSimpleName(),
                             BBG_AcceptQuoteState.class.getSimpleName(),
                             BBG_ExecutedState.class.getSimpleName(),
                             SendExecutionReportState.class.getSimpleName(),
@@ -440,8 +428,6 @@ public class BBG_StatesTest  extends OrderStatesTestHelper{
                             BBG_StartExecutionState.class.getSimpleName(),
                             BBG_SendRfqState.class.getSimpleName(),
                             BBG_ReceiveQuoteState.class.getSimpleName(),
-                            BBG_INT_SendInternalRfqState.class.getSimpleName(),
-                            BBG_INT_AcceptInternalAndRejectBestState.class.getSimpleName(),
                             BBG_ExecutedState.class.getSimpleName(),
                             SendExecutionReportState.class.getSimpleName(),
                             StateExecuted.class.getSimpleName());
@@ -478,8 +464,6 @@ public class BBG_StatesTest  extends OrderStatesTestHelper{
                             BBG_StartExecutionState.class.getSimpleName(),
                             BBG_SendRfqState.class.getSimpleName(),
                             BBG_ReceiveQuoteState.class.getSimpleName(),
-                            BBG_INT_SendInternalRfqState.class.getSimpleName(),
-                            BBG_INT_AcceptInternalAndRejectBestState.class.getSimpleName(),
                             WarningState.class.getSimpleName());
             
         }

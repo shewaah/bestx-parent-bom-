@@ -33,17 +33,14 @@ import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.ExecutablePrice;
 import it.softsolutions.bestx.model.Instrument;
-import it.softsolutions.bestx.model.InternalAttempt;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
-import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.RejectQuoteAndSendAutoNotExecutionState;
 import it.softsolutions.bestx.states.WarningState;
 import it.softsolutions.bestx.states.bloomberg.BBG_AcceptQuoteState;
-import it.softsolutions.bestx.states.bloomberg.BBG_INT_SendInternalRfqState;
 import it.softsolutions.bestx.states.bloomberg.BBG_RejectQuoteState;
 import it.softsolutions.jsscommon.Money;
 
@@ -183,19 +180,7 @@ public class BBG_ReceiveQuoteEventHandler extends BaseOperationEventHandler {
 
         if (allConditionsOk) {
         	
-            // normal operation or internalization
-        	InternalAttempt internalAttempt = operation.getInternalAttempt();
-            Money counterOfferPrice = lastQuote.getPrice();
-
-            if (internalAttempt != null) {  // must internalize with internalAttempt's owner 
-                internalAttempt.getMarketOrder().setLimit(counterOfferPrice);
-                internalAttempt.getMarketOrder().setVenue(internalAttempt.getExecutionProposal().getVenue());
-
-                operation.setStateResilient(new BBG_INT_SendInternalRfqState(Messages.getString("BBG_INT_BestPrice", counterOfferPrice.getAmount(), lastQuote.getVenue().getCode(), DateService.format("dd/MM/yyyy", lastQuote.getFutSettDate()))), ErrorState.class);
-            }
-            else {
-                operation.setStateResilient(new BBG_AcceptQuoteState(), ErrorState.class);
-            }
+             operation.setStateResilient(new BBG_AcceptQuoteState(), ErrorState.class);
         } else {
             lastQuote.setReason(rejectReason);
             lastAttempt.addExecutablePrice(new ExecutablePrice(lastQuote), 0);

@@ -43,7 +43,6 @@ import it.softsolutions.bestx.states.LimitFileNoPriceState;
 import it.softsolutions.bestx.states.RejectedState;
 import it.softsolutions.bestx.states.WarningState;
 import it.softsolutions.bestx.states.bloomberg.BBG_ExecutedState;
-import it.softsolutions.bestx.states.bloomberg.BBG_INT_AcceptBestIfStillValidState;
 /**  
 *
 * Purpose: 
@@ -203,7 +202,7 @@ public class BBG_AcceptQuoteEventHandler extends BaseOperationEventHandler {
 		else {
 		    // go back to BBG_INT_AcceptBestIfStillValidState, so a new attempt is made if the quote is still valid
             LOGGER.info("Accept refused by Dealer for orderID {} ({}), trying again", order.getFixOrderId(), text);
-            operation.setStateResilient(new BBG_INT_AcceptBestIfStillValidState("Order rejected (" + text + "), trying again"), ErrorState.class);
+            //operation.setStateResilient(new BBG_INT_AcceptBestIfStillValidState("Order rejected (" + text + "), trying again"), ErrorState.class);
            
 //
 // 		   PM se vado in BBG_INT_AcceptBestIfStillValidState (vedasi sopra) l'effetto collaterale, nel caso il dealer effettivamente non risponda (tsox test qty=17000)
