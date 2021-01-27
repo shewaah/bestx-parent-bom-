@@ -163,10 +163,6 @@
 		<subclass name="it.softsolutions.bestx.states.bloomberg.BBG_AcceptQuoteState" discriminator-value="it.softsolutions.bestx.states.bloomberg.BBG_AcceptQuoteState" />
 		<subclass name="it.softsolutions.bestx.states.bloomberg.BBG_RejectQuoteState" discriminator-value="it.softsolutions.bestx.states.bloomberg.BBG_RejectQuoteState" />
 		<subclass name="it.softsolutions.bestx.states.bloomberg.BBG_StartExecutionState" discriminator-value="it.softsolutions.bestx.states.bloomberg.BBG_StartExecutionState" />
-		<subclass name="it.softsolutions.bestx.states.bloomberg.BBG_INT_SendInternalRfqState" discriminator-value="it.softsolutions.bestx.states.bloomberg.BBG_INT_SendInternalRfqState" />
-		<subclass name="it.softsolutions.bestx.states.bloomberg.BBG_INT_RejectInternalAndAcceptBestState" discriminator-value="it.softsolutions.bestx.states.bloomberg.BBG_INT_RejectInternalAndAcceptBestState" />
-		<subclass name="it.softsolutions.bestx.states.bloomberg.BBG_INT_AcceptInternalAndRejectBestState" discriminator-value="it.softsolutions.bestx.states.bloomberg.BBG_INT_AcceptInternalAndRejectBestState" />
-		<subclass name="it.softsolutions.bestx.states.bloomberg.BBG_INT_AcceptBestIfStillValidState" discriminator-value="it.softsolutions.bestx.states.bloomberg.BBG_INT_AcceptBestIfStillValidState" />
 		<subclass name="it.softsolutions.bestx.states.RejectedState"
 			discriminator-value="it.softsolutions.bestx.states.RejectedState" />
 		<subclass name="it.softsolutions.bestx.states.RejectQuoteAndSendAutoNotExecutionState" discriminator-value="it.softsolutions.bestx.states.RejectQuoteAndSendAutoNotExecutionState" />
