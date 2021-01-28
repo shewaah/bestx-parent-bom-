@@ -43,6 +43,7 @@ import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Proposal.PriceType;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.SortedBook;
+import it.softsolutions.bestx.services.DateService;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -484,7 +485,7 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 		public void run() {
 			while (keepChecking) {
 				try {
-					String messageValue = "HEARTBEAT: " + df.format(new Date());
+					String messageValue = "HEARTBEAT: " + df.format(DateService.newLocalDate());
 					ProducerRecord<String, String> rec = new ProducerRecord<>(monitorTopic, messageValue);
 					LOGGER.info("Sending heartbeat message... {}", messageValue);
 					kafkaProducer.send(rec, (metadata, exception) -> {
