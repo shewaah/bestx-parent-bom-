@@ -71,7 +71,7 @@ import quickfix.field.CompDealerQuoteOrdQty;
 @SuppressWarnings("deprecation")
 public class OnExecutionReportRunnable implements Runnable {
 
-   private static final Logger LOGGER = LoggerFactory.getLogger(OnExecutionReportRunnable.class);
+   private static final Logger LOGGER =   LoggerFactory.getLogger(OnExecutionReportRunnable.class);
 
    private final Operation operation;
    private final Market counterMarket;
@@ -350,7 +350,7 @@ public class OnExecutionReportRunnable implements Runnable {
    }
    
    private void processPobex() {
-	      LOGGER.info("On Execution Status Runnable {}, {}", this.pobexExecutionReport.getClOrdID(), pobexExecutionReport.getExecType() );
+	      LOGGER.info("On Execution Status Runnable {}, {}", pobexExecutionReport.getClOrdID(), pobexExecutionReport.getExecType() );
 	      Order order = this.operation.getLastAttempt().getMarketOrder();
 	      Attempt attempt = operation.getLastAttempt();
 	      if (order == null) {
@@ -418,7 +418,10 @@ public class OnExecutionReportRunnable implements Runnable {
 	                     price.setQuoteReqId(attempt.getMarketOrder().getFixOrderId());
 	                     
 	                     //Calculate status from 22606 tag can contains: Expired, Canceled, Passed, Rejected, or Other
-	                     if ("PASSED".equalsIgnoreCase(pobexExecutionReport.getCustomFieldString(22606).toString())) {
+	                     if (pobexExecutionReport.getCustomFieldString(22606) == null) {
+	                        LOGGER.error("Execution report status message without tag 22606. Check Bloomberg channel configuration. Message: {}", pobexExecutionReport.toString());
+                           price.setAuditQuoteState("Expired");
+	                     } else if ("PASSED".equalsIgnoreCase(pobexExecutionReport.getCustomFieldString(22606).toString())) {
 	                        price.setAuditQuoteState("Passed");
 	                     } else if ("EXPIRED".equalsIgnoreCase((pobexExecutionReport.getCustomFieldString(22606).toString()))) {
 	                        price.setAuditQuoteState("Expired");
@@ -441,7 +444,7 @@ public class OnExecutionReportRunnable implements Runnable {
 	                     prices.add(price);
 	                  }
 	               }
-	               catch (FieldNotFound | BestXException e) {
+	               catch (FieldNotFound | BestXException | NullPointerException e) {
 	                  LOGGER.warn("[MktMsg] Field not found in component dealers", e);
 	               }
 	            }
