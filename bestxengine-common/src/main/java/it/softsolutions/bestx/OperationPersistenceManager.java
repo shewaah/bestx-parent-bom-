@@ -41,7 +41,6 @@ import it.softsolutions.bestx.exceptions.SaveBookException;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.SortedBook;
 import it.softsolutions.bestx.services.DateService;
-import it.softsolutions.manageability.sl.monitoring.NumericValueMonitor;
 
 /**
  *
@@ -157,7 +156,6 @@ public class OperationPersistenceManager implements OperationStateListener, Init
 
     private final Map<String, Date> startSaveTimeInMillis = new ConcurrentHashMap<String, Date>();
     private long lastSaveTime = 0L;
-    private final NumericValueMonitor lastSaveTimeMonitor = new NumericValueMonitor("operationLastSaveTime", "Save State", true, "info", "[OPERATION_SAVE_STATE_STATISTICS]");
 
     @Override
     public void onOperationStateChanged(Operation operation, OperationState oldState, OperationState newState) throws SaveBookException, BestXException {
@@ -213,14 +211,6 @@ public class OperationPersistenceManager implements OperationStateListener, Init
 		long end = DateService.currentTimeMillis();
         LOGGER.debug("[PERSISTENCE],StoreTime={},STOP onOperationStateChanged, operationID={}", (end-start), operation.getId());
         
-        // MONITOR AND JMX
-		if (operation.getIdentifier(OperationIdType.ORDER_ID) != null) {
-			Date startDate = startSaveTimeInMillis.remove(operation.getIdentifier(OperationIdType.ORDER_ID));
-			long now = DateService.currentTimeMillis();
-			lastSaveTime = now - startDate.getTime();
-			lastSaveTimeMonitor.setValue(lastSaveTime);
-		}
-
 		if (newState.isTerminal() && !keepTerminalOperation) {
 			LOGGER.info("Deleting operation with operationID={} from DB", operation.getId());
 			try {

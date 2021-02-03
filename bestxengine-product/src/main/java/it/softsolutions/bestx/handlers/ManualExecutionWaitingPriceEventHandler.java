@@ -45,7 +45,6 @@ import it.softsolutions.bestx.services.serial.SerialNumberService;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.ManualManageState;
 import it.softsolutions.bestx.states.WarningState;
-import it.softsolutions.manageability.sl.monitoring.NumericValueMonitor;
 
 /**
  * 
@@ -61,7 +60,6 @@ public class ManualExecutionWaitingPriceEventHandler extends WaitingPriceEventHa
     private static final Logger LOGGER = LoggerFactory.getLogger(ManualExecutionWaitingPriceEventHandler.class);
 
     private static long manualExecutionPriceRequests;
-    private static NumericValueMonitor manualExecutionPriceRequestsMonitor = new NumericValueMonitor("manualExecutionPriceRequests", "Price Service", true, "info", "[PRICE_SERVICE_STATISTICS]");
 
     /**
      * @param operation
@@ -126,7 +124,6 @@ public class ManualExecutionWaitingPriceEventHandler extends WaitingPriceEventHa
                 setupDefaultTimer(waitingPriceDelay, false);
             }
             manualExecutionPriceRequests++;
-            manualExecutionPriceRequestsMonitor.setValue(manualExecutionPriceRequests);
             LOGGER.info("[MONITOR] Manual execution price requests: {}", manualExecutionPriceRequests);
         } else {
             operation.setStateResilient(new ManualManageState(false), ErrorState.class);

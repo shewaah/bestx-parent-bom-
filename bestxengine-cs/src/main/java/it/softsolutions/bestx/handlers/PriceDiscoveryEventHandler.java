@@ -39,7 +39,6 @@ import it.softsolutions.bestx.services.price.PriceService;
 import it.softsolutions.bestx.states.CurandoAutoState;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.WarningState;
-import it.softsolutions.manageability.sl.monitoring.NumericValueMonitor;
 /**
 *
 * Purpose: this class is mainly for managing price discovery requests
@@ -55,7 +54,6 @@ public class PriceDiscoveryEventHandler extends BaseOperationEventHandler implem
 	private static final Logger LOGGER = LoggerFactory.getLogger(PriceDiscoveryEventHandler.class);
 
 	private static long priceDiscoveryRequests = 0;
-	private static NumericValueMonitor priceDiscoveryRequestsMonitor = new NumericValueMonitor("priceDiscoveryRequests", "Price Service", true, "info", "[PRICE_SERVICE_STATISTICS]");
 
 
 	private final PriceService priceService;
@@ -116,7 +114,6 @@ public class PriceDiscoveryEventHandler extends BaseOperationEventHandler implem
 
 		// AMC 20160729 probabilmente i valori di monitoraggio di questa PD non sono gli stessi delle altre PD
 		priceDiscoveryRequests++;
-		priceDiscoveryRequestsMonitor.setValue(priceDiscoveryRequests);
 		LOGGER.info("[MONITOR] price discovery requests: {}", priceDiscoveryRequests);
 	}
 	

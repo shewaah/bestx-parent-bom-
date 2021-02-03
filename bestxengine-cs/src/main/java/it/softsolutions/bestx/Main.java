@@ -16,7 +16,6 @@ package it.softsolutions.bestx;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Hashtable;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -39,13 +38,12 @@ import it.softsolutions.jsscommon.SSLog;
 import it.softsolutions.licensevalidator.LicenseValidationException;
 import it.softsolutions.licensevalidator.LicenseValidatorService;
 import it.softsolutions.licensevalidator.LicenseValidatorServiceFactory;
-import it.softsolutions.manageability.commons.Application;
 
 /**
  * The Class Main.
  */
 @SuppressWarnings("deprecation")
-public class Main extends Application {
+public class Main {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
@@ -57,7 +55,6 @@ public class Main extends Application {
 	 * Instantiates a new main.
 	 */
 	public Main() {
-		super(ApplicationType.CommonService);
 	}
 
 
@@ -121,36 +118,5 @@ public class Main extends Application {
 		} finally {
 			System.exit(0);
 		}
-	}
-
-	@Override
-	public void shutdownApplication() {
-
-	}
-
-	@Override
-	public void startApplication() {
-
-	}
-
-	@Override
-	public String getServiceName() {
-		return "BestX! Application";
-	}
-
-	@SuppressWarnings("rawtypes")
-	@Override
-	public Hashtable getServiceProperties() {
-		return new Hashtable();
-	}
-
-	@Override
-	public void reload() {
-
-	}
-
-	@Override
-	public void restart() {
-
 	}
 }

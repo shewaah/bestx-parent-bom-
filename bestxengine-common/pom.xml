@@ -55,8 +55,8 @@
             <artifactId>commons-lang3</artifactId>
         </dependency>
         <dependency>
-            <groupId>it.softsolutions.commons</groupId>
-            <artifactId>xtservicelib</artifactId>
+	        <groupId>com.hazelcast</groupId>
+	        <artifactId>hazelcast</artifactId>
         </dependency>
         <dependency>
             <groupId>it.softsolutions.commons</groupId>

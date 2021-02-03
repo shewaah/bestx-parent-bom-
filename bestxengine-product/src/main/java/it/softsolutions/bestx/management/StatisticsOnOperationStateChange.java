@@ -21,6 +21,17 @@
  */
 package it.softsolutions.bestx.management;
 
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Histogram;
+import com.codahale.metrics.MetricRegistry;
+
 import it.softsolutions.bestx.CommonMetricRegistry;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationIdType;
@@ -38,18 +49,6 @@ import it.softsolutions.bestx.states.SendExecutionReportState;
 import it.softsolutions.bestx.states.SendNotExecutionReportState;
 import it.softsolutions.bestx.states.StateExecuted;
 import it.softsolutions.bestx.states.WarningState;
-import it.softsolutions.manageability.sl.monitoring.NumericValueMonitor;
-
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Histogram;
-import com.codahale.metrics.MetricRegistry;
 
 public class StatisticsOnOperationStateChange implements OperationStateListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(StatisticsOnOperationStateChange.class);
@@ -67,15 +66,6 @@ public class StatisticsOnOperationStateChange implements OperationStateListener 
     private long transitionsToRevocated = 0;
     private long operationInCurandoAutoState = 0;
     private long operationInTechnicalIssueState = 0;
-    private final NumericValueMonitor validationTimeMonitor = new NumericValueMonitor("ValidationTime", "Orders", true, "info", "[ORDER_STATISTICS]");
-    private final NumericValueMonitor executionTimeMonitor = new NumericValueMonitor("ExecutionTime", "Orders", true, "info", "[ORDER_STATISTICS]");
-    private final NumericValueMonitor transitionsToOrderReceivedMonitor = new NumericValueMonitor("OrderReceivedNumber", "Orders", true, "info", "[ORDER_STATISTICS]");
-    private final NumericValueMonitor transitionsToSendExecutionMonitor = new NumericValueMonitor("OrderExecutedNumber", "Orders", true, "info", "[ORDER_STATISTICS]");
-    private final NumericValueMonitor transitionsToSendNotExecutedMonitor = new NumericValueMonitor("OrderNotExecutedNumber", "Orders", true, "info", "[ORDER_STATISTICS]");
-    private final NumericValueMonitor transitionsToSendAutoNotExecutedMonitor = new NumericValueMonitor("OrderAutoNOtExecutedNumber", "Orders", true, "info", "[ORDER_STATISTICS]");
-    private final NumericValueMonitor transitionsToRevocatedMonitor = new NumericValueMonitor("OrdersRevocatedNumber", "Orders", true, "info", "[ORDER_STATISTICS]");
-    private final NumericValueMonitor operationInCurandoAutoStateMonitor = new NumericValueMonitor("OrdersCurrentlyInCurandoState", "Orders", true, "info", "[ORDER_STATISTICS]");
-    private final NumericValueMonitor operationInTechnicalIssueStateMonitor = new NumericValueMonitor("OrdersCurrentlyInTechnicalIssueState", "Orders", true, "info", "[ORDER_STATISTICS]");
 
     private Counter transitionsToOrderReceivedCounter = CommonMetricRegistry.INSTANCE.getMonitorRegistry().counter(MetricRegistry.name(StatisticsOnOperationStateChange.class, "ReceivedOrders"));
     private Counter transitionsToSendExecutionCounter = CommonMetricRegistry.INSTANCE.getMonitorRegistry().counter(MetricRegistry.name(StatisticsOnOperationStateChange.class, "ExecutedOrders"));
@@ -109,37 +99,31 @@ public class StatisticsOnOperationStateChange implements OperationStateListener 
             // STATISTICS based on new state value
             if (newState.getClass() == OrderReceivedState.class) {
                 transitionsToOrderReceived++;
-                transitionsToOrderReceivedMonitor.setValue(transitionsToOrderReceived);
                 LOGGER.info("[MONITOR] Number of transitions to State " + newState.getClass().getSimpleName() + " = " + transitionsToOrderReceived);
             } else if (newState.getClass() == SendAutoNotExecutionReportState.class) {
                 transitionsToSendAutoNotExecuted++;
-                transitionsToSendAutoNotExecutedMonitor.setValue(transitionsToSendAutoNotExecuted);
                 LOGGER.info("[MONITOR] Number of transitions to State " + newState.getClass().getSimpleName() + " = " + transitionsToSendAutoNotExecuted);
             } else if (newState.getClass() == SendNotExecutionReportState.class) {
                 transitionsToSendNotExecuted++;
-                transitionsToSendNotExecutedMonitor.setValue(transitionsToSendNotExecuted);
                 LOGGER.info("[MONITOR] Number of transitions to State " + newState.getClass().getSimpleName() + " = " + transitionsToSendNotExecuted);
             } else if (newState.getClass() == SendExecutionReportState.class) {
                 transitionsToSendExecution++;
-                transitionsToSendExecutionMonitor.setValue(transitionsToSendExecution);
                 LOGGER.info("[MONITOR] Number of transitions to State " + newState.getClass().getSimpleName() + " = " + transitionsToSendExecution);
             } else if (newState.getClass() == OrderRevocatedState.class) {
                 transitionsToRevocated++;
-                transitionsToRevocatedMonitor.setValue(transitionsToRevocated);
                 LOGGER.info("[MONITOR] Number of transitions to State " + newState.getClass().getSimpleName() + " = " + transitionsToRevocated);
             } else if (newState.getClass() == OrderNotExecutableState.class || newState.getClass() == LimitFileNoPriceState.class) {
                 operationInCurandoAutoState++;
-                operationInCurandoAutoStateMonitor.setValue(operationInCurandoAutoState);
+                LOGGER.info("[MONITOR] Number of transitions to State " + newState.getClass().getSimpleName() + " = " + operationInCurandoAutoState);
             } else if (newState.getClass() == StateExecuted.class) {
                 if (opstat.get(OperationStateChangeStatistics.ORDER_VALIDATION_START_TIME) == null) {
                     return;
                 }
                 executionTime = ((getCurrentTimeInMillis() - (Long) opstat.get(OperationStateChangeStatistics.ORDER_VALIDATION_START_TIME)));
-                executionTimeMonitor.setValue(executionTime);
                 executionTimeHistogram.update(executionTime);
             } else if (newState.getClass() == WarningState.class || newState.getClass() == ErrorState.class) {
                 operationInTechnicalIssueState++;
-                operationInTechnicalIssueStateMonitor.setValue(operationInTechnicalIssueState);
+                LOGGER.info("[MONITOR] Number of transitions to State " + newState.getClass().getSimpleName() + " = " + operationInTechnicalIssueState);
             }
 
             // STATISTICS based on old state value
@@ -148,7 +132,6 @@ public class StatisticsOnOperationStateChange implements OperationStateListener 
 
                 if (newState.getClass() == FormalValidationKOState.class) {
                     validationTime = (getCurrentTimeInMillis() - oldState.getEnteredTime().getTime());
-                    validationTimeMonitor.setValue(validationTime);
                     validationTimeHistogram.update(validationTime);
                 }
             } else if (oldState.getClass() == BusinessValidationState.class) {
@@ -156,11 +139,9 @@ public class StatisticsOnOperationStateChange implements OperationStateListener 
                     return;
                 }
                 validationTime = (getCurrentTimeInMillis() - (Long) opstat.get(OperationStateChangeStatistics.ORDER_VALIDATION_START_TIME));
-                validationTimeMonitor.setValue(validationTime);
                 validationTimeHistogram.update(validationTime);
             } else if (oldState.getClass() == OrderNotExecutableState.class) {
                 operationInCurandoAutoState--;
-                operationInCurandoAutoStateMonitor.setValue(operationInCurandoAutoState);
             }
 
             if (newState.isTerminal()) {

@@ -67,7 +67,6 @@ import it.softsolutions.bestx.states.OrderNotExecutableState;
 import it.softsolutions.bestx.states.SendAutoNotExecutionReportState;
 import it.softsolutions.bestx.states.WarningState;
 import it.softsolutions.jsscommon.Money;
-import it.softsolutions.manageability.sl.monitoring.NumericValueMonitor;
 /**
  * 
  * 
@@ -83,7 +82,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 	private static final Logger LOGGER = LoggerFactory.getLogger(WaitingPriceEventHandler.class);
 	// Monitorable
 	// private static NumericValueMonitor totalPriceRequestsMonitor = null;
-	private static Map<String, NumericValueMonitor> totalPriceRequestsMonitors = new HashMap<String, NumericValueMonitor>();
 	private static Map<String, Long> totalPriceRequests = new HashMap<String, Long>();
 	private static Map<String, Long> pendingPriceRequests = new HashMap<String, Long>();
 
@@ -137,9 +135,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		super(operation);
 		this.priceService = priceService;
 		String priceServiceName = priceService.getPriceServiceName();
-		if (!totalPriceRequestsMonitors.containsKey(priceServiceName)) {
-			totalPriceRequestsMonitors.put(priceServiceName, new NumericValueMonitor("waitingPricesPriceRequests_" + priceServiceName, "Price Service", true, "info", "[PRICE_SERVICE_STATISTICS]"));
-		}
 		if (!pendingPriceRequests.containsKey(priceServiceName)) {
 			pendingPriceRequests.put(priceServiceName, 0L);
 		}
@@ -253,8 +248,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		long totalPriceRequestsVal = totalPriceRequests.get(priceServiceName);
 		totalPriceRequestsVal++;
 		totalPriceRequests.put(priceServiceName, totalPriceRequestsVal);
-		NumericValueMonitor totalPriceRequestsMonitor = totalPriceRequestsMonitors.get(priceServiceName);
-		totalPriceRequestsMonitor.setValue(totalPriceRequestsVal);
 		LOGGER.info("[MONITOR] Order={}, Waiting Prices price requests: {}", operation.getOrder().getFixOrderId(), totalPriceRequestsVal);
 	}
 

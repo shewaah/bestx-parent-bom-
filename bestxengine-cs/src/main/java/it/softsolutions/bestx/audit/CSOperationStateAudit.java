@@ -57,7 +57,6 @@ import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.ManualManageState;
 import it.softsolutions.bestx.states.WarningState;
-import it.softsolutions.manageability.sl.monitoring.NumericValueMonitor;
 
 /**
  * 
@@ -97,18 +96,6 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
     private boolean isLogEnabled = false;
 
     private final Map<String, Long> startSaveTimeInMillis = new ConcurrentHashMap<String, Long>();
-    private long lastSaveTime = 0L;
-    private final NumericValueMonitor lastSaveTimeMonitor = new NumericValueMonitor("auditLastSaveTime", "Save State", isLogEnabled, "info", "[AUDIT_SAVE_STATE_STATISTICS]");
-    private long lastReceivedStateSaveTime = 0L;
-    private final NumericValueMonitor lastReceivedStateSaveTimeMonitor = new NumericValueMonitor("auditLastReceivedStateSaveTime", "Save State", isLogEnabled, "info", "[AUDIT_SAVE_STATE_STATISTICS]");
-    private long lastBusinessValidationStateSaveTime = 0L;
-    private final NumericValueMonitor lastBusinessValidationStateSaveTimeMonitor = new NumericValueMonitor("auditLastBusinessValidationStateSaveTime", "Save State", isLogEnabled, "info",
-                    "[AUDIT_SAVE_STATE_STATISTICS]");
-    private long lastWaitingPricesStateSaveTime = 0L;
-    private final NumericValueMonitor lastWaitingPricesStateSaveTimeMonitor = new NumericValueMonitor("auditLastWaitingPricesStateSaveTime", "Save State", isLogEnabled, "info",
-                    "[AUDIT_SAVE_STATE_STATISTICS]");
-    private long lastExecutedStateSaveTime = 0L;
-    private final NumericValueMonitor lastExecutedStateSaveTimeMonitor = new NumericValueMonitor("auditLastExecutedStateSaveTime", "Save State", isLogEnabled, "info", "[AUDIT_SAVE_STATE_STATISTICS]");
 
     /**
      * Sets the mifid config.
@@ -308,38 +295,6 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         		&& newState.getType() != OperationState.Type.CurandoAuto) {
         		operationStateAuditDao.saveNewState(order.getFixOrderId(), oldState, newState, attemptNo, cleanComment);
          }
-        
-        // MONITOR AND JMX
-        if (operation.getIdentifier(OperationIdType.ORDER_ID) != null) {
-            Long startTime = startSaveTimeInMillis.remove(operation.getIdentifier(OperationIdType.ORDER_ID));
-            if (startTime != null) {
-                lastSaveTime = DateService.currentTimeMillis() - startTime;
-                lastSaveTimeMonitor.setValue(lastSaveTime);
-            }
-
-            OperationState.Type type = newState.getType();
-
-            switch (type) {
-            case OrderReceived:
-                lastReceivedStateSaveTime = lastSaveTime;
-                lastReceivedStateSaveTimeMonitor.setValue(lastReceivedStateSaveTime);
-                break;
-            case BusinessValidation:
-                lastBusinessValidationStateSaveTime = lastSaveTime;
-                lastBusinessValidationStateSaveTimeMonitor.setValue(lastBusinessValidationStateSaveTime);
-                break;
-            case WaitingPrice:
-                lastWaitingPricesStateSaveTime = lastSaveTime;
-                lastWaitingPricesStateSaveTimeMonitor.setValue(lastWaitingPricesStateSaveTime);
-                break;
-            case Executed:
-                lastExecutedStateSaveTime = lastSaveTime;
-                lastExecutedStateSaveTimeMonitor.setValue(lastExecutedStateSaveTime);
-                break;
-            default:
-                break;
-            }
-        }
     }
 
     private Action[] retrieveActions(Operation operation, OperationState oldState, OperationState newState, String comment) {

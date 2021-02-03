@@ -99,8 +99,6 @@ import it.softsolutions.bestx.states.ManualExecutionWaitingPriceState;
 import it.softsolutions.bestx.states.ManualManageState;
 import it.softsolutions.bestx.states.WarningState;
 import it.softsolutions.jsscommon.Money;
-import it.softsolutions.manageability.sl.ServiceLibrary;
-import it.softsolutions.manageability.sl.monitoring.NumericValueMonitor;
 
 public class CSPriceService extends JMXNotifier implements PriceService, PriceServiceMBean, TimerEventListener {
 
@@ -125,9 +123,6 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 	private long timePriceDiscoveryNotifyThreshold;
 	private long intervalAvgTimeInSecs;
 	private int priceDiscoveryTotalNumber = 0;
-	private final NumericValueMonitor queueStandTimeMonitor = new NumericValueMonitor("QueueStandTime", "Price Service", true, "info", "[PRICE_SERVICE_STATISTICS]");
-	private final NumericValueMonitor priceDiscoveryTotalNumberMonitor = new NumericValueMonitor("PriceDiscoveryTotalNumber", "Price Service", true, "info", "[PRICE_SERVICE_STATISTICS]");
-	private final NumericValueMonitor timePriceDiscoveryMonitor = new NumericValueMonitor("PriceDiscoveryTime", "Price Service", true, "info", "[PRICE_SERVICE_STATISTICS]");
 	private long avgTimePriceDiscovery = 0;
 	private int priceDiscoveryIntervalNumber = 0;
 	private long lastAvgTimePriceDiscovery;
@@ -137,7 +132,6 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 	private MarketFinder marketFinder;
 	private String priceServiceName;
 	private SerialNumberService serialNumberService;
-	private final NumericValueMonitor queueSizeMonitor = new NumericValueMonitor("PriceDiscoveryQueueSize", "Price Service", true, "info", "[PRICE_SERVICE_STATISTICS]");
 	private String priceServiceJobName;
 
 	private BlockingQueue<PlainRequest> plainRequests = new LinkedBlockingQueue<CSPriceService.PlainRequest>();
@@ -169,12 +163,6 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 
 	public void init() throws MarketNotAvailableException {
 		checkPreRequisites();
-		try {
-			ServiceLibrary.attachMonitor(this);
-		} catch (Exception e) {
-			LOGGER.info("Exception during the monitor attach, ignoring it: {}", e.getMessage());
-		}
-
 		priceServiceEnable = true;
 		for (MarketCode marketCode : marketCodes) {
 			if (marketConnectionRegistry.getMarketConnection(marketCode).getPriceConnection() == null) {
@@ -201,7 +189,6 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 		magnetMarketsEnabled = new HashMap<MarketConnection, Boolean>();
 		marketsNotEnabled = new CopyOnWriteArrayList<String>();
 
-		queueSizeMonitor.setValue(0);
 		ApplicationMonitor.setQueuePricesSize(getPriceServiceName(), 0);
 
 		try {
@@ -440,15 +427,12 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 		// [DR20150316] [CRSBXTEM-160] Modifica della velocità di scodamento degli ordini LF
 		operation.startTimer();
 
-		priceDiscoveryTotalNumber++; // JMX
-		priceDiscoveryTotalNumberMonitor.setValue(priceDiscoveryTotalNumber);
 		// Clear all the order's lists because a new price discovery is starting
 		order.clearMarketMakerNotQuotingInstr();
 		order.clearMarketNotNegotiatingInstr();
 		order.clearMarketNotQuotingInstr();
 		String fixOrderId = order.getFixOrderId();
 		String isin = order.getInstrumentCode();
-		queueSizeMonitor.setValue(plainRequests.size());
 		LOGGER.info("[PRICESRVQ] Order {}, queueSize = {}", fixOrderId, plainRequests.size());
 		/*
 		 * set to NONE the variable that tells us if we have already done the query for knowing if the order is a matching or not (used in
@@ -460,10 +444,8 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 		// inizializza l'ora dell'ultima richiesta
 		lastRequestTime.set(DateService.currentTimeMillis());
 		ApplicationStatisticsHelper.logStringAndUpdateOrderIds(order, "Order.Queue_" + priceServiceName + ".Out." + order.getInstrumentCode(), getClass().getName());
-		queueSizeMonitor.setValue(plainRequests.size());
 		LOGGER.debug("Price Service - Order queue elements: {}", plainRequests.size());
 		long queueStandTime = DateService.newLocalDate().getTime() - startQueue.getTime();
-		queueStandTimeMonitor.setValue(queueStandTime);
 		LOGGER.info("[PRICESRVQ],EndQueue={}, PriceDiscoveryTotalNumber from start: {}", queueStandTime, priceDiscoveryTotalNumber);
 		LOGGER.debug("START Request prices: {} - maxLatency: {}", isin, maxLatency);
 
@@ -660,8 +642,6 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 
 	@Override
 	public void addNewTimePriceDiscovery(long newDiscoveryTime) {
-
-		timePriceDiscoveryMonitor.setValue(newDiscoveryTime);
 		avgTimePriceDiscovery = (priceDiscoveryIntervalNumber * avgTimePriceDiscovery + newDiscoveryTime) / ++priceDiscoveryIntervalNumber;
 
 		LOGGER.info("[MONITOR] Price Discovery Time: {}", newDiscoveryTime);
