@@ -285,7 +285,7 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 
 					jsonMap.add(proposal);
 
-					LOGGER.trace("Sending message to topic {}: {}", priceTopic, rawProposal.toString());
+					LOGGER.info("Sending message to topic {}: {}", priceTopic, rawProposal.toString());
 					kafkaProducer.send(
 							new ProducerRecord<String, String>(priceTopic,
 									this.priceKeyStrategy.calculateKey(operation, attemptNo), rawProposal.toString()),
@@ -302,7 +302,7 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 				message.element("prices", jsonMap);
 
 				if (this.sendEmptyBook || !jsonMap.isEmpty()) {
-					LOGGER.trace("Sending message to topic {}: {}", bookTopic, message.toString());
+					LOGGER.info("Sending message to topic {}: {}", bookTopic, message.toString());
 					kafkaProducer.send(
 							new ProducerRecord<String, String>(bookTopic,
 									this.bookKeyStrategy.calculateKey(operation, attemptNo), message.toString()),
@@ -315,7 +315,7 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 								}
 							});
 				} else {
-					LOGGER.trace("Skipping message to topic because of empty book {}: {}", bookTopic, message.toString());
+					LOGGER.info("Skipping message to topic because of empty book {}: {}", bookTopic, message.toString());
 				}
 			});
 
@@ -324,74 +324,94 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 
 	@Override
 	public void sendPobex(Operation operation) {
+		LOGGER.trace("Asked to send a tradable price Kafka message for order {}", operation.getOrder().getFixOrderId());
 		Attempt currentAttempt = operation.getLastAttempt();
 		int attemptNo = operation.getAttemptNo();
+		LOGGER.trace("Cardinality of prices is {} for order {}", currentAttempt.getExecutablePrices().size(), operation.getOrder().getFixOrderId());
 		if (active) {
+			LOGGER.trace("Datalake is active. Creating POBEX meesage for order {}", operation.getOrder().getFixOrderId());
 			this.executor.execute(() -> {
-
-				JSONObject message = new JSONObject();
-				message.put("isin", operation.getOrder().getInstrument().getIsin());
-				message.put("ordID", operation.getOrder().getFixOrderId());
-				message.put("attempt", attemptNo);
-
-				message.element("PriceQuality", "FRM");
-
-				JSONArray jsonMap = new JSONArray();
-
-				ExecutablePrice goodPrice = null;
-
-				for (ExecutablePrice ep : currentAttempt.getExecutablePrices()) {
-					if (goodPrice == null) {
-						goodPrice = ep;
-					}
-
-					JSONObject proposal = new JSONObject(); // Proposal element to be sent in the book JSON message
-
-					if (operation.getOrder().getSide() == OrderSide.BUY) {
-						proposal.element("askPrice", ep.getPrice().getAmount());
-						if (ep.getQty() != null) {
-							proposal.element("askQty", ep.getQty());
+				LOGGER.trace("Starting lambda. Creating POBEX meesage for order {}", operation.getOrder().getFixOrderId());
+				try {
+					JSONObject message = new JSONObject();
+					message.put("isin", operation.getOrder().getInstrument().getIsin());
+					message.put("ordID", operation.getOrder().getFixOrderId());
+					message.put("attempt", attemptNo);
+	
+					message.element("PriceQuality", "FRM");
+	
+					LOGGER.trace("Basic info added in POBEX meesage for order {}", operation.getOrder().getFixOrderId());
+					JSONArray jsonMap = new JSONArray();
+	
+					ExecutablePrice goodPrice = null;
+	
+					for (ExecutablePrice ep : currentAttempt.getExecutablePrices()) {
+						LOGGER.trace("Processing ExecutablePrice for order {}", operation.getOrder().getFixOrderId());
+						if (goodPrice == null) {
+							LOGGER.trace("Good price detected for order {}", operation.getOrder().getFixOrderId());
+							goodPrice = ep;
 						}
-					} else {
-						proposal.element("bidPrice", ep.getPrice().getAmount());
-						if (ep.getQty() != null) {
-							proposal.element("bidQty", ep.getQty());
+	
+						JSONObject proposal = new JSONObject(); // Proposal element to be sent in the book JSON message
+	
+						if (operation.getOrder().getSide() == OrderSide.BUY) {
+							LOGGER.trace("Side is BUY in ExecutablePrice for order {}", operation.getOrder().getFixOrderId());
+							proposal.element("askPrice", ep.getPrice().getAmount());
+							if (ep.getQty() != null) {
+								LOGGER.trace("Setting quantity in ExecutablePrice for order {}", operation.getOrder().getFixOrderId());
+								proposal.element("askQty", ep.getQty());
+							}
+						} else {
+							LOGGER.trace("Side is NOT BUY in ExecutablePrice for order {}", operation.getOrder().getFixOrderId());
+							proposal.element("bidPrice", ep.getPrice().getAmount());
+							if (ep.getQty() != null) {
+								LOGGER.trace("Setting quantity in ExecutablePrice for order {}", operation.getOrder().getFixOrderId());
+								proposal.element("bidQty", ep.getQty());
+							}
 						}
+	
+						if (ep.getPriceType() != null) {
+							LOGGER.trace("Setting price type in ExecutablePrice for order {}", operation.getOrder().getFixOrderId());
+							proposal.element("PriceType", this.convertPriceTypeToInt(ep.getPriceType()));
+						}
+	
+						if (ep.getMarketMarketMaker() != null && ep.getMarketMarketMaker().getMarketMaker() != null) {
+							LOGGER.trace("Setting known market maker in ExecutablePrice for order {}", operation.getOrder().getFixOrderId());
+							proposal.element("marketmaker", ep.getMarketMarketMaker().getMarketMaker().getCode());
+						} else {
+							LOGGER.trace("Setting unknown market maker in ExecutablePrice for order {}", operation.getOrder().getFixOrderId());
+							proposal.element("marketmaker", ep.getOriginatorID());
+						}
+	
+						LOGGER.trace("Setting status in ExecutablePrice for order {}", operation.getOrder().getFixOrderId());
+						proposal.element("status", ep.getAuditQuoteState());
+	
+						jsonMap.add(proposal);
+	
 					}
-
-					if (ep.getPriceType() != null) {
-						proposal.element("PriceType", this.convertPriceTypeToInt(ep.getPriceType()));
+					message.element("prices", jsonMap);
+	
+					if (goodPrice != null) {
+						LOGGER.trace("Adding timestamp and market in POBEX message for order {}", operation.getOrder().getFixOrderId());
+						message.element("timestamp", df.format(goodPrice.getTimestamp()));
+						message.element("market", goodPrice.getMarket().getMarketCode());
+	
+						LOGGER.info("Sending message to topic {}: {}", pobexTopic, message.toString());
+						kafkaProducer.send(
+								new ProducerRecord<String, String>(pobexTopic,
+										this.pobexKeyStrategy.calculateKey(operation, attemptNo), message.toString()),
+								(metadata, exception) -> {
+									if (exception != null) {
+										connected = false;
+										LOGGER.warn("Error while trying to send message: " + message.toString(), exception);
+									} else {
+										connected = true;
+									}
+								});
 					}
-
-					if (ep.getMarketMarketMaker() != null && ep.getMarketMarketMaker().getMarketMaker() != null) {
-						proposal.element("marketmaker", ep.getMarketMarketMaker().getMarketMaker().getCode());
-					} else {
-						proposal.element("marketmaker", ep.getOriginatorID());
-					}
-
-					proposal.element("status", ep.getAuditQuoteState());
-
-					jsonMap.add(proposal);
-
-				}
-				message.element("prices", jsonMap);
-
-				if (goodPrice != null) {
-					message.element("timestamp", df.format(goodPrice.getTimestamp()));
-					message.element("market", goodPrice.getMarket().getMarketCode());
-
-					LOGGER.trace("Sending message to topic {}: {}", pobexTopic, message.toString());
-					kafkaProducer.send(
-							new ProducerRecord<String, String>(pobexTopic,
-									this.pobexKeyStrategy.calculateKey(operation, attemptNo), message.toString()),
-							(metadata, exception) -> {
-								if (exception != null) {
-									connected = false;
-									LOGGER.warn("Error while trying to send message: " + message.toString(), exception);
-								} else {
-									connected = true;
-								}
-							});
+				} catch (Exception e) {
+					LOGGER.error("Unexpcted error: " + e.getMessage(), e);
+					throw e;
 				}
 			});
 		}
@@ -486,14 +506,14 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 				try {
 					String messageValue = "HEARTBEAT: " + df.format(new Date());
 					ProducerRecord<String, String> rec = new ProducerRecord<>(monitorTopic, messageValue);
-					LOGGER.info("Sending heartbeat message... {}", messageValue);
+					LOGGER.debug("Sending heartbeat message... {}", messageValue);
 					kafkaProducer.send(rec, (metadata, exception) -> {
 						if (exception != null) {
 							connected = false;
 							LOGGER.warn("Error while trying to send heartbeat message: " + messageValue, exception);
 						} else {
 							connected = true;
-							LOGGER.info("Successfully sent heartbeat message! {}", messageValue);
+							LOGGER.debug("Successfully sent heartbeat message! {}", messageValue);
 						}
 					});
 					Thread.sleep(CHECK_PERIOD);
@@ -502,6 +522,7 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 					if (keepChecking) connected = false;
 				}
 			}
+			LOGGER.info("Stopping checking the connection to Datalake!");
 			connected = false;
 		}
 		
