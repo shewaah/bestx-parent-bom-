@@ -327,7 +327,7 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 		LOGGER.trace("Asked to send a tradable price Kafka message for order {}", operation.getOrder().getFixOrderId());
 		Attempt currentAttempt = operation.getLastAttempt();
 		int attemptNo = operation.getAttemptNo();
-		LOGGER.trace("Cardinality of prices is {} for order {}", currentAttempt.getExecutablePrices().size(), operation.getOrder().getFixOrderId());
+		LOGGER.info("Cardinality of prices is {} for order {}", currentAttempt.getExecutablePrices().size(), operation.getOrder().getFixOrderId());
 		if (active) {
 			LOGGER.trace("Datalake is active. Creating POBEX meesage for order {}", operation.getOrder().getFixOrderId());
 			this.executor.execute(() -> {
@@ -410,7 +410,7 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 								});
 					}
 				} catch (Exception e) {
-					LOGGER.error("Unexpcted error: " + e.getMessage(), e);
+					LOGGER.error("Unexpected error: " + e.getMessage(), e);
 					throw e;
 				}
 			});
