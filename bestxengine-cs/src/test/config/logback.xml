@@ -203,6 +203,16 @@
         </rollingPolicy>
     </appender>
 
+	<appender name="KATALON-BX" class="ch.qos.logback.core.FileAppender">
+		<file>../log/katalon-bx.log</file>
+		<append>false</append><!-- Create a new file every time -->
+		<encoder>
+			<!-- The first word "SSKL" is like a line-signature to skip lines that can be not log lines like stack trace or something that gets printed -->
+			<!-- I didn't find an easy way to print the currentTimeMillis, this is why I decided to use this
+			date-time pattern, this way this number will be greater than another number iif it's more recent -->
+			<pattern>SSKL,%d{yyMMddHHmmssSSS},%20.20thread,%-5level,%35.35logger{0},%35.35method,%-4line,%message%n</pattern>
+		</encoder>
+	</appender>
 
 	
 	
@@ -272,6 +282,9 @@
         <appender-ref ref="InfobusLogger" />
     </logger>
 
+    <logger name="it.softsolutions.bestx.connections.OMS1CustomerAdapter" additivity="true" level="DEBUG">
+		<appender-ref ref="KATALON-BX" />
+    </logger>
 	
     <root level="INFO">
         <appender-ref ref="BestXLogger" />
