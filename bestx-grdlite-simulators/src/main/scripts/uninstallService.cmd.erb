@@ -1,3 +1,21 @@
-<%=@servicename %> -uninstall <%=@servicename %>
-
-pause
+REM
+REM Copyright 1997-2016 SoftSolutions! srl
+REM All Rights Reserved.
+REM
+REM This script uninstalls the <%=@servicename%> service.
+REM
+REM artifact ref.: <%=@servicename%>
+REM script version 1.0 - 2016/03/10
+REM
+REM NOTICE: All information contained herein is, and remains the property of SoftSolutions! srl
+REM The intellectual and technical concepts contained herein are proprietary to SoftSolutions! srl and
+REM may be covered by EU, U.S. and other Foreign Patents, patents in process, and
+REM are protected by trade secret or copyright law.
+REM Dissemination of this information or reproduction of this material is strictly forbidden
+REM unless prior written permission is obtained from SoftSolutions! srl.
+REM Any additional licenses, terms and conditions, if any, are defined in
+REM Arguments to nssm https://nssm.cc/commands
+REM
+REM
+REM
+sc delete <%=@servicename%>

@@ -23,8 +23,11 @@ SET JDK_HOME=<%=@jpath%>\jre
 SET JDK_HOME=<%=@jpath%>
 <% end -%>
 
-set OPT_1= -XX:+UseParallelGC -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -Xms128m -Xmx256m -XX:PermSize=32m -XX:MaxPermSize=64m -Dlogback.configurationFile=config/logback.xml
-set SYSOUTPATH=C:\SoftSolutions\BestX\services\GRDLite-bogus\log
-set OPT_2=-cp ../config;../lib/* it.softsolutions.bestx.grdlite.bogus.BogusGRDLite > %SYSOUTPATH%\sysout.log
+SET START_CLASS=it.softsolutions.bestx.grdlite.bogus.BogusGRDLite
 
-"%JDK_HOME%\bin\java" %OPT_1% %OPT_2%
+set OPT_1= -XX:+UseParallelGC -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -Xms128m -Xmx256m -XX:PermSize=32m -XX:MaxPermSize=64m -Dlogback.configurationFile=config/logback.xml
+set SYSOUTPATH=..\log
+set OPT_2=-cp ../config;../lib/* 
+
+"%JDK_HOME%\bin\java" %OPT_1% %OPT_2% %START_CLASS% %ARGS% > %SYSOUTPATH%\sysout.log
+
