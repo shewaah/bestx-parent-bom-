@@ -3,7 +3,7 @@
 # * Copyright 1997-2016 SoftSolutions! srl
 # * All Rights Reserved.
 # *
-# * This script stop the <%=@servicename%> application.
+# * This script check the staus of the <%=@servicename%> application.
 # *
 # * artifact ref.: <%=@servicename%>
 # * script version 1.0 - 2016/03/10
@@ -18,11 +18,9 @@
 # * which may be part of this software package.
 # */
 PIDFILE=<%=@exedir-%>/<%=@servicename-%>.pid
-if [ ! -f "$PIDFILE" ] || ! kill -0 $(cat "$PIDFILE"); then
-    echo 'Service <%=@servicename-%> not running' >&2
-    exit 1
+if [ -f $PIDFILE ] && ps -p $(cat "$PIDFILE"); then
+       echo "Service <%=@servicename-%> is running" >&2
+       exit 0
 fi
-echo 'Stopping service <%=@servicename-%>' >&2
-kill -15 $(cat "$PIDFILE") && rm -f "$PIDFILE"
-echo 'Service <%=@servicename-%> stopped' >&2
-exit 0
+echo "Service <%=@servicename-%> is not running" >&2
+exit 1
