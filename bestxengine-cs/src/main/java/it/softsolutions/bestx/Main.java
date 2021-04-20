@@ -19,9 +19,13 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationUtils;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.core.io.ClassPathResource;
 
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyServiceFactory;
 /**  
@@ -79,8 +83,11 @@ public class Main {
 					LOGGER.error("No License file provided in property file BESTX.properties for LicenseFile property");
 					System.exit(0);
 				}
+	           
 				LicenseValidatorService licenseValidatorService = LicenseValidatorServiceFactory.getLicenseValidatorService(FEATURE_NAME, prop.getProperty("BestX.LicenseFile"));
 				licenseValidatorService.validate();
+           
+            
 			} catch (LicenseValidationException e) {
 				LOGGER.error("License not provided or expired. Exiting application...", e);
 				System.exit(0);
@@ -92,6 +99,11 @@ public class Main {
 			for (String arg : args) {
 				LOGGER.debug("-> " + arg);
 			}
+			
+			Configuration configuration = new PropertiesConfiguration(new ClassPathResource(args[1]).getFile());
+	      LOGGER.info("Loaded BestX configuration:\n{}", configuration != null ? ConfigurationUtils.toString(configuration) : configuration);
+         LOGGER.info("End of BestX Configuration");
+         
 			SSLog.init(null);
 
 			long monitorPeriod = Long.parseLong(prop.getProperty("MetricRegistry.monitor.period", "60"));
