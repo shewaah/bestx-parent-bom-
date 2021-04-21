@@ -29,11 +29,11 @@
         <!-- third party -->
         <quickfix.version>1.6.4</quickfix.version>
         <ibm-mq-api.version>8.0.0.5</ibm-mq-api.version>
-        <findbugs-maven-plugin.version>3.0.4</findbugs-maven-plugin.version>
-        <!-- FindBugs flags -->
-		<findbugs.skip>false</findbugs.skip>
-        <!-- FindBugs rank -->
-        <findbugs.rank>15</findbugs.rank>
+        <spotbugs-maven-plugin.version>4.2.0</spotbugs-maven-plugin.version>
+		<spotbugs.version>4.2.2</spotbugs.version>
+		<spotbugs.maxRank>15</spotbugs.maxRank>
+		<spotbugs.skip>false</spotbugs.skip>
+		<spotbugs.rank>15</spotbugs.rank>
     </properties>
 
     <modules>
@@ -380,26 +380,35 @@
 
     <build>
 		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>findbugs-maven-plugin</artifactId>
-				<version>${findbugs-maven-plugin.version}</version>
+<plugin>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
+				<version>${spotbugs-maven-plugin.version}</version>
+				<dependencies>
+					<!-- overwrite dependency on spotbugs if you want to specify the version 
+						of spotbugs -->
+					<dependency>
+						<groupId>com.github.spotbugs</groupId>
+						<artifactId>spotbugs</artifactId>
+						<version>${spotbugs.version}</version>
+					</dependency>
+				</dependencies>
 				<configuration>
-					<skip>${findbugs.skip}</skip>
+					<skip>${spotbugs.skip}</skip>
 					<!-- Enables analysis which takes more memory but finds more bugs. If 
 						you run out of memory, changes the value of the effort element to 'Low'. -->
 					<effort>Default</effort>
 					<!-- High, Default, Low, Ignore -->
 					<threshold>Default</threshold>
-					<maxRank>${findbugs.rank}</maxRank>
+					<maxRank>${spotbugs.rank}</maxRank>
 					<!-- Produces XML report -->
 					<xmlOutput>true</xmlOutput>
 					<!-- Configures the directory in which the XML report is created -->
-					<findbugsXmlOutputDirectory>${project.build.directory}/findbugs</findbugsXmlOutputDirectory>
-					<!-->omitVisitors>BadAppletConstructor,CallToUnsupportedMethod,CheckExpectedWarnings,CovariantArrayAssignment,EmptyZipFileEntry,InefficientIndexOf,InefficientInitializationInsideLoop,InefficientMemberAccess,InefficientToArray,PublicSemaphores,UselessSubclassMethod</omitVisitors -->
+					<xmlOutputDirectory>${project.build.directory}/spotbugs</xmlOutputDirectory>
+					<omitVisitors>BadAppletConstructor,CallToUnsupportedMethod,CheckExpectedWarnings,CovariantArrayAssignment,EmptyZipFileEntry,InefficientIndexOf,InefficientInitializationInsideLoop,InefficientMemberAccess,InefficientToArray,PublicSemaphores,UselessSubclassMethod</omitVisitors>
 				</configuration>
 				<executions>
-					<!-- Ensures that FindBugs inspects source code when project is compiled. -->
+					<!-- Ensures that SpotBugs inspects source code when project is compiled. -->
 					<execution>
 						<id>analyze-compile</id>
 						<phase>compile</phase>
@@ -435,20 +444,6 @@
 									</action>
 								</pluginExecution>
 
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.codehaus.mojo</groupId>
-										<artifactId>findbugs-maven-plugin</artifactId>
-										<versionRange>${findbugs-maven-plugin.version}</versionRange>
-										<goals>
-											<goal>check</goal>
-											<goal>compile</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<execute />
-									</action>
-								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>
