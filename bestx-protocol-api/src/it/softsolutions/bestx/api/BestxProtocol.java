@@ -17,7 +17,6 @@ package it.softsolutions.bestx.api;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.Statement;
 
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -77,7 +76,7 @@ public class BestxProtocol implements BestxProtocolMBean {
 	 * @param comment any comment, possibly an empty string, required for this operation
 	 * @exception Exception when unable to send the requested command
 	 */
-	public  void sendAcceptOrderCommand(String orderNumber, String comment, String requestingUser) throws Exception{
+	public  void sendAcceptOrderCommand(String orderNumber, String comment, String requestingUser, boolean superTrader) throws Exception{
 	   IBcsMessage msg = istantiateMessageWithReqUser(requestingUser);
 		String sessionId = formatter.print(DateService.currentTimeMillis());
 		msg.setStringProperty(IB4JOperatorConsoleMessage.RR_SESSION_ID, sessionId);
@@ -86,6 +85,7 @@ public class BestxProtocol implements BestxProtocolMBean {
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_ORDER_ID, orderNumber);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_COMMENT, comment);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_PRICE, "");
+		msg.setIntProperty(IB4JOperatorConsoleMessage.FLD_IS_SUPERTRADER, (superTrader ? 1 :0));
 		logger.debug("Send AcceptOrder on order {}", orderNumber);
 		reqRespClient.sendRequest(msg);
 	}
@@ -101,7 +101,7 @@ public class BestxProtocol implements BestxProtocolMBean {
 	 * @param refPrice the reference price in the market (i.e. the best price in the bestx book)
 	 * @exception Exception when unable to send the requested command
 	 */
-	public void sendManuallyExecuteCareOrderCommand (String orderNumber, String comment, String price, String qty, String market, String dealer, String refPrice, String requestingUser) throws Exception {	
+	public void sendManuallyExecuteCareOrderCommand (String orderNumber, String comment, String price, String qty, String market, String dealer, String refPrice, String requestingUser, boolean superTrader) throws Exception {	
 	   IBcsMessage msg = istantiateMessageWithReqUser(requestingUser);
 		String sessionId = formatter.print(DateService.currentTimeMillis());
 		msg.setStringProperty(IB4JOperatorConsoleMessage.RR_SESSION_ID, sessionId);
@@ -114,6 +114,7 @@ public class BestxProtocol implements BestxProtocolMBean {
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_MKT_NAME, market);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_MARKETMAKER_CODE, dealer);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_REF_PRICE, refPrice);
+      msg.setIntProperty(IB4JOperatorConsoleMessage.FLD_IS_SUPERTRADER, (superTrader ? 1 :0));
 		logger.debug("Send ManuallyExecuteCareOrder on order {}", orderNumber);
 		reqRespClient.sendRequest(msg);
 	}
@@ -125,13 +126,14 @@ public class BestxProtocol implements BestxProtocolMBean {
 	 * @param orderNumber the bestx order number
 	 * @exception Exception when unable to send the requested command
 	 */
-	public void sendAcceptOrderSettlementDateCommand (String orderNumber, String requestingUser) throws Exception {
+	public void sendAcceptOrderSettlementDateCommand (String orderNumber, String requestingUser, boolean superTrader) throws Exception {
 	   IBcsMessage msg = istantiateMessageWithReqUser(requestingUser);
 		String sessionId = formatter.print(DateService.currentTimeMillis());
 		msg.setStringProperty(IB4JOperatorConsoleMessage.RR_SESSION_ID, sessionId);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.REQ_TYPE, IB4JOperatorConsoleMessage.REQ_TYPE_COMMAND);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.TYPE_COMMAND, IB4JOperatorConsoleMessage.CMD_ACCEPT_SETT_DATE);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_ORDER_ID, orderNumber);
+      msg.setIntProperty(IB4JOperatorConsoleMessage.FLD_IS_SUPERTRADER, (superTrader ? 1 :0));
 		logger.debug("Send AcceptOrderSettlementDate on order {}", orderNumber);
 		reqRespClient.sendRequest(msg);
 		
@@ -143,13 +145,14 @@ public class BestxProtocol implements BestxProtocolMBean {
 	 * @param orderNumber the bestx order number
 	 * @exception Exception when unable to send the requested command
 	 */
-	public void sendWaitCancelRequestCommand (String orderNumber, String requestingUser) throws Exception {	
+	public void sendWaitCancelRequestCommand (String orderNumber, String requestingUser, boolean superTrader) throws Exception {	
 	   IBcsMessage msg = istantiateMessageWithReqUser(requestingUser);
 		String sessionId = formatter.print(DateService.currentTimeMillis());
 		msg.setStringProperty(IB4JOperatorConsoleMessage.RR_SESSION_ID, sessionId);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.REQ_TYPE, IB4JOperatorConsoleMessage.REQ_TYPE_COMMAND);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.TYPE_COMMAND, IB4JOperatorConsoleMessage.CMD_REVOCATION_WAIT);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_ORDER_ID, orderNumber);
+      msg.setIntProperty(IB4JOperatorConsoleMessage.FLD_IS_SUPERTRADER, (superTrader ? 1 :0));
 		logger.debug("Send WaitCancelRequest on order {}", orderNumber);
 		reqRespClient.sendRequest(msg);
 	
@@ -161,7 +164,7 @@ public class BestxProtocol implements BestxProtocolMBean {
 	 * @param note the note to be added to the order notes field
 	 * @throws Exception
 	 */
-    public void sendCancelRequestAcceptCommand (String orderNumber, String note, String requestingUser) throws Exception {
+    public void sendCancelRequestAcceptCommand (String orderNumber, String note, String requestingUser, boolean superTrader) throws Exception {
        IBcsMessage msg = istantiateMessageWithReqUser(requestingUser);
 		String sessionId = formatter.print(DateService.currentTimeMillis());
  		msg.setStringProperty(IB4JOperatorConsoleMessage.RR_SESSION_ID, sessionId);
@@ -169,6 +172,7 @@ public class BestxProtocol implements BestxProtocolMBean {
  		msg.setStringProperty(IB4JOperatorConsoleMessage.TYPE_COMMAND, IB4JOperatorConsoleMessage.CMD_ACCEPT_REVOCATION);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_COMMENT, note);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_ORDER_ID, orderNumber);
+      msg.setIntProperty(IB4JOperatorConsoleMessage.FLD_IS_SUPERTRADER, (superTrader ? 1 :0));
  		logger.debug("Send CancelRequestAccept on order {}", orderNumber);
  		reqRespClient.sendRequest(msg);
     	
@@ -182,13 +186,14 @@ public class BestxProtocol implements BestxProtocolMBean {
 	 * @param orderNumber the bestx order number
 	 * @exception Exception when unable to send the requested command
 	 */
-	public void sendRestartOrderCareCommand (String orderNumber, String requestingUser) throws Exception {	
+	public void sendRestartOrderCareCommand (String orderNumber, String requestingUser, boolean superTrader) throws Exception {	
 	   IBcsMessage msg = istantiateMessageWithReqUser(requestingUser);
 		String sessionId = formatter.print(DateService.currentTimeMillis());
 		msg.setStringProperty(IB4JOperatorConsoleMessage.RR_SESSION_ID, sessionId);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.REQ_TYPE, IB4JOperatorConsoleMessage.REQ_TYPE_COMMAND);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.TYPE_COMMAND, IB4JOperatorConsoleMessage.CMD_ACTIVATE_CURANDO);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_ORDER_ID, orderNumber);
+      msg.setIntProperty(IB4JOperatorConsoleMessage.FLD_IS_SUPERTRADER, (superTrader ? 1 :0));
 		logger.debug("Send RestartOrderCare on order {}", orderNumber);
 		reqRespClient.sendRequest(msg);
 }
@@ -199,13 +204,14 @@ public class BestxProtocol implements BestxProtocolMBean {
 	 * @param orderNumber the bestx order number
 	 * @exception Exception when unable to send the requested command
 	 */
-	public void sendForceTradeWaitCommand (String orderNumber, String requestingUser) throws Exception {	
+	public void sendForceTradeWaitCommand (String orderNumber, String requestingUser, boolean superTrader) throws Exception {	
 	   IBcsMessage msg = istantiateMessageWithReqUser(requestingUser);
 		String sessionId = formatter.print(DateService.currentTimeMillis());
 		msg.setStringProperty(IB4JOperatorConsoleMessage.RR_SESSION_ID, sessionId);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.REQ_TYPE, IB4JOperatorConsoleMessage.REQ_TYPE_COMMAND);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.TYPE_COMMAND, IB4JOperatorConsoleMessage.CMD_FORCE_MKT_WAIT);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_ORDER_ID, orderNumber);
+      msg.setIntProperty(IB4JOperatorConsoleMessage.FLD_IS_SUPERTRADER, (superTrader ? 1 :0));
 		logger.debug("Send ForceTradeWait on order {}", orderNumber);
 		reqRespClient.sendRequest(msg);
 }
@@ -216,13 +222,14 @@ public class BestxProtocol implements BestxProtocolMBean {
 	 * @param orderNumber the bestx order number
 	 * @exception Exception when unable to send the requested command
 	 */
-	public void sendForceExecutedCommand (String orderNumber, String requestingUser) throws Exception {
+	public void sendForceExecutedCommand (String orderNumber, String requestingUser, boolean superTrader) throws Exception {
 		IBcsMessage msg = istantiateMessageWithReqUser(requestingUser);
 		String sessionId = formatter.print(DateService.currentTimeMillis());
 		msg.setStringProperty(IB4JOperatorConsoleMessage.RR_SESSION_ID, sessionId);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.REQ_TYPE, IB4JOperatorConsoleMessage.REQ_TYPE_COMMAND);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.TYPE_COMMAND, IB4JOperatorConsoleMessage.CMD_FORCE_EXECUTED);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_ORDER_ID, orderNumber);
+      msg.setIntProperty(IB4JOperatorConsoleMessage.FLD_IS_SUPERTRADER, (superTrader ? 1 :0));
 		logger.debug("Send ForceExecuted on order {}", orderNumber);
 		reqRespClient.sendRequest(msg);
 	}
@@ -234,13 +241,14 @@ public class BestxProtocol implements BestxProtocolMBean {
 	 * @param orderNumber the bestx order number
 	 * @exception Exception when unable to send the requested command
 	 */
-	public void sendForceUnexecutedCommand (String orderNumber, String requestingUser) throws Exception {	
+	public void sendForceUnexecutedCommand (String orderNumber, String requestingUser, boolean superTrader) throws Exception {	
 	   IBcsMessage msg = istantiateMessageWithReqUser(requestingUser);
 		String sessionId = formatter.print(DateService.currentTimeMillis());
 		msg.setStringProperty(IB4JOperatorConsoleMessage.RR_SESSION_ID, sessionId);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.REQ_TYPE, IB4JOperatorConsoleMessage.REQ_TYPE_COMMAND);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.TYPE_COMMAND, IB4JOperatorConsoleMessage.CMD_FORCE_NOT_EXECUTED);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_ORDER_ID, orderNumber);
+      msg.setIntProperty(IB4JOperatorConsoleMessage.FLD_IS_SUPERTRADER, (superTrader ? 1 :0));
 		logger.debug("Send ForceUnexecuted on order {}", orderNumber);
 		reqRespClient.sendRequest(msg);
 	
@@ -252,13 +260,14 @@ public class BestxProtocol implements BestxProtocolMBean {
 	 * @param orderNumber the bestx order number
 	 * @exception Exception when unable to send the requested command
 	 */
-	public void sendForceReceivedCommand (String orderNumber, String requestingUser) throws Exception {	
+	public void sendForceReceivedCommand (String orderNumber, String requestingUser, boolean superTrader) throws Exception {	
 	   IBcsMessage msg = istantiateMessageWithReqUser(requestingUser);
 		String sessionId = formatter.print(DateService.currentTimeMillis());
 		msg.setStringProperty(IB4JOperatorConsoleMessage.RR_SESSION_ID, sessionId);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.REQ_TYPE, IB4JOperatorConsoleMessage.REQ_TYPE_COMMAND);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.TYPE_COMMAND, IB4JOperatorConsoleMessage.CMD_FORCE_RECEIVED);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_ORDER_ID, orderNumber);
+      msg.setIntProperty(IB4JOperatorConsoleMessage.FLD_IS_SUPERTRADER, (superTrader ? 1 :0));
 		logger.debug("Send ForceReceived on order {}", orderNumber);
 		reqRespClient.sendRequest(msg);
 	
@@ -269,13 +278,14 @@ public class BestxProtocol implements BestxProtocolMBean {
 	 * @param orderNumber the bestx order number
 	 * @exception Exception when unable to send the requested command
 	 */
-	public void sendResendExecutionReportCommand (String orderNumber, String requestingUser) throws Exception {	
+	public void sendResendExecutionReportCommand (String orderNumber, String requestingUser, boolean superTrader) throws Exception {	
 	   IBcsMessage msg = istantiateMessageWithReqUser(requestingUser);
 		String sessionId = formatter.print(DateService.currentTimeMillis());
 		msg.setStringProperty(IB4JOperatorConsoleMessage.RR_SESSION_ID, sessionId);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.REQ_TYPE, IB4JOperatorConsoleMessage.REQ_TYPE_COMMAND);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.TYPE_COMMAND, IB4JOperatorConsoleMessage.CMD_RESEND_EXECUTIONREPORT);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_ORDER_ID, orderNumber);
+      msg.setIntProperty(IB4JOperatorConsoleMessage.FLD_IS_SUPERTRADER, (superTrader ? 1 :0));
 		logger.debug("Send ResendExecutionReport on order {}", orderNumber);
 		reqRespClient.sendRequest(msg);
 	
@@ -287,13 +297,14 @@ public class BestxProtocol implements BestxProtocolMBean {
 	 * @param orderNumber the bestx order number
 	 * @exception Exception when unable to send the requested command
 	 */
-	public void sendToOutsidePolicyCommand (String orderNumber, String requestingUser) throws Exception {	
+	public void sendToOutsidePolicyCommand (String orderNumber, String requestingUser, boolean superTrader) throws Exception {	
 	   IBcsMessage msg = istantiateMessageWithReqUser(requestingUser);
 		String sessionId = formatter.print(DateService.currentTimeMillis());
 		msg.setStringProperty(IB4JOperatorConsoleMessage.RR_SESSION_ID, sessionId);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.REQ_TYPE, IB4JOperatorConsoleMessage.REQ_TYPE_COMMAND);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.TYPE_COMMAND, IB4JOperatorConsoleMessage.CMD_MANUAL_MANAGE);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_ORDER_ID, orderNumber);
+      msg.setIntProperty(IB4JOperatorConsoleMessage.FLD_IS_SUPERTRADER, (superTrader ? 1 :0));
 		logger.debug("Send ToOutsidePolicy on order {}", orderNumber);
 		reqRespClient.sendRequest(msg);
 	
@@ -304,13 +315,14 @@ public class BestxProtocol implements BestxProtocolMBean {
 	 * @param orderNumber the bestx order number
 	 * @exception Exception when unable to send the requested command
 	 */
-	public void sendRetryExecutionCommand (String orderNumber, String requestingUser) throws Exception {	
+	public void sendRetryExecutionCommand (String orderNumber, String requestingUser, boolean superTrader) throws Exception {	
 	   IBcsMessage msg = istantiateMessageWithReqUser(requestingUser);
 		String sessionId = formatter.print(DateService.currentTimeMillis());
 		msg.setStringProperty(IB4JOperatorConsoleMessage.RR_SESSION_ID, sessionId);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.REQ_TYPE, IB4JOperatorConsoleMessage.REQ_TYPE_COMMAND);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.TYPE_COMMAND, IB4JOperatorConsoleMessage.CMD_ORDER_RETRY);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_ORDER_ID, orderNumber);
+      msg.setIntProperty(IB4JOperatorConsoleMessage.FLD_IS_SUPERTRADER, (superTrader ? 1 :0));
 		logger.debug("Send RetryExecution on order {}", orderNumber);
 		reqRespClient.sendRequest(msg);
 	
@@ -348,7 +360,7 @@ public class BestxProtocol implements BestxProtocolMBean {
 	 * @param dealer the counterpart bestx code. Must be one of the market makers accepted in the installation
 	 * @exception Exception when unable to send the requested command
 	 */
-	public void sendAcceptCounterCommand (String orderNumber, String comment, String requestingUser) throws Exception {
+	public void sendAcceptCounterCommand (String orderNumber, String comment, String requestingUser, boolean superTrader) throws Exception {
 	   IBcsMessage msg = istantiateMessageWithReqUser(requestingUser);
 		String sessionId = formatter.print(DateService.currentTimeMillis());
 		msg.setStringProperty(IB4JOperatorConsoleMessage.RR_SESSION_ID, sessionId);
@@ -356,6 +368,7 @@ public class BestxProtocol implements BestxProtocolMBean {
 		msg.setStringProperty(IB4JOperatorConsoleMessage.TYPE_COMMAND, IB4JOperatorConsoleMessage.CMD_ACCEPT_COUNTER);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_ORDER_ID, orderNumber);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_COMMENT, comment);
+      msg.setIntProperty(IB4JOperatorConsoleMessage.FLD_IS_SUPERTRADER, (superTrader ? 1 :0));
 		logger.debug("Send AcceptCounter on order {}", orderNumber);
 		reqRespClient.sendRequest(msg);		
 	}
@@ -366,7 +379,7 @@ public class BestxProtocol implements BestxProtocolMBean {
 	 * @param comment any comment, possibly an empty string, required for this operation
 	 * @exception Exception when unable to send the requested command
 	 */
-	public void sendNotExecutedCommand (String orderNumber, String comment, String requestingUser) throws Exception {
+	public void sendNotExecutedCommand (String orderNumber, String comment, String requestingUser, boolean superTrader) throws Exception {
 	   IBcsMessage msg = istantiateMessageWithReqUser(requestingUser);
 		String sessionId = formatter.print(DateService.currentTimeMillis());
 		msg.setStringProperty(IB4JOperatorConsoleMessage.RR_SESSION_ID, sessionId);
@@ -374,6 +387,7 @@ public class BestxProtocol implements BestxProtocolMBean {
 		msg.setStringProperty(IB4JOperatorConsoleMessage.TYPE_COMMAND, IB4JOperatorConsoleMessage.CMD_NOT_EXECUTED);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_ORDER_ID, orderNumber);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_COMMENT, comment);
+      msg.setIntProperty(IB4JOperatorConsoleMessage.FLD_IS_SUPERTRADER, (superTrader ? 1 :0));
 		logger.debug("Send NotExecuted on order {}", orderNumber);
 		reqRespClient.sendRequest(msg);
 	}
@@ -385,7 +399,7 @@ public class BestxProtocol implements BestxProtocolMBean {
 	 * @param market the execution platform/market. Must be one of the values acceptable in the installation
 	 * @exception Exception when unable to send the requested command
 	 */
-	public void sendMarketCancelRequestCommand (String orderNumber, String comment, String market, String requestingUser) throws Exception {
+	public void sendMarketCancelRequestCommand (String orderNumber, String comment, String market, String requestingUser, boolean superTrader) throws Exception {
 	   IBcsMessage msg = istantiateMessageWithReqUser(requestingUser);
 		String sessionId = formatter.print(DateService.currentTimeMillis());
 		msg.setStringProperty(IB4JOperatorConsoleMessage.RR_SESSION_ID, sessionId);
@@ -394,6 +408,7 @@ public class BestxProtocol implements BestxProtocolMBean {
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_ORDER_ID, orderNumber);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_COMMENT, comment);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_MKT_NAME, market);
+      msg.setIntProperty(IB4JOperatorConsoleMessage.FLD_IS_SUPERTRADER, (superTrader ? 1 :0));
 		logger.debug("Send MarketCancelRequest on order {}", orderNumber);
 		reqRespClient.sendRequest(msg);
 		
@@ -403,7 +418,7 @@ public class BestxProtocol implements BestxProtocolMBean {
 	 * @param comment any comment, possibly an empty string, required for this operation
 	 * @exception Exception when unable to send the requested command
 	 */
-	public void sendDisableMarketCommand (String orderNumber, String comment, String requestingUser) throws Exception {
+	public void sendDisableMarketCommand (String orderNumber, String comment, String requestingUser, boolean superTrader) throws Exception {
 	   IBcsMessage msg = istantiateMessageWithReqUser(requestingUser);
 		String sessionId = formatter.print(DateService.currentTimeMillis());
 		msg.setStringProperty(IB4JOperatorConsoleMessage.RR_SESSION_ID, sessionId);
@@ -411,10 +426,10 @@ public class BestxProtocol implements BestxProtocolMBean {
 		msg.setStringProperty(IB4JOperatorConsoleMessage.TYPE_COMMAND, IB4JOperatorConsoleMessage.CMD_DISABLE_MARKET);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_ORDER_ID, orderNumber);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_COMMENT, comment);
+      msg.setIntProperty(IB4JOperatorConsoleMessage.FLD_IS_SUPERTRADER, (superTrader ? 1 :0));
 		logger.debug("Send DisableMarket");
 		reqRespClient.sendRequest(msg);
-	
-}
+	}
 	
 	/**
 	 * Send a command to reject the cancel request to bestx engine
@@ -422,7 +437,7 @@ public class BestxProtocol implements BestxProtocolMBean {
 	 * @param comment any comment, possibly an empty string, required for this operation
 	 * @exception Exception when unable to send the requested command
 	 */
-	public void sendCancelRequestRejectCommand (String orderNumber, String comment, String requestingUser) throws Exception {
+	public void sendCancelRequestRejectCommand (String orderNumber, String comment, String requestingUser, boolean superTrader) throws Exception {
 	   IBcsMessage msg = istantiateMessageWithReqUser(requestingUser);
 		String sessionId = formatter.print(DateService.currentTimeMillis());
 		msg.setStringProperty(IB4JOperatorConsoleMessage.RR_SESSION_ID, sessionId);
@@ -430,6 +445,7 @@ public class BestxProtocol implements BestxProtocolMBean {
 		msg.setStringProperty(IB4JOperatorConsoleMessage.TYPE_COMMAND, IB4JOperatorConsoleMessage.CMD_REJECT_REVOCATION);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_ORDER_ID, orderNumber);
 		msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_COMMENT, comment);
+      msg.setIntProperty(IB4JOperatorConsoleMessage.FLD_IS_SUPERTRADER, (superTrader ? 1 :0));
 		logger.debug("Send CancelRequestReject on order {}", orderNumber);
 		reqRespClient.sendRequest(msg);
 		
@@ -442,13 +458,14 @@ public class BestxProtocol implements BestxProtocolMBean {
 	 * @param requestingUser
 	 * @throws Exception
 	 */
-	public void sendToLFNP (String orderNumber, String requestingUser) throws Exception {
+	public void sendToLFNP (String orderNumber, String requestingUser, boolean superTrader) throws Exception {
       IBcsMessage msg = istantiateMessageWithReqUser(requestingUser);
       String sessionId = formatter.print(DateService.currentTimeMillis());
       msg.setStringProperty(IB4JOperatorConsoleMessage.RR_SESSION_ID, sessionId);
       msg.setStringProperty(IB4JOperatorConsoleMessage.REQ_TYPE, IB4JOperatorConsoleMessage.REQ_TYPE_COMMAND);
       msg.setStringProperty(IB4JOperatorConsoleMessage.TYPE_COMMAND, IB4JOperatorConsoleMessage.CMD_SEND_TO_LFNP);
       msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_ORDER_ID, orderNumber);
+      msg.setIntProperty(IB4JOperatorConsoleMessage.FLD_IS_SUPERTRADER, (superTrader ? 1 :0));
       logger.debug("Send sendToLFNP on order {}", orderNumber);
       reqRespClient.sendRequest(msg);
       
@@ -463,7 +480,7 @@ public class BestxProtocol implements BestxProtocolMBean {
 	 * @param requestingUser: requesting user
 	 * @throws Exception
 	 */
-	public void takeOwnership(String orderNumber, String userToAssign, String requestingUser) throws Exception {
+	public void takeOwnership(String orderNumber, String userToAssign, String requestingUser, boolean superTrader) throws Exception {
       IBcsMessage msg = istantiateMessageWithReqUser(requestingUser);
       String sessionId = formatter.print(DateService.currentTimeMillis());
       msg.setStringProperty(IB4JOperatorConsoleMessage.RR_SESSION_ID, sessionId);
@@ -471,6 +488,7 @@ public class BestxProtocol implements BestxProtocolMBean {
       msg.setStringProperty(IB4JOperatorConsoleMessage.TYPE_COMMAND, IB4JOperatorConsoleMessage.CMD_TAKE_OWNERSHIP);
       msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_ORDER_ID, orderNumber);
       msg.setStringProperty(IB4JOperatorConsoleMessage.FLD_OWNERSHIP_USER, userToAssign);
+      msg.setIntProperty(IB4JOperatorConsoleMessage.FLD_IS_SUPERTRADER, (superTrader ? 1 :0));
       logger.debug("Send takeOwnership on order {} to user {} by user {}", orderNumber, userToAssign, requestingUser);
       reqRespClient.sendRequest(msg);
    }

@@ -18,25 +18,16 @@ import java.util.Date;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.slf4j.Logger;
-
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.Operation.RevocationState;
 import it.softsolutions.bestx.OperationRegistry;
 import it.softsolutions.bestx.OperationState;
-import it.softsolutions.bestx.connections.ib4j.IB4JOperatorConsoleMessage;
-import it.softsolutions.bestx.connections.ib4j.IllegalArgumentReplyMessage;
 import it.softsolutions.bestx.dao.InstrumentDao;
-import it.softsolutions.bestx.dao.OperationStateAuditDao;
 import it.softsolutions.bestx.exceptions.ObjectNotInitializedException;
 import it.softsolutions.bestx.finders.InstrumentFinder;
-import it.softsolutions.bestx.finders.UserModelFinder;
 import it.softsolutions.bestx.management.OperatorConsoleAdapterMBean;
-import it.softsolutions.bestx.model.UserModel;
 import it.softsolutions.bestx.services.DateService;
-import it.softsolutions.ib4j.IBMessage;
-import it.softsolutions.ib4j.clientserver.IBcsReqRespService;
 
 /**
  * 

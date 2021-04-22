@@ -275,6 +275,9 @@ public class IB4JOperatorConsoleMessage {
     
     /** The Constant FLD_REQUESTOR. */
     public static final String FLD_REQUESTOR = "REQUESTOR";
+    
+    /** The Constant FLD_IS_SUPERTRADER. */
+    public static final String FLD_IS_SUPERTRADER = "SUPERTRADERFLAG";
 
     // Pub sub subject
     /** The Constant PUB_SUBJ_OP_DUMP. */

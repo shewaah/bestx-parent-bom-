@@ -47,7 +47,6 @@ import it.softsolutions.bestx.model.MarketExecutionReport;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
-import it.softsolutions.bestx.model.UserModel;
 import it.softsolutions.bestx.model.Venue;
 import it.softsolutions.bestx.model.Venue.VenueType;
 import it.softsolutions.bestx.services.CommissionService;
@@ -58,7 +57,6 @@ import it.softsolutions.bestx.services.timer.quartz.SimpleTimerManager;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.LimitFileNoPriceState;
 import it.softsolutions.bestx.states.OrderCancelRequestState;
-import it.softsolutions.bestx.states.OrderRevocatedState;
 import it.softsolutions.bestx.states.WarningState;
 import it.softsolutions.jsscommon.Money;
 
@@ -544,7 +542,7 @@ public class BaseOperationEventHandler extends DefaultOperationEventHandler {
 	}
 
    @Override
-   public void onOperatorTakeOwnership(OperatorConsoleConnection source, UserModel userToAssign) {
+   public void onOperatorTakeOwnership(OperatorConsoleConnection source, String userToAssign) {
       if (!operation.getState().isTerminal()) {
          operation.setOwner(userToAssign);
       }

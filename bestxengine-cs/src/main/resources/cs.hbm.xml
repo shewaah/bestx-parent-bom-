@@ -53,8 +53,9 @@
 			<generator class="native" />
 		</id>
 		<!-- BESTX-286 -->
-		<many-to-one name="owner" column="Owner" class="it.softsolutions.bestx.model.UserModel" lazy="false" cascade="none" not-null="false" />
-		
+		<property name="owner" column="Owner" access="field"/>
+		<!--   many-to-one name="owner" column="Owner" class="it.softsolutions.bestx.model.UserModel" lazy="false" cascade="none" not-null="false" />
+		-->
 		<many-to-one name="rfq" column="RfqId"
 			class="it.softsolutions.bestx.model.Rfq" lazy="false" cascade="all" />
 		<many-to-one name="order" column="OrderId"
@@ -843,6 +844,7 @@
 	</class>
 	
 	<!-- BESTX-286 -->
+	<!-- 
 	<class name="it.softsolutions.bestx.model.UserModel" table="users">
 		<id name="userName" column="userName" />
 		<property name="password" column="password" />
@@ -866,4 +868,5 @@
 		<property name="description" column="description" />
 		<property name="locked" column="isLocked" />
 	</class>
+	 -->
 </hibernate-mapping>

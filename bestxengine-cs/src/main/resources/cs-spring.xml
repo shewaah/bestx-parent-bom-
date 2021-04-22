@@ -1204,16 +1204,8 @@
 			</list>
 		</property>
         <property name="customService"><ref bean="grdLiteService"></ref></property>
-		<property name="userModelFinder"><ref bean="dbUserModelFinder"></ref></property>																						
 	</bean>
 	
-	<bean id="dbUserModelFinder" class="it.softsolutions.bestx.finders.db.DBUserModelFinder" init-method="init">
-        <property name="userModelDao"><ref bean="hibernateUserModelDao"></ref></property>
-	</bean>
-	
-	<bean id="hibernateUserModelDao" class="it.softsolutions.bestx.dao.hibernate.HibernateUserModelDao">
-        <property name="sessionFactory"><ref bean="sessionFactory"></ref></property>
-	</bean>
     <bean id="mqPriceDiscoveryOperatorConsoleAdapter" class="it.softsolutions.bestx.connections.MQPriceDiscoveryOperatorConsoleAdapter" init-method="init">
 		<!-- TECHNICAL PARAMETERS -->
         <property name="operationRegistry"><ref bean="defaultOperationRegistry"></ref></property>

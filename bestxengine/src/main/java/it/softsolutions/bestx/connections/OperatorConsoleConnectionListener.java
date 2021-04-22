@@ -3,7 +3,6 @@ package it.softsolutions.bestx.connections;
 import java.math.BigDecimal;
 
 import it.softsolutions.bestx.OperationState;
-import it.softsolutions.bestx.model.UserModel;
 import it.softsolutions.jsscommon.Money;
 
 public interface OperatorConsoleConnectionListener {
@@ -71,7 +70,7 @@ public interface OperatorConsoleConnectionListener {
     
     void onOperatorPriceDiscovery(OperatorConsoleConnection source);
    
-    void onOperatorTakeOwnership(OperatorConsoleConnection source, UserModel userToAssign);
+    void onOperatorTakeOwnership(OperatorConsoleConnection source, String userToAssign);
     
     void onRevoke();
 }

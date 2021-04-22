@@ -42,7 +42,6 @@ import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Quote;
 import it.softsolutions.bestx.model.Rfq;
-import it.softsolutions.bestx.model.UserModel;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyService.Result;
 import it.softsolutions.bestx.services.price.PriceResult;
 import it.softsolutions.bestx.services.price.PriceService;
@@ -507,7 +506,7 @@ public class DefaultOperationEventHandler implements OperationEventListener {
 	}
 
    @Override
-   public void onOperatorTakeOwnership(OperatorConsoleConnection source, UserModel userToAssign) {
+   public void onOperatorTakeOwnership(OperatorConsoleConnection source, String userToAssign) {
       defaultAction();
    }
    
