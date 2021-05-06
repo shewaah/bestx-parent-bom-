@@ -219,11 +219,11 @@ public class MDSHelper extends MarketPriceDiscoveryHelper {
                             // [DR20120515] do not use directly the Double but
                             // convert to String in order to prevent this issue:
                             // "price = 131.66300000000001091393642127513885498046875"
-                            qty = new BigDecimal("" + tsNoMDEntries.getMDEntrySize());
+                            qty = new BigDecimal(Double.toString(tsNoMDEntries.getMDEntrySize()));
                         }
 
                         if (tsNoMDEntries.getMDEntryPx() != null) {
-                            amount = new BigDecimal("" + tsNoMDEntries.getMDEntryPx());
+                            amount = new BigDecimal(Double.toString(tsNoMDEntries.getMDEntryPx()));
                         }
                         
                         if (tsNoMDEntries.getPriceType() != null) {
