@@ -114,7 +114,7 @@ public class CSCurandoEventHandler extends CSBaseOperationEventHandler {
       Customer customer = order.getCustomer();
 
       if (jobName.equalsIgnoreCase(handlerJobName)) {
-         LOGGER.debug("Timer: " + jobName + " expired. Clean-up data.");
+         LOGGER.warn("Order {}: Timer OrderCurandoTimeout expired. Clean-up data.", operation.getOrder().getFixOrderId());
          // nothing to do, recreate the timer
          LOGGER.debug("Order {}, re-start the timer", operation.getOrder().getFixOrderId());
          long mSecDelay = getTimerInterval(order, customer);

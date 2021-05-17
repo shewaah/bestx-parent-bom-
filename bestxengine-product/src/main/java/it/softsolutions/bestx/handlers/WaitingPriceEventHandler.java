@@ -268,7 +268,8 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		if (jobName.equals(handlerJobName)) {
 			if (operation.isStopped())
 				return;
-			LOGGER.info("Order {}, timer {}-{} expired.", operation.getOrder().getFixOrderId(), jobName, groupName);
+			//LOGGER.info("Order {}, timer {}-{} expired.", operation.getOrder().getFixOrderId(), jobName, groupName);
+			LOGGER.warn("Order {}: timer MarketPriceTimeout expired.", operation.getOrder().getFixOrderId());
 			operation.removeLastAttempt();
 			operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("WaitingPriceEventHandler.0", operation.getOrder().getFixOrderId())), ErrorState.class);
 		}

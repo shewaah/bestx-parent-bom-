@@ -241,7 +241,7 @@ public class BBG_SendEnquiryEventHandler extends BaseOperationEventHandler {
 	   String handlerJobName = super.getDefaultTimerJobName();
 
 	   if (jobName.equals(handlerJobName)) {
-		   LOGGER.debug("Order {} : Timer: {} expired.", operation.getOrder().getFixOrderId(), jobName);
+		   LOGGER.warn("Order {}: Timer BloombergExecTimeout expired.", operation.getOrder().getFixOrderId());
 		   try {
 			   //create the timer for the order cancel
 			   handlerJobName += REVOKE_TIMER_SUFFIX;
@@ -262,7 +262,7 @@ public class BBG_SendEnquiryEventHandler extends BaseOperationEventHandler {
 	   }
 	   else if (jobName.equals(handlerJobName + REVOKE_TIMER_SUFFIX)) {
 		   //The timer created after receiving an Order Cancel Reject is expired without receiving an execution or a cancellation
-		   LOGGER.debug("Order {} : Timer: {} expired.", operation.getOrder().getFixOrderId(), jobName);
+	      LOGGER.warn("Order {} : Timer {} expired.Order cancel response not received or no further messages received.", operation.getOrder().getFixOrderId(), jobName);
 		   operation.setStateResilient(
 				   new WarningState(operation.getState(), null, Messages.getString("CancelRejectWithNoExecutionReportTimeout.0", operation.getLastAttempt().getMarketOrder().getMarket().getName())),
 				   ErrorState.class);
@@ -332,7 +332,7 @@ public class BBG_SendEnquiryEventHandler extends BaseOperationEventHandler {
       try {
          isCancelBestXInitiative = false;
          stopTimer(handlerJobName);
-         LOGGER.info("Order {} cancel rejected, waiting for the order execution or cancellation", order.getFixOrderId());
+         LOGGER.info("Order {} cancel rejected,stopping order cancel response timer and waiting for the order execution or cancellation", order.getFixOrderId());
          //recreate the timer with a longer timeout (the same used for the execution)
          setupTimer(handlerJobName, waitingAnswerDelay, false);
       }

@@ -367,7 +367,7 @@ public class MarketAxessMarket extends MarketCommon implements TradeStacPreTrade
 			LOGGER.warn("Timer {}-{} expired, but cannot be managed by the Proposal Aggregator", jobName, groupName);
 			return;
 		}
-		LOGGER.info("Timer {}-{} expired, start to manage it", jobName, groupName);
+		LOGGER.warn("Order {} : Timer PriceStateTimeout expired for ISIN: {}, start to manage it", jobName, groupName);
 
 		String isin = jobName.split("@")[0];
 		String orderID = jobName.split("@")[1];

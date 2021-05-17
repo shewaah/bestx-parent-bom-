@@ -142,7 +142,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 	private long marketPriceTimeout;
 	private long priceDiscoveryTimeout;
 	private long marketAxessExecTimeout = 10 * 60 * 1000;
-	private long marketExecTimeout;
+	private long TradewebExecTimeout;
 	private long bloombergExecTimeout;
 	private long internalRfqReplyTimeout;
 	private String internalRfqMessagePrefix;
@@ -461,7 +461,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 		//            switch (marketCode) {
 		//               case BLOOMBERG:
 		//                  handler = new BBG_AcceptQuoteEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BLOOMBERG).getBuySideConnection(), serialNumberService,
-		//                        marketExecTimeout, getMultipleQuotesHandler(operation.getOrder().getFixOrderId()));
+		//                        TradewebExecTimeout, getMultipleQuotesHandler(operation.getOrder().getFixOrderId()));
 		//               break;
 		//               default:
 		//                  throw new BestXException(Messages.getString("StrategyUnexpectedMarketCode.0", marketCode));
@@ -634,7 +634,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 		case SendOrder:
 			switch (marketCode) {
 			case TW:
-				handler = new TW_SendOrderEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.TW).getBuySideConnection(), serialNumberService, marketExecTimeout,
+				handler = new TW_SendOrderEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.TW).getBuySideConnection(), serialNumberService, TradewebExecTimeout,
 						orderCancelDelay, bestXConfigurationDao);
 				break;
 			case MARKETAXESS:
@@ -893,11 +893,11 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 	/**
 	 * Set the timeout for the execution.
 	 * 
-	 * @param marketExecTimeout
+	 * @param TradewebExecTimeout
 	 *            : timeout in milliseconds
 	 */
-	public void setMarketExecTimeout(long marketExecTimeout) {
-		this.marketExecTimeout = marketExecTimeout;
+	public void setTradewebExecTimeout(long TradewebExecTimeout) {
+		this.TradewebExecTimeout = TradewebExecTimeout;
 	}
 
 	/**
