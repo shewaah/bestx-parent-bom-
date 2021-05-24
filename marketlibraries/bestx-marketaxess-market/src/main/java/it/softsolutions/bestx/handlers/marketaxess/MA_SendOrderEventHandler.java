@@ -350,7 +350,7 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
             else { //let's hope tag 7761 equals 1 
                try {
                   quote.setPrice(new Money(maExecutionReport.getInstrument().getCurrency(), new BigDecimal(Double.toString(dealer.getReferencePrice().getValue()))));
-                  quote.setPriceType(convertPriceType(dealer.getDealerQuotePriceType()));
+                  quote.setPriceType(PriceType.PRICE);
                   quote.setQty(new BigDecimal(Double.toString(dealer.getDealerQuoteOrdQty().getValue())));
                }
                catch (@SuppressWarnings("unused")

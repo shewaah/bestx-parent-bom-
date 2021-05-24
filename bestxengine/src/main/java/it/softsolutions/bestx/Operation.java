@@ -45,7 +45,6 @@ import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Quote;
 import it.softsolutions.bestx.model.Rfq;
-import it.softsolutions.bestx.model.UserModel;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyService.Result;
 import it.softsolutions.bestx.services.price.PriceResult;
 import it.softsolutions.bestx.services.price.PriceService;
@@ -158,7 +157,7 @@ public final class Operation implements OperationEventListener {
 	public boolean customerRevokeReceived = false;
 
 	//BESTX-286
-	private UserModel owner = null;
+	private String owner = null;
 
 	/**
 	 * Check if the operation has beeen internalized
@@ -1875,7 +1874,7 @@ public final class Operation implements OperationEventListener {
 	}
 
 	@Override
-	public synchronized void onOperatorTakeOwnership(OperatorConsoleConnection source, UserModel userToAssign) {
+	public synchronized void onOperatorTakeOwnership(OperatorConsoleConnection source, String userToAssign) {
 		try {
 			handler.onOperatorTakeOwnership(source, userToAssign);
 		} catch (DataAccessException sqle) {
@@ -2088,11 +2087,11 @@ public final class Operation implements OperationEventListener {
 		return isVolatile;
 	}
 
-	public UserModel getOwner() {
+	public String getOwner() {
 		return owner;
 	}
 
-	public void setOwner(UserModel owner) {
+	public void setOwner(String owner) {
 		this.owner = owner;
 	}
 	

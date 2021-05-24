@@ -305,7 +305,7 @@ public class OnExecutionReportRunnable implements Runnable {
                      //BESTX-725 manage qty coming from pobex market informations
                      if (groups.get(i).isSetField(CompDealerQuoteOrdQty.FIELD)) {
                         Double compDealerQty = groups.get(i).getField(new DoubleField(CompDealerQuoteOrdQty.FIELD)).getValue();
-                        price.setQty(new BigDecimal(compDealerQty));
+                        price.setQty(new BigDecimal(Double.toString(compDealerQty)));
                      }
                      else {
                         price.setQty(operation.getOrder().getQty());
@@ -406,7 +406,7 @@ public class OnExecutionReportRunnable implements Runnable {
 	                     //BESTX-725 manage qty coming from pobex market informations
 	                     if (groups.get(i).isSetField(CompDealerQuoteOrdQty.FIELD)) {
 	                        Double compDealerQty = groups.get(i).getField(new DoubleField(CompDealerQuoteOrdQty.FIELD)).getValue();
-	                        price.setQty(new BigDecimal(compDealerQty));
+	                        price.setQty(new BigDecimal(Double.toString(compDealerQty)));
 	                     }
 	                     else {
 	                        price.setQty(operation.getOrder().getQty());

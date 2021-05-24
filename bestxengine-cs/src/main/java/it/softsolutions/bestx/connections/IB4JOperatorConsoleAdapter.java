@@ -42,10 +42,8 @@ import it.softsolutions.bestx.dao.OperationStateAuditDao;
 import it.softsolutions.bestx.exceptions.ObjectNotInitializedException;
 import it.softsolutions.bestx.exceptions.OperationNotExistingException;
 import it.softsolutions.bestx.exceptions.XT2Exception;
-import it.softsolutions.bestx.finders.UserModelFinder;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Order;
-import it.softsolutions.bestx.model.UserModel;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.timer.quartz.SimpleTimerManager;
 import it.softsolutions.bestx.states.CurandoAutoState;
@@ -95,16 +93,6 @@ IBPubSubServiceListener {
 	private volatile boolean connected;
 
 	private List<String> visibleStatesList;
-
-	private UserModelFinder userModelFinder;
-
-	public UserModelFinder getUserModelFinder() {
-		return userModelFinder;
-	}
-
-	public void setUserModelFinder(UserModelFinder userModelFinder) {
-		this.userModelFinder = userModelFinder;
-	}
 
 	@Override
 	protected void checkPreRequisites() throws ObjectNotInitializedException {
@@ -646,27 +634,17 @@ IBPubSubServiceListener {
 				try {
 
 					final String finalOrderId   = orderId;
-					final String finalSessionId = sessionId;
 					String assignToUserName = msg.getStringProperty(IB4JOperatorConsoleMessage.FLD_OWNERSHIP_USER);
 
 					executeTask(new Runnable() {
 						@Override
 						public void run() {
-							UserModel userToAssign;
-							try {
-								userToAssign = userModelFinder.getUserByUserName(assignToUserName);
-								if (!operation.getState().isTerminal()) {
-									if (userToAssign != null) {
-										operation.onOperatorTakeOwnership(IB4JOperatorConsoleAdapter.this, userToAssign);
-										operationStateAuditDao.updateTabHistoryOperatorCode(finalOrderId, assignToUserName);
-									}
-								}
-							}
-							catch (BestXException e) {
-								LOGGER.error("Missing property: '{}' from message", IB4JOperatorConsoleMessage.FLD_OWNERSHIP_USER);
-								IB4JOperatorConsoleAdapter.this.reqRespService.sendReply(new IllegalArgumentReplyMessage(finalSessionId, "Missing user with usernam: '" + assignToUserName + "' from message"), clientId);
-							}
-
+   						if (!operation.getState().isTerminal()) {
+   							if (assignToUserName != null) {
+   								operation.onOperatorTakeOwnership(IB4JOperatorConsoleAdapter.this, assignToUserName);
+   								operationStateAuditDao.updateTabHistoryOperatorCode(finalOrderId, assignToUserName);
+   							}
+   						}
 						}
 					});
 				} catch (@SuppressWarnings("unused") IBException e) {

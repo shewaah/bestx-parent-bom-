@@ -53,8 +53,7 @@
 			<generator class="native" />
 		</id>
 		<!-- BESTX-286 -->
-		<many-to-one name="owner" column="Owner" class="it.softsolutions.bestx.model.UserModel" lazy="false" cascade="none" not-null="false" />
-		
+		<property name="owner" column="Owner" access="field"/>
 		<many-to-one name="rfq" column="RfqId"
 			class="it.softsolutions.bestx.model.Rfq" lazy="false" cascade="all" />
 		<many-to-one name="order" column="OrderId"
@@ -840,30 +839,5 @@
 		<property name="type" column="type" type="instrumentParamType" />
 		<property name="key" column="param_key" />
 		<property name="value" column="param_value" />
-	</class>
-	
-	<!-- BESTX-286 -->
-	<class name="it.softsolutions.bestx.model.UserModel" table="users">
-		<id name="userName" column="userName" />
-		<property name="password" column="password" />
-		<property name="passwordExpirationDate" column="expirationDate" />
-		<property name="description" column="description" />
-		<property name="specialist" column="specialist" />
-		<property name="isLocked" column="isLocked" />
-		<property name="name" column="name" />
-		<property name="surname" column="surname" />
-		<property name="email" column="email" />
-		<set name="groupModels" lazy="false" table="users_groups"
-			cascade="none">
-			<key column="userName" />
-			<many-to-many class="it.softsolutions.bestx.model.GroupModel"
-				column="groupName" />
-		</set>
-	</class>
-	
-	<class name="it.softsolutions.bestx.model.GroupModel" table="groups">
-		<id name="groupName" column="groupName" />
-		<property name="description" column="description" />
-		<property name="locked" column="isLocked" />
 	</class>
 </hibernate-mapping>

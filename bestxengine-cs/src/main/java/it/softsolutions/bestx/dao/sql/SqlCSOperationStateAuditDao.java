@@ -46,7 +46,6 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import it.softsolutions.bestx.Messages;
-import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.dao.OperationStateAuditDao;
 import it.softsolutions.bestx.exceptions.SaveBookException;
@@ -392,7 +391,7 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 	                   LOGGER.trace("param7 price null");
 	                }
 	                if (proposal != null && proposal.getQty() != null) {
-	                    stmt.setFloat(8, proposal.getQty().floatValue());
+	                    stmt.setBigDecimal(8, proposal.getQty());
 	                   LOGGER.trace("param8 qty {}", proposal.getQty().floatValue());
 	                } else {
 	                    stmt.setNull(8, java.sql.Types.FLOAT);
@@ -406,7 +405,7 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 	                   LOGGER.trace("param9 arrivalTime null");
 	                }
 	                if (proposal != null && proposal.getPrice() != null && proposal.getPrice().getAmount() != null) {
-	                    stmt.setFloat(10, proposal.getPrice().getAmount().floatValue());
+	                    stmt.setBigDecimal(10, proposal.getPrice().getAmount());
 	                   LOGGER.trace("param10 FinalPrice {}", proposal.getPrice().getAmount().floatValue());
 	                } else {
 	                    stmt.setNull(10, java.sql.Types.FLOAT);

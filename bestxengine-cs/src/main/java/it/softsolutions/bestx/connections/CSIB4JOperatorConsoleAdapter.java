@@ -47,10 +47,8 @@ import it.softsolutions.bestx.exceptions.ObjectNotInitializedException;
 import it.softsolutions.bestx.exceptions.OperationAlreadyExistingException;
 import it.softsolutions.bestx.exceptions.OperationNotExistingException;
 import it.softsolutions.bestx.exceptions.XT2Exception;
-import it.softsolutions.bestx.finders.UserModelFinder;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Order;
-import it.softsolutions.bestx.model.UserModel;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.customservice.CustomService;
 import it.softsolutions.bestx.services.customservice.CustomServiceException;
@@ -107,16 +105,6 @@ IBPubSubServiceListener {
 
    private List<String> visibleStatesList;
    
-   private UserModelFinder userModelFinder;
-   
-   public UserModelFinder getUserModelFinder() {
-      return userModelFinder;
-   }
-   
-   public void setUserModelFinder(UserModelFinder userModelFinder) {
-      this.userModelFinder = userModelFinder;
-   }
-
    private CustomService customService;
 
    public CustomService getCustomService() {
@@ -293,27 +281,26 @@ public void init() throws BestXException {
       return this.connected;
    }
 
-   public boolean ownershipManagement(IBMessage msg, IBcsReqRespService reqRespService, Operation operation, UserModelFinder userModelFinder, Logger LOGGER, String sessionId, String clientId, String orderNumber, OperationStateAuditDao operationStateAuditDao) {
+   public boolean ownershipManagement(IBMessage msg, IBcsReqRespService reqRespService, Operation operation, Logger LOGGER, String sessionId, String clientId, String orderNumber, OperationStateAuditDao operationStateAuditDao) {
 	    //this method is difficult to move in superclass since it has dependecy on userModelFinder, reqRespService
 	      //operation owner checks
 	      String messageRequestor      = msg.getStringProperty(IB4JOperatorConsoleMessage.FLD_REQUESTOR, null);         
-	      UserModel operationOwner     = operation.getOwner();
-	      UserModel requestorUserModel = null;
+	      String operationOwner     = operation.getOwner();
+	      String requestorUserModel = null;
+	      boolean isSupertrader = msg.getIntProperty(IB4JOperatorConsoleMessage.FLD_IS_SUPERTRADER, 0) != 0;
+	      
 	      
 	      try {
-	         
-	         requestorUserModel = userModelFinder.getUserByUserName(messageRequestor);
-	      
-	         if (operationOwner == null || (requestorUserModel != null && requestorUserModel.isSuperTrader())) {
+	         if (operationOwner == null || isSupertrader) {
 	            
 	            operation.setOwner(requestorUserModel);
-	            operationStateAuditDao.updateTabHistoryOperatorCode(orderNumber, requestorUserModel.getUserName());
+	            operationStateAuditDao.updateTabHistoryOperatorCode(orderNumber, messageRequestor);
 	         
 	         } else {
 	            
-	            if (!operationOwner.getUserName().equals(messageRequestor)) {
-	               LOGGER.warn("Operation has owner {} but requestor is {}", operationOwner.getUserName(), messageRequestor);
-	               reqRespService.sendReply(new IllegalArgumentReplyMessage(sessionId, "Operation has owner " + operationOwner.getUserName() + " but requestor is " + messageRequestor), clientId);
+	            if (!operationOwner.equals(messageRequestor)) {
+	               LOGGER.warn("Operation has owner {} but requestor is {}", operationOwner, messageRequestor);
+	               reqRespService.sendReply(new IllegalArgumentReplyMessage(sessionId, "Operation has owner " + operationOwner + " but requestor is " + messageRequestor), clientId);
 	               return false;
 	            }
 	         
@@ -402,7 +389,7 @@ public void init() throws BestXException {
          }
          
          //operation owner checks
-         if (!ownershipManagement(msg, reqRespService, operation, userModelFinder, LOGGER, sessionId, clientId, orderId, operationStateAuditDao))
+         if (!ownershipManagement(msg, reqRespService, operation, LOGGER, sessionId, clientId, orderId, operationStateAuditDao))
             return;
          
          
@@ -699,27 +686,17 @@ public void init() throws BestXException {
               try {
                  
                  final String finalOrderId   = orderId;
-                 final String finalSessionId = sessionId;
                  String assignToUserName = msg.getStringProperty(IB4JOperatorConsoleMessage.FLD_OWNERSHIP_USER);
                  
                  executeTask(new Runnable() {
                     @Override
                     public void run() {
-                       UserModel userToAssign;
-                     try {
-                        userToAssign = userModelFinder.getUserByUserName(assignToUserName);
                         if (!operation.getState().isTerminal()) {
-                           if (userToAssign != null) {
-                              operation.onOperatorTakeOwnership(CSIB4JOperatorConsoleAdapter.this, userToAssign);
+                           if (assignToUserName != null) {
+                              operation.onOperatorTakeOwnership(CSIB4JOperatorConsoleAdapter.this, assignToUserName);
                               operationStateAuditDao.updateTabHistoryOperatorCode(finalOrderId, assignToUserName);
                            }
                         }
-                     }
-                     catch (BestXException e) {
-                        LOGGER.error("Missing property: '{}' from message", IB4JOperatorConsoleMessage.FLD_OWNERSHIP_USER);
-                        CSIB4JOperatorConsoleAdapter.this.reqRespService.sendReply(new IllegalArgumentReplyMessage(finalSessionId, "Missing user with usernam: '" + assignToUserName + "' from message"), clientId);
-                     }
-                       
                     }
                  });
               } catch (@SuppressWarnings("unused") IBException e) {
