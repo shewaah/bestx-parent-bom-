@@ -188,7 +188,7 @@ public class OrderReceivedEventHandler extends BaseOperationEventHandler {
     public void onTimerExpired(String jobName, String groupName) {
     	String handlerJobName = super.getDefaultTimerJobName();
         if (jobName.equals(handlerJobName)) {
-            LOGGER.debug("Order {} : Timer: {} expired.", operation.getOrder().getFixOrderId(), jobName);
+            LOGGER.warn("Order {} : Timer GRDLiteLoadResponseTimeout expired .", operation.getOrder().getFixOrderId());
 
             String securityID = operation.getOrder().getInstrumentCode();
             LOGGER.error("Instrument Loader Custom Service did not answer to our load request for the instrument {}, orderID = {}", securityID, operation.getOrder().getFixOrderId());

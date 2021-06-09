@@ -604,8 +604,8 @@
         <property name="curandoRetryTimeout"><value>${Order.Curando.Timeout}</value></property>
         <property name="sendExecRepTimeout"><value>${Send.execRep.timeout}</value></property>       
         <property name="internalMMcodes"><value>${Internal.MM.Codes}</value></property>
-        <property name="marketPriceTimeout"><value>${Bloomberg.pricesTimeout}</value></property>
-        <property name="marketExecTimeout"><value>${Market.state.timeout}</value></property>
+        <property name="marketPriceTimeout"><value>${Market.pricesTimeout}</value></property>
+        <property name="TradewebExecTimeout"><value>${Tradeweb.ExecTimeout}</value></property>
 		<property name="marketAxessExecTimeout"><value>${MarketAxess.ExecTimeout}</value></property>
         <property name="bloombergExecTimeout"><value>${Bloomberg.ExecTimeout}</value></property>
         <property name="internalRfqReplyTimeout"><value>${Internal.rfqreply.timeout}</value></property>

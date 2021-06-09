@@ -104,7 +104,7 @@ public class CSOrderNotExecutableEventHandler extends CSBaseOperationEventHandle
       String handlerJobName = super.getDefaultTimerJobName();
 
       if (jobName.equalsIgnoreCase(handlerJobName)) {
-         LOGGER.debug("Timer: " + jobName + " expired. Clean-up data.");
+         LOGGER.warn("Order {}: Timer OrderCurandoTimeout expired. Clean-up data.", operation.getOrder().getFixOrderId());
          //time to do the price discovery
          operation.setStateResilient(new WaitingPriceState("Price discovery time reached."), ErrorState.class);
       }

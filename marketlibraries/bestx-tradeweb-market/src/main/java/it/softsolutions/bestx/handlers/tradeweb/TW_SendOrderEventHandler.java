@@ -300,7 +300,7 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
     	String handlerJobName = super.getDefaultTimerJobName();
 
     	if (jobName.equals(handlerJobName)) {
-    		LOGGER.debug("Order {} : Timer: {} expired.", operation.getOrder().getFixOrderId(), jobName);
+    		LOGGER.warn("Order {} : Timer TradewebExecTimeout expired.", operation.getOrder().getFixOrderId(), jobName);
     		try {
     			//create the timer for the order cancel
     			handlerJobName += REVOKE_TIMER_SUFFIX;
@@ -320,7 +320,7 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
     		}            
     	} else if (jobName.equals(handlerJobName + REVOKE_TIMER_SUFFIX)) {
     		//The timer created after receiving an Order Cancel Reject is expired without receiving an execution or a cancellation
-    		LOGGER.debug("Order {} : Timer: {} expired.", operation.getOrder().getFixOrderId(), jobName);
+    		LOGGER.warn("Order {} : Timer {} expired.Order cancel response not received or no further messages received.", operation.getOrder().getFixOrderId(), jobName);
     		//[AMC 20170117 BXSUP-2015] Added a more specific messge to audit
     		operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("CancelRejectWithNoExecutionReportTimeout.0", operation.getLastAttempt().getMarketOrder().getMarket().getName())), ErrorState.class);
     	} else {
@@ -334,7 +334,7 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
 		String handlerJobName = super.getDefaultTimerJobName() + REVOKE_TIMER_SUFFIX;
 		try {
 			stopTimer(handlerJobName);
-			LOGGER.info("Order {} cancel rejected, waiting for the order execution or cancellation", order.getFixOrderId());
+			LOGGER.info("Order {} cancel rejected,stopping order cancel response timer and waiting for the order execution or cancellation", order.getFixOrderId());
 			
 			if ("Order already canceled".equalsIgnoreCase(reason)) {
 			   operation.setStateResilient(new TW_RejectedState(Messages.getString("TWRejectPrefix", reason)), ErrorState.class);
@@ -343,11 +343,11 @@ public class TW_SendOrderEventHandler extends BaseOperationEventHandler {
 	         setupTimer(handlerJobName, waitingExecutionDelay, false);
 			}
 		} catch (SchedulerException e) {
-			LOGGER.error("Cannot stop timer {}", handlerJobName, e);
+			LOGGER.error("Cannot stop MarketOrderCancelRequest timer {}", handlerJobName, e);
 		}
 	}
 	
-	@Override
+	@Override 
 	public void onRevoke() {
 
 		//onRevoke is invoked by webapp and must only reject this market so no need to set customerRevokeReceived so that operations may continue on other markets
