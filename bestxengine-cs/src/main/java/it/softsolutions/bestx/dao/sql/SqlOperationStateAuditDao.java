@@ -37,6 +37,7 @@ import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.SqlParameter;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.transaction.TransactionStatus;
 
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
@@ -45,6 +46,7 @@ import it.softsolutions.bestx.dao.OperationStateAuditDao;
 import it.softsolutions.bestx.exceptions.SaveBookException;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
+import it.softsolutions.bestx.model.ExecutablePrice;
 import it.softsolutions.bestx.model.Commission.CommissionType;
 import it.softsolutions.bestx.model.ExecutionReport;
 import it.softsolutions.bestx.model.Instrument;
@@ -488,6 +490,171 @@ public class SqlOperationStateAuditDao implements OperationStateAuditDao {
       }
    }
 
+   @Override
+   public void saveExecutablePrices(final String orderId, final int attemptNo, final String isin, final List<ExecutablePrice> executablePrices) throws Exception {
+       LOGGER.debug("Start saveExecutablePrices, order {}, attempt num {}, executablePrices is {}", orderId, attemptNo, (executablePrices == null ? "null" : "not null"));
+       long t0 = DateService.currentTimeMillis();
+       try {
+           if (!executablePrices.isEmpty()) {
+           	this.saveInPriceTableExecutable(orderId, attemptNo, isin, executablePrices);	
+           }  
+	        long sTime = (DateService.currentTimeMillis() - t0);
+           // [CRSBXTEM-160] Modifica della velocità di scodamento degli ordini LF
+           // SqlCSOperationStateAuditDao.lastSaveTimeMillis.set(sTime);          
+           LOGGER.info("[AUDIT],StoreTime={},Stop saveExecutablePrices for {} proposals, orderId = {}", sTime, executablePrices != null ? executablePrices.size() : 0, orderId);
+       } catch (Exception e) {
+           LOGGER.error("{}", e.getMessage(), e);
+           throw e;
+       }
+   }    
+
+   
+	private static final String SQL_INSERT_INTO_PRICETABLEEXECUTABLE = "INSERT INTO PriceTableExecutable "
+			+ "(NumOrdine, Attempt, MarketId, BankCode, Side, Isin, Price, Qty, "
+			+ "ArrivalTime, FlagScartato, Note, MarketBankCode, SeqOrder, AuditQuoteState, QuoteType) "
+			+ "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+   
+   
+	private void saveInPriceTableExecutable(final String orderId, final int attemptNo, final String isin,
+			final List<ExecutablePrice> executablePrices) throws InterruptedException {
+
+		Semaphore semaphore = null;
+		if (semaphores.containsKey(orderId)) {
+			semaphore = semaphores.get(orderId);
+		} else {
+			semaphore = new Semaphore(1);
+			semaphores.put(orderId, semaphore);
+		}
+
+		try {
+			// lock the orderID-related resource
+			semaphore.acquire();
+
+			long t0 = DateService.currentTimeMillis();
+			// TransactionStatus status = this.transactionManager.getTransaction(def);
+			jdbcTemplate.batchUpdate(SQL_INSERT_INTO_PRICETABLEEXECUTABLE, new BatchPreparedStatementSetter() {
+				@Override
+				public void setValues(PreparedStatement stmt, int j) throws SQLException {
+					ExecutablePrice executablePrice = executablePrices.get(j);
+					ClassifiedProposal proposal = executablePrice.getClassifiedProposal();
+					LOGGER.trace("saveInPriceTableExecutable: orderId {}, attemptNo {}, proposal {} ", orderId,
+							attemptNo, proposal);
+					stmt.setString(1, orderId);
+					LOGGER.trace("param1 orderId {}", orderId);
+					stmt.setInt(2, attemptNo);
+					LOGGER.trace("param2 attemptNo {}", attemptNo);
+					if (proposal != null && proposal.getMarket() != null
+							&& proposal.getMarket().getMarketId() != null) {
+						stmt.setInt(3, proposal.getMarket().getMarketId().intValue());
+						LOGGER.trace("param3 MarketId {}", proposal.getMarket().getMarketId().intValue());
+					} else {
+						stmt.setInt(3, -1); // Primary key can't be null
+						LOGGER.trace("param3 MarketId {}", -1);
+					}
+					if (proposal != null && proposal.getVenue() != null && proposal.getVenue().getCode() != null) {
+						stmt.setString(4, proposal.getVenue().getCode());
+						LOGGER.trace("param4 BankCode {}", proposal.getVenue().getCode());
+					} else {
+						stmt.setNull(4, java.sql.Types.VARCHAR);
+						LOGGER.trace("param4 BankCode null");
+					}
+					if (proposal != null && proposal.getSide() != null) {
+						stmt.setString(5, proposal.getSide().getFixCode());
+						LOGGER.trace("param5 Side {}", proposal.getSide().getFixCode());
+					} else {
+						stmt.setString(5, "1");
+						LOGGER.error("param5: Side not found in proposal {}",
+								(proposal != null) ? proposal.toString() : "null");
+					}
+					if (isin != null) {
+						stmt.setString(6, isin);
+						LOGGER.trace("param6 isin {}", isin);
+					} else {
+						stmt.setNull(6, java.sql.Types.VARCHAR);
+						LOGGER.trace("param6 isin null");
+					}
+
+					if (proposal != null && proposal.getPrice() != null && proposal.getPrice().getAmount() != null) {
+						stmt.setBigDecimal(7, proposal.getPrice().getAmount());
+						LOGGER.trace("param7 price {}", proposal.getPrice().getAmount());
+					} else {
+						stmt.setNull(7, java.sql.Types.DECIMAL);
+						LOGGER.trace("param7 price null");
+					}
+					if (proposal != null && proposal.getQty() != null) {
+						stmt.setBigDecimal(8, proposal.getQty());
+						LOGGER.trace("param8 qty {}", proposal.getQty().floatValue());
+					} else {
+						stmt.setNull(8, java.sql.Types.FLOAT);
+						LOGGER.trace("param8 qty null");
+					}
+					if (proposal != null && proposal.getTimestamp() != null) {
+						stmt.setTimestamp(9, new java.sql.Timestamp(proposal.getTimestamp().getTime()));
+						LOGGER.trace("param9 arrivalTime {}",
+								new java.sql.Timestamp(proposal.getTimestamp().getTime()));
+					} else {
+						stmt.setNull(9, java.sql.Types.TIMESTAMP);
+						LOGGER.trace("param9 arrivalTime null");
+					}
+					if (proposal != null && proposal.getProposalState() == Proposal.ProposalState.DROPPED) {
+						stmt.setInt(10, 2);
+						LOGGER.trace("param10 FlagScartato 2");
+					} else if (proposal != null && proposal.getProposalState() == Proposal.ProposalState.REJECTED) {
+						stmt.setInt(10, 1);
+						LOGGER.trace("param10 FlagScartato 1");
+					} else {
+						stmt.setInt(10, 0);
+						LOGGER.trace("param10 FlagScartato 0");
+					}
+					if (proposal != null && proposal.getReason() != null) {
+						stmt.setString(11, proposal.getReason());
+						LOGGER.trace("param11 Note {}", proposal.getReason());
+					} else {
+						stmt.setNull(11, java.sql.Types.VARCHAR);
+						LOGGER.trace("param11 Note null");
+					}
+					if (proposal != null && proposal.getMarketMarketMaker() != null) {
+						stmt.setString(12, proposal.getMarketMarketMaker().getMarketSpecificCode());
+						LOGGER.trace("param12 MarketBankCode {}",
+								proposal.getMarketMarketMaker().getMarketSpecificCode());
+					} else {
+						stmt.setString(12, ""); // Primary key can't be null
+						LOGGER.trace("param12 MarketBankCode empty");
+					}
+					stmt.setInt(13, j);
+					LOGGER.trace("param13 SeqOrder {}", j);
+					if (executablePrice != null && executablePrice.getAuditQuoteState() != null) {
+						stmt.setString(14, executablePrice.getAuditQuoteState());
+						LOGGER.trace("param14 AuditQuoteState {}", executablePrice.getAuditQuoteState());
+					} else {
+						stmt.setString(14, ""); // Primary key can't be null
+						LOGGER.trace("param14 AuditQuoteState empty");
+					}
+					stmt.setString(15, "FRM");
+					LOGGER.trace("param15 SeqOrder {}", "FRM");
+				}
+
+				@Override
+				public int getBatchSize() {
+					return executablePrices.size();
+				}
+			});
+			// this.transactionManager.commit(status);
+			long sTime = (DateService.currentTimeMillis() - t0);
+
+			// [CRSBXTEM-160] Modifica della velocità di scodamento degli ordini LF
+			// SqlCSOperationStateAuditDao.lastSaveTimeMillis.set(sTime);
+
+			LOGGER.info("[AUDIT],StoreTime={},Stop saveInPriceTableExecutable for {} proposals, orderId = {}", sTime,
+					executablePrices.size(), orderId);
+
+		} finally {
+			// release the orderID-related resource
+			semaphore.release();
+		}
+	}
+   
+   
    @Override
    public int saveNewAttempt(final String orderId, final Attempt attempt, final String tsn, final int attemptNo, final String ticketNum, int lastSavedAttempt) {
       // [RR20131018] BXMNT-373: with the internalization flow could happen that we must save the attempt at an

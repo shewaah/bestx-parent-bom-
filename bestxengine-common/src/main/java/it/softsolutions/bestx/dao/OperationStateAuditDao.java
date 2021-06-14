@@ -26,6 +26,7 @@ import java.util.List;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.exceptions.SaveBookException;
 import it.softsolutions.bestx.model.Attempt;
+import it.softsolutions.bestx.model.ExecutablePrice;
 import it.softsolutions.bestx.model.ExecutionReport;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.MarketExecutionReport;
@@ -171,6 +172,15 @@ public interface OperationStateAuditDao {
 	 * @throws SaveBookException
 	 */
 	void saveNewBook(String orderId, int attemptNo, SortedBook sortedBook) throws SaveBookException;
+	
+	/**
+	 * Save the list of Executable prices
+	 * @param orderId the FIX Order ID
+	 * @param attemptNo the attempt number
+	 * @param executablePrices the list of executable prices
+	 * @throws Exception if any issues arise
+	 */
+	void saveExecutablePrices(String orderId, int attemptNo, String isin, List<ExecutablePrice> executablePrices) throws Exception;
 	
 	/**
 	 * Check for already used Order Id

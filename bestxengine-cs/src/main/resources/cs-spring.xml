@@ -273,6 +273,9 @@
 	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
         <property name="dataSource"><ref bean="jdbcPooledDataSource"/></property>
 	</bean>
+	<bean id="namedParameterJdbcTemplate" class="org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate">
+		<constructor-arg ref="jdbcPooledDataSource" />
+	</bean>
 	<bean id="nonCommittedJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
         <property name="dataSource"><ref bean="nonCommittedPooledDataSource"/></property>
 	</bean>
@@ -999,7 +1002,10 @@
 				<ref bean="bloombergMarket" />
 				<ref bean="tradewebMarket" />
 				<ref bean="marketAxessMarket" />
-			</list>
+				<ref bean="bloombergHistoricMarket" />
+<!-- 				<ref bean="marketAxessHistoricMarket" />
+				<ref bean="tradewebHistoricMarket" />
+ -->			</list>
 		</property>
 	</bean>
 
@@ -1175,6 +1181,52 @@
         <property name="marketSegmentID"><value>${MarketAxess.destinationMICCode}</value></property>
  	</bean>
 	
+	
+	<!-- ====================================================================== -->
+    <!-- ==== HISTORIC ======================================================== -->
+    <!-- ====================================================================== -->	
+	<bean id="historicMarket" class="it.softsolutions.bestx.markets.historic.HistoricMarket" 
+		init-method="init" lazy-init="true" abstract="true">
+        <property name="marketMakerFinder" ref="dbBasedMarketMakerFinder" />
+        <property name="marketFinder" ref="dbBasedMarketFinder" />
+        <property name="venueFinder" ref="dbBasedVenueFinder" />
+        <property name="namedParameterJdbcTemplate" ref="namedParameterJdbcTemplate" />
+       
+        <property name="orderRespThresholdSeconds"><value>${Order.monitor.notify.timeThresholdInSeconds}</value></property>
+        <property name="orderRespIntervalTimeInSecs"><value>${Order.monitor.intervalInSeconds}</value></property>
+        <property name="pricesRespThresholdSeconds"><value>${Price.monitor.notify.timeThresholdInSeconds}</value></property>
+        <property name="pricesRespIntervalTimeInSecs"><value>${Price.monitor.intervalInSeconds}</value></property>
+        <property name="executionsRespIntervalTimeInSecs"><value>${Execution.monitor.intervalInSeconds}</value></property>
+        
+        <!-- TODO Set in properties -->
+        <property name="historicPricesQuery">
+        <value>
+        	<![CDATA[
+				WITH pte AS 
+				(
+				        SELECT row_number() OVER (PARTITION BY marketid, bankcode ORDER BY arrivaltime DESC) as rownum, *
+				        FROM PriceTableExecutable
+				        WHERE isin = :paramIsin
+				        AND DATEDIFF(DAY, CAST(ArrivalTime AS DATE), CAST(GETDATE() AS DATE)) + 1 <= :paramNumDays
+				        AND marketId = :paramMarketId
+				)
+				SELECT * FROM pte WHERE rownum <= :paramNumPricePoints        	
+        	]]>
+        </value>
+        </property>
+        <property name="numDays" value="2" />
+        <property name="numPricePoints" value="2" />
+    </bean>
+    
+    <bean id="bloombergHistoricMarket" parent="historicMarket">
+    	<property name="marketCode" value="BLOOMBERG_HIST" />
+    </bean>
+    <bean id="marketAxessHistoricMarket" parent="historicMarket">
+    	<property name="marketCode" value="MARKETAXESS_HIST" />
+    </bean>
+    <bean id="tradewebHistoricMarket" parent="historicMarket">
+    	<property name="marketCode" value="TW_HIST" />
+    </bean>
 
     <bean id="ib4jOperatorConsoleAdapter" class="it.softsolutions.bestx.connections.CSIB4JOperatorConsoleAdapter" init-method="init">
 		<!-- TECHNICAL PARAMETERS -->

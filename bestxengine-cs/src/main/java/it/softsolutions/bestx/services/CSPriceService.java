@@ -74,6 +74,7 @@ import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.Instrument.QuotingStatus;
+import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.MarketMaker;
 import it.softsolutions.bestx.model.MarketMarketMaker;
@@ -695,6 +696,14 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 	public boolean isMarketInPolicy(Set<Venue> venues, String fixOrderId, MarketConnection marketConnection) {
 		boolean marketIsInPolicy = false;
 		MarketCode marketCode = marketConnection.getMarketCode();
+		try { // [BESTX-678]
+			Market market = this.marketFinder.getMarketByCode(marketCode, null);
+			if (market.isHistoric()) {
+				marketCode = market.getOriginalMarket().getMarketCode();
+			}
+		} catch (Exception e) {
+			LOGGER.warn("Problem when searching for market", e);
+		}
 		for (Venue venue : venues) {
 			if (venue.isMarket()) {
 				MarketCode venueMktCode = venue.getMarket().getMarketCode();

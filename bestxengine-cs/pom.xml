@@ -86,7 +86,12 @@
 		<dependency>
 			<groupId>it.softsolutions.bestx</groupId>
 			<artifactId>bestx-marketaxess-market</artifactId>
-			</dependency>
+		</dependency>
+		<dependency>
+			<groupId>it.softsolutions.bestx</groupId>
+			<artifactId>bestx-historic-market</artifactId>
+			<version>${project.parent.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>it.softsolutions.bestx</groupId>
 			<artifactId>bestx-fix-client</artifactId>

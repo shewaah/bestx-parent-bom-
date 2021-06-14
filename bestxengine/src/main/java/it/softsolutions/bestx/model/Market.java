@@ -31,7 +31,8 @@ public class Market implements Serializable, Cloneable {
 
     public static enum MarketCode {
         BLOOMBERG, TSOX/* technical enumerated for execution on TSOX*/,  //AMC TSOX dealer codes are not the same in BPipe and trading systems
-        MARKETAXESS, TW, INTERNALIZZAZIONE
+        MARKETAXESS, TW, INTERNALIZZAZIONE,
+        BLOOMBERG_HIST, TW_HIST, MARKETAXESS_HIST
     }
 
     public static enum SubMarketCode {
@@ -53,6 +54,9 @@ public class Market implements Serializable, Cloneable {
     private String micCode;
     private String marketBehaviour;
     private final List<String> marketBehavioursList = new ArrayList<String>();
+    
+    private boolean historic;
+    private Market originalMarket;
 
     public Long getMarketId() {
         return marketId;
@@ -187,7 +191,23 @@ public class Market implements Serializable, Cloneable {
         return (marketBehavioursList.contains(NOT_REGULATED));
     }
     
-    @Override
+    public boolean isHistoric() {
+		return historic;
+	}
+
+	public void setHistoric(boolean historic) {
+		this.historic = historic;
+	}
+
+	public Market getOriginalMarket() {
+		return originalMarket;
+	}
+
+	public void setOriginalMarket(Market originalMarket) {
+		this.originalMarket = originalMarket;
+	}
+
+	@Override
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
     }  

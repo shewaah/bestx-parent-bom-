@@ -559,6 +559,14 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             }
         }
         break;
+        case Rejected:
+        case MarketExecuted:
+        	try {
+        		this.operationStateAuditDao.saveExecutablePrices(order.getFixOrderId(), attemptNo, order.getInstrument().getIsin(), operation.getLastAttempt().getExecutablePrices());
+        	} catch (Exception e) {
+        		LOGGER.error("Not able to save executable prices", e);
+        	}
+        	break;
         default:
             break;
         }

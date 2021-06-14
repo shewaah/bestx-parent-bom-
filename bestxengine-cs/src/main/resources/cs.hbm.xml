@@ -772,6 +772,9 @@
 		<property name="reusePrices" column="ReusePrices" access="field" />
 		<property name="micCode" column="MicCode" access="field" />
 		<property name="marketBehaviour" column="MarketBehaviour" />
+		<property name="historic" column="historic" />
+		<many-to-one name="originalMarket" column="originalMarket" class="it.softsolutions.bestx.model.Market"
+			lazy="false" cascade="none" />
 	</class>
 
 	<class name="it.softsolutions.bestx.model.SortedBook" table="Book" mutable="false">
