@@ -38,6 +38,7 @@ public class ClassifiedProposal extends Proposal implements Cloneable {
     private MarketMarketMaker nativeMarketMarketMaker;
     private Double bestPriceDeviationFromLimit;
 	private String benchmark;
+	private String auditQuoteState;
 
     public void setValues(ClassifiedProposal proposal) {
         super.setValues(proposal);
@@ -49,6 +50,7 @@ public class ClassifiedProposal extends Proposal implements Cloneable {
         setPriceTelQuel(proposal.getPriceTelQuel());
         setWorstPriceUsed(proposal.getWorstPriceUsed());
         setProposalSubState(proposal.getProposalSubState());
+        setAuditQuoteState(proposal.getAuditQuoteState());
     }
 
     public void setCommission(Money commission) {
@@ -207,4 +209,14 @@ public class ClassifiedProposal extends Proposal implements Cloneable {
 		this.benchmark = benchmark;
 	}
 
+	public String getAuditQuoteState() {
+		return auditQuoteState;
+	}
+
+	public void setAuditQuoteState(String auditQuoteState) {
+		this.auditQuoteState = auditQuoteState;
+	}
+
+	
+	
 }

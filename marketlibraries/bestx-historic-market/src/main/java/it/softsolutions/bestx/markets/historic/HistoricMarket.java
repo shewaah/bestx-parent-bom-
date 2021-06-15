@@ -37,10 +37,11 @@ import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Proposal.ProposalSide;
 import it.softsolutions.bestx.model.Proposal.ProposalState;
 import it.softsolutions.bestx.model.Proposal.ProposalType;
+import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.Venue;
 import it.softsolutions.jsscommon.Money;
 
-public class HistoricMarket extends MarketCommon implements MarketPriceConnection {
+public class HistoricMarket extends MarketCommon implements MarketPriceConnection, HistoricMarketMBean {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(HistoricMarket.class);
 	
@@ -138,6 +139,7 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 		try {
 			Map<String, Object> namedParameters = new HashMap<>();
 			namedParameters.put("paramIsin", isin);
+			namedParameters.put("paramSide", order.getSide().getFixCode());
 			namedParameters.put("paramNumPricePoints", this.numPricePoints);
 			namedParameters.put("paramNumDays", this.numDays);
 			
@@ -232,6 +234,7 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
             Money price = new Money(instrument.getCurrency(), amount);
             classifiedProposal.setPrice(price);
             classifiedProposal.setPriceType(priceType);
+            classifiedProposal.setAuditQuoteState(rs.getString("AuditQuoteState"));
             
             return classifiedProposal;
         } catch (Exception e) {

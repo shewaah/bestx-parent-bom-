@@ -234,6 +234,12 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 						"invalid market order when trying to start execution. currentAttempt.MarketOrder =" + (currentAttempt == null ? "null.null" : currentAttempt.getMarketOrder())), ErrorState.class);
 				return;
 			}
+			
+			if (currentAttempt.getMarketOrder().getMarket().isHistoric()) {
+				Market originalMarket = currentAttempt.getMarketOrder().getMarket().getOriginalMarket();
+				currentAttempt.getMarketOrder().setMarket(originalMarket);
+			}
+			
 			switch (currentAttempt.getMarketOrder().getMarket().getMarketCode()) {
 			case BLOOMBERG:
 				if (rejectOrderWhenBloombergIsBest) {

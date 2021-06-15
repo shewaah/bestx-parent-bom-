@@ -36,6 +36,7 @@
 				<value>market_credentials.properties</value>
 				<value>BESTX.properties</value>
 				<value>hibernate.properties</value>
+				<value>classpath:BESTX_internal.properties</value>
 			</list>
 		</property>
 	</bean>
@@ -98,6 +99,9 @@
 				<entry key="it.softsolutions.bestx.cs:name=ApplicationStatusController" value-ref="applicationStatusController" />
                 <entry key="it.softsolutions.bestx.cs:name=KafkaDataCollector" value-ref="dataCollector" />
 				<!-- entry key="bean:name=hibernateStatsMBean"><ref local="hibernateStats"></ref></entry -->
+                <entry key="it.softsolutions.bestx.cs:name=BloombergHistoricMarket" value-ref="bloombergHistoricMarket" />
+                <entry key="it.softsolutions.bestx.cs:name=MarketAxessHistoricMarket" value-ref="marketAxessHistoricMarket" />
+                <entry key="it.softsolutions.bestx.cs:name=TradewebHistoricMarket" value-ref="tradewebHistoricMarket" />
 			</map>
 		</property>
 		<property name="server" ref="mbeanServer" />
@@ -125,6 +129,9 @@
 						<prop key="it.softsolutions.bestx.cs:name=jdbcPooledDataSource">org.apache.commons.dbcp2.BasicDataSourceMXBean </prop>
 						<prop key="it.softsolutions.bestx.cs:name=NonCommittedPooledDataSource">org.apache.commons.dbcp2.BasicDataSourceMXBean </prop>
 						<prop key="it.softsolutions.bestx.cs:name=ExecutionStrategyServiceFactory">it.softsolutions.bestx.services.executionstrategy.CSExecutionStrategyServiceFactoryMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=BloombergHistoricMarket">it.softsolutions.bestx.markets.historic.HistoricMarketMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=MarketAxessHistoricMarket">it.softsolutions.bestx.markets.historic.HistoricMarketMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=TradewebHistoricMarket">it.softsolutions.bestx.markets.historic.HistoricMarketMBean</prop>
 					</props>
 				</property>
 			</bean>
@@ -923,27 +930,27 @@
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardSpreadProposalClassifier"></bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardYieldProposalClassifier"></bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnitProposalClassifier"></bean>
-                <bean class="it.softsolutions.bestx.services.proposalclassifiers.SubstituteCounterProposalClassifier"></bean>
+<!--                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.SubstituteCounterProposalClassifier"></bean> -->
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnavailableVenueProposalClassifier"></bean>
 
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroProposalClassifier">
                 	<property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
                 </bean>
 
-                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardOldProposalClassifier">
-                    <property name="configValue"><value>${ProposalClassifiers.discard.limitHours}</value></property>
-                    <property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
-				</bean>
+<!--                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardOldProposalClassifier"> -->
+<!--                     <property name="configValue"><value>${ProposalClassifiers.discard.limitHours}</value></property> -->
+<!--                     <property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property> -->
+<!-- 				</bean> -->
 				
-                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardMarketTriedInEarlierAttemptProposalClassifier"></bean>
+<!--                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardMarketTriedInEarlierAttemptProposalClassifier"></bean> -->
 
-				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardWorstPriceProposalClassifier"></bean>
+<!-- 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardWorstPriceProposalClassifier"></bean> -->
 			</list>
 		</property>
 		<property name="bookClassifierList">
 			<list>
-                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardDuplicatedMM"></bean>
-				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTooWideQuoteSpread"></bean>
+<!--                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardDuplicatedMM"></bean> -->
+<!-- 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTooWideQuoteSpread"></bean> -->
 			</list>
 		</property>
 	</bean>
@@ -1191,31 +1198,14 @@
         <property name="marketFinder" ref="dbBasedMarketFinder" />
         <property name="venueFinder" ref="dbBasedVenueFinder" />
         <property name="namedParameterJdbcTemplate" ref="namedParameterJdbcTemplate" />
-       
         <property name="orderRespThresholdSeconds"><value>${Order.monitor.notify.timeThresholdInSeconds}</value></property>
         <property name="orderRespIntervalTimeInSecs"><value>${Order.monitor.intervalInSeconds}</value></property>
         <property name="pricesRespThresholdSeconds"><value>${Price.monitor.notify.timeThresholdInSeconds}</value></property>
         <property name="pricesRespIntervalTimeInSecs"><value>${Price.monitor.intervalInSeconds}</value></property>
         <property name="executionsRespIntervalTimeInSecs"><value>${Execution.monitor.intervalInSeconds}</value></property>
-        
-        <!-- TODO Set in properties -->
-        <property name="historicPricesQuery">
-        <value>
-        	<![CDATA[
-				WITH pte AS 
-				(
-				        SELECT row_number() OVER (PARTITION BY marketid, bankcode ORDER BY arrivaltime DESC) as rownum, *
-				        FROM PriceTableExecutable
-				        WHERE isin = :paramIsin
-				        AND DATEDIFF(DAY, CAST(ArrivalTime AS DATE), CAST(GETDATE() AS DATE)) + 1 <= :paramNumDays
-				        AND marketId = :paramMarketId
-				)
-				SELECT * FROM pte WHERE rownum <= :paramNumPricePoints        	
-        	]]>
-        </value>
-        </property>
-        <property name="numDays" value="2" />
-        <property name="numPricePoints" value="2" />
+        <property name="historicPricesQuery" value="${HistoricMarket.SQLQuery}" />
+        <property name="numDays" value="${HistoricMarket.NumDays:5}" />
+        <property name="numPricePoints" value="${HistoricMarket.NumPricePoints:2}" />
     </bean>
     
     <bean id="bloombergHistoricMarket" parent="historicMarket">

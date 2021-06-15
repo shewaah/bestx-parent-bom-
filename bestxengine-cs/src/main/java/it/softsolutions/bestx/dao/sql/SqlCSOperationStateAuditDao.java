@@ -327,8 +327,8 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 
 	private static final String sqlInsertIntoPriceTable = "INSERT INTO PriceTable (NumOrdine, Attempt, MarketId, BankCode, Side, Isin, Price, Qty, ArrivalTime, "
     		+ "FinalPrice, CustomerSpread, FlagScartato, Note, MarketBankCode, MarketMakerMarkup, MarketMakerClassId, AppliedTolerance, SeqOrder, "
-    		+ "commissioniTick, PrezzoTelQuel, Bolli, ControvaloreConBollo) " +
-    		"VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
+    		+ "commissioniTick, PrezzoTelQuel, Bolli, ControvaloreConBollo, AuditQuoteState, QuoteType) " +
+    		"VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
 
     private void saveProposals(final String orderId, final int attemptNo, final Instrument instrument, final List<ClassifiedProposal> classifiedProposals) throws InterruptedException {            
         
@@ -469,6 +469,39 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 	                    stmt.setNull(22, java.sql.Types.DECIMAL);
 	                   LOGGER.trace("param22 ControvaloreConBollo null");
 	                }
+					if (proposal != null && proposal.getAuditQuoteState() != null) {
+						stmt.setString(23, proposal.getAuditQuoteState());
+						LOGGER.trace("param23 AuditQuoteState {}", proposal.getAuditQuoteState());
+					} else {
+						stmt.setNull(23, java.sql.Types.VARCHAR);
+						LOGGER.trace("param23 AuditQuoteState null");
+					}
+					if (proposal != null && proposal.getType() != null) {
+						switch (proposal.getType()) {
+							case INDICATIVE:
+								stmt.setString(24, "IND");
+								LOGGER.trace("param24 QuoteType IND");
+								break;
+							case COMPOSITE:
+								stmt.setString(24, "CMP");
+								LOGGER.trace("param24 QuoteType CMP");
+								break;
+							case TRADEABLE:
+								stmt.setString(24, "FRM");
+								LOGGER.trace("param24 QuoteType FRM");
+								break;
+							case AXE:
+								stmt.setString(24, "AXE");
+								LOGGER.trace("param24 QuoteType AXE");
+								break;
+							default:
+								stmt.setNull(24, java.sql.Types.VARCHAR);
+								LOGGER.trace("param24 QuoteType null");
+						}
+					} else {
+						stmt.setNull(24, java.sql.Types.VARCHAR);
+						LOGGER.trace("param24 QuoteType null");
+					}					
 	            }
 	
 	            @Override

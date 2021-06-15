@@ -80,7 +80,7 @@ public class Proposal implements Cloneable, Comparable<Proposal> {
      * The Enum ProposalType.
      */
     public static enum ProposalType { 
-        CLOSED, SET_TO_ZERO, INDICATIVE, SPREAD_ON_BEST, IOI, AXE, RESTRICTED_TRADEABLE, TRADEABLE, COUNTER;
+        CLOSED, SET_TO_ZERO, INDICATIVE, SPREAD_ON_BEST, IOI, AXE, RESTRICTED_TRADEABLE, TRADEABLE, COUNTER, COMPOSITE;
     }
     
     public static enum PriceType {

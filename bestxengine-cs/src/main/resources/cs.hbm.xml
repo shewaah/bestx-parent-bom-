@@ -402,6 +402,7 @@
 		<property name="originalPrice" column="OriginalPrice" />
 		<property name="bestPriceDeviationFromLimit" column="BestAndLimitDelta" />
 		<property name="benchmark" column="Benchmark" not-null="false"/>
+		<property name="auditQuoteState" column="AuditQuoteState" />
 	</class>
 	
 	<class name="it.softsolutions.bestx.model.ExecutionReport" table="ExecutionReport">
