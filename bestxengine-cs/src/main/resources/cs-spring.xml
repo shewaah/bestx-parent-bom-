@@ -1003,9 +1003,9 @@
 				<ref bean="tradewebMarket" />
 				<ref bean="marketAxessMarket" />
 				<ref bean="bloombergHistoricMarket" />
-<!-- 				<ref bean="marketAxessHistoricMarket" />
+ 				<ref bean="marketAxessHistoricMarket" />
 				<ref bean="tradewebHistoricMarket" />
- -->			</list>
+			</list>
 		</property>
 	</bean>
 

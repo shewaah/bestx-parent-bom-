@@ -16,6 +16,7 @@ package it.softsolutions.bestx.model;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -40,8 +41,8 @@ public class BaseBook implements Cloneable, Book {
 
     private Instrument instrument;
     
-    private Collection<Proposal> askProposals = new ConcurrentSkipListSet<Proposal>();
-    private Collection<Proposal> bidProposals = new ConcurrentSkipListSet<Proposal>();
+    private Collection<Proposal> askProposals = Collections.synchronizedList(new ArrayList<>());
+    private Collection<Proposal> bidProposals = Collections.synchronizedList(new ArrayList<>());
 
     @Override
     public BaseBook clone() {

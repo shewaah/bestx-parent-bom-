@@ -2,8 +2,8 @@ package it.softsolutions.bestx.markets.historic;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.HashMap;
@@ -11,18 +11,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
-import org.quartz.JobDetail;
-import org.quartz.SchedulerException;
-import org.quartz.Trigger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import it.softsolutions.bestx.BestXException;
-import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.connections.MarketBuySideConnection;
 import it.softsolutions.bestx.connections.MarketPriceConnection;
 import it.softsolutions.bestx.connections.MarketPriceConnectionListener;
@@ -32,7 +26,6 @@ import it.softsolutions.bestx.finders.MarketMakerFinder;
 import it.softsolutions.bestx.finders.VenueFinder;
 import it.softsolutions.bestx.markets.MarketCommon;
 import it.softsolutions.bestx.model.BaseBook;
-import it.softsolutions.bestx.model.Book;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.Instrument.QuotingStatus;
@@ -43,15 +36,8 @@ import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Proposal.ProposalSide;
 import it.softsolutions.bestx.model.Proposal.ProposalState;
-import it.softsolutions.bestx.model.Proposal.ProposalSubState;
 import it.softsolutions.bestx.model.Proposal.ProposalType;
 import it.softsolutions.bestx.model.Venue;
-import it.softsolutions.bestx.model.Venue.VenueType;
-import it.softsolutions.bestx.services.price.SimpleMarketProposalAggregator;
-import it.softsolutions.bestx.services.pricediscovery.ProposalAggregator;
-import it.softsolutions.bestx.services.pricediscovery.ProposalAggregatorListener;
-import it.softsolutions.bestx.services.pricediscovery.order.OrderPriceManager;
-import it.softsolutions.bestx.services.timer.quartz.SimpleTimerManager;
 import it.softsolutions.jsscommon.Money;
 
 public class HistoricMarket extends MarketCommon implements MarketPriceConnection {
@@ -63,8 +49,6 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 	private MarketFinder marketFinder;
 	private MarketMakerFinder marketMakerFinder;
 	private VenueFinder venueFinder;
-	
-	// private Map<String, ProposalAggregator> proposalAggregatorMap = new ConcurrentHashMap<String, ProposalAggregator>();
 	
 	private int numPricePoints;
 	private int numDays;
@@ -151,80 +135,7 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 		Market market = this.marketFinder.getMarketByCode(this.marketCode, null);
 
 		LOGGER.debug("Requesting price to Bloomberg for ISIN: {}", isin);
-		boolean bestExecutionRequired = order.isBestExecutionRequired();
-		String fixOrderId = order.getFixOrderId();
-
 		try {
-			List<MarketMarketMaker> targetMarketMarketMakers = new ArrayList<MarketMarketMaker>();
-			for (Venue venue : venues) {
-				if (venue.getVenueType().compareTo(VenueType.MARKET_MAKER) == 0) {
-					for (MarketMarketMaker marketMarketMaker : venue.getMarketMaker().getMarketMarketMakers()) {
-						boolean canTrade = marketMarketMaker.canTrade(instrument, bestExecutionRequired);
-
-						if (!canTrade) {
-							LOGGER.info("The marketMarketMaker {} can not trade the instrument {}", marketMarketMaker, isin);
-						}
-
-						if (marketMarketMaker.getMarket().getMarketCode() == market.getOriginalMarket().getMarketCode() && canTrade) {
-							if (!targetMarketMarketMakers.contains(marketMarketMaker)) {
-								targetMarketMarketMakers.add(marketMarketMaker);
-								LOGGER.debug("Added marketMarketMaker: {}", marketMarketMaker.getMarketSpecificCode());
-							}
-						} // else Removed logic about proposal discarders
-					}
-				}
-			}
-
-			LOGGER.info("Order {}, registering the price request to the proposal aggregator (isin = {})", fixOrderId, isin);
-			String reason = Messages.getString("RejectProposalISINNotQuotedByMM");
-
-			for (MarketMarketMaker targetMarketMarketMaker : targetMarketMarketMakers) {
-				order.addMarketMakerNotQuotingInstr(targetMarketMarketMaker, reason);
-			}
-
-			// Retrieve all the marketSpecificCodes
-			List<String> marketSpecificCodes = new ArrayList<String>(targetMarketMarketMakers.size());
-			for (MarketMarketMaker marketMarketMaker : targetMarketMarketMakers) {
-				marketSpecificCodes.add(marketMarketMaker.getMarketSpecificCode());
-			}
-			LOGGER.info("Order {}. Market Makers that will be enquired for prices: {}", fixOrderId, marketSpecificCodes);
-
-			// Book aggregator
-//			ProposalAggregator proposalAggregator = proposalAggregatorMap.get(isin);
-//			if (proposalAggregator == null) {
-//				proposalAggregator = new ProposalAggregator(instrument);
-//				proposalAggregatorMap.put(isin, proposalAggregator);
-//			}
-
-			String orderID = order.getFixOrderId();
-			List<String> marketMakers = marketSpecificCodes;
-
-//			ProposalAggregatorListener proposalAggregatorListener = new OrderPriceManager(orderID, marketCode, marketMakers, proposalAggregator, listener);
-//			proposalAggregator.addProposalAggregatorListener(proposalAggregatorListener);
-
-//			String timerName = SimpleMarketProposalAggregator.buildTimerName(isin, order.getFixOrderId(), getMarketCode());
-//
-//			try {
-//				SimpleTimerManager simpleTimerManager = SimpleTimerManager.getInstance();
-//				JobDetail newJob = simpleTimerManager.createNewJob(timerName, this.getClass().getSimpleName(), false /* no durable flag required*/, true /* request recovery*/, true /* monitorable */);
-//				Trigger trigger = null;
-//				if (targetMarketMarketMakers.size() > 0 && maxLatency > 0) {
-//					// this timer is not repeatable
-//					trigger = simpleTimerManager.createNewTrigger(timerName, this.getClass().getSimpleName(), false, maxLatency);
-//				} else {
-//					// Dopo 10 secondi fa partire la onTimerExpired
-//					// this timer is not repeatable
-//					trigger = simpleTimerManager.createNewTrigger(timerName, this.getClass().getSimpleName(), false, 10000);
-//				}
-//				simpleTimerManager.scheduleJobWithTrigger(newJob, trigger, true);
-//			} catch (SchedulerException e) {
-//				LOGGER.error("Error while scheduling price discovery wait timer: {}", e.getMessage(), e);
-//			}
-
-			// [BXMNT-430] marketSpecificCodes * 2 (BID e ASK)
-			marketStatistics.pricesRequested(isin, marketSpecificCodes.size() * 2);
-
-			// TODO Query market
 			Map<String, Object> namedParameters = new HashMap<>();
 			namedParameters.put("paramIsin", isin);
 			namedParameters.put("paramNumPricePoints", this.numPricePoints);
@@ -236,65 +147,22 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 			}
 			namedParameters.put("paramMarketId", marketId);
 			
-			final Map<String, List<ClassifiedProposal>> askProposals = new ConcurrentHashMap<>();
-			final Map<String, List<ClassifiedProposal>> bidProposals = new ConcurrentHashMap<>();
+			final List<ClassifiedProposal> allProposals = Collections.synchronizedList(new ArrayList<>());
 			
-			this.namedParameterJdbcTemplate.query(this.historicPricesQuery, namedParameters, new RowCallbackHandler() {
-				@Override // TODO Use a lambda?
-				public void processRow(ResultSet rs) throws SQLException {
-					try {
-						ClassifiedProposal proposal = buildProposalFromResultResult(instrument, rs);
-						String marketMakerSpecificCode = proposal.getMarketMarketMaker().getMarketSpecificCode();
-						
-						Map<String, List<ClassifiedProposal>> proposals = proposal.getSide() == ProposalSide.BID ? bidProposals : askProposals;
-						if (proposals.get(marketMakerSpecificCode) == null) {
-							proposals.put(marketMakerSpecificCode, new ArrayList<>());
-						}
-						proposals.get(marketMakerSpecificCode).add(proposal);
-					} catch (Exception e) {
-						LOGGER.error("Error while trying to create proposal", e);
-					}
+			this.namedParameterJdbcTemplate.query(this.historicPricesQuery, namedParameters, (ResultSet rs) -> {
+				try {
+					allProposals.add(this.buildProposalFromResult(instrument, rs));
+				} catch (Exception e) {
+					LOGGER.error("Error while trying to create proposal", e);
 				}
 			});
 			
-//			for (String marketMakerSpecificCode : marketSpecificCodes) {
-//				try {
-//				    if (askProposals.get(marketMakerSpecificCode) == null || askProposals.get(marketMakerSpecificCode).isEmpty()) {
-//				    	proposalAggregator.onProposal(this.buildProposalReject(instrument, ProposalSide.ASK, marketMakerSpecificCode));
-//				    } else {
-//				    	for (ClassifiedProposal proposal : askProposals.get(marketMakerSpecificCode)) {
-//				    		proposalAggregator.onProposal(proposal);
-//				    	}
-//				    }
-//				    if (bidProposals.get(marketMakerSpecificCode) == null || bidProposals.get(marketMakerSpecificCode).isEmpty()) {
-//				    	proposalAggregator.onProposal(this.buildProposalReject(instrument, ProposalSide.BID, marketMakerSpecificCode));
-//				    } else {
-//				    	for (ClassifiedProposal proposal : bidProposals.get(marketMakerSpecificCode)) {
-//				    		proposalAggregator.onProposal(proposal);
-//				    	}
-//				    }				    
-//					marketStatistics.pricesResponseReceived(isin, 1);
-//				} catch (Exception e) {
-//					LOGGER.error("Error managing classifiedProposal {}: {}", marketMakerSpecificCode, e.getMessage(), e);
-//				}
-//			}
-//			
 			BaseBook book = new BaseBook();
 			book.setInstrument(instrument);
-			List<ClassifiedProposal> allProposals = new ArrayList<>();
-			for (List<ClassifiedProposal> proposalsList : askProposals.values()) {
-				allProposals.addAll(proposalsList);
-			}
-			for (List<ClassifiedProposal> proposalsList : bidProposals.values()) {
-				allProposals.addAll(proposalsList);
-			}
-			
             for(Proposal bestProposal : allProposals) {
                 book.addProposal(bestProposal);
             }
-            LOGGER.debug("Duplicated removed book: {}", book);
             
-            // 3. notify the MarketPriceConnectionListener
             listener.onMarketBookComplete(marketCode, book);
 			
 		} catch (ConcurrentModificationException cme) {
@@ -303,7 +171,7 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 		
 	}
 
-	private ClassifiedProposal buildProposalFromResultResult(Instrument instrument, ResultSet rs) {
+	private ClassifiedProposal buildProposalFromResult(Instrument instrument, ResultSet rs) {
 
         ClassifiedProposal classifiedProposal = null;
 
@@ -373,66 +241,6 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 
 	}
 	
-	private ClassifiedProposal buildProposalReject(Instrument instrument, ProposalSide side, String marketMarketMakerCode) {
-        LOGGER.debug("Building proposal reject: instrument = {}, marketMakerCode = {}", instrument, marketMarketMakerCode);
-        
-        if (marketMarketMakerCode == null || instrument == null || side == null) {
-            throw new IllegalArgumentException("params can't be null\"");
-        }
-
-        if (side != ProposalSide.ASK && side != ProposalSide.BID) {
-            throw new IllegalArgumentException("Unsupported Side Only Bid or Offer value is accepted");
-        }
-        ClassifiedProposal classifiedProposal = null;
-
-        try {
-
-        	Market historicMarket = this.marketFinder.getMarketByCode(this.marketCode, null);
-        	Market originalMarket = historicMarket.getOriginalMarket();
-        	MarketCode originalMarketCode = originalMarket.getMarketCode();
-        	
-            MarketMarketMaker marketMarketMaker = this.marketMakerFinder.getMarketMarketMakerByCode(originalMarketCode, marketMarketMakerCode);
-            if (marketMarketMaker == null) {
-                return null;
-            }
-
-            Venue venue = this.venueFinder.getMarketMakerVenue(marketMarketMaker.getMarketMaker());
-            if (venue == null) {
-                return null;
-            }
-            if (venue.getMarket() == null) {
-            }
-
-            classifiedProposal = new ClassifiedProposal();
-
-            classifiedProposal.setType(ProposalType.CLOSED);
-            classifiedProposal.setProposalState(ProposalState.REJECTED);
-            classifiedProposal.setProposalSubState(ProposalSubState.NONE);
-            classifiedProposal.setReason("No data");
-
-            Venue marketVenue = new Venue(venue);
-            marketVenue.setMarket(originalMarket);
-            classifiedProposal.setMarket(historicMarket);
-
-            classifiedProposal.setMarketMarketMaker(marketMarketMaker);
-            classifiedProposal.setVenue(marketVenue);
-            classifiedProposal.setQty(BigDecimal.ZERO);
-
-            Money price = new Money(instrument.getCurrency(), BigDecimal.ZERO);
-            classifiedProposal.setPrice(price);
-            classifiedProposal.setSide(side);
-            
-            return classifiedProposal;
-
-        } catch (Exception e) {
-        	LOGGER.warn("Error trying to create Proposal from row in DB", e);
-        	return null;
-        }
-
-	}
-	
-	
-	
 	@Override
 	public Market getQuotingMarket(Instrument instrument) throws BestXException {
 		return this.marketFinder.getMarketByCode(this.marketCode, null);
@@ -470,14 +278,6 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 	public void setMarketFinder(MarketFinder marketFinder) {
 		this.marketFinder = marketFinder;
 	}
-
-//	public Map<String, ProposalAggregator> getProposalAggregatorMap() {
-//		return proposalAggregatorMap;
-//	}
-//
-//	public void setProposalAggregatorMap(Map<String, ProposalAggregator> proposalAggregatorMap) {
-//		this.proposalAggregatorMap = proposalAggregatorMap;
-//	}
 
 	public NamedParameterJdbcTemplate getNamedParameterJdbcTemplate() {
 		return namedParameterJdbcTemplate;
