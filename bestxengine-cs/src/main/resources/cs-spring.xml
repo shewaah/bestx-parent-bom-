@@ -927,6 +927,9 @@
 	<bean id="bookClassifierBean" class="it.softsolutions.bestx.ConfigurableBookClassifier">
 		<property name="proposalClassifierList">
 			<list>
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.SubstituteQuoteTypeProposalClassifier">
+                	<property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
+				</bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardSpreadProposalClassifier"></bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardYieldProposalClassifier"></bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnitProposalClassifier"></bean>
