@@ -653,6 +653,10 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 						stmt.setString(12, proposal.getMarketMarketMaker().getMarketSpecificCode());
 						LOGGER.trace("param12 MarketBankCode {}",
 								proposal.getMarketMarketMaker().getMarketSpecificCode());
+					} else if (executablePrice.getOriginatorID() != null) {
+						stmt.setString(12, executablePrice.getOriginatorID());
+						LOGGER.trace("param12 MarketBankCode {}",
+								executablePrice.getOriginatorID());
 					} else {
 						stmt.setString(12, ""); // Primary key can't be null
 						LOGGER.trace("param12 MarketBankCode empty");
