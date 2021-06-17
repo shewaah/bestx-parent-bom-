@@ -139,7 +139,7 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 		try {
 			Map<String, Object> namedParameters = new HashMap<>();
 			namedParameters.put("paramIsin", isin);
-			namedParameters.put("paramSide", order.getSide().getFixCode());
+			namedParameters.put("paramSide", (order.getSide().equals(OrderSide.BUY) ? ProposalSide.ASK.getFixCode() : ProposalSide.BID.getFixCode()));
 			namedParameters.put("paramNumPricePoints", this.numPricePoints);
 			namedParameters.put("paramNumDays", this.numDays);
 			
@@ -153,7 +153,10 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 			
 			this.namedParameterJdbcTemplate.query(this.historicPricesQuery, namedParameters, (ResultSet rs) -> {
 				try {
-					allProposals.add(this.buildProposalFromResult(instrument, rs));
+				   ClassifiedProposal prop = this.buildProposalFromResult(instrument, rs);
+				   if (prop != null) {
+				      allProposals.add(prop);
+				   }
 				} catch (Exception e) {
 					LOGGER.error("Error while trying to create proposal", e);
 				}

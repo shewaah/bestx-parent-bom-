@@ -59,6 +59,8 @@ import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.MarketExecutionReport;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal;
+import it.softsolutions.bestx.model.Proposal.ProposalState;
+import it.softsolutions.bestx.model.Proposal.ProposalSubState;
 import it.softsolutions.bestx.model.SortedBook;
 import it.softsolutions.bestx.model.TradeFill;
 import it.softsolutions.bestx.services.CSConfigurationPropertyLoader;
@@ -417,8 +419,14 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 	                if (proposal != null && proposal.getProposalState() == Proposal.ProposalState.DROPPED) {
 	                    stmt.setInt(12, 2);
 	                   LOGGER.trace("param12 FlagScartato 2");
+	                } else if (proposal.getProposalState() == ProposalState.REJECTED &&
+	                      proposal.getProposalSubState() != null && (proposal.getProposalSubState() == ProposalSubState.PRICE_WORST_THAN_LIMIT ||
+                            proposal.getProposalSubState() == ProposalSubState.OUTSIDE_SPREAD)) {
+	                   //BESTX-680 show in the aggregated book in GUI
+                      stmt.setInt(12, 0);
+                      LOGGER.trace("param12 FlagScartato 0");
 	                } else if (proposal != null && proposal.getProposalState() == Proposal.ProposalState.REJECTED) {
-	                    stmt.setInt(12, 1);
+	                   stmt.setInt(12, 1);
 	                   LOGGER.trace("param12 FlagScartato 1");
 	                } else {
 	                    stmt.setInt(12, 0);
