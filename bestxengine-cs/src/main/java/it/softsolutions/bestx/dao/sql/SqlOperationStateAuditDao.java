@@ -495,7 +495,7 @@ public class SqlOperationStateAuditDao implements OperationStateAuditDao {
        LOGGER.debug("Start saveExecutablePrices, order {}, attempt num {}, executablePrices is {}", orderId, attemptNo, (executablePrices == null ? "null" : "not null"));
        long t0 = DateService.currentTimeMillis();
        try {
-           if (!executablePrices.isEmpty()) {
+           if (executablePrices != null && !executablePrices.isEmpty()) {
            	this.saveInPriceTableExecutable(orderId, attemptNo, isin, executablePrices);	
            }  
 	        long sTime = (DateService.currentTimeMillis() - t0);
@@ -531,12 +531,11 @@ public class SqlOperationStateAuditDao implements OperationStateAuditDao {
 			semaphore.acquire();
 
 			long t0 = DateService.currentTimeMillis();
-			// TransactionStatus status = this.transactionManager.getTransaction(def);
 			jdbcTemplate.batchUpdate(SQL_INSERT_INTO_PRICETABLEEXECUTABLE, new BatchPreparedStatementSetter() {
 				@Override
 				public void setValues(PreparedStatement stmt, int j) throws SQLException {
 					ExecutablePrice executablePrice = executablePrices.get(j);
-					ClassifiedProposal proposal = executablePrice.getClassifiedProposal();
+					ClassifiedProposal proposal = executablePrice != null ? executablePrice.getClassifiedProposal() : null;
 					LOGGER.trace("saveInPriceTableExecutable: orderId {}, attemptNo {}, proposal {} ", orderId,
 							attemptNo, proposal);
 					stmt.setString(1, orderId);
@@ -551,9 +550,11 @@ public class SqlOperationStateAuditDao implements OperationStateAuditDao {
 						stmt.setInt(3, -1); // Primary key can't be null
 						LOGGER.trace("param3 MarketId {}", -1);
 					}
-					if (proposal != null && proposal.getVenue() != null && proposal.getVenue().getCode() != null) {
-						stmt.setString(4, proposal.getVenue().getCode());
-						LOGGER.trace("param4 BankCode {}", proposal.getVenue().getCode());
+					if (proposal != null && proposal.getMarketMarketMaker() != null
+						&& proposal.getMarketMarketMaker().getMarketMaker() != null
+						&& proposal.getMarketMarketMaker().getMarketMaker().getCode() != null) {
+						stmt.setString(4, proposal.getMarketMarketMaker().getMarketMaker().getCode());
+						LOGGER.trace("param4 BankCode {}", proposal.getMarketMarketMaker().getMarketMaker().getCode());
 					} else {
 						stmt.setNull(4, java.sql.Types.VARCHAR);
 						LOGGER.trace("param4 BankCode null");
@@ -617,6 +618,10 @@ public class SqlOperationStateAuditDao implements OperationStateAuditDao {
 						stmt.setString(12, proposal.getMarketMarketMaker().getMarketSpecificCode());
 						LOGGER.trace("param12 MarketBankCode {}",
 								proposal.getMarketMarketMaker().getMarketSpecificCode());
+					} else if (executablePrice.getOriginatorID() != null) {
+						stmt.setString(12, executablePrice.getOriginatorID());
+						LOGGER.trace("param12 MarketBankCode {}",
+								executablePrice.getOriginatorID());
 					} else {
 						stmt.setString(12, ""); // Primary key can't be null
 						LOGGER.trace("param12 MarketBankCode empty");
@@ -639,11 +644,9 @@ public class SqlOperationStateAuditDao implements OperationStateAuditDao {
 					return executablePrices.size();
 				}
 			});
-			// this.transactionManager.commit(status);
 			long sTime = (DateService.currentTimeMillis() - t0);
 
 			// [CRSBXTEM-160] Modifica della velocità di scodamento degli ordini LF
-			// SqlCSOperationStateAuditDao.lastSaveTimeMillis.set(sTime);
 
 			LOGGER.info("[AUDIT],StoreTime={},Stop saveInPriceTableExecutable for {} proposals, orderId = {}", sTime,
 					executablePrices.size(), orderId);
@@ -653,6 +656,7 @@ public class SqlOperationStateAuditDao implements OperationStateAuditDao {
 			semaphore.release();
 		}
 	}
+
    
    
    @Override

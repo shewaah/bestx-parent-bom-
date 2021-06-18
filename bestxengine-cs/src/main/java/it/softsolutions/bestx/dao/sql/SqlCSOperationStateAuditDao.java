@@ -535,7 +535,7 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
         LOGGER.debug("Start saveExecutablePrices, order {}, attempt num {}, executablePrices is {}", orderId, attemptNo, (executablePrices == null ? "null" : "not null"));
         long t0 = DateService.currentTimeMillis();
         try {
-            if (!executablePrices.isEmpty()) {
+            if (executablePrices != null && !executablePrices.isEmpty()) {
             	this.saveInPriceTableExecutable(orderId, attemptNo, isin, executablePrices);	
             }  
 	        long sTime = (DateService.currentTimeMillis() - t0);
@@ -576,7 +576,7 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 				@Override
 				public void setValues(PreparedStatement stmt, int j) throws SQLException {
 					ExecutablePrice executablePrice = executablePrices.get(j);
-					ClassifiedProposal proposal = executablePrice.getClassifiedProposal();
+					ClassifiedProposal proposal = executablePrice != null ? executablePrice.getClassifiedProposal() : null;
 					LOGGER.trace("saveInPriceTableExecutable: orderId {}, attemptNo {}, proposal {} ", orderId,
 							attemptNo, proposal);
 					stmt.setString(1, orderId);
