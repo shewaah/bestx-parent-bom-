@@ -928,32 +928,28 @@
 		<property name="proposalClassifierList">
 			<list>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.SubstituteQuoteTypeProposalClassifier">
-                	<property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
+                	<property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
 				</bean>
-				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardSpreadProposalClassifier"></bean>
-				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardYieldProposalClassifier"></bean>
-				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnitProposalClassifier"></bean>
-<!--                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.SubstituteCounterProposalClassifier"></bean> -->
-                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnavailableVenueProposalClassifier"></bean>
-
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardSpreadProposalClassifier" />
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardYieldProposalClassifier" />
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnitProposalClassifier" />
+                <bean class="it.softsolutions.bestx.services.proposalclassifiers.SubstituteCounterProposalClassifier" />
+                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnavailableVenueProposalClassifier" />
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroProposalClassifier">
-                	<property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
+                	<property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
                 </bean>
-
-<!--                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardOldProposalClassifier"> -->
-<!--                     <property name="configValue"><value>${ProposalClassifiers.discard.limitHours}</value></property> -->
-<!--                     <property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property> -->
-<!-- 				</bean> -->
-				
-<!--                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardMarketTriedInEarlierAttemptProposalClassifier"></bean> -->
-
-<!-- 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardWorstPriceProposalClassifier"></bean> -->
+                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardOldProposalClassifier">
+                    <property name="configValue" value="${ProposalClassifiers.discard.limitHours}" />
+                    <property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
+				</bean>
+                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardMarketTriedInEarlierAttemptProposalClassifier" />
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardWorstPriceProposalClassifier" />
 			</list>
 		</property>
 		<property name="bookClassifierList">
 			<list>
-<!--                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardDuplicatedMM"></bean> -->
-<!-- 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTooWideQuoteSpread"></bean> -->
+                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardDuplicatedMM" />
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTooWideQuoteSpread" />
 			</list>
 		</property>
 	</bean>
