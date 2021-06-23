@@ -67,6 +67,7 @@ import it.softsolutions.bestx.states.CurandoState;
 import it.softsolutions.bestx.states.LimitFileNoPriceState;
 import it.softsolutions.bestx.states.OrderNotExecutableState;
 import it.softsolutions.jsscommon.Money;
+import quickfix.field.PriceType;
 
 /**
  * 
@@ -327,8 +328,8 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 
 	private static final String sqlInsertIntoPriceTable = "INSERT INTO PriceTable (NumOrdine, Attempt, MarketId, BankCode, Side, Isin, Price, Qty, ArrivalTime, "
     		+ "FinalPrice, CustomerSpread, FlagScartato, Note, MarketBankCode, MarketMakerMarkup, MarketMakerClassId, AppliedTolerance, SeqOrder, "
-    		+ "commissioniTick, PrezzoTelQuel, Bolli, ControvaloreConBollo, AuditQuoteState, QuoteType) " +
-    		"VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
+    		+ "commissioniTick, PrezzoTelQuel, Bolli, ControvaloreConBollo, AuditQuoteState, QuoteType, PriceType) " +
+    		"VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
 
     private void saveProposals(final String orderId, final int attemptNo, final Instrument instrument, final List<ClassifiedProposal> classifiedProposals) throws InterruptedException {            
         
@@ -507,7 +508,34 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 					} else {
 						stmt.setNull(24, java.sql.Types.VARCHAR);
 						LOGGER.trace("param24 QuoteType null");
-					}					
+					}
+					
+					if (proposal != null && proposal.getPriceType() != null) {
+						switch (proposal.getPriceType()) {
+						case PRICE:
+							stmt.setInt(25, PriceType.PERCENTAGE);
+							LOGGER.trace("param25 PriceType PERCENTAGE(1)");
+							break;
+						case YIELD:
+							stmt.setInt(25, PriceType.YIELD);
+							LOGGER.trace("param25 PriceType YIELD(9)");
+							break;
+						case SPREAD:
+							stmt.setInt(25, PriceType.SPREAD);
+							LOGGER.trace("param25 PriceType SPREAD(6)");
+							break;
+						case UNIT:
+							stmt.setInt(25, PriceType.PER_UNIT);
+							LOGGER.trace("param25 PriceType PER_UNIT(2)");
+							break;
+						default:
+							stmt.setNull(25, java.sql.Types.INTEGER);
+							LOGGER.trace("param25 PriceType null");						
+						}
+					} else {
+						stmt.setNull(25, java.sql.Types.INTEGER);
+						LOGGER.trace("param25 PriceType null");						
+					}
 	            }
 	
 	            @Override
@@ -551,8 +579,8 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
     
 	private static final String SQL_INSERT_INTO_PRICETABLEEXECUTABLE = "INSERT INTO PriceTableExecutable "
 			+ "(NumOrdine, Attempt, MarketId, BankCode, Side, Isin, Price, Qty, "
-			+ "ArrivalTime, FlagScartato, Note, MarketBankCode, SeqOrder, AuditQuoteState, QuoteType) "
-			+ "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+			+ "ArrivalTime, FlagScartato, Note, MarketBankCode, SeqOrder, AuditQuoteState, QuoteType, PriceType) "
+			+ "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
     
     
 	private void saveInPriceTableExecutable(final String orderId, final int attemptNo, final String isin,
@@ -678,6 +706,32 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 					}
 					stmt.setString(15, "FRM");
 					LOGGER.trace("param15 SeqOrder {}", "FRM");
+					if (proposal != null && proposal.getPriceType() != null) {
+						switch (proposal.getPriceType()) {
+						case PRICE:
+							stmt.setInt(16, PriceType.PERCENTAGE);
+							LOGGER.trace("param16 PriceType PERCENTAGE(1)");
+							break;
+						case YIELD:
+							stmt.setInt(16, PriceType.YIELD);
+							LOGGER.trace("param16 PriceType YIELD(9)");
+							break;
+						case SPREAD:
+							stmt.setInt(16, PriceType.SPREAD);
+							LOGGER.trace("param16 PriceType SPREAD(6)");
+							break;
+						case UNIT:
+							stmt.setInt(16, PriceType.PER_UNIT);
+							LOGGER.trace("param16 PriceType PER_UNIT(2)");
+							break;
+						default:
+							stmt.setNull(16, java.sql.Types.INTEGER);
+							LOGGER.trace("param16 PriceType null");						
+						}
+					} else {
+						stmt.setNull(16, java.sql.Types.INTEGER);
+						LOGGER.trace("param16 PriceType null");						
+					}				
 				}
 
 				@Override

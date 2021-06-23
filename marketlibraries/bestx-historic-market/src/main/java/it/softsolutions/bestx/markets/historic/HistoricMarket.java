@@ -40,6 +40,7 @@ import it.softsolutions.bestx.model.Proposal.ProposalType;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.Venue;
 import it.softsolutions.jsscommon.Money;
+import quickfix.field.PriceType;
 
 public class HistoricMarket extends MarketCommon implements MarketPriceConnection, HistoricMarketMBean {
 
@@ -215,7 +216,24 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
             Date timestamp = rs.getTimestamp("ArrivalTime");
             BigDecimal qty = Optional.ofNullable(rs.getBigDecimal("Qty")).orElse(BigDecimal.ZERO);
             BigDecimal amount = Optional.ofNullable(rs.getBigDecimal("Price")).orElse(BigDecimal.ZERO);
-            Proposal.PriceType priceType = Proposal.PriceType.PRICE;
+            
+            Proposal.PriceType priceType = null;
+            switch (rs.getInt("PriceType")) {
+            case PriceType.PERCENTAGE:
+            	priceType = Proposal.PriceType.PRICE;
+            	break;
+            case PriceType.YIELD:
+            	priceType = Proposal.PriceType.YIELD;
+            	break;
+            case PriceType.SPREAD:
+            	priceType = Proposal.PriceType.SPREAD;
+            	break;
+            case PriceType.PER_UNIT:
+            	priceType = Proposal.PriceType.UNIT;
+            	break;
+            }
+            
+            
             ProposalType proposalType = ProposalType.TRADEABLE;
 
 
