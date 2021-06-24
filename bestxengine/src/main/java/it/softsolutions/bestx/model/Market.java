@@ -206,6 +206,10 @@ public class Market implements Serializable, Cloneable {
 	public void setOriginalMarket(Market originalMarket) {
 		this.originalMarket = originalMarket;
 	}
+	
+	public Market getEffectiveMarket() {
+		return this.historic ? this.originalMarket : this;
+	}
 
 	@Override
     public Object clone() throws CloneNotSupportedException {

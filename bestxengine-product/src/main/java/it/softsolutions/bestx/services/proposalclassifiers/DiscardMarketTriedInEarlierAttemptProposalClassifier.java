@@ -50,7 +50,7 @@ public class DiscardMarketTriedInEarlierAttemptProposalClassifier implements Pro
 			LOGGER.debug("Order {}, check markets used in previous attempts : {}", order.getFixOrderId(), proposal);
 			for (Attempt a : previousAttempts) {
 				// Market used in an earlier attempt
-				if (a.getMarketOrder() != null && a.getMarketOrder().getMarket().equals(proposal.getMarket())) {
+				if (a.getMarketOrder() != null && a.getMarketOrder().getMarket().getEffectiveMarket().equals(proposal.getMarket().getEffectiveMarket())) {
 					LOGGER.debug("Order {}, proposal {}, already tried market {}", order.getFixOrderId(), proposal.getMarket(), proposal.getMarket());
 					List<MarketExecutionReport> execReports = a.getMarketExecutionReports();
 					// The earlier attempt has a market execution report stating that a technical or business failure prevented
