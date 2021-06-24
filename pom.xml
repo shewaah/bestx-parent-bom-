@@ -463,7 +463,7 @@
                         </execution>
                     </executions>
                     <configuration>
-                        <skip>${duplicatecheck.skip}</skip>
+                        <skip>true</skip>
                         <quiet>false</quiet>
 
                         <checkCompileClasspath>true</checkCompileClasspath>

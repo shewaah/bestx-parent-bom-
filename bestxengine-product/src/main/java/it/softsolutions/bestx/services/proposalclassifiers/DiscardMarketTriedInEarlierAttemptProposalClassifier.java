@@ -62,7 +62,7 @@ public class DiscardMarketTriedInEarlierAttemptProposalClassifier implements Pro
 					} else {
 						// there are no market execution reports at all
 						LOGGER.debug("Order {}, no execution reports, check the if the market allows to reuse prices.", order.getFixOrderId());
-						if (proposal.getMarket() != null && a.getMarketOrder().getMarket().equals(proposal.getMarket()) && !proposal.getMarket().isReusePrices()) {
+						if (proposal.getMarket() != null && a.getMarketOrder().getMarket().getEffectiveMarket().equals(proposal.getMarket().getEffectiveMarket()) && !proposal.getMarket().getEffectiveMarket().isReusePrices()) {
 							proposal.setProposalState(Proposal.ProposalState.REJECTED);
 							proposal.setReason(Messages.getString("DiscardMarketTriedInEarlierAttemptProposalClassifier.0"));
 						}
