@@ -56,6 +56,7 @@ import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.ManualManageState;
+import it.softsolutions.bestx.states.RejectedState;
 import it.softsolutions.bestx.states.WarningState;
 
 /**
@@ -560,6 +561,14 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         }
         break;
         case Rejected:
+        	if (newState instanceof RejectedState) {
+            	try {
+            		this.operationStateAuditDao.saveExecutablePrices(order.getFixOrderId(), attemptNo, order.getInstrument().getIsin(), operation.getLastAttempt().getExecutablePrices());
+            	} catch (Exception e) {
+            		LOGGER.error("Not able to save executable prices", e);
+            	}
+        	}
+        	break;
         case MarketExecuted:
         	try {
         		this.operationStateAuditDao.saveExecutablePrices(order.getFixOrderId(), attemptNo, order.getInstrument().getIsin(), operation.getLastAttempt().getExecutablePrices());

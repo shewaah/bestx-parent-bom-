@@ -1209,12 +1209,15 @@
     
     <bean id="bloombergHistoricMarket" parent="historicMarket">
     	<property name="marketCode" value="BLOOMBERG_HIST" />
+    	<property name="referenceMarketConnection" ref="bloombergMarket" />
     </bean>
     <bean id="marketAxessHistoricMarket" parent="historicMarket">
     	<property name="marketCode" value="MARKETAXESS_HIST" />
+    	<property name="referenceMarketConnection" ref="marketAxessMarket" />
     </bean>
     <bean id="tradewebHistoricMarket" parent="historicMarket">
     	<property name="marketCode" value="TW_HIST" />
+    	<property name="referenceMarketConnection" ref="tradewebMarket" />
     </bean>
 
     <bean id="ib4jOperatorConsoleAdapter" class="it.softsolutions.bestx.connections.CSIB4JOperatorConsoleAdapter" init-method="init">

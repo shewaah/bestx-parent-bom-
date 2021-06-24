@@ -18,6 +18,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.connections.MarketBuySideConnection;
+import it.softsolutions.bestx.connections.MarketConnection;
 import it.softsolutions.bestx.connections.MarketPriceConnection;
 import it.softsolutions.bestx.connections.MarketPriceConnectionListener;
 import it.softsolutions.bestx.exceptions.MarketNotAvailableException;
@@ -57,6 +58,8 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 	
 	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 	
+	private MarketConnection referenceMarketConnection;
+	
 	@Override
 	public void cleanBook() {
 	}
@@ -91,7 +94,7 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 
 	@Override
 	public boolean isBuySideConnectionProvided() {
-		return true; // FIXME
+		return this.referenceMarketConnection.isBuySideConnectionProvided();
 	}
 
 	@Override
@@ -101,12 +104,12 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 
 	@Override
 	public boolean isBuySideConnectionAvailable() {
-		return true; // FIXME
+		return this.referenceMarketConnection.isBuySideConnectionAvailable();
 	}
 
 	@Override
 	public boolean isPriceConnectionAvailable() {
-		return true;
+		return this.referenceMarketConnection.isPriceConnectionAvailable();
 	}
 
 	@Override
@@ -115,11 +118,11 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 	}
 
     public boolean isPriceConnectionEnabled() {
-        return true;
+        return this.referenceMarketConnection.isPriceConnectionEnabled();
     }
 
     public boolean isBuySideConnectionEnabled() {
-        return true; // FIXME Link to original market
+        return this.referenceMarketConnection.isBuySideConnectionEnabled();
     }
 	
 	
@@ -349,6 +352,14 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 
 	public void setVenueFinder(VenueFinder venueFinder) {
 		this.venueFinder = venueFinder;
+	}
+
+	public MarketConnection getReferenceMarketConnection() {
+		return referenceMarketConnection;
+	}
+
+	public void setReferenceMarketConnection(MarketConnection referenceMarketConnection) {
+		this.referenceMarketConnection = referenceMarketConnection;
 	}
 
 	
