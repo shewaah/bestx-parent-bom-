@@ -897,6 +897,7 @@ public class TradewebMarket extends MarketCommon
 					   price.setPrice(new Money(operation.getOrder().getCurrency(), new BigDecimal(data[1].trim())));
 					   price.setQty(operation.getOrder().getQty());
 					   price.setTimestamp(tsExecutionReport.getTransactTime());
+					   price.setSide(operation.getOrder().getSide() == OrderSide.BUY ? ProposalSide.ASK : ProposalSide.BID);
 					   MarketMarketMaker tempMM = marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), data[0]);
 					   if(tempMM == null) {
 						   LOGGER.info("IMPORTANT! Tradeweb returned dealer {} not configured in BestX!. Please configure it", data[0]);
@@ -1040,6 +1041,13 @@ public class TradewebMarket extends MarketCommon
 				   LOGGER.info("[MktMsg] No custom component found in execution report {}", tsExecutionReport.getClOrdID());
 			   }
 		   }
+		   
+		   for (ExecutablePrice ep : operation.getLastAttempt().getExecutablePrices()) {
+	            if (ep.getMarketMarketMaker() != null && ep.getMarketMarketMaker().getMarketMaker() != null) {
+	                ep.setVenue(this.venueFinder.getMarketMakerVenue(ep.getMarketMarketMaker().getMarketMaker()));
+	            }
+		   }
+		   
 		   LOGGER.debug("Passing to executor message with status {} for order {} for management", ordStatus, cleanClOrdId);
 		   executor.execute(new OnExecutionReportRunnable(operation, this, market, cleanClOrdId, execType, ordStatus, accruedInterestAmount, accruedInterestRate, lastPrice, contractNo, futSettDate,
 				   transactTime, (textTruncated != null ? textTruncated : cleanText), mmm, executionBroker, micCode, numDaysInterest, factor, settlType));
