@@ -263,9 +263,15 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 					String marketMakerCode = goodProp.getMarketMarketMaker().getMarketMaker().getCode();
 					boolean isComposite = this.compositeMarketMakers.contains(marketMakerCode);
 
-					proposal.element("PriceType", this.convertPriceTypeToInt(goodProp.getPriceType()));
+					if (goodProp.getPriceType() != null) {
+						proposal.element("PriceType", this.convertPriceTypeToInt(goodProp.getPriceType()));
+						rawProposal.element("PriceType", this.convertPriceTypeToInt(goodProp.getPriceType()));
+					} else {
+						LOGGER.warn("PriceType is NULL for proposal {}. Setting to default: 1", goodProp);
+						proposal.element("PriceType", 1);
+						rawProposal.element("PriceType",1);
+					}
 					proposal.element("PriceQuality", isComposite ? "CMP" : "IND");
-					rawProposal.element("PriceType", this.convertPriceTypeToInt(goodProp.getPriceType()));
 					rawProposal.element("PriceQuality", isComposite ? "CMP" : "IND");
 
 					proposal.element("timestamp", df.format(goodProp.getTimestamp()));
