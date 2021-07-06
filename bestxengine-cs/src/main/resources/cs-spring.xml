@@ -948,7 +948,7 @@
 		</property>
 		<property name="bookClassifierList">
 			<list>
-                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardDuplicatedMM" />
+<!--                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardDuplicatedMM" /> -->
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTooWideQuoteSpread" />
 			</list>
 		</property>
