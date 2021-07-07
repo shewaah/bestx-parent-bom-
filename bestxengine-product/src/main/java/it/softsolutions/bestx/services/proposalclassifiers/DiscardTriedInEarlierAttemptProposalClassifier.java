@@ -66,7 +66,7 @@ public class DiscardTriedInEarlierAttemptProposalClassifier implements ProposalC
 										|| mer.getReason() == MarketExecutionReport.RejectReason.BUSINESS_REJECTED
 										|| mer.getReason() == MarketExecutionReport.RejectReason.TRADER_REJECTED)
 									|| (mer.getState() == ExecutionReportState.CANCELLED)) {
-									proposal.setProposalState(Proposal.ProposalState.REJECTED);
+									proposal.setProposalState(Proposal.ProposalState.ACCEPTABLE);
 									proposal.setReason(Messages.getString("DiscardTriedInEarlierAttemptProposalClassifier.0"));
 									break;
 								}
@@ -78,7 +78,7 @@ public class DiscardTriedInEarlierAttemptProposalClassifier implements ProposalC
 
 							if (proposal.getVenue().getMarket() == null || !proposal.getVenue().getMarket().isReusePrices()) {
 								LOGGER.debug("Order {}, the market does not allow to reuse prices.", order.getFixOrderId());
-								proposal.setProposalState(Proposal.ProposalState.REJECTED);
+								proposal.setProposalState(Proposal.ProposalState.ACCEPTABLE);
 								proposal.setReason(Messages.getString("DiscardTriedInEarlierAttemptProposalClassifier.0"));
 							}
 						}

@@ -933,7 +933,6 @@
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardSpreadProposalClassifier" />
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardYieldProposalClassifier" />
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnitProposalClassifier" />
-                <bean class="it.softsolutions.bestx.services.proposalclassifiers.SubstituteCounterProposalClassifier" />
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnavailableVenueProposalClassifier" />
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroProposalClassifier">
                 	<property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
@@ -942,8 +941,8 @@
                     <property name="configValue" value="${ProposalClassifiers.discard.limitHours}" />
                     <property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
 				</bean>
-                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardMarketTriedInEarlierAttemptProposalClassifier" />
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardWorstPriceProposalClassifier" />
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTriedInEarlierAttemptProposalClassifier" />
 			</list>
 		</property>
 		<property name="bookClassifierList">
@@ -971,12 +970,10 @@
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.TagInsufficientQtyProposalClassifier">
                 	<property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
 				</bean>
-				<!-- <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTooWideQuoteSpread"></bean> -->
 			</list>
 		</property>
 		<property name="bookClassifierList">
 			<list>
-                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardDuplicatedMM"></bean>
 			</list>
 		</property>
 	</bean>

@@ -160,13 +160,13 @@ public class BookHelper {
 		   return null;
 	   
 	   if (sortedProposals.size() >= i && i > 0 && (ProposalState.VALID == sortedProposals.get(i - 1).getProposalState() ||
-			   (ProposalState.REJECTED == sortedProposals.get(i - 1).getProposalState() &&
+			   (ProposalState.ACCEPTABLE == sortedProposals.get(i - 1).getProposalState() &&
 			   sortedProposals.get(i - 1).getProposalSubState() != null && 
 			   (sortedProposals.get(i - 1).getProposalSubState() == ProposalSubState.PRICE_WORST_THAN_LIMIT ||
 			   sortedProposals.get(i - 1).getProposalSubState() == ProposalSubState.OUTSIDE_SPREAD))))
 		   return sortedProposals.get(i - 1);
 	   else if (ProposalState.VALID == sortedProposals.get(sortedProposals.size() - 1).getProposalState() || 
-			   (ProposalState.REJECTED == sortedProposals.get(sortedProposals.size() - 1).getProposalState() &&
+			   (ProposalState.ACCEPTABLE == sortedProposals.get(sortedProposals.size() - 1).getProposalState() &&
 			   sortedProposals.get(sortedProposals.size() - 1).getProposalSubState() != null && 
 			   (sortedProposals.get(sortedProposals.size() - 1).getProposalSubState() == ProposalSubState.PRICE_WORST_THAN_LIMIT ||
 			   sortedProposals.get(sortedProposals.size() - 1).getProposalSubState() == ProposalSubState.OUTSIDE_SPREAD)))
@@ -175,7 +175,7 @@ public class BookHelper {
 		   for (int index = 0; i < sortedProposals.size(); index++) {
 			   ClassifiedProposal classifiedProposal = sortedProposals.get(index);
 			   if ((ProposalState.VALID != classifiedProposal.getProposalState()) || 
-					   (ProposalState.REJECTED == classifiedProposal.getProposalState() &&
+					   (ProposalState.ACCEPTABLE == classifiedProposal.getProposalState() &&
 					   classifiedProposal.getProposalSubState() != null && 
 					   (classifiedProposal.getProposalSubState() == ProposalSubState.PRICE_WORST_THAN_LIMIT ||
 					   classifiedProposal.getProposalSubState() == ProposalSubState.OUTSIDE_SPREAD)))

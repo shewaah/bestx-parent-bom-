@@ -32,13 +32,10 @@ import it.softsolutions.bestx.connections.MarketConnection;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.handlers.ExecutionReportHelper;
 import it.softsolutions.bestx.model.Attempt;
-import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
-import it.softsolutions.bestx.model.MarketMaker;
-import it.softsolutions.bestx.model.MarketMarketMaker;
 import it.softsolutions.bestx.model.MarketMarketMakerSpec;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
@@ -55,6 +52,7 @@ import it.softsolutions.bestx.states.LimitFileNoPriceState;
 import it.softsolutions.bestx.states.OrderCancelRequestState;
 import it.softsolutions.bestx.states.OrderNotExecutableState;
 import it.softsolutions.bestx.states.SendAutoNotExecutionReportState;
+import it.softsolutions.bestx.states.WaitingPriceState;
 import it.softsolutions.bestx.states.WarningState;
 import it.softsolutions.bestx.states.bloomberg.BBG_StartExecutionState;
 import it.softsolutions.bestx.states.marketaxess.MA_StartExecutionState;
@@ -350,6 +348,10 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		}
 		// ###  End
 		
+		//BESTX-865 retry a price discovery every attempt
+      operation.setStateResilient(new WaitingPriceState(), ErrorState.class);
+		
+		/*
 		List<MarketMaker> doNotIncludeMM = new ArrayList<MarketMaker>();
 		// move book to a new attempt
 		operation.addAttempt();
@@ -419,6 +421,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 			LOGGER.info("Order {} is not autoexecutable, go to Curando State", customerOrder.getFixOrderId());
 			operation.setStateResilient(new CurandoState(), ErrorState.class);
 		}
+		*/
 	}
 
 

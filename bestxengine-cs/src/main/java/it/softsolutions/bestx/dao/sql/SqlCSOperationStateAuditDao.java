@@ -424,6 +424,9 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 //	                   //BESTX-680 show in the aggregated book in GUI
 //                      stmt.setInt(12, 0);
 //                      LOGGER.trace("param12 FlagScartato 0");
+                   } else if (proposal != null && proposal.getProposalState() == Proposal.ProposalState.ACCEPTABLE) {
+                      stmt.setInt(12, 3);
+                      LOGGER.trace("param12 FlagScartato 3");
 	                } else if (proposal != null && proposal.getProposalState() == Proposal.ProposalState.REJECTED) {
 	                   stmt.setInt(12, 1);
 	                   LOGGER.trace("param12 FlagScartato 1");
@@ -669,6 +672,9 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 					if (proposal != null && proposal.getProposalState() == Proposal.ProposalState.DROPPED) {
 						stmt.setInt(10, 2);
 						LOGGER.trace("param10 FlagScartato 2");
+               } else if (proposal != null && proposal.getProposalState() == Proposal.ProposalState.ACCEPTABLE) {
+                  stmt.setInt(12, 3);
+                  LOGGER.trace("param12 FlagScartato 3");
 					} else if (proposal != null && proposal.getProposalState() == Proposal.ProposalState.REJECTED) {
 						stmt.setInt(10, 1);
 						LOGGER.trace("param10 FlagScartato 1");

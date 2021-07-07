@@ -54,7 +54,7 @@ public class Proposal implements Cloneable, Comparable<Proposal> {
      * The Enum ProposalState.
      */
     public static enum ProposalState {
-        NEW, VALID, EXPIRED, REJECTED, DROPPED  // order is important: Enum.compareTo returns state with higher priority as higher    
+        NEW, VALID, EXPIRED, REJECTED, DROPPED, ACCEPTABLE  // order is important: Enum.compareTo returns state with higher priority as higher    
    }
 
     /**

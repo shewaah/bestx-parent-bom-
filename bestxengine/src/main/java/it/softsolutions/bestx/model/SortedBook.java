@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Proposal.ProposalSide;
 import it.softsolutions.bestx.model.Proposal.ProposalState;
@@ -168,10 +167,7 @@ public class SortedBook implements Book, Cloneable {
 
 		List<ClassifiedProposal> result = new ArrayList<ClassifiedProposal>();
 		for (ClassifiedProposal prop : sideProposals) {
-			if (prop.getProposalState() == ProposalState.VALID ||
-					(prop.getProposalState() == ProposalState.REJECTED &&
-						prop.getProposalSubState() != null && (prop.getProposalSubState() == ProposalSubState.PRICE_WORST_THAN_LIMIT ||
-						prop.getProposalSubState() == ProposalSubState.OUTSIDE_SPREAD))) {
+			if (prop.getProposalState() == ProposalState.VALID || prop.getProposalState() == ProposalState.ACCEPTABLE)  {
 				result.add(prop);
 			}
 		}
