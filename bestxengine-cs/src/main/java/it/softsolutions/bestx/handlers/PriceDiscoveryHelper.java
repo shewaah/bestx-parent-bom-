@@ -47,14 +47,21 @@ public class PriceDiscoveryHelper {
 
 		Map<String, ClassifiedProposal> propMap = new HashMap<String, ClassifiedProposal>();
 		for (ClassifiedProposal prop: otherSideBook) {
-			propMap.put(prop.getMarket().getMicCode()+"_"+prop.getMarketMarketMaker().getMarketMaker().getCode(), prop);
+			if (!prop.getMarket().isHistoric()) {
+				propMap.put(prop.getMarket().getMicCode()+"_"+prop.getMarketMarketMaker().getMarketMaker().getCode(), prop);
+			}
 		}
 		for (int i = 0; i < sideBook.size() && i< bookDepth; i++) {
 			ClassifiedProposal prop = sideBook.get(i);
 			sidePrices.add(createPriceRow(prop, rank, priceDecimals, order));
-			ClassifiedProposal othProp = propMap.get(prop.getMarket().getMicCode()+"_"+prop.getMarketMarketMaker().getMarketMaker().getCode());
-			if (othProp!=null) {
-				otherSidePrices.add(createPriceRow(othProp, rank, priceDecimals, order));
+			
+			if (!prop.getMarket().isHistoric()) {
+				ClassifiedProposal othProp = propMap.get(prop.getMarket().getMicCode()+"_"+prop.getMarketMarketMaker().getMarketMaker().getCode());
+				if (othProp!=null) {
+					otherSidePrices.add(createPriceRow(othProp, rank, priceDecimals, order));
+				} else {
+					otherSidePrices.add(createNoPriceRow(prop, rank));
+				}
 			} else {
 				otherSidePrices.add(createNoPriceRow(prop, rank));
 			}
@@ -107,6 +114,7 @@ public class PriceDiscoveryHelper {
 		case CLOSED: return "N/A";
 		case INDICATIVE: return "I";
 		case TRADEABLE: return "T";
+		case COMPOSITE: return "C";
 		case RESTRICTED_TRADEABLE: return "RT";
 		case COUNTER: return "T";
 		case SPREAD_ON_BEST: return "N/A";
