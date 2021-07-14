@@ -223,7 +223,7 @@ public class SortedBook implements Book, Cloneable {
 		List<ClassifiedProposal> sideProposals = getSideProposals(convertSide(side));
 		List<ClassifiedProposal> result = new ArrayList<ClassifiedProposal>();
 		for (ClassifiedProposal prop : sideProposals) {
-			boolean stateToAccept = (prop.getProposalState() == ProposalState.VALID) || ((prop.getProposalState() == ProposalState.REJECTED));
+			boolean stateToAccept = prop.getProposalState() == ProposalState.VALID || prop.getProposalState() == ProposalState.REJECTED || prop.getProposalState() == ProposalState.ACCEPTABLE;
 			boolean validPrice = (prop.getPrice().getAmount().doubleValue() > 0.0);
 			if ( stateToAccept && validPrice ){
 				result.add(prop);

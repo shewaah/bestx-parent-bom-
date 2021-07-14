@@ -342,24 +342,27 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			LOGGER.debug("Best price on Bloomberg. Order {} must be rejected back to OMS", customerOrder.getFixOrderId());
 		else
 			LOGGER.debug("Best not on Bloomberg or flag rejectOrderWhenBloombergIsBest is false");
+		
+		//SP-20210714 BESTX-865 check max number of retries also for all limit file orders 
+      if (operation.hasPassedMaxAttempt(maxAttemptNo)) {
+         LOGGER.info("Order={}, Max number of attempts reached.", operation.getOrder().getFixOrderId());
+         currentAttempt.setByPassableForVenueAlreadyTried(true);
+
+         try {
+            ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
+            operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("EventNoMoreRetry.0")), ErrorState.class);
+            return;
+         } catch (BestXException e) {
+            LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
+            String errorMessage = e.getMessage();
+            operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
+            return;
+         }
+      }
+		
 		if (priceResult.getState() == PriceResult.PriceResultState.COMPLETE) {
 			// Fill Attempt
 			currentAttempt.setExecutionProposal(currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide()));
-			if (operation.hasPassedMaxAttempt(maxAttemptNo)/*&& !operation.getOrder().isLimitFile() AMC 20181210 removed because maxAttemptNo is in current lifecycle BESTX-380 */) {
-				LOGGER.info("Order={}, Max number of attempts reached.", operation.getOrder().getFixOrderId());
-				currentAttempt.setByPassableForVenueAlreadyTried(true);
-
-				try {
-					ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
-					operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("EventNoMoreRetry.0")), ErrorState.class);
-					return;
-				} catch (BestXException e) {
-					LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
-					String errorMessage = e.getMessage();
-					operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
-					return;
-				}
-			}
 			// Build MarketOrder
 			MarketOrder marketOrder = new MarketOrder();
 			Money limitPrice = calculateTargetPrice(customerOrder, currentAttempt);
