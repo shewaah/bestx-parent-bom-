@@ -39,6 +39,7 @@ import it.softsolutions.bestx.connections.BaseOperatorConsoleAdapter;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.ExecutablePrice;
+import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Proposal.PriceType;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
@@ -197,12 +198,17 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 				Map<String, ClassifiedProposal> askProposals = new HashMap<String, ClassifiedProposal>();
 
 				for (ClassifiedProposal prop : book.getBidProposals()) {
+				   if (!prop.getMarket().isHistoric()) {
 					bidProposals.put(prop.getMarket().getMarketCode() + "_"
 							+ prop.getMarketMarketMaker().getMarketSpecificCode(), prop);
+				   }
 				}
+				
 				for (ClassifiedProposal prop : book.getAskProposals()) {
+				   if (!prop.getMarket().isHistoric()) {
 					askProposals.put(prop.getMarket().getMarketCode() + "_"
 							+ prop.getMarketMarketMaker().getMarketSpecificCode(), prop);
+				   }
 				}
 
 				JSONArray jsonMap = new JSONArray();
@@ -278,9 +284,9 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 					rawProposal.element("timestamp", df.format(goodProp.getTimestamp()));
 
 					proposal.element("market", goodProp.getMarket().getMarketCode());
-					proposal.element("marketmaker", marketMakerCode);
+					proposal.element("marketmaker", goodProp.getMarketMarketMaker().getMarketSpecificCode());
 					rawProposal.element("market", goodProp.getMarket().getMarketCode());
-					rawProposal.element("marketmaker", marketMakerCode);
+					rawProposal.element("marketmaker", goodProp.getMarketMarketMaker().getMarketSpecificCode());
 
 					if (goodProp.getProposalSubState() != null
 							&& goodProp.getProposalSubState() != Proposal.ProposalSubState.NONE) {
@@ -381,10 +387,9 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 							LOGGER.trace("Setting price type in ExecutablePrice for order {}", operation.getOrder().getFixOrderId());
 							proposal.element("PriceType", this.convertPriceTypeToInt(ep.getPriceType()));
 						}
-	
 						if (ep.getMarketMarketMaker() != null && ep.getMarketMarketMaker().getMarketMaker() != null) {
 							LOGGER.trace("Setting known market maker in ExecutablePrice for order {}", operation.getOrder().getFixOrderId());
-							proposal.element("marketmaker", ep.getMarketMarketMaker().getMarketMaker().getCode());
+							proposal.element("marketmaker", ep.getMarketMarketMaker().getMarketSpecificCode());
 						} else {
 							LOGGER.trace("Setting unknown market maker in ExecutablePrice for order {}", operation.getOrder().getFixOrderId());
 							proposal.element("marketmaker", ep.getOriginatorID());
