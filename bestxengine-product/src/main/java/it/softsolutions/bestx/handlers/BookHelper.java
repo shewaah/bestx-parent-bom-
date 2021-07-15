@@ -147,9 +147,10 @@ public class BookHelper {
       else if (ProposalState.VALID == sortedProposals.get(sortedProposals.size() - 1).getProposalState())
          return sortedProposals.get(sortedProposals.size() - 1);
       else {
-         for (int index = 0; i < sortedProposals.size(); index++)
-            if (ProposalState.VALID != sortedProposals.get(index).getProposalState())
-               return sortedProposals.get(index - 1);
+         //Get the first valid proposal
+         for (int index = 0; index < sortedProposals.size(); index++)
+            if (ProposalState.VALID == sortedProposals.get(index).getProposalState())
+               return sortedProposals.get(index);
       }
       return null;
    }
@@ -165,11 +166,12 @@ public class BookHelper {
 			   ProposalState.ACCEPTABLE == sortedProposals.get(sortedProposals.size() - 1).getProposalState())
 		   return sortedProposals.get(sortedProposals.size() - 1);
 	   else {
-		   for (int index = 0; i < sortedProposals.size(); index++) {
+		   for (int index = 0; index < sortedProposals.size(); index++) {
+	         //Get the first acceptable proposal
 			   ClassifiedProposal classifiedProposal = sortedProposals.get(index);
-			   if (ProposalState.VALID != classifiedProposal.getProposalState() || 
+			   if (ProposalState.VALID == classifiedProposal.getProposalState() || 
 					   ProposalState.ACCEPTABLE == classifiedProposal.getProposalState()) 
-				   return sortedProposals.get(index - 1);
+				   return sortedProposals.get(index);
 		   }
 	   }
 	   return null;
