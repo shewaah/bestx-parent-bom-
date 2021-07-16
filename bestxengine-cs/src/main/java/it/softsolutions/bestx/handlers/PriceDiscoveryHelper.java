@@ -38,10 +38,10 @@ public class PriceDiscoveryHelper {
 		List<ClassifiedProposal> sideBook = null;
 		List<ClassifiedProposal> otherSideBook = null;
 		if(OrderSide.BUY.equals(order.getSide())) {
-			sideBook = book.getValidSideProposals(order.getSide());
+			sideBook = book.getAcceptableSideProposals(order.getSide());
 			otherSideBook = book.getBidProposals();
 		} else  {
-			sideBook = book.getValidSideProposals(order.getSide());
+			sideBook = book.getAcceptableSideProposals(order.getSide());
 			otherSideBook = book.getAskProposals();
 		}
 
