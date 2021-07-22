@@ -798,6 +798,7 @@
         <property name="mqPriceDiscoveryConnection"><ref bean="mqPriceDiscoveryOperatorConsoleAdapter"/></property>
         <property name="grdLiteConnection"><ref bean="grdLiteService"/></property>
         <property name="datalakeConnection" ref="dataCollector" />
+        <property name="csAlgoRestServiceConnection" ref="algoRestService" />
 	</bean>
 
 	<!-- OPERATION LIFECYCLE MANAGER -->
@@ -1346,11 +1347,12 @@
 	</bean>
 	
 	<bean id="algoRestService" class="it.softsolutions.bestx.services.rest.CSAlgoRestService" init-method="init">
+		<property name="serviceName" value="RestServiceConnection" />
         <property name="endpoint" value="${CSAlgoRest.service.endpoint}" />
         <property name="servicePath" value="${CSAlgoRest.service.servicePath}" />
         <property name="healtcheckPath" value="${CSAlgoRest.service.healtcheckPath}" />
         <property name="connectionTimeout" value="${CSAlgoRest.service.connectionTimeout}" />
         <property name="responseTimeout" value="${CSAlgoRest.service.responseTimeout}" />
-        <property name="serviceName" value="${CSAlgoRest.service.serviceName}" />
+        <property name="algoServiceName" value="${CSAlgoRest.service.serviceName}" />
 	</bean>
 </beans>

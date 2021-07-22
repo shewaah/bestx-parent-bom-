@@ -334,6 +334,9 @@ public class IB4JOperatorConsoleMessage {
     public static final String FLD_DL_CHANNEL_NAME = "BESTX_DATALAKE_CHANNEL_NAME";
     public static final String FLD_DL_CHANNEL_STATUS = "BESTX_DATALAKE_CHANNEL_STATUS";
     
+    /** CS Algo REST service constants */
+    public static final String FLD_ALGO_REST_CHANNEL_NAME = "BESTX_ALGO_REST_CHANNEL_NAME";
+    public static final String FLD_ALGO_REST_CHANNEL_STATUS = "BESTX_ALGO_REST_CHANNEL_STATUS";
     
     
     

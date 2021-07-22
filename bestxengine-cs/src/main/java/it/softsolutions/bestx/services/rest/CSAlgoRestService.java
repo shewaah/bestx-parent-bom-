@@ -43,7 +43,7 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
    private String healtcheckPath;
    private int connectionTimeout;
    private int responseTimeout;
-   private String serviceName;
+   private String algoServiceName;
    
    private boolean active = false;
    private boolean available = false;
@@ -170,13 +170,13 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
    public void setHealtcheckPath(String healtcheckPath) {
       this.healtcheckPath = healtcheckPath;
    }
-
-   public String getServiceName() {
-      return serviceName;
+   
+   public String getAlgoServiceName() {
+      return algoServiceName;
    }
    
-   public void setServiceName(String serviceName) {
-      this.serviceName = serviceName;
+   public void setAlgoServiceName(String algoServiceName) {
+      this.algoServiceName = algoServiceName;
    }
 
    private JSONObject callRestService(JSONObject objReq, WebClient client) {
