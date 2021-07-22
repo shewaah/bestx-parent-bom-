@@ -37,6 +37,7 @@
 				<value>BESTX.properties</value>
 				<value>hibernate.properties</value>
 				<value>classpath:BESTX_internal.properties</value>
+				<value>restServiceConnection.properties</value>
 			</list>
 		</property>
 	</bean>
@@ -102,6 +103,7 @@
                 <entry key="it.softsolutions.bestx.cs:name=BloombergHistoricMarket" value-ref="bloombergHistoricMarket" />
                 <entry key="it.softsolutions.bestx.cs:name=MarketAxessHistoricMarket" value-ref="marketAxessHistoricMarket" />
                 <entry key="it.softsolutions.bestx.cs:name=TradewebHistoricMarket" value-ref="tradewebHistoricMarket" />
+                <entry key="it.softsolutions.bestx.cs:name=CSAlgoRestService" value-ref="algoRestService" />
 			</map>
 		</property>
 		<property name="server" ref="mbeanServer" />
@@ -132,6 +134,7 @@
 						<prop key="it.softsolutions.bestx.cs:name=BloombergHistoricMarket">it.softsolutions.bestx.markets.historic.HistoricMarketMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=MarketAxessHistoricMarket">it.softsolutions.bestx.markets.historic.HistoricMarketMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=TradewebHistoricMarket">it.softsolutions.bestx.markets.historic.HistoricMarketMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=CSAlgoRestService">it.softsolutions.bestx.management.OperatorConsoleAdapterMBean</prop>
 					</props>
 				</property>
 			</bean>
@@ -1340,5 +1343,14 @@
         <property name="timeFormatString" value="${Kafka.Timestamp.Format:yyyy-MM-dd'T'HH:mm:ss.SSS'Z'}" />
         <property name="timeZoneString" value="${Kafka.Timestamp.Timezone:UTC}" />
         <property name="sendEmptyBook" value="${Kafka.Book.SendEmptyBook:false}" />
+	</bean>
+	
+	<bean id="algoRestService" class="it.softsolutions.bestx.services.rest.CSAlgoRestService" init-method="init">
+        <property name="endpoint" value="${CSAlgoRest.service.endpoint}" />
+        <property name="servicePath" value="${CSAlgoRest.service.servicePath}" />
+        <property name="healtcheckPath" value="${CSAlgoRest.service.healtcheckPath}" />
+        <property name="connectionTimeout" value="${CSAlgoRest.service.connectionTimeout}" />
+        <property name="responseTimeout" value="${CSAlgoRest.service.responseTimeout}" />
+        <property name="serviceName" value="${CSAlgoRest.service.serviceName}" />
 	</bean>
 </beans>

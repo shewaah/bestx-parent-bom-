@@ -34,6 +34,9 @@
 		<spotbugs.maxRank>15</spotbugs.maxRank>
 		<spotbugs.skip>false</spotbugs.skip>
 		<spotbugs.rank>15</spotbugs.rank>
+		<cxf-rt-rs-client.version>3.0.15</cxf-rt-rs-client.version>
+		<cxf-rt-transports-http-hc.version>3.0.15</cxf-rt-transports-http-hc.version>
+		<json.version>20200518</json.version>
     </properties>
 
     <modules>
@@ -363,6 +366,24 @@
                 <artifactId>com.ibm.mq.jmqi</artifactId>
                 <version>${ibm-mq-api.version}</version>
             </dependency>
+ 
+ 			<!-- JSON REST connection library -->
+	 		<dependency>
+				<groupId>org.apache.cxf</groupId>
+				<artifactId>cxf-rt-rs-client</artifactId>
+				<version>${cxf-rt-rs-client.version}</version>
+			</dependency>
+	 		<dependency>
+				<groupId>org.apache.cxf</groupId>
+				<artifactId>cxf-rt-transports-http-hc</artifactId>
+				<version>${cxf-rt-transports-http-hc.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.json</groupId>
+				<artifactId>json</artifactId>
+				<version>${json.version}</version>
+			</dependency>
+ 
  
  			<!-- marketlibraries -->
             <dependency>
