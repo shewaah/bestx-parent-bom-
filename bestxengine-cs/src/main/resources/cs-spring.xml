@@ -1350,7 +1350,7 @@
 		<property name="serviceName" value="RestServiceConnection" />
         <property name="endpoint" value="${CSAlgoRest.service.endpoint}" />
         <property name="servicePath" value="${CSAlgoRest.service.servicePath}" />
-        <property name="healtcheckPath" value="${CSAlgoRest.service.healtcheckPath}" />
+        <property name="healthcheckPath" value="${CSAlgoRest.service.healtcheckPath}" />
         <property name="connectionTimeout" value="${CSAlgoRest.service.connectionTimeout}" />
         <property name="responseTimeout" value="${CSAlgoRest.service.responseTimeout}" />
         <property name="algoServiceName" value="${CSAlgoRest.service.serviceName}" />

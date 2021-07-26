@@ -40,7 +40,7 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
 
    private String endpoint;
    private String servicePath;
-   private String healtcheckPath;
+   private String healthcheckPath;
    private int connectionTimeout;
    private int responseTimeout;
    private String algoServiceName;
@@ -66,7 +66,7 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
       conduit.getClient().setReceiveTimeout(responseTimeout);
       
       this.heartbeatClient = WebClient.create(this.endpoint);
-      this.heartbeatClient.path(this.healtcheckPath);
+      this.heartbeatClient.path(this.healthcheckPath);
       this.heartbeatClient.type(MediaType.APPLICATION_JSON);
       this.heartbeatClient.accept(MediaType.APPLICATION_JSON);
       
@@ -162,13 +162,13 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
       this.servicePath = servicePath;
    }
    
-   public String getHealtcheckPath() {
-      return healtcheckPath;
+   public String getHealthcheckPath() {
+      return healthcheckPath;
    }
 
    
-   public void setHealtcheckPath(String healtcheckPath) {
-      this.healtcheckPath = healtcheckPath;
+   public void setHealthcheckPath(String healtcheckPath) {
+      this.healthcheckPath = healtcheckPath;
    }
    
    public String getAlgoServiceName() {
@@ -197,7 +197,7 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
          while (keepChecking) {
             try {
                // Heartbeat check must be done by call GET on the healtcheck URL
-               String response = restClient.get().readEntity(String.class);
+               String response = heartbeatClient.get().readEntity(String.class);
                JSONObject objResp = new JSONObject(response);
                if ("GREEN".equalsIgnoreCase(objResp.getJSONObject("data").getString("status"))) {
                   available = true;
