@@ -620,6 +620,16 @@
 			</list>
 		</constructor-arg>
 	</bean>
+	
+    <bean id="defaultMarketOrderBuilder" class="it.softsolutions.bestx.services.BestXMarketOrderBuilder">
+        <property name="targetPriceMaxLevel"><value>${TargetPrice.MaxLevel}</value></property>
+	</bean>
+
+    <bean id="algoMarketOrderBuilder" class="it.softsolutions.bestx.services.rest.CSMarketOrderBuilder">
+        <property name="csAlgoService" ref="algoRestService" />
+        <property name="marketFinder" ref="dbBasedMarketFinder" />
+        <property name="marketMakerFinder" ref="dbBasedMarketMakerFinder" />
+	</bean>
 
 	<!-- STRATEGY -->
 	<bean id="csStrategy" class="it.softsolutions.bestx.CSStrategy">
@@ -641,7 +651,6 @@
 		<property name="bloombergExecTimeout"><value>${Bloomberg.ExecTimeout}</value></property>
         <property name="internalRfqReplyTimeout"><value>${Internal.rfqreply.timeout}</value></property>
         <property name="internalRfqMessagePrefix"><value>${Internal.rfq.message.prefix}</value></property>
-        <property name="targetPriceMaxLevel"><value>${TargetPrice.MaxLevel}</value></property>
 		<!-- TECHNICAL PARAMETERS -->
         <property name="mifidConfig"><ref bean="mifidConfig"></ref></property>
         <property name="priceServiceProvider"><ref bean="priceServiceProvider"></ref></property>
@@ -687,6 +696,7 @@
         <property name="curandoTimerRetriever"><ref bean="curandoTimerRetriever"></ref></property>
 		<property name="applicationStatus" ref="applicationStatus" />
 		<property name="dataCollector" ref="dataCollector" />
+		<property name="marketOrderBuilder" ref="algoMarketOrderBuilder" />
 	</bean>
 	
 	<!-- The application status contains global status used by the application -->

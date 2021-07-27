@@ -24,12 +24,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.softsolutions.bestx.BestXException;
-import it.softsolutions.bestx.CustomerAttributes;
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.RegulatedMktIsinsLoader;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
+import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
 import it.softsolutions.bestx.dao.OperationStateAuditDao;
 import it.softsolutions.bestx.datacollector.DataCollector;
 import it.softsolutions.bestx.exceptions.CustomerRevokeReceivedException;
@@ -45,7 +45,6 @@ import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.MarketMaker;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
-import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.Venue;
 import it.softsolutions.bestx.services.BookDepthValidator;
 import it.softsolutions.bestx.services.DateService;
@@ -66,7 +65,6 @@ import it.softsolutions.bestx.states.LimitFileNoPriceState;
 import it.softsolutions.bestx.states.OrderNotExecutableState;
 import it.softsolutions.bestx.states.SendAutoNotExecutionReportState;
 import it.softsolutions.bestx.states.WarningState;
-import it.softsolutions.jsscommon.Money;
 /**
  * 
  * 
@@ -98,11 +96,10 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 	protected BookDepthValidator bookDepthValidator;
 	private OperationStateAuditDao operationStateAuditDao;
 	protected boolean doNotExecute;
-	private int targetPriceMaxLevel;
 	private ApplicationStatus applicationStatus;
 	
 	private DataCollector dataCollector;
-
+	private MarketOrderBuilder marketOrderBuilder;
 	/**
 	 * Constructor.
 	 *
@@ -130,8 +127,8 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 	public WaitingPriceEventHandler(Operation operation, PriceService priceService, CustomerFinder customerFinder,
 			SerialNumberService serialNumberService, RegulatedMktIsinsLoader regulatedMktIsinsLoader, List<String> regulatedMarketPolicies, long waitingPriceDelay, int maxAttemptNo,
 			long marketPriceTimeout, ExecutionDestinationService executionDestinationService, boolean rejectOrderWhenBloombergIsBest,
-			boolean doNotExecute, BookDepthValidator bookDepthValidator, List<String> internalMMcodes, OperationStateAuditDao operationStateAuditDao, int targetPriceMaxLevel,
-			ApplicationStatus applicationStatus, DataCollector dataCollector) throws BestXException{
+			boolean doNotExecute, BookDepthValidator bookDepthValidator, List<String> internalMMcodes, OperationStateAuditDao operationStateAuditDao, 
+			ApplicationStatus applicationStatus, DataCollector dataCollector, MarketOrderBuilder marketOrderBuilder) throws BestXException{
 		super(operation);
 		this.priceService = priceService;
 		String priceServiceName = priceService.getPriceServiceName();
@@ -155,9 +152,9 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		this.bookDepthValidator = bookDepthValidator;
 		this.operationStateAuditDao = operationStateAuditDao;
 		this.doNotExecute = doNotExecute;
-		this.targetPriceMaxLevel = targetPriceMaxLevel;
 		this.applicationStatus = applicationStatus;
 		this.dataCollector = dataCollector;
+		this.marketOrderBuilder = marketOrderBuilder;
 	}
 
 	@Override
@@ -363,23 +360,16 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		if (priceResult.getState() == PriceResult.PriceResultState.COMPLETE) {
 			// Fill Attempt
 			currentAttempt.setExecutionProposal(currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide()));
-			// Build MarketOrder
-			MarketOrder marketOrder = new MarketOrder();
-			Money limitPrice = calculateTargetPrice(customerOrder, currentAttempt);
-			if (currentAttempt.getExecutionProposal() != null) {
-				currentAttempt.setMarketOrder(marketOrder);
-				marketOrder.setValues(customerOrder);
-				marketOrder.setTransactTime(DateService.newUTCDate());
-				marketOrder.setMarket(currentAttempt.getExecutionProposal().getMarket());
-
-				marketOrder.setMarketMarketMaker(currentAttempt.getExecutionProposal().getMarketMarketMaker());
-				marketOrder.setLimit(limitPrice);
-				LOGGER.info("Order={}, Selecting for execution market market maker: {} and price {}", operation.getOrder().getFixOrderId(), marketOrder.getMarketMarketMaker(), limitPrice == null? "null":limitPrice.getAmount().toString());
-				marketOrder.setVenue(currentAttempt.getExecutionProposal().getVenue());
+			
+			
+			
+			
+			MarketOrder marketOrder = marketOrderBuilder.getMarketOrder(operation);
+			if (marketOrder != null) {
+			   currentAttempt.setMarketOrder(marketOrder);
 			}
 
-			ApplicationStatisticsHelper.logStringAndUpdateOrderIds(operation.getOrder(), "Order.Execution_" + source.getPriceServiceName() + "." + operation.getOrder().getInstrument().getIsin(), this
-					.getClass().getName());
+			ApplicationStatisticsHelper.logStringAndUpdateOrderIds(operation.getOrder(), "Order.Execution_" + source.getPriceServiceName() + "." + operation.getOrder().getInstrument().getIsin(), this.getClass().getName());
 			// normal flow
 			if(!operation.isNotAutoExecute()) { // limit file with no auto execution case
 				LOGGER.debug("Order {} identified as limit file and auto execution inactive", customerOrder.getFixOrderId());
@@ -401,6 +391,10 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 				LOGGER.debug("Order {} identified as not auto executable. Go to CurandoState", customerOrder.getFixOrderId());
 				operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
 			}
+			
+			
+			
+			
 		} else if (priceResult.getState() == PriceResult.PriceResultState.INCOMPLETE) {
 			LOGGER.warn("Order {} , Price result is INCOMPLETE, setting to Warning state", operation.getOrder().getFixOrderId());
 			checkOrderAndsetNotAutoExecuteOrder(operation, doNotExecute);
@@ -426,68 +420,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 				}
 			}
 		}
-	}
-
-	/**
-	 * @param order client order 
-	 * @param currentAttempt for which the target price needs to be calculated. Contains the sorted book, the execution proposal, the market order.
-	 * @return
-	 */
-	public Money calculateTargetPrice(Order order, Attempt currentAttempt) {
-		Money limitPrice = null;
-		Money ithBest = null;
-		ClassifiedProposal ithBestProp = null;
-		Money best = null;
-		try {
-			best = currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide()).getPrice();
-			ithBestProp = BookHelper.getIthProposal(currentAttempt.getSortedBook().getAcceptableSideProposals(operation.getOrder().getSide()), this.targetPriceMaxLevel);
-			ithBest = ithBestProp.getPrice();
-		} catch(NullPointerException e) {
-			LOGGER.warn("NullPointerException trying to manage widen best or get the {}-th best for order {}", this.targetPriceMaxLevel, order.getFixOrderId());
-			LOGGER.warn("NullPointerException trace", e);
-		}
-		try {
-			double spread = BookHelper.getQuoteSpread(currentAttempt.getSortedBook().getAcceptableSideProposals(operation.getOrder().getSide()), this.targetPriceMaxLevel);
-			CustomerAttributes custAttr = (CustomerAttributes) order.getCustomer().getCustomerAttributes();
-			BigDecimal customerMaxWideSpread = custAttr.getWideQuoteSpread();
-			if(customerMaxWideSpread != null && customerMaxWideSpread.doubleValue() < spread) { // must use the spread, not the i-th best
-				limitPrice = BookHelper.widen(best, customerMaxWideSpread, operation.getOrder().getSide(), order.getLimit() == null ? null : order.getLimit().getAmount());
-				LOGGER.info("Order {}: widening market order limit price {}. Max wide spread is {} and spread between best {} and i-th best {} has been calculated as {}",
-						order.getFixOrderId(),
-						limitPrice == null?" N/A":limitPrice.getAmount().toString(),
-								customerMaxWideSpread == null?" N/A":customerMaxWideSpread.toString(),
-										best == null?" N/A":best.getAmount().toString(),
-												ithBest == null?" N/A":ithBest.getAmount().toString(),
-														spread
-						);
-			} else {// use i-th best
-				limitPrice = ithBest;
-			}
-			if(limitPrice == null) { // necessary to avoid null limit price. See the book depth minimum for execution 
-				if (currentAttempt.getExecutionProposal().getWorstPriceUsed() != null) {
-					limitPrice = currentAttempt.getExecutionProposal().getWorstPriceUsed();
-					LOGGER.debug("Use worst price of consolidated proposal as market order limit price: {}", limitPrice == null? "null":limitPrice.getAmount().toString());
-				} else {
-					limitPrice = currentAttempt.getExecutionProposal() == null ? null : currentAttempt.getExecutionProposal().getPrice();
-					LOGGER.debug("No i-th best - Use proposal as market order limit price: {}", limitPrice == null? "null":limitPrice.getAmount().toString());
-				}                	
-			} else {
-				if(order.getLimit() != null && isWorseThan(limitPrice, order.getLimit(), order.getSide())) {
-					LOGGER.debug("Found price is {}, which is worse than client order limit price: {}. Will use client order limit price", limitPrice.getAmount().toString(), order.getLimit().getAmount().toString());					
-					limitPrice = order.getLimit();
-				} else
-					LOGGER.debug("Use less wide between i-th best proposal and best widened by {} as market order limit price: {}", customerMaxWideSpread, limitPrice == null? "null":limitPrice.getAmount().toString());
-			}
-		} catch (Exception e) {
-			LOGGER.warn("Problem appeared while calculating target price", e);
-		}
-		return limitPrice;
-	}
-
-	protected boolean isWorseThan(Money p1, Money p2, OrderSide side) {
-		if(side == null) return false;
-		if(side == OrderSide.BUY) return p1.compareTo(p2) > 0;
-		else return p1.compareTo(p2) < 0;
 	}
 
 	protected ClassifiedProposal getInternalProposal(List<ClassifiedProposal> proposals)

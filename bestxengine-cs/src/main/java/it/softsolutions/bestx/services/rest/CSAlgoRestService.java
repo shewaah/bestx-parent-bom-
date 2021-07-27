@@ -14,6 +14,10 @@
 
 package it.softsolutions.bestx.services.rest;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import javax.ws.rs.core.MediaType;
 
 import org.apache.cxf.jaxrs.client.WebClient;
@@ -188,6 +192,18 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
       return objResp;
    }
    
+   public Map<String, Object> getBestPrice(String isin) {
+      //TODO: manage timeout
+      JSONObject request = new JSONObject();
+      request.put("isin", isin);
+      JSONObject response = callRestService(request, this.restClient);
+      Map<String, Object> result = new HashMap();
+      result.put("targetPrice", response.getJSONObject("data").getDouble("targetPrice"));
+      result.put("targetVenue", response.getJSONObject("data").getString("targetVenue"));
+      result.put("includeDealers", response.getJSONObject("data").getJSONArray("includeDealers").toList());
+      return result;
+   }
+   
 
    private class ServiceHeartbeatChecker implements Runnable {
       private boolean keepChecking = true;
@@ -202,6 +218,10 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
                if ("GREEN".equalsIgnoreCase(objResp.getJSONObject("data").getString("status"))) {
                   available = true;
                } else {
+                  List<Object> messages = objResp.getJSONObject("data").getJSONArray("messages").toList();
+                  for (Object errMsg : messages) {
+                     LOGGER.warn("CS Algo Service status: {}", ((JSONObject)errMsg).getString("message"));
+                  }
                   available = false;
                }
                Thread.sleep(CHECK_PERIOD);
