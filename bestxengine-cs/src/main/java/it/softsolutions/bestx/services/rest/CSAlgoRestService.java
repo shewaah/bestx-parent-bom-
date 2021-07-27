@@ -14,9 +14,8 @@
 
 package it.softsolutions.bestx.services.rest;
 
-import java.util.HashMap;
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
@@ -28,6 +27,9 @@ import org.slf4j.LoggerFactory;
 
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.connections.BaseOperatorConsoleAdapter;
+import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest;
+import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalResponse;
+import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalResponseData.Venue;
 
 /**  
 *
@@ -192,16 +194,19 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
       return objResp;
    }
    
-   public Map<String, Object> getBestPrice(String isin) {
+   public GetRoutingProposalResponse doGetRoutingProposal(GetRoutingProposalRequest request) {
       //TODO: manage timeout
-      JSONObject request = new JSONObject();
-      request.put("isin", isin);
-      JSONObject response = callRestService(request, this.restClient);
-      Map<String, Object> result = new HashMap();
-      result.put("targetPrice", response.getJSONObject("data").getDouble("targetPrice"));
-      result.put("targetVenue", response.getJSONObject("data").getString("targetVenue"));
-      result.put("includeDealers", response.getJSONObject("data").getJSONArray("includeDealers").toList());
-      return result;
+	   GetRoutingProposalResponse response = new GetRoutingProposalResponse();
+      JSONObject jsonRequest = new JSONObject();
+      jsonRequest.put("isin", request.getIsin());
+      
+      JSONObject jsonResponse = this.callRestService(jsonRequest, this.restClient);
+      
+      response.getData().setTargetPrice(new BigDecimal(Double.toString(jsonResponse.getJSONObject("data").getDouble("targetPrice"))));
+      response.getData().setTargetVenue(Venue.valueOf(jsonResponse.getJSONObject("data").getString("targetVenue")));
+      response.getData().getIncludeDealers().add(jsonResponse.getJSONObject("data").getJSONArray("includeDealers").getString(0));
+
+      return response;
    }
    
 

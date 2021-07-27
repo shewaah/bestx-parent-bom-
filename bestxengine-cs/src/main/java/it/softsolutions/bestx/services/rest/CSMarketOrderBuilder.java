@@ -14,10 +14,6 @@
  
 package it.softsolutions.bestx.services.rest;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +27,8 @@ import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.MarketMarketMaker;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.services.DateService;
+import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest;
+import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalResponse;
 import it.softsolutions.jsscommon.Money;
 
 
@@ -56,15 +54,18 @@ public class CSMarketOrderBuilder implements MarketOrderBuilder {
       MarketOrder marketOrder = new MarketOrder();
       Attempt currentAttempt = operation.getLastAttempt();
 
-      Map<String, Object> bestInfo = csAlgoService.getBestPrice(operation.getOrder().getInstrumentCode());
+      GetRoutingProposalRequest request = new GetRoutingProposalRequest();
+      request.setIsin(operation.getOrder().getInstrumentCode());
+      
+      GetRoutingProposalResponse response = csAlgoService.doGetRoutingProposal(request);
 
       try {
-         Money limitPrice = new Money(operation.getOrder().getCurrency(), new BigDecimal(bestInfo.get("targetPrice").toString()));
+         Money limitPrice = new Money(operation.getOrder().getCurrency(), response.getData().getTargetPrice());
          marketOrder.setValues(operation.getOrder());
          marketOrder.setTransactTime(DateService.newUTCDate());
          
-         marketOrder.setMarket(marketFinder.getMarketByCode(Market.MarketCode.valueOf((String)bestInfo.get("targetVenue")), null));
-         MarketMarketMaker mmMaker = marketMakerFinder.getMarketMarketMakerByCode(marketOrder.getMarket().getMarketCode(), ((List<String>)bestInfo.get("includeDealers")).get(0));
+         marketOrder.setMarket(marketFinder.getMarketByCode(Market.MarketCode.valueOf(response.getData().getTargetVenue().toString()), null));
+         MarketMarketMaker mmMaker = marketMakerFinder.getMarketMarketMakerByCode(marketOrder.getMarket().getMarketCode(), response.getData().getIncludeDealers().get(0));
          marketOrder.setMarketMarketMaker(mmMaker);
          marketOrder.setLimit(limitPrice);
          
