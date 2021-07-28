@@ -11,35 +11,11 @@
 * Any additional licenses, terms and conditions, if any, are defined in file 'LICENSE.txt', 
 * which may be part of this software package.
 */
- 
+
 package it.softsolutions.bestx.bestexec;
 
-import it.softsolutions.bestx.Operation;
+import it.softsolutions.bestx.model.MarketOrder;
 
-/**  
-*
-* Purpose: this class is mainly for ...  
-*
-* Project Name : bestxengine 
-* First created by: stefano.pontillo 
-* Creation date: 27 lug 2021 
-* 
-**/
-public interface MarketOrderBuilder {
-
-   /**
-    * This method take informations from operation to create the market order for the current attempt
-    * 
-    * @param operation
-    * @return null if is not possible to create the market order
-    * @throws Exception
-    */
-   public void buildMarketOrder(Operation operation);
-   
-   /**
-    * 
-    * @return true if the service is up and running
-    */
-   public boolean getServiceStatus();
-   
+public interface MarketOrderBuilderListener {
+	void onMarketOrderBuilt(MarketOrderBuilder source, MarketOrder marketOrder);
 }

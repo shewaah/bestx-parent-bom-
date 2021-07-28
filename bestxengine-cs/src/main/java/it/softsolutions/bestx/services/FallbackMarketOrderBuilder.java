@@ -16,7 +16,7 @@ package it.softsolutions.bestx.services;
 
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
-import it.softsolutions.bestx.model.MarketOrder;
+import it.softsolutions.bestx.bestexec.MarketOrderBuilderListener;
 
 
 /**  
@@ -38,15 +38,12 @@ public class FallbackMarketOrderBuilder implements MarketOrderBuilder {
    private MarketOrderBuilder defaultMarketOrderBuilder;
    private MarketOrderBuilder csAlgoMarketOrderBuilder;
    
-   
    @Override
-   public MarketOrder getMarketOrder(Operation operation) {
+   public void buildMarketOrder(Operation operation) {
       if (csAlgoMarketOrderBuilder.getServiceStatus()) {
-         return csAlgoMarketOrderBuilder.getMarketOrder(operation);
+         csAlgoMarketOrderBuilder.buildMarketOrder(operation);
       } else if (defaultMarketOrderBuilder.getServiceStatus()) {
-         return defaultMarketOrderBuilder.getMarketOrder(operation);
-      } else {
-         return null;
+         defaultMarketOrderBuilder.buildMarketOrder(operation);
       }
    }
    
@@ -70,4 +67,5 @@ public class FallbackMarketOrderBuilder implements MarketOrderBuilder {
    public boolean getServiceStatus() {
       return true;
    }
+
 }

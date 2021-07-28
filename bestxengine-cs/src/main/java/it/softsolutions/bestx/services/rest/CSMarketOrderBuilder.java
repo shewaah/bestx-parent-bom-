@@ -14,12 +14,15 @@
  
 package it.softsolutions.bestx.services.rest;
 
+import java.util.concurrent.Executor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
+import it.softsolutions.bestx.bestexec.MarketOrderBuilderListener;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.finders.MarketMakerFinder;
 import it.softsolutions.bestx.model.Attempt;
@@ -48,36 +51,40 @@ public class CSMarketOrderBuilder implements MarketOrderBuilder {
    private CSAlgoRestService csAlgoService;
    private MarketFinder marketFinder;
    private MarketMakerFinder marketMakerFinder;
+   
+   private Executor executor;
 
    @Override
-   public MarketOrder getMarketOrder(Operation operation) {
-      MarketOrder marketOrder = new MarketOrder();
-      Attempt currentAttempt = operation.getLastAttempt();
-
-      GetRoutingProposalRequest request = new GetRoutingProposalRequest();
-      request.setIsin(operation.getOrder().getInstrumentCode());
-      
-      GetRoutingProposalResponse response = csAlgoService.doGetRoutingProposal(request);
-
-      try {
-         Money limitPrice = new Money(operation.getOrder().getCurrency(), response.getData().getTargetPrice());
-         marketOrder.setValues(operation.getOrder());
-         marketOrder.setTransactTime(DateService.newUTCDate());
-         
-         marketOrder.setMarket(marketFinder.getMarketByCode(Market.MarketCode.valueOf(response.getData().getTargetVenue().toString()), null));
-         MarketMarketMaker mmMaker = marketMakerFinder.getMarketMarketMakerByCode(marketOrder.getMarket().getMarketCode(), response.getData().getIncludeDealers().get(0));
-         marketOrder.setMarketMarketMaker(mmMaker);
-         marketOrder.setLimit(limitPrice);
-         
-         LOGGER.info("Order={}, Selecting for execution market market maker: {} and price {}", operation.getOrder().getFixOrderId(), marketOrder.getMarketMarketMaker(), limitPrice == null? "null":limitPrice.getAmount().toString());
-         marketOrder.setVenue(currentAttempt.getExecutionProposal().getVenue());
-      }
-      catch (BestXException e) {
-         e.printStackTrace();
-      }
-
-         
-      return marketOrder;
+   public void buildMarketOrder(Operation operation) {
+	   this.executor.execute(() -> {
+	      MarketOrder marketOrder = new MarketOrder();
+	      Attempt currentAttempt = operation.getLastAttempt();
+	
+	      GetRoutingProposalRequest request = new GetRoutingProposalRequest();
+	      request.setIsin(operation.getOrder().getInstrumentCode());
+	      
+	      GetRoutingProposalResponse response = csAlgoService.doGetRoutingProposal(request);
+	
+	      try {
+	         Money limitPrice = new Money(operation.getOrder().getCurrency(), response.getData().getTargetPrice());
+	         marketOrder.setValues(operation.getOrder());
+	         marketOrder.setTransactTime(DateService.newUTCDate());
+	         
+	         marketOrder.setMarket(marketFinder.getMarketByCode(Market.MarketCode.valueOf(response.getData().getTargetVenue().toString()), null));
+	         MarketMarketMaker mmMaker = marketMakerFinder.getMarketMarketMakerByCode(marketOrder.getMarket().getMarketCode(), response.getData().getIncludeDealers().get(0));
+	         marketOrder.setMarketMarketMaker(mmMaker);
+	         marketOrder.setLimit(limitPrice);
+	         
+	         LOGGER.info("Order={}, Selecting for execution market market maker: {} and price {}", operation.getOrder().getFixOrderId(), marketOrder.getMarketMarketMaker(), limitPrice == null? "null":limitPrice.getAmount().toString());
+	         marketOrder.setVenue(currentAttempt.getExecutionProposal().getVenue());
+	      }
+	      catch (BestXException e) {
+	         e.printStackTrace();
+	      }
+	
+	         
+	      operation.onMarketOrderBuilt(this, marketOrder);
+	   });
    }
 
    
@@ -105,8 +112,18 @@ public class CSMarketOrderBuilder implements MarketOrderBuilder {
       this.marketMakerFinder = marketMakerFinder;
    }
 
+   
 
-   @Override
+	public Executor getExecutor() {
+		return executor;
+	}
+
+	public void setExecutor(Executor executor) {
+		this.executor = executor;
+	}
+
+
+@Override
    public boolean getServiceStatus() {
       return csAlgoService.isConnected();
    }

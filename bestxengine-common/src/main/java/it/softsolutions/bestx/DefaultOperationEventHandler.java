@@ -19,6 +19,7 @@ import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
 /** 
  *
  * Purpose: this is the handler that exposes default methods implementations for the management of
@@ -38,6 +39,7 @@ import it.softsolutions.bestx.model.ExecutionReport;
 import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.MarketExecutionReport;
+import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Quote;
@@ -229,6 +231,11 @@ public class DefaultOperationEventHandler implements OperationEventListener {
 	public void onQuoteResult(PriceService source, QuoteResult quoteResult) {
 		defaultAction();
 	}
+	
+	@Override
+	public void onMarketOrderBuilt(MarketOrderBuilder builder, MarketOrder marketOrder) {
+		LOGGER.info("Market order built in an incorrect state. Connection source : {}, comment {}", builder, marketOrder);
+	}	
 
 	@Override
 	public void onMarketExecutionReport(MarketBuySideConnection source, Order order, MarketExecutionReport marketExecutionReport) {

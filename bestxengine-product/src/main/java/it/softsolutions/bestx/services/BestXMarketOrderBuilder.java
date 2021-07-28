@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import it.softsolutions.bestx.CustomerAttributes;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
+import it.softsolutions.bestx.bestexec.MarketOrderBuilderListener;
 import it.softsolutions.bestx.handlers.BookHelper;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
@@ -44,10 +45,9 @@ public class BestXMarketOrderBuilder implements MarketOrderBuilder {
    private static final Logger LOGGER = LoggerFactory.getLogger(BestXMarketOrderBuilder.class);
 
    private int targetPriceMaxLevel;
-
    
    @Override
-   public MarketOrder getMarketOrder(Operation operation) {
+   public void buildMarketOrder(Operation operation) {
       // Build MarketOrder
       MarketOrder marketOrder = new MarketOrder();
       Attempt currentAttempt = operation.getLastAttempt();
@@ -63,7 +63,7 @@ public class BestXMarketOrderBuilder implements MarketOrderBuilder {
          LOGGER.info("Order={}, Selecting for execution market market maker: {} and price {}", operation.getOrder().getFixOrderId(), marketOrder.getMarketMarketMaker(), limitPrice == null? "null":limitPrice.getAmount().toString());
          marketOrder.setVenue(currentAttempt.getExecutionProposal().getVenue());
       }
-      return marketOrder;
+      operation.onMarketOrderBuilt(this, marketOrder);
    }
    
    
@@ -139,8 +139,12 @@ public class BestXMarketOrderBuilder implements MarketOrderBuilder {
    }
 
 
+   
+   
    @Override
    public boolean getServiceStatus() {
       return true;
    }
+
+
 }

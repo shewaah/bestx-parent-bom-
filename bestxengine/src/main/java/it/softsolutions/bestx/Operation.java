@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 
+import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
 import it.softsolutions.bestx.connections.CustomerConnection;
 import it.softsolutions.bestx.connections.MarketBuySideConnection;
 import it.softsolutions.bestx.connections.OperatorConsoleConnection;
@@ -41,6 +42,7 @@ import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.InternalAttempt;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.MarketExecutionReport;
+import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Quote;
@@ -1046,6 +1048,15 @@ public final class Operation implements OperationEventListener {
 		}
 	}
 
+	@Override
+	public void onMarketOrderBuilt(MarketOrderBuilder source, MarketOrder marketOrder) {
+		try {
+			handler.onMarketOrderBuilt(source, marketOrder);
+		} catch (Exception e) {
+			LOGGER.error("Application Exception while handling event {} : ", e.getMessage(), e);
+			onApplicationError(getState(), e, null);
+		}
+	}
 	@Override
 	public synchronized void onOperatorExecuteState(OperatorConsoleConnection source, Money execPrice, String comment) {
 		try {
@@ -2114,5 +2125,7 @@ public final class Operation implements OperationEventListener {
 	public List<Attempt> getAttemptsInCurrentCycle() {
 		return attempts.subList(firstAttemptInCurrentCycle, attempts.size() - 1);
 	}
+
+
 
 }

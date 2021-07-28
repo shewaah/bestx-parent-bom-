@@ -486,7 +486,12 @@
 		<property name="maxPoolSize" value="8"/>
 		<property name="threadNamePrefix" value="TP-KAFKA"/>
 	</bean>	
-	
+    <bean id="threadPoolALGOREST" class="it.softsolutions.bestx.ThreadPoolExecutor" init-method="initialize">
+        <property name="corePoolSize" value="64"/>
+		<property name="maxPoolSize" value="64"/>
+		<property name="threadNamePrefix" value="TP-ALGOREST"/>
+    </bean>
+    	
     <bean id="oms1CustomerAdapter" class="it.softsolutions.bestx.connections.OMS1CustomerAdapter" init-method="init">
 		<!-- BUSINESS PARAMETERS -->
 		<property name="defaultCustomer">
@@ -629,6 +634,7 @@
         <property name="csAlgoService" ref="algoRestService" />
         <property name="marketFinder" ref="dbBasedMarketFinder" />
         <property name="marketMakerFinder" ref="dbBasedMarketMakerFinder" />
+        <property name="executor" ref="threadPoolALGOREST" />
 	</bean>
 	
     <bean id="fallbackMarketOrderBuilder" class="it.softsolutions.bestx.services.FallbackMarketOrderBuilder">
