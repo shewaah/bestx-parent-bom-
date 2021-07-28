@@ -1946,4 +1946,9 @@ public class SqlOperationStateAuditDao implements OperationStateAuditDao {
       });
 
    }
+
+   @Override
+   public void saveServiceAttemptStatus(String orderId, int attemptNo, String serviceCode, boolean disabled, String downCause) {
+      // Not to be implemented
+   }
 }

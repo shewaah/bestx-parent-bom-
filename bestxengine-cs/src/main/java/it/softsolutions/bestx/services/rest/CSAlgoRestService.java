@@ -57,6 +57,7 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
    private static final int CHECK_PERIOD = 30000;
    private ServiceHeartbeatChecker serviceHeartbeatChecker;
    private WebClient restClient, heartbeatClient;
+   private String lastError;
    
    
 
@@ -93,6 +94,7 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
             LOGGER.info("Request to connect to REST service completed successfully");
          } catch (Exception e) {
             this.active = false;
+            lastError = "Unable to connect to CS Algo REST Service";
             LOGGER.error("Unable to connect to REST service", e);
          }
       }
@@ -184,6 +186,10 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
    public void setAlgoServiceName(String algoServiceName) {
       this.algoServiceName = algoServiceName;
    }
+   
+   public String getLastError() {
+      return lastError;
+   }
 
    private JSONObject callRestService(JSONObject objReq, WebClient client) {
       String request = objReq.toString();
@@ -221,10 +227,12 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
                String response = heartbeatClient.get().readEntity(String.class);
                JSONObject objResp = new JSONObject(response);
                if ("GREEN".equalsIgnoreCase(objResp.getJSONObject("data").getString("status"))) {
+                  lastError = "";
                   available = true;
                } else {
                   List<Object> messages = objResp.getJSONObject("data").getJSONArray("messages").toList();
                   for (Object errMsg : messages) {
+                     lastError += ((JSONObject)errMsg).getString("message") + "; ";
                      LOGGER.warn("CS Algo Service status: {}", ((JSONObject)errMsg).getString("message"));
                   }
                   available = false;
@@ -232,6 +240,7 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
                Thread.sleep(CHECK_PERIOD);
             } catch (Exception e) {
                LOGGER.error("Error while trying to check connection status: ", e);
+               lastError = "Error while trying to check connection status: timeout";
                if (keepChecking) available = false;
             }
          }

@@ -361,7 +361,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		if (priceResult.getState() == PriceResult.PriceResultState.COMPLETE) {
 			// Fill Attempt
 			currentAttempt.setExecutionProposal(currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide()));
-			this.marketOrderBuilder.buildMarketOrder(operation); // FIXME
+			this.marketOrderBuilder.buildMarketOrder(operation);
 		} else if (priceResult.getState() == PriceResult.PriceResultState.INCOMPLETE) {
 			LOGGER.warn("Order {} , Price result is INCOMPLETE, setting to Warning state", operation.getOrder().getFixOrderId());
 			checkOrderAndsetNotAutoExecuteOrder(operation, doNotExecute);

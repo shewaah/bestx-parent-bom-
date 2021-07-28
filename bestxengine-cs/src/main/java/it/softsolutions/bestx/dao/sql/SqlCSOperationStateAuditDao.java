@@ -760,6 +760,9 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 		}
 	}
 
+	
+	
+	
     
     @Override
     public int saveNewAttempt(final String orderId, final Attempt attempt, final String tsn, final int attemptNo, final String ticketNum, int lastSavedAttempt) {
@@ -2095,4 +2098,31 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
       });
       this.transactionManager.commit(status);
    }
+
+   @Override
+   public void saveServiceAttemptStatus(String orderId, int attemptNo, String serviceCode, boolean disabled, String downCause) {
+      final String sql = "INSERT INTO TentativiStatoServizi (NumOrdine, " + // 1
+            " Attempt," + // 2
+            " ServiceCode," + // 3
+            " Disabled," + // 4
+            " DownCause" + // 5
+            ") VALUES (?,?,?,?,?)";
+      
+      LOGGER.debug("Start saveServiceAttemptStatus to TentativiStatoServizi for order {}", orderId);
+      long t0 = DateService.currentTimeMillis();
+      TransactionStatus status = this.transactionManager.getTransaction(def);
+      jdbcTemplate.update(sql, new PreparedStatementSetter() {
+         @Override
+         public void setValues(PreparedStatement stmt) throws SQLException {
+             stmt.setString(1, orderId);
+             stmt.setInt(2, attemptNo);
+             stmt.setString(3, serviceCode);
+             stmt.setBoolean(4, disabled);
+             stmt.setString(5, downCause);
+         }
+     });
+     this.transactionManager.commit(status);
+     LOGGER.info("[AUDIT],StoreTime={},Stop saveServiceAttemptStatus", (DateService.currentTimeMillis() - t0));
+   }
+
 }

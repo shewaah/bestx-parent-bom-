@@ -307,4 +307,16 @@ public interface OperationStateAuditDao {
      * @param operatorCode
      */
     public void updateTabHistoryOperatorCode(String orderId, String operatorCode);
+    
+    /**
+     * Save informations about the state of services used to make the price discovery
+     * 
+     * @param orderId
+     * @param attemptNo
+     * @param serviceCode
+     * @param disabled
+     * @param downCause
+     */
+    void saveServiceAttemptStatus(String orderId, int attemptNo, String serviceCode, boolean disabled, String downCause);
+    
 }

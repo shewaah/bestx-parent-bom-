@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
-import it.softsolutions.bestx.bestexec.MarketOrderBuilderListener;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.finders.MarketMakerFinder;
 import it.softsolutions.bestx.model.Attempt;
@@ -112,8 +111,6 @@ public class CSMarketOrderBuilder implements MarketOrderBuilder {
       this.marketMakerFinder = marketMakerFinder;
    }
 
-   
-
 	public Executor getExecutor() {
 		return executor;
 	}
@@ -122,9 +119,15 @@ public class CSMarketOrderBuilder implements MarketOrderBuilder {
 		this.executor = executor;
 	}
 
-
-@Override
    public boolean getServiceStatus() {
       return csAlgoService.isConnected();
+   }
+
+   public String getDownReason() {
+      return csAlgoService.getLastError();
+   }
+
+   public String getServiceName() {
+      return csAlgoService.getConnectionName();
    }
 }

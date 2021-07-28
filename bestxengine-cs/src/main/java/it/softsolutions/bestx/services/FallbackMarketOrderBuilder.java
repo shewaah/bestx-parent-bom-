@@ -16,7 +16,7 @@ package it.softsolutions.bestx.services;
 
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
-import it.softsolutions.bestx.bestexec.MarketOrderBuilderListener;
+import it.softsolutions.bestx.services.rest.CSMarketOrderBuilder;
 
 
 /**  
@@ -36,13 +36,16 @@ import it.softsolutions.bestx.bestexec.MarketOrderBuilderListener;
 public class FallbackMarketOrderBuilder implements MarketOrderBuilder {
 
    private MarketOrderBuilder defaultMarketOrderBuilder;
-   private MarketOrderBuilder csAlgoMarketOrderBuilder;
+   private CSMarketOrderBuilder csAlgoMarketOrderBuilder;
    
    @Override
    public void buildMarketOrder(Operation operation) {
+      //Update algo service status in attempt
+      operation.getLastAttempt().updateServiceStatus(csAlgoMarketOrderBuilder.getServiceName(), !csAlgoMarketOrderBuilder.getServiceStatus(), csAlgoMarketOrderBuilder.getDownReason());
+      
       if (csAlgoMarketOrderBuilder.getServiceStatus()) {
          csAlgoMarketOrderBuilder.buildMarketOrder(operation);
-      } else if (defaultMarketOrderBuilder.getServiceStatus()) {
+      } else {
          defaultMarketOrderBuilder.buildMarketOrder(operation);
       }
    }
@@ -55,17 +58,13 @@ public class FallbackMarketOrderBuilder implements MarketOrderBuilder {
       this.defaultMarketOrderBuilder = defaultMarketOrderBuilder;
    }
    
-   public MarketOrderBuilder getCsAlgoMarketOrderBuilder() {
+   public CSMarketOrderBuilder getCsAlgoMarketOrderBuilder() {
       return csAlgoMarketOrderBuilder;
    }
    
-   public void setCsAlgoMarketOrderBuilder(MarketOrderBuilder csAlgoMarketOrderBuilder) {
+   public void setCsAlgoMarketOrderBuilder(CSMarketOrderBuilder csAlgoMarketOrderBuilder) {
       this.csAlgoMarketOrderBuilder = csAlgoMarketOrderBuilder;
    }
 
-   @Override
-   public boolean getServiceStatus() {
-      return true;
-   }
 
 }

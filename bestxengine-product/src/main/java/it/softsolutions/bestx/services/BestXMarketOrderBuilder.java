@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import it.softsolutions.bestx.CustomerAttributes;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
-import it.softsolutions.bestx.bestexec.MarketOrderBuilderListener;
 import it.softsolutions.bestx.handlers.BookHelper;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
@@ -137,14 +136,4 @@ public class BestXMarketOrderBuilder implements MarketOrderBuilder {
    public void setTargetPriceMaxLevel(int targetPriceMaxLevel) {
       this.targetPriceMaxLevel = targetPriceMaxLevel;
    }
-
-
-   
-   
-   @Override
-   public boolean getServiceStatus() {
-      return true;
-   }
-
-
 }

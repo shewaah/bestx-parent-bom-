@@ -14,7 +14,9 @@
 package it.softsolutions.bestx.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**  
 *
@@ -39,7 +41,8 @@ public class Attempt {
     /** multiple quotes reported  in a RFCQ or other competitive trading protocol .
      * quotes(0) is always the counterOffer;
 	*/
-    private List<ExecutablePrice> executablePrices = new ArrayList<>();;
+    private List<ExecutablePrice> executablePrices = new ArrayList<>();
+    private Map<String, ServiceStatus> serviceStatus = new HashMap<>();
 
     private SortedBook sortedBook;
     private MarketOrder marketOrder;
@@ -146,5 +149,13 @@ public class Attempt {
 
 	private void checkExecutablePrices() {
 		if(this.getExecutablePrices() == null) this.setExecutablePrices(new ArrayList<ExecutablePrice>());
+	}
+	
+	public void updateServiceStatus(String serviceCode, boolean disabled, String downCause) {
+	   this.serviceStatus.put(serviceCode, new ServiceStatus(serviceCode, disabled, downCause));
+	}
+	
+	public Map<String, ServiceStatus> getServicesStatus() {
+	   return this.serviceStatus;
 	}
 }
