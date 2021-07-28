@@ -137,4 +137,10 @@ public class BestXMarketOrderBuilder implements MarketOrderBuilder {
    public void setTargetPriceMaxLevel(int targetPriceMaxLevel) {
       this.targetPriceMaxLevel = targetPriceMaxLevel;
    }
+
+
+   @Override
+   public boolean getServiceStatus() {
+      return true;
+   }
 }

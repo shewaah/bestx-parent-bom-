@@ -104,4 +104,10 @@ public class CSMarketOrderBuilder implements MarketOrderBuilder {
    public void setMarketMakerFinder(MarketMakerFinder marketMakerFinder) {
       this.marketMakerFinder = marketMakerFinder;
    }
+
+
+   @Override
+   public boolean getServiceStatus() {
+      return csAlgoService.isConnected();
+   }
 }

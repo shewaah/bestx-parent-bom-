@@ -630,6 +630,11 @@
         <property name="marketFinder" ref="dbBasedMarketFinder" />
         <property name="marketMakerFinder" ref="dbBasedMarketMakerFinder" />
 	</bean>
+	
+    <bean id="fallbackMarketOrderBuilder" class="it.softsolutions.bestx.services.FallbackMarketOrderBuilder">
+        <property name="defaultMarketOrderBuilder" ref="defaultMarketOrderBuilder" />
+        <property name="csAlgoMarketOrderBuilder" ref="algoMarketOrderBuilder" />
+	</bean>
 
 	<!-- STRATEGY -->
 	<bean id="csStrategy" class="it.softsolutions.bestx.CSStrategy">
@@ -696,7 +701,7 @@
         <property name="curandoTimerRetriever"><ref bean="curandoTimerRetriever"></ref></property>
 		<property name="applicationStatus" ref="applicationStatus" />
 		<property name="dataCollector" ref="dataCollector" />
-		<property name="marketOrderBuilder" ref="algoMarketOrderBuilder" />
+		<property name="marketOrderBuilder" ref="fallbackMarketOrderBuilder" />
 	</bean>
 	
 	<!-- The application status contains global status used by the application -->

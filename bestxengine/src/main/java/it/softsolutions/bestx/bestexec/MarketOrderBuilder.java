@@ -37,4 +37,10 @@ public interface MarketOrderBuilder {
     */
    public MarketOrder getMarketOrder(Operation operation);
    
+   /**
+    * 
+    * @return true if the service is up and running
+    */
+   public boolean getServiceStatus();
+   
 }
