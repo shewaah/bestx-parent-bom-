@@ -1,6 +1,7 @@
 package it.softsolutions.bestx.handlers;
 
 import java.math.RoundingMode;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import it.softsolutions.bestx.connections.OperatorConsoleConnection;
 import it.softsolutions.bestx.connections.ib4j.PriceDiscoveryMessage;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Order;
+import it.softsolutions.bestx.model.Proposal.ProposalSubState;
 import it.softsolutions.bestx.model.Proposal.ProposalType;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.SortedBook;
@@ -38,10 +40,10 @@ public class PriceDiscoveryHelper {
 		List<ClassifiedProposal> sideBook = null;
 		List<ClassifiedProposal> otherSideBook = null;
 		if(OrderSide.BUY.equals(order.getSide())) {
-			sideBook = book.getAcceptableSideProposals(order.getSide());
+			sideBook = book.getProposalBySubState(Arrays.asList(ProposalSubState.NONE, ProposalSubState.PRICE_WORST_THAN_LIMIT, ProposalSubState.OUTSIDE_SPREAD), order.getSide());
 			otherSideBook = book.getBidProposals();
 		} else  {
-			sideBook = book.getAcceptableSideProposals(order.getSide());
+			sideBook = book.getProposalBySubState(Arrays.asList(ProposalSubState.NONE, ProposalSubState.PRICE_WORST_THAN_LIMIT, ProposalSubState.OUTSIDE_SPREAD), order.getSide());
 			otherSideBook = book.getAskProposals();
 		}
 
