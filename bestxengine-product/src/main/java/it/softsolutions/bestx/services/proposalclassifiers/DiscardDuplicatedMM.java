@@ -14,21 +14,6 @@
 
 package it.softsolutions.bestx.services.proposalclassifiers;
 
-import it.softsolutions.bestx.Messages;
-import it.softsolutions.bestx.bestexec.ProposalClassifier;
-import it.softsolutions.bestx.model.Attempt;
-import it.softsolutions.bestx.model.ClassifiedBook;
-import it.softsolutions.bestx.model.ClassifiedProposal;
-import it.softsolutions.bestx.model.Market;
-import it.softsolutions.bestx.model.MarketMaker;
-import it.softsolutions.bestx.model.Order;
-import it.softsolutions.bestx.model.Rfq.OrderSide;
-import it.softsolutions.bestx.model.Proposal;
-import it.softsolutions.bestx.model.Proposal.ProposalSide;
-import it.softsolutions.bestx.model.Proposal.ProposalState;
-import it.softsolutions.bestx.model.Venue;
-import it.softsolutions.bestx.model.Venue.VenueType;
-
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
@@ -37,6 +22,21 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.softsolutions.bestx.Messages;
+import it.softsolutions.bestx.bestexec.ProposalClassifier;
+import it.softsolutions.bestx.model.Attempt;
+import it.softsolutions.bestx.model.ClassifiedBook;
+import it.softsolutions.bestx.model.ClassifiedProposal;
+import it.softsolutions.bestx.model.Market;
+import it.softsolutions.bestx.model.MarketMaker;
+import it.softsolutions.bestx.model.Order;
+import it.softsolutions.bestx.model.Proposal;
+import it.softsolutions.bestx.model.Proposal.ProposalSide;
+import it.softsolutions.bestx.model.Proposal.ProposalState;
+import it.softsolutions.bestx.model.Rfq.OrderSide;
+import it.softsolutions.bestx.model.Venue;
+import it.softsolutions.bestx.model.Venue.VenueType;
 
 /**  
  *
@@ -126,13 +126,13 @@ public class DiscardDuplicatedMM implements ProposalClassifier {
                 } else if (isFirstBetterThanSecond(classProp.getPrice().getAmount(), proposal.getPrice().getAmount(), proposal.getSide())){
                 	//[RR20150409] BXMNT-370 reject only if the better ranking proposal has also a better or equal price
                     LOGGER.info("Rejecting proposal: {} versus other proposal: {}", proposal, classProp);
-                    proposal.setProposalState(Proposal.ProposalState.REJECTED);
+                    proposal.setProposalState(Proposal.ProposalState.ACCEPTABLE);
                     proposal.setReason(Messages.getString("BestBook.23"));
                     break;
                 } else if(proposal.getPrice().getAmount().compareTo(classProp.getPrice().getAmount()) == 0 &&
                 		proposalMarketRanking > loopProposalMarketRanking) {
                     LOGGER.info("Rejecting proposal: {} versus other proposal: {}", proposal, classProp);
-                    proposal.setProposalState(Proposal.ProposalState.REJECTED);
+                    proposal.setProposalState(Proposal.ProposalState.ACCEPTABLE);
                     proposal.setReason(Messages.getString("BestBook.16"));
                     break;
                 }

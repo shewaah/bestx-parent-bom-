@@ -628,6 +628,7 @@
 	
     <bean id="defaultMarketOrderBuilder" class="it.softsolutions.bestx.services.BestXMarketOrderBuilder">
         <property name="targetPriceMaxLevel"><value>${TargetPrice.MaxLevel}</value></property>
+        <property name="acceptableSubstates"><value>NONE,PRICE_WORST_THAN_LIMIT,OUTSIDE_SPREAD</value></property>
 	</bean>
 
     <bean id="algoMarketOrderBuilder" class="it.softsolutions.bestx.services.rest.CSMarketOrderBuilder">
@@ -967,7 +968,7 @@
                     <property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
 				</bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardWorstPriceProposalClassifier" />
-				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTriedInEarlierAttemptProposalClassifier" />
+                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardMarketTriedInEarlierAttemptProposalClassifier" />
 			</list>
 		</property>
 		<property name="bookClassifierList">

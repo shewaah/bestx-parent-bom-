@@ -15,6 +15,8 @@
 package it.softsolutions.bestx.services;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +28,7 @@ import it.softsolutions.bestx.handlers.BookHelper;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.MarketOrder;
+import it.softsolutions.bestx.model.Proposal.ProposalSubState;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.jsscommon.Money;
 
@@ -44,6 +47,7 @@ public class BestXMarketOrderBuilder implements MarketOrderBuilder {
    private static final Logger LOGGER = LoggerFactory.getLogger(BestXMarketOrderBuilder.class);
 
    private int targetPriceMaxLevel;
+   private String acceptableSubstates;
    
    @Override
    public void buildMarketOrder(Operation operation) {
@@ -77,16 +81,18 @@ public class BestXMarketOrderBuilder implements MarketOrderBuilder {
       ClassifiedProposal ithBestProp = null;
       Money best = null;
       Attempt currentAttempt = operation.getLastAttempt();
+      List<ProposalSubState> wantedSubStates = loadConfiguredSubstates();
+      
       try {
          best = currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide()).getPrice();
-         ithBestProp = BookHelper.getIthProposal(currentAttempt.getSortedBook().getAcceptableSideProposals(operation.getOrder().getSide()), this.targetPriceMaxLevel);
+         ithBestProp = BookHelper.getIthProposal(currentAttempt.getSortedBook().getProposalBySubState(wantedSubStates, operation.getOrder().getSide()), this.targetPriceMaxLevel);
          ithBest = ithBestProp.getPrice();
       } catch(NullPointerException e) {
          LOGGER.warn("NullPointerException trying to manage widen best or get the {}-th best for order {}", this.targetPriceMaxLevel, operation.getOrder().getFixOrderId());
          LOGGER.warn("NullPointerException trace", e);
       }
       try {
-         double spread = BookHelper.getQuoteSpread(currentAttempt.getSortedBook().getAcceptableSideProposals(operation.getOrder().getSide()), this.targetPriceMaxLevel);
+         double spread = BookHelper.getQuoteSpread(currentAttempt.getSortedBook().getProposalBySubState(wantedSubStates, operation.getOrder().getSide()), this.targetPriceMaxLevel);
          CustomerAttributes custAttr = (CustomerAttributes) operation.getOrder().getCustomer().getCustomerAttributes();
          BigDecimal customerMaxWideSpread = custAttr.getWideQuoteSpread();
          if(customerMaxWideSpread != null && customerMaxWideSpread.doubleValue() < spread) { // must use the spread, not the i-th best
@@ -123,10 +129,20 @@ public class BestXMarketOrderBuilder implements MarketOrderBuilder {
       return limitPrice;
    }
    
-   protected boolean isWorseThan(Money p1, Money p2, OrderSide side) {
+   private boolean isWorseThan(Money p1, Money p2, OrderSide side) {
       if(side == null) return false;
       if(side == OrderSide.BUY) return p1.compareTo(p2) > 0;
       else return p1.compareTo(p2) < 0;
+   }
+   
+   private List<ProposalSubState> loadConfiguredSubstates() {
+      String[] substateList = this.acceptableSubstates.split(",");
+      List<ProposalSubState> wantedSubStates = new ArrayList<>();
+      
+      for (String substate : substateList) {
+         wantedSubStates.add(ProposalSubState.valueOf(substate));
+      }
+      return wantedSubStates;
    }
    
    public int getTargetPriceMaxLevel() {
@@ -135,5 +151,13 @@ public class BestXMarketOrderBuilder implements MarketOrderBuilder {
 
    public void setTargetPriceMaxLevel(int targetPriceMaxLevel) {
       this.targetPriceMaxLevel = targetPriceMaxLevel;
+   }
+   
+   public String getAcceptableSubstates() {
+      return acceptableSubstates;
+   }
+   
+   public void setAcceptableSubstates(String acceptableSubstates) {
+      this.acceptableSubstates = acceptableSubstates;
    }
 }
