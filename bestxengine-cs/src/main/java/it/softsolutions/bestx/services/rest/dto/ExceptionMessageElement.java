@@ -14,30 +14,39 @@
 
 package it.softsolutions.bestx.services.rest.dto;
 
-public class Message {
+public class ExceptionMessageElement {
+	private String exceptionCode;
+	private String exceptionMessage;
+	private String exceptionSeverity;
 
-	private String severity;
-	private String message;
-
-	public String getSeverity() {
-		return severity;
+	public String getExceptionCode() {
+		return exceptionCode;
 	}
 
-	public void setSeverity(String severity) {
-		this.severity = severity;
+	public void setExceptionCode(String exceptionCode) {
+		this.exceptionCode = exceptionCode;
 	}
 
-	public String getMessage() {
-		return message;
+	public String getExceptionMessage() {
+		return exceptionMessage;
 	}
 
-	public void setMessage(String message) {
-		this.message = message;
+	public void setExceptionMessage(String exceptionMessage) {
+		this.exceptionMessage = exceptionMessage;
+	}
+
+	public String getExceptionSeverity() {
+		return exceptionSeverity;
+	}
+
+	public void setExceptionSeverity(String exceptionSeverity) {
+		this.exceptionSeverity = exceptionSeverity;
 	}
 
 	@Override
 	public String toString() {
-		return "Message [severity=" + severity + ", message=" + message + "]";
+		return "ExceptionMessage [exceptionCode=" + exceptionCode + ", exceptionMessage=" + exceptionMessage
+				+ ", exceptionSeverity=" + exceptionSeverity + "]";
 	}
 
 }

@@ -36,7 +36,7 @@ public class GetRoutingProposalResponseData {
 	private List<String> includeDealers = new ArrayList<>();
 	private List<String> excludeDealers = new ArrayList<>();
 	private Venue targetVenue;
-	private List<ExceptionMessage> exceptions;
+	private List<ExceptionMessageElement> exceptions;
 
 	public BigDecimal getTargetPrice() {
 		return targetPrice;
@@ -78,11 +78,11 @@ public class GetRoutingProposalResponseData {
 		this.targetVenue = targetVenue;
 	}
 
-	public List<ExceptionMessage> getExceptions() {
+	public List<ExceptionMessageElement> getExceptions() {
 		return exceptions;
 	}
 
-	public void setExceptions(List<ExceptionMessage> exceptions) {
+	public void setExceptions(List<ExceptionMessageElement> exceptions) {
 		this.exceptions = exceptions;
 	}
 

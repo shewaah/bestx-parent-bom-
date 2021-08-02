@@ -21,15 +21,19 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.transport.http.HTTPConduit;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.connections.BaseOperatorConsoleAdapter;
+import it.softsolutions.bestx.services.rest.dto.ExceptionMessageElement;
 import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest;
+import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest.ConsolidatedBookElement;
 import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalResponse;
 import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalResponseData.Venue;
+import it.softsolutions.bestx.services.rest.dto.MessageElement;
 
 /**  
 *
@@ -43,7 +47,38 @@ import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalResponseData.V
 public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
 
    private static final Logger LOGGER = LoggerFactory.getLogger(CSAlgoRestService.class);
+   
+   private static final String CSALGOREST_JSON_KEY_ISIN = "isin";
+   private static final String CSALGOREST_JSON_KEY_SIDE = "side";
+   private static final String CSALGOREST_JSON_KEY_PRICE_TYPE_FIX = "priceTypeFIX";
+   private static final String CSALGOREST_JSON_KEY_SIZE = "size";
+   private static final String CSALGOREST_JSON_KEY_LEGAL_ENTITY = "LegalEntity";
+   private static final String CSALGOREST_JSON_KEY_CONSOLIDATED_BOOK = "consolidatedBook";
+   private static final String CSALGOREST_JSON_KEY_BID_ASK = "bidAsk";
+   private static final String CSALGOREST_JSON_KEY_PRICE = "price";
+   private static final String CSALGOREST_JSON_KEY_DATE_TIME = "dateTime";
+   private static final String CSALGOREST_JSON_KEY_PRICE_QUALITY = "priceQuality";
+   private static final String CSALGOREST_JSON_KEY_DEALER_AT_VENUE = "dealerAtVenue";
+   private static final String CSALGOREST_JSON_KEY_DATA_SOURCE = "dataSource";
+   private static final String CSALGOREST_JSON_KEY_MARKET_MAKER_CODE = "marketMakerCode";
+   private static final String CSALGOREST_JSON_KEY_QUOTE_STATUS = "quoteStatus";
 
+   private static final String CSALGOREST_JSON_KEY_MESSAGES = "messages";
+   private static final String CSALGOREST_JSON_KEY_MESSAGE = "message";
+   private static final String CSALGOREST_JSON_KEY_SEVERITY = "severity";
+   private static final String CSALGOREST_JSON_KEY_DATA = "data";
+   private static final String CSALGOREST_JSON_KEY_TARGET_PRICE = "targetPrice";
+   private static final String CSALGOREST_JSON_KEY_LIMIT_MONITOR_PRICE = "limitMonitorPrice";
+   private static final String CSALGOREST_JSON_KEY_INCLUDE_DEALERS = "includeDealers";
+   private static final String CSALGOREST_JSON_KEY_EXCLUDE_DEALERS = "excludeDealers";
+   private static final String CSALGOREST_JSON_KEY_TARGET_VENUE = "targetVenue";
+
+   private static final String CSALGOREST_JSON_KEY_EXCEPTIONS = "exceptions";
+   private static final String CSALGOREST_JSON_KEY_EXCEPTION_MESSAGE = "exceptionMessage";
+   private static final String CSALGOREST_JSON_KEY_EXCEPTION_CODE = "exceptionCode";
+
+   
+   
    private String endpoint;
    private String servicePath;
    private String healthcheckPath;
@@ -202,16 +237,80 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
    
    public GetRoutingProposalResponse doGetRoutingProposal(GetRoutingProposalRequest request) {
       //TODO: manage timeout
-	   GetRoutingProposalResponse response = new GetRoutingProposalResponse();
       JSONObject jsonRequest = new JSONObject();
-      jsonRequest.put("isin", request.getIsin());
+      jsonRequest.put(CSALGOREST_JSON_KEY_ISIN, request.getIsin());
+      jsonRequest.put(CSALGOREST_JSON_KEY_SIDE, request.getSide());
+      jsonRequest.put(CSALGOREST_JSON_KEY_PRICE_TYPE_FIX, request.getPriceTypeFIX());
+      jsonRequest.put(CSALGOREST_JSON_KEY_SIZE, request.getSize());
+      jsonRequest.put(CSALGOREST_JSON_KEY_LEGAL_ENTITY, request.getLegalEntity());
+      
+      JSONArray consolidatedBook = new JSONArray();
+      for (ConsolidatedBookElement elem : request.getConsolidatedBook()) {
+    	  JSONObject jsonElem = new JSONObject();
+    	  jsonElem.put(CSALGOREST_JSON_KEY_BID_ASK, elem.getBidAsk().toString());
+    	  jsonElem.put(CSALGOREST_JSON_KEY_PRICE, elem.getPrice());
+    	  jsonElem.put(CSALGOREST_JSON_KEY_SIZE, elem.getSize());
+    	  jsonElem.put(CSALGOREST_JSON_KEY_DATE_TIME, elem.getDateTime()); // TODO Check format
+    	  jsonElem.put(CSALGOREST_JSON_KEY_PRICE_QUALITY, elem.getPriceQuality().toString());
+    	  jsonElem.put(CSALGOREST_JSON_KEY_DEALER_AT_VENUE, elem.getDealerAtVenue());
+    	  jsonElem.put(CSALGOREST_JSON_KEY_DATA_SOURCE, elem.getDataSource().toString());
+    	  jsonElem.put(CSALGOREST_JSON_KEY_MARKET_MAKER_CODE, elem.getMarketMakerCode());
+    	  if (elem.getQuoteStatus().isPresent()) {
+    		  jsonElem.put(CSALGOREST_JSON_KEY_QUOTE_STATUS, elem.getQuoteStatus().get());
+    	  }
+    	  consolidatedBook.put(jsonElem);
+      }
+      
+      jsonRequest.put(CSALGOREST_JSON_KEY_CONSOLIDATED_BOOK, consolidatedBook);
       
       JSONObject jsonResponse = this.callRestService(jsonRequest, this.restClient);
       
-      response.getData().setTargetPrice(new BigDecimal(Double.toString(jsonResponse.getJSONObject("data").getDouble("targetPrice"))));
-      response.getData().setTargetVenue(Venue.valueOf(jsonResponse.getJSONObject("data").getString("targetVenue")));
-      response.getData().getIncludeDealers().add(jsonResponse.getJSONObject("data").getJSONArray("includeDealers").getString(0));
+	  GetRoutingProposalResponse response = new GetRoutingProposalResponse();
 
+	  JSONArray jsonMessages = jsonResponse.optJSONArray(CSALGOREST_JSON_KEY_MESSAGES);
+	  
+	  if (jsonMessages != null) {
+		  for (int i = 0 ; i < jsonMessages.length() ; i++) {
+			  JSONObject jsonMessage = jsonMessages.getJSONObject(i);
+			  MessageElement message = new MessageElement();
+			  message.setMessage(jsonMessage.getString(CSALGOREST_JSON_KEY_MESSAGE));
+			  message.setSeverity(jsonMessage.getString(CSALGOREST_JSON_KEY_SEVERITY));
+			  response.getMessages().add(message);
+		  }
+	  }
+	  
+	  JSONObject jsonData = jsonResponse.getJSONObject(CSALGOREST_JSON_KEY_DATA);
+	  
+      response.getData().setTargetPrice(new BigDecimal(Double.valueOf(jsonData.getDouble(CSALGOREST_JSON_KEY_TARGET_PRICE)).toString()));
+      response.getData().setLimitMonitorPrice(new BigDecimal(Double.valueOf(jsonData.getDouble(CSALGOREST_JSON_KEY_LIMIT_MONITOR_PRICE)).toString()));
+      response.getData().setTargetVenue(Venue.valueOf(jsonData.getString(CSALGOREST_JSON_KEY_TARGET_VENUE)));
+      
+      JSONArray jsonIncludeDealers = jsonData.optJSONArray(CSALGOREST_JSON_KEY_INCLUDE_DEALERS);      
+      if (jsonIncludeDealers != null) {
+	      for (int i = 0 ; i < jsonIncludeDealers.length() ; i++) {
+	    	  response.getData().getIncludeDealers().add(jsonIncludeDealers.getString(i));
+	      }
+      }
+
+      JSONArray jsonExcludeDealers = jsonData.optJSONArray(CSALGOREST_JSON_KEY_EXCLUDE_DEALERS);      
+      if (jsonExcludeDealers != null) {
+	      for (int i = 0 ; i < jsonExcludeDealers.length() ; i++) {
+	    	  response.getData().getExcludeDealers().add(jsonExcludeDealers.getString(i));
+	      }
+      }
+
+      JSONArray jsonExceptions = jsonData.optJSONArray(CSALGOREST_JSON_KEY_EXCEPTIONS);
+      if (jsonExceptions != null) {
+    	  for (int i = 0 ; i < jsonExceptions.length() ; i++) {
+    		  JSONObject jsonExceptionMessage = jsonExceptions.getJSONObject(i);
+    		  ExceptionMessageElement exceptionMessage = new ExceptionMessageElement();
+    		  exceptionMessage.setExceptionMessage(jsonExceptionMessage.getString(CSALGOREST_JSON_KEY_EXCEPTION_MESSAGE));
+    		  exceptionMessage.setExceptionCode(jsonExceptionMessage.getString(CSALGOREST_JSON_KEY_EXCEPTION_CODE));
+    		  exceptionMessage.setExceptionSeverity(jsonExceptionMessage.getString(CSALGOREST_JSON_KEY_SEVERITY));
+    		  response.getData().getExceptions().add(exceptionMessage);
+    	  }
+      }
+      
       return response;
    }
    

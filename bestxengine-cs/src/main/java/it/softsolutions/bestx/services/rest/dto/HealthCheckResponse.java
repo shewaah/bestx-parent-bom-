@@ -18,14 +18,14 @@ import java.util.List;
 
 public class HealthCheckResponse {
 
-	private List<Message> messages;
+	private List<MessageElement> messages;
 	private HealthCheckResponseData data;
 
-	public List<Message> getMessages() {
+	public List<MessageElement> getMessages() {
 		return messages;
 	}
 
-	public void setMessages(List<Message> messages) {
+	public void setMessages(List<MessageElement> messages) {
 		this.messages = messages;
 	}
 

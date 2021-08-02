@@ -18,14 +18,14 @@ import java.util.List;
 
 public class GetRoutingProposalResponse {
 
-	private List<Message> messages = new ArrayList<>();
+	private List<MessageElement> messages = new ArrayList<>();
 	private GetRoutingProposalResponseData data = new GetRoutingProposalResponseData();
 
-	public List<Message> getMessages() {
+	public List<MessageElement> getMessages() {
 		return messages;
 	}
 
-	public void setMessages(List<Message> messages) {
+	public void setMessages(List<MessageElement> messages) {
 		this.messages = messages;
 	}
 

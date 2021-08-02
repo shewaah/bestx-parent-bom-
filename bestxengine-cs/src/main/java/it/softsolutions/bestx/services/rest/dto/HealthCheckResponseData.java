@@ -19,7 +19,7 @@ import java.util.List;
 public class HealthCheckResponseData {
 
 	private String status;
-	private List<ExceptionMessage> exceptions;
+	private List<ExceptionMessageElement> exceptions;
 
 	public String getStatus() {
 		return status;
@@ -29,11 +29,11 @@ public class HealthCheckResponseData {
 		this.status = status;
 	}
 
-	public List<ExceptionMessage> getExceptions() {
+	public List<ExceptionMessageElement> getExceptions() {
 		return exceptions;
 	}
 
-	public void setExceptions(List<ExceptionMessage> exceptions) {
+	public void setExceptions(List<ExceptionMessageElement> exceptions) {
 		this.exceptions = exceptions;
 	}
 

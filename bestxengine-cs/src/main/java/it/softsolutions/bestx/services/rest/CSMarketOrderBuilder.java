@@ -14,6 +14,7 @@
  
 package it.softsolutions.bestx.services.rest;
 
+import java.util.Optional;
 import java.util.concurrent.Executor;
 
 import org.slf4j.Logger;
@@ -25,11 +26,22 @@ import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.finders.MarketMakerFinder;
 import it.softsolutions.bestx.model.Attempt;
+import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.MarketMarketMaker;
 import it.softsolutions.bestx.model.MarketOrder;
+import it.softsolutions.bestx.model.Proposal.ProposalState;
+import it.softsolutions.bestx.model.Proposal.ProposalType;
+import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest;
+import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest.BidAsk;
+import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest.ConsolidatedBookElement;
+import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest.LegalEntity;
+import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest.MarketDataSource;
+import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest.PriceQuality;
+import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest.PriceTypeFIX;
+import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest.Side;
 import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalResponse;
 import it.softsolutions.jsscommon.Money;
 
@@ -53,36 +65,88 @@ public class CSMarketOrderBuilder implements MarketOrderBuilder {
    
    private Executor executor;
 
+   private ConsolidatedBookElement buildConsolidatedBookElement(BidAsk bidAsk, ClassifiedProposal proposal) {
+	  ConsolidatedBookElement elem = new ConsolidatedBookElement();
+	  elem.setBidAsk(bidAsk);
+	  elem.setPrice(proposal.getPrice().getAmount());
+	  elem.setSize(proposal.getQty());
+	  elem.setDateTime(proposal.getTimestamp());
+	  switch (proposal.getType()) {
+	  case INDICATIVE:
+		  elem.setPriceQuality(PriceQuality.IND);
+		  break;
+	  case COMPOSITE:
+		  elem.setPriceQuality(PriceQuality.CMP);
+		  break;
+	  case TRADEABLE:
+		  elem.setPriceQuality(PriceQuality.FRM);
+		  break;
+	  case AXE:
+		  elem.setPriceQuality(PriceQuality.AXE);
+		  break;
+	  default: // What to do in this case?
+	  }
+	  elem.setDealerAtVenue(proposal.getMarketMarketMaker().getMarketSpecificCode());
+	  elem.setDataSource(MarketDataSource.valueOf(proposal.getMarket().getEffectiveMarket().getMarketCode().toString()));
+	  elem.setMarketMakerCode(proposal.getMarketMarketMaker().getMarketMaker().getCode());
+	  if (proposal.getType() == ProposalType.TRADEABLE && proposal.getAuditQuoteState() != null) {
+		  elem.setQuoteStatus(Optional.of(proposal.getAuditQuoteState()));
+	  }	   
+	  return elem;
+   }
+   
    @Override
    public void buildMarketOrder(Operation operation) {
 	   this.executor.execute(() -> {
-	      MarketOrder marketOrder = new MarketOrder();
-	      Attempt currentAttempt = operation.getLastAttempt();
-	
-	      GetRoutingProposalRequest request = new GetRoutingProposalRequest();
-	      request.setIsin(operation.getOrder().getInstrumentCode());
-	      
-	      GetRoutingProposalResponse response = csAlgoService.doGetRoutingProposal(request);
-	
-	      try {
-	         Money limitPrice = new Money(operation.getOrder().getCurrency(), response.getData().getTargetPrice());
-	         marketOrder.setValues(operation.getOrder());
-	         marketOrder.setTransactTime(DateService.newUTCDate());
-	         
-	         marketOrder.setMarket(marketFinder.getMarketByCode(Market.MarketCode.valueOf(response.getData().getTargetVenue().toString()), null));
-	         MarketMarketMaker mmMaker = marketMakerFinder.getMarketMarketMakerByCode(marketOrder.getMarket().getMarketCode(), response.getData().getIncludeDealers().get(0));
-	         marketOrder.setMarketMarketMaker(mmMaker);
-	         marketOrder.setLimit(limitPrice);
-	         
-	         LOGGER.info("Order={}, Selecting for execution market market maker: {} and price {}", operation.getOrder().getFixOrderId(), marketOrder.getMarketMarketMaker(), limitPrice == null? "null":limitPrice.getAmount().toString());
-	         marketOrder.setVenue(currentAttempt.getExecutionProposal().getVenue());
-	      }
-	      catch (BestXException e) {
-	         e.printStackTrace();
-	      }
-	
-	         
-	      operation.onMarketOrderBuilt(this, marketOrder);
+		   try {
+		      MarketOrder marketOrder = new MarketOrder();
+		      Attempt currentAttempt = operation.getLastAttempt();
+		
+		      GetRoutingProposalRequest request = new GetRoutingProposalRequest();
+		      request.setIsin(operation.getOrder().getInstrumentCode());
+		      request.setSide(OrderSide.isBuy(operation.getOrder().getSide()) ? Side.BUY : Side.SELL);
+		      request.setPriceTypeFIX(PriceTypeFIX.PERCENTAGE_OF_PAR); // Only price type supported for the moment
+		      request.setSize(operation.getOrder().getQty());
+		      request.setLegalEntity(LegalEntity.ZRH); // FIXME
+		      
+		      for (ClassifiedProposal proposal : currentAttempt.getSortedBook().getAskProposals()) {
+		    	  if (proposal.getProposalState() == ProposalState.ACCEPTABLE ||
+		    			  proposal.getProposalState() == ProposalState.VALID) {
+		    		  request.getConsolidatedBook().add(this.buildConsolidatedBookElement(BidAsk.ASK, proposal));
+		    	  }
+		      }
+		      for (ClassifiedProposal proposal : currentAttempt.getSortedBook().getBidProposals()) {
+		    	  if (proposal.getProposalState() == ProposalState.ACCEPTABLE ||
+		    			  proposal.getProposalState() == ProposalState.VALID) {
+		    		  request.getConsolidatedBook().add(this.buildConsolidatedBookElement(BidAsk.BID, proposal));
+		    	  }
+		      }
+		      
+		      GetRoutingProposalResponse response = csAlgoService.doGetRoutingProposal(request);
+		
+		      try {
+		         Money limitPrice = new Money(operation.getOrder().getCurrency(), response.getData().getTargetPrice());
+		         marketOrder.setValues(operation.getOrder());
+		         marketOrder.setTransactTime(DateService.newUTCDate());
+		         
+		         marketOrder.setMarket(marketFinder.getMarketByCode(Market.MarketCode.valueOf(response.getData().getTargetVenue().toString()), null));
+		         MarketMarketMaker mmMaker = marketMakerFinder.getMarketMarketMakerByCode(marketOrder.getMarket().getMarketCode(), response.getData().getIncludeDealers().get(0));
+		         marketOrder.setMarketMarketMaker(mmMaker);
+		         marketOrder.setLimit(limitPrice);
+		         
+		         LOGGER.info("Order={}, Selecting for execution market market maker: {} and price {}", operation.getOrder().getFixOrderId(), marketOrder.getMarketMarketMaker(), limitPrice == null? "null":limitPrice.getAmount().toString());
+		         marketOrder.setVenue(currentAttempt.getExecutionProposal().getVenue());
+		      }
+		      catch (BestXException e) {
+		         e.printStackTrace();
+		      }
+		
+		         
+		      operation.onMarketOrderBuilt(this, marketOrder);
+		   } catch (Exception e) {
+			   LOGGER.error("Error while creating Market Order", e);
+			   operation.onMarketOrderBuilt(this, null);
+		   }
 	   });
    }
 
