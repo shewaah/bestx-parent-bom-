@@ -361,7 +361,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		if (priceResult.getState() == PriceResult.PriceResultState.COMPLETE) {
 			// Fill Attempt
 			currentAttempt.setExecutionProposal(currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide()));
-			this.marketOrderBuilder.buildMarketOrder(operation);
+			this.marketOrderBuilder.buildMarketOrder(operation, operation);
 		} else if (priceResult.getState() == PriceResult.PriceResultState.INCOMPLETE) {
 			LOGGER.warn("Order {} , Price result is INCOMPLETE, setting to Warning state", operation.getOrder().getFixOrderId());
 			checkOrderAndsetNotAutoExecuteOrder(operation, doNotExecute);
@@ -561,4 +561,36 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		}	
 	}	
 
+	@Override
+	public void onMarketOrderException(MarketOrderBuilder source, Exception ex) {
+		try {
+			LOGGER.error("Exception received while calling GetRoutingProposal", ex);
+			ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
+			// TODO Internationalize message
+			operation.setStateResilient(new SendAutoNotExecutionReportState("Exception occured while calling GetRoutingProposal"), ErrorState.class);
+		}
+		catch (BestXException e) {
+			LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
+			String errorMessage = e.getMessage();
+			operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
+		}
+		return;
+	}
+
+	@Override
+	public void onMarketOrderErrors(MarketOrderBuilder source, List<String> errors) {
+		try {
+			LOGGER.error("Errors received while calling GetRoutingProposal: {}", errors);
+			ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
+			// TODO Internationalize message
+			operation.setStateResilient(new SendAutoNotExecutionReportState("Errors received while calling GetRoutingProposal"), ErrorState.class);
+		}
+		catch (BestXException e) {
+			LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
+			String errorMessage = e.getMessage();
+			operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
+		}
+		return;
+	}	
+	
 }

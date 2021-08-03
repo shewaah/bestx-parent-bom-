@@ -34,6 +34,6 @@ public interface MarketOrderBuilder {
     * @return null if is not possible to create the market order
     * @throws Exception
     */
-   public void buildMarketOrder(Operation operation);
+   public void buildMarketOrder(Operation operation, MarketOrderBuilderListener listener);
    
 }

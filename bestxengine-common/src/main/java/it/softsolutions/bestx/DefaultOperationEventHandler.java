@@ -15,6 +15,7 @@ package it.softsolutions.bestx;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -234,9 +235,24 @@ public class DefaultOperationEventHandler implements OperationEventListener {
 	
 	@Override
 	public void onMarketOrderBuilt(MarketOrderBuilder builder, MarketOrder marketOrder) {
-		LOGGER.info("Market order built in an incorrect state. Connection source : {}, comment {}", builder, marketOrder);
+		LOGGER.info("Market order built in an incorrect state. Connection source : {}, order {}", builder, marketOrder);
 	}	
 
+	@Override
+	public void onMarketOrderTimeout(MarketOrderBuilder builder) {
+		LOGGER.info("Market order timeout in an incorrect state. Connection source : {}", builder);
+	}
+	
+	@Override
+	public void onMarketOrderException(MarketOrderBuilder builder, Exception ex) {
+		LOGGER.info("Market order exception in an incorrect state. Connection source : {}, exception {}", builder, ex);
+	}
+	
+	@Override
+	public void onMarketOrderErrors(MarketOrderBuilder builder, List<String> errors) {
+		LOGGER.info("Market order built in an incorrect state. Connection source : {}, errors {}", builder, errors);
+	}
+	
 	@Override
 	public void onMarketExecutionReport(MarketBuySideConnection source, Order order, MarketExecutionReport marketExecutionReport) {
 		defaultAction();

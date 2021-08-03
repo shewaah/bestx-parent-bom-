@@ -15,6 +15,7 @@
 package it.softsolutions.bestx.services.rest;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
@@ -301,6 +302,7 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
 
       JSONArray jsonExceptions = jsonData.optJSONArray(CSALGOREST_JSON_KEY_EXCEPTIONS);
       if (jsonExceptions != null) {
+    	  response.getData().setExceptions(new ArrayList<>());
     	  for (int i = 0 ; i < jsonExceptions.length() ; i++) {
     		  JSONObject jsonExceptionMessage = jsonExceptions.getJSONObject(i);
     		  ExceptionMessageElement exceptionMessage = new ExceptionMessageElement();

@@ -1057,6 +1057,37 @@ public final class Operation implements OperationEventListener {
 			onApplicationError(getState(), e, null);
 		}
 	}
+	
+	@Override
+	public void onMarketOrderTimeout(MarketOrderBuilder source) {
+		try {
+			handler.onMarketOrderTimeout(source);
+		} catch (Exception e) {
+			LOGGER.error("Application Exception while handling event {} : ", e.getMessage(), e);
+			onApplicationError(getState(), e, null);
+		}		
+	}
+	
+	@Override
+	public void onMarketOrderException(MarketOrderBuilder source, Exception ex) {
+		try {
+			handler.onMarketOrderException(source, ex);
+		} catch (Exception e) {
+			LOGGER.error("Application Exception while handling event {} : ", e.getMessage(), e);
+			onApplicationError(getState(), e, null);
+		}		
+	}
+	
+	@Override
+	public void onMarketOrderErrors(MarketOrderBuilder source, List<String> errors) {
+		try {
+			handler.onMarketOrderErrors(source, errors);
+		} catch (Exception e) {
+			LOGGER.error("Application Exception while handling event {} : ", e.getMessage(), e);
+			onApplicationError(getState(), e, null);
+		}		
+	}
+	
 	@Override
 	public synchronized void onOperatorExecuteState(OperatorConsoleConnection source, Money execPrice, String comment) {
 		try {

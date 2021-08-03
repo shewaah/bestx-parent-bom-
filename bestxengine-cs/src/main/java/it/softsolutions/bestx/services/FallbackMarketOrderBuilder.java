@@ -11,60 +11,99 @@
 * Any additional licenses, terms and conditions, if any, are defined in file 'LICENSE.txt', 
 * which may be part of this software package.
 */
- 
+
 package it.softsolutions.bestx.services;
+
+import java.util.List;
 
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
+import it.softsolutions.bestx.bestexec.MarketOrderBuilderListener;
+import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.services.rest.CSMarketOrderBuilder;
 
-
-/**  
-*
-* Purpose: this class is mainly for choose wich builder use following these rules:
-*  1) the heartbeat flows and system status is up. Request are answered in time with no ERROR. BestX! uses the response to define the execution attempt. If there is a WARNING, BestX! logs the warning.
-*  2) the hearbeat flows and the system status is up. Request is timed out. BestX! goes to the fallback algo to define the execution attempt wheter it is a LF or algo order. Other orders (orders that are executed afterwards) are not affected.
-*  3) the heartbeat flows and system status is up. Request are answered in time with ERROR. BestX rejects back each order when the service GetRoutingProposal is responding with 1 or more Errors. Each new order continues to call the service GetRoutingProposal. An error response from GetRoutingProposal does not say anything about the availability of the services, that’s what he heartbeat does.
-*  4) the hearbeat flows and the system status is down. BestX! goes to fallback
-*  5) the heartbeat is timed out. BestX! goes to fallback
-*
-* Project Name : bestxengine-cs 
-* First created by: stefano.pontillo 
-* Creation date: 27 lug 2021 
-* 
-**/
+/**
+ *
+ * Purpose: this class is mainly for choose wich builder use following these
+ * rules: 1) the heartbeat flows and system status is up. Request are answered
+ * in time with no ERROR. BestX! uses the response to define the execution
+ * attempt. If there is a WARNING, BestX! logs the warning. 2) the hearbeat
+ * flows and the system status is up. Request is timed out. BestX! goes to the
+ * fallback algo to define the execution attempt wheter it is a LF or algo
+ * order. Other orders (orders that are executed afterwards) are not affected.
+ * 3) the heartbeat flows and system status is up. Request are answered in time
+ * with ERROR. BestX rejects back each order when the service GetRoutingProposal
+ * is responding with 1 or more Errors. Each new order continues to call the
+ * service GetRoutingProposal. An error response from GetRoutingProposal does
+ * not say anything about the availability of the services, that’s what he
+ * heartbeat does. 4) the hearbeat flows and the system status is down. BestX!
+ * goes to fallback 5) the heartbeat is timed out. BestX! goes to fallback
+ *
+ * Project Name : bestxengine-cs First created by: stefano.pontillo Creation
+ * date: 27 lug 2021
+ * 
+ **/
 public class FallbackMarketOrderBuilder implements MarketOrderBuilder {
 
-   private MarketOrderBuilder defaultMarketOrderBuilder;
-   private CSMarketOrderBuilder csAlgoMarketOrderBuilder;
-   
-   @Override
-   public void buildMarketOrder(Operation operation) {
-      //Update algo service status in attempt
-      operation.getLastAttempt().updateServiceStatus(csAlgoMarketOrderBuilder.getServiceName(), !csAlgoMarketOrderBuilder.getServiceStatus(), csAlgoMarketOrderBuilder.getDownReason());
-      
-      if (csAlgoMarketOrderBuilder.getServiceStatus()) {
-         csAlgoMarketOrderBuilder.buildMarketOrder(operation);
-      } else {
-         defaultMarketOrderBuilder.buildMarketOrder(operation);
-      }
-   }
-   
-   public MarketOrderBuilder getDefaultMarketOrderBuilder() {
-      return defaultMarketOrderBuilder;
-   }
-   
-   public void setDefaultMarketOrderBuilder(MarketOrderBuilder defaultMarketOrderBuilder) {
-      this.defaultMarketOrderBuilder = defaultMarketOrderBuilder;
-   }
-   
-   public CSMarketOrderBuilder getCsAlgoMarketOrderBuilder() {
-      return csAlgoMarketOrderBuilder;
-   }
-   
-   public void setCsAlgoMarketOrderBuilder(CSMarketOrderBuilder csAlgoMarketOrderBuilder) {
-      this.csAlgoMarketOrderBuilder = csAlgoMarketOrderBuilder;
-   }
+	private MarketOrderBuilder defaultMarketOrderBuilder;
+	private CSMarketOrderBuilder csAlgoMarketOrderBuilder;
 
+	private class FallbackMarketOrderBuilderListener implements MarketOrderBuilderListener {
+		private Operation operation;
+
+		public FallbackMarketOrderBuilderListener(Operation operation) {
+			this.operation = operation;
+		}
+
+		@Override
+		public void onMarketOrderBuilt(MarketOrderBuilder source, MarketOrder marketOrder) {
+			this.operation.onMarketOrderBuilt(FallbackMarketOrderBuilder.this, marketOrder);
+		}
+
+		@Override
+		public void onMarketOrderTimeout(MarketOrderBuilder source) {
+			FallbackMarketOrderBuilder.this.defaultMarketOrderBuilder.buildMarketOrder(operation, operation);
+		}
+
+		@Override
+		public void onMarketOrderException(MarketOrderBuilder source, Exception ex) {
+			this.operation.onMarketOrderException(FallbackMarketOrderBuilder.this, ex);
+		}
+
+		@Override
+		public void onMarketOrderErrors(MarketOrderBuilder source, List<String> errors) {
+			this.operation.onMarketOrderErrors(FallbackMarketOrderBuilder.this, errors);
+		}
+
+	}
+
+	@Override
+	public void buildMarketOrder(Operation operation, MarketOrderBuilderListener listener) {
+		// Update algo service status in attempt
+		operation.getLastAttempt().updateServiceStatus(csAlgoMarketOrderBuilder.getServiceName(),
+				!csAlgoMarketOrderBuilder.getServiceStatus(), csAlgoMarketOrderBuilder.getDownReason());
+
+		if (csAlgoMarketOrderBuilder.getServiceStatus()) {
+			csAlgoMarketOrderBuilder.buildMarketOrder(operation, new FallbackMarketOrderBuilderListener(operation));
+		} else {
+			defaultMarketOrderBuilder.buildMarketOrder(operation, operation);
+		}
+	}
+
+	public MarketOrderBuilder getDefaultMarketOrderBuilder() {
+		return defaultMarketOrderBuilder;
+	}
+
+	public void setDefaultMarketOrderBuilder(MarketOrderBuilder defaultMarketOrderBuilder) {
+		this.defaultMarketOrderBuilder = defaultMarketOrderBuilder;
+	}
+
+	public CSMarketOrderBuilder getCsAlgoMarketOrderBuilder() {
+		return csAlgoMarketOrderBuilder;
+	}
+
+	public void setCsAlgoMarketOrderBuilder(CSMarketOrderBuilder csAlgoMarketOrderBuilder) {
+		this.csAlgoMarketOrderBuilder = csAlgoMarketOrderBuilder;
+	}
 
 }

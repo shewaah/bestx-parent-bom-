@@ -14,8 +14,13 @@
 
 package it.softsolutions.bestx.bestexec;
 
+import java.util.List;
+
 import it.softsolutions.bestx.model.MarketOrder;
 
 public interface MarketOrderBuilderListener {
 	void onMarketOrderBuilt(MarketOrderBuilder source, MarketOrder marketOrder);
+	void onMarketOrderTimeout(MarketOrderBuilder source);
+	void onMarketOrderException(MarketOrderBuilder source, Exception ex);
+	void onMarketOrderErrors(MarketOrderBuilder source, List<String> errors);
 }
