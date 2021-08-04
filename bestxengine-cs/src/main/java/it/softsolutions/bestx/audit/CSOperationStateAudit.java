@@ -509,7 +509,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             try {
             	//if(oldStateType != Type.Rejected) {   When state is rejected the attempt has no more been saved already 
             		// typical scenario where the save must not be attempted is when the market rejected handler detect a wide spread condition
-        		operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);	
+               operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);	
             	auditMarketStatus(order.getFixOrderId(), attemptNo);
                auditServicesStatus(order.getFixOrderId(), operation.getLastAttempt(), attemptNo);
             	//} 

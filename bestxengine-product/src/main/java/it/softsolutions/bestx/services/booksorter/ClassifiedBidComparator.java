@@ -17,7 +17,6 @@ package it.softsolutions.bestx.services.booksorter;
 import java.util.Comparator;
 
 import it.softsolutions.bestx.model.ClassifiedProposal;
-import it.softsolutions.bestx.model.Proposal.ProposalState;
 import it.softsolutions.bestx.model.Proposal.ProposalType;
 import it.softsolutions.bestx.model.Venue.VenueType;
 
@@ -39,13 +38,11 @@ public class ClassifiedBidComparator implements Comparator<ClassifiedProposal> {
 	public int compare(ClassifiedProposal o1, ClassifiedProposal o2) {
 		int result = 0;
 
-		if(ProposalState.VALID.equals(o1.getProposalState()) && ProposalState.VALID.equals(o2.getProposalState())) {
-			result = o1.getProposalSubState().compareTo(o2.getProposalSubState());
-		}
-		
+      result = o2.getPrice().getAmount().compareTo(o1.getPrice().getAmount());
+      
 		//Order by price
 		if (result == 0) { 
-			result = o2.getPrice().getAmount().compareTo(o1.getPrice().getAmount());
+         result = o1.getProposalState().compareTo(o2.getProposalState());
 		}
 
 		// counter offers have best rank in book

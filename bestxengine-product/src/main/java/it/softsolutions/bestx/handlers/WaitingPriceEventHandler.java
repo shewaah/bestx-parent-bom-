@@ -46,7 +46,6 @@ import it.softsolutions.bestx.model.MarketMaker;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Venue;
-import it.softsolutions.bestx.services.BookDepthValidator;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.ExecutionDestinationService;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyService;
@@ -93,7 +92,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 
 	protected final ExecutionDestinationService executionDestinationService;
 	private boolean rejectOrderWhenBloombergIsBest;
-	protected BookDepthValidator bookDepthValidator;
 	private OperationStateAuditDao operationStateAuditDao;
 	protected boolean doNotExecute;
 	private ApplicationStatus applicationStatus;
@@ -129,7 +127,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 	public WaitingPriceEventHandler(Operation operation, PriceService priceService, CustomerFinder customerFinder,
 			SerialNumberService serialNumberService, RegulatedMktIsinsLoader regulatedMktIsinsLoader, List<String> regulatedMarketPolicies, long waitingPriceDelay, int maxAttemptNo,
 			long marketPriceTimeout, ExecutionDestinationService executionDestinationService, boolean rejectOrderWhenBloombergIsBest,
-			boolean doNotExecute, BookDepthValidator bookDepthValidator, List<String> internalMMcodes, OperationStateAuditDao operationStateAuditDao, 
+			boolean doNotExecute, List<String> internalMMcodes, OperationStateAuditDao operationStateAuditDao, 
 			ApplicationStatus applicationStatus, DataCollector dataCollector, MarketOrderBuilder marketOrderBuilder) throws BestXException{
 		super(operation);
 		this.priceService = priceService;
@@ -151,7 +149,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		if (this.internalMMcodes == null) {
 			this.internalMMcodes = new ArrayList<String>();
 		}
-		this.bookDepthValidator = bookDepthValidator;
 		this.operationStateAuditDao = operationStateAuditDao;
 		this.doNotExecute = doNotExecute;
 		this.applicationStatus = applicationStatus;
@@ -316,23 +313,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		}
 		LOGGER.debug("Order {}, No customer revoke received.", operation.getOrder().getFixOrderId());
 
-		/* BXMNT-327 */
-		if (!bookDepthValidator.isBookDepthValid(currentAttempt, customerOrder) && !customerOrder.isLimitFile()
-				&& !operation.isNotAutoExecute()) { // market order action +++
-			if (!BondTypesService.isUST(operation.getOrder().getInstrument()) || this.applicationStatus.getType() == ApplicationStatus.Type.MONITOR) {
-				try {
-					ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
-					operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("RejectInsufficientBookDepth.0", bookDepthValidator.getMinimumRequiredBookDepth())), ErrorState.class);
-				}
-				catch (BestXException e) {
-					LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
-					String errorMessage = e.getMessage();
-					operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
-				}
-				return;
-			}
-		}
-
 		// AMC 20190208 BESTX-385 best on bloomberg requires to be managed with auto unexecution when best on bloomberg is configured for auto unexecution
 		ClassifiedProposal executionProposal = currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide());
 		boolean doRejectThisBestOnBloomberg = executionProposal != null && executionProposal.getMarket().getMarketCode() == Market.MarketCode.BLOOMBERG && rejectOrderWhenBloombergIsBest;
@@ -358,7 +338,8 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
          }
       }
 		
-		if (priceResult.getState() == PriceResult.PriceResultState.COMPLETE) {
+		if (priceResult.getState() == PriceResult.PriceResultState.COMPLETE
+		      || priceResult.getState() == PriceResult.PriceResultState.ERROR) {
 			// Fill Attempt
 			currentAttempt.setExecutionProposal(currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide()));
 			this.marketOrderBuilder.buildMarketOrder(operation, operation);
@@ -367,8 +348,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			checkOrderAndsetNotAutoExecuteOrder(operation, doNotExecute);
 			operation.removeLastAttempt();
 			operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("EventPriceTimeout.0", priceResult.getReason())), ErrorState.class);
-		} else if (priceResult.getState() == PriceResult.PriceResultState.NULL 
-				|| priceResult.getState() == PriceResult.PriceResultState.ERROR) {
+		} else if (priceResult.getState() == PriceResult.PriceResultState.NULL) {
 			
 			boolean executable = !operation.isNotAutoExecute() && (!operation.getOrder().isLimitFile() || !doNotExecute);
 			ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, priceResult, rejectOrderWhenBloombergIsBest);
@@ -567,7 +547,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			LOGGER.error("Exception received while calling GetRoutingProposal", ex);
 			ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
 			// TODO Internationalize message
-			operation.setStateResilient(new SendAutoNotExecutionReportState("Exception occured while calling GetRoutingProposal"), ErrorState.class);
+			operation.setStateResilient(new SendAutoNotExecutionReportState("Exception during the creation of market order"), ErrorState.class);
 		}
 		catch (BestXException e) {
 			LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
@@ -583,7 +563,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			LOGGER.error("Errors received while calling GetRoutingProposal: {}", errors);
 			ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
 			// TODO Internationalize message
-			operation.setStateResilient(new SendAutoNotExecutionReportState("Errors received while calling GetRoutingProposal"), ErrorState.class);
+			operation.setStateResilient(new SendAutoNotExecutionReportState(errors.get(0)), ErrorState.class);
 		}
 		catch (BestXException e) {
 			LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);

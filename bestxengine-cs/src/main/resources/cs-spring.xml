@@ -626,9 +626,17 @@
 		</constructor-arg>
 	</bean>
 	
+    <bean id="bookDepthValidator" class="it.softsolutions.bestx.services.CSBookDepthController">
+		<constructor-arg>
+			<value>${Execution.minimumRequiredBookDepth}</value>
+		</constructor-arg>
+    </bean>
+	
     <bean id="defaultMarketOrderBuilder" class="it.softsolutions.bestx.services.BestXMarketOrderBuilder">
         <property name="targetPriceMaxLevel"><value>${TargetPrice.MaxLevel}</value></property>
         <property name="acceptableSubstates"><value>NONE,PRICE_WORST_THAN_LIMIT,OUTSIDE_SPREAD</value></property>
+        <property name="bookDepthValidator" ref="bookDepthValidator" />
+		<property name="applicationStatus" ref="applicationStatus" />
 	</bean>
 
     <bean id="algoMarketOrderBuilder" class="it.softsolutions.bestx.services.rest.CSMarketOrderBuilder">
@@ -681,8 +689,6 @@
         <property name="operationRegistry"><ref bean="defaultOperationRegistry"></ref></property>
 		<!-- Reject orders when Bloomberg is Best : set to false to deactivate -->
         <property name="rejectWhenBloombergIsBest"><value>${Bloomberg.rejectWhenIsBest}</value></property>
-        <!-- Reject orders when book depth is < (x) : set to 0 to deactivate, default = 3 -->
-        <property name="minimumRequiredBookDepth"><value>${Execution.minimumRequiredBookDepth}</value></property>
 		<!-- in milliseconds -->
         <property name="waitingCMFTimeout"><value>100000</value></property>
         <property name="grdLiteLoadResponseTimeout"><value>${GRDLite.loadResponse.timeout}</value></property>

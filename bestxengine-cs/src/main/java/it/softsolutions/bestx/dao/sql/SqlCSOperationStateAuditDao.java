@@ -295,18 +295,22 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
         try {
             List<ClassifiedProposal> proposalToBeSaved = new ArrayList<ClassifiedProposal>();
             if(sortedBook != null && sortedBook.getAskProposals() != null && sortedBook.getBidProposals() != null){
-	            for (int i = 0; i < sortedBook.getAskProposals().size(); i++) {
+               for (int i = 0; i < sortedBook.getAskProposals().size(); i++) {
 	                // assume that they have the same depth
 	                count = i;
 	                ClassifiedProposal pAsk = sortedBook.getAskProposals().get(i);
-	                ClassifiedProposal pBid = sortedBook.getBidProposals().get(i);
-	                if (BigDecimal.ZERO.compareTo(pAsk.getQty()) <= 0 || BigDecimal.ZERO.compareTo(pAsk.getPrice().getAmount()) <= 0 || BigDecimal.ZERO.compareTo(pBid.getQty()) <= 0
-	                                || BigDecimal.ZERO.compareTo(pBid.getPrice().getAmount()) <= 0) {
-	
+	                if (BigDecimal.ZERO.compareTo(pAsk.getQty()) <= 0 || BigDecimal.ZERO.compareTo(pAsk.getPrice().getAmount()) <= 0) {
 	                    proposalToBeSaved.add(pAsk);
-	                    proposalToBeSaved.add(pBid);
 	                }
 	            }
+               for (int i = 0; i < sortedBook.getBidProposals().size(); i++) {
+                  // assume that they have the same depth
+                  count = i;
+                  ClassifiedProposal pBid = sortedBook.getBidProposals().get(i);
+                  if (BigDecimal.ZERO.compareTo(pBid.getQty()) <= 0 || BigDecimal.ZERO.compareTo(pBid.getPrice().getAmount()) <= 0) {
+                      proposalToBeSaved.add(pBid);
+                  }
+              }
 	            saveProposals(orderId, attemptNo, sortedBook.getInstrument(), proposalToBeSaved);
             }	
 	        long sTime = (DateService.currentTimeMillis() - t0);

@@ -92,8 +92,6 @@ import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal;
-import it.softsolutions.bestx.services.BookDepthValidator;
-import it.softsolutions.bestx.services.CSBookDepthController;
 import it.softsolutions.bestx.services.CSConfigurationPropertyLoader;
 import it.softsolutions.bestx.services.CommissionService;
 import it.softsolutions.bestx.services.ExecutionDestinationService;
@@ -162,8 +160,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 	private long waitingCMFTimeout = 90000; // default value is 90 seconds
 	private PriceServiceProvider priceServiceProvider;
 	private boolean rejectWhenBloombergIsBest;
-	private int minimumRequiredBookDepth = 3;
-	private BookDepthValidator bookDepthValidator = new CSBookDepthController(minimumRequiredBookDepth);
 
 	private Map<String, MultipleQuotesHandler> multipleQuotesHandlers = new HashMap<String, MultipleQuotesHandler>();
 	private long grdLiteLoadResponseTimeout;
@@ -677,7 +673,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 
 			handler = new ManualExecutionWaitingPriceEventHandler(operation, getPriceService(operation.getOrder()), customerFinder, serialNumberService,
 					regulatedMktIsinsLoader, regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout,
-					executionDestinationService, rejectWhenBloombergIsBest, doNotExecuteMEW, bookDepthValidator, operationStateAuditDao, applicationStatus, dataCollector, marketOrderBuilder);
+					executionDestinationService, rejectWhenBloombergIsBest, doNotExecuteMEW, operationStateAuditDao, applicationStatus, dataCollector, marketOrderBuilder);
 			break;
 		case WaitingPrice:
 			Boolean doNotExecuteWP = CSConfigurationPropertyLoader.getBooleanProperty(CSConfigurationPropertyLoader.LIMITFILE_DONOTEXECUTE, false);
@@ -687,7 +683,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 
 			handler = new WaitingPriceEventHandler(operation, getPriceService(operation.getOrder()), customerFinder, serialNumberService, regulatedMktIsinsLoader,
 					regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout, executionDestinationService,
-					rejectWhenBloombergIsBest, doNotExecuteWP, bookDepthValidator, internalMMcodesList, operationStateAuditDao, applicationStatus, dataCollector, marketOrderBuilder);
+					rejectWhenBloombergIsBest, doNotExecuteWP, internalMMcodesList, operationStateAuditDao, applicationStatus, dataCollector, marketOrderBuilder);
 			break;
 		case Error:
 		case Warning:
@@ -1099,24 +1095,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 		this.rejectWhenBloombergIsBest = rejectWhenBloombergIsBest;
 	}
 
-	/**
-	 * Gets the minimum required book depth.
-	 *
-	 * @return the minimum required book depth
-	 */
-	public int getMinimumRequiredBookDepth() {
-		return minimumRequiredBookDepth;
-	}
-
-	/**
-	 * Sets the minimum required book depth.
-	 *
-	 * @param minimumRequiredBookDepth the new minimum required book depth
-	 */
-	public void setMinimumRequiredBookDepth(int minimumRequiredBookDepth) {
-		this.minimumRequiredBookDepth = minimumRequiredBookDepth;
-		((CSBookDepthController) bookDepthValidator).setMinimumRequiredBookDepth(minimumRequiredBookDepth);
-	}
 
 	/**
 	 * Gets the cs-spring internal market exec timeout.

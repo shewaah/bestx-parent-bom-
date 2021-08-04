@@ -37,7 +37,6 @@ import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Venue;
 import it.softsolutions.bestx.model.Venue.VenueType;
-import it.softsolutions.bestx.services.BookDepthValidator;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.ExecutionDestinationService;
 import it.softsolutions.bestx.services.price.PriceResult;
@@ -70,12 +69,12 @@ public class ManualExecutionWaitingPriceEventHandler extends WaitingPriceEventHa
             SerialNumberService serialNumberService, RegulatedMktIsinsLoader regulatedMktIsinsLoader,
             List<String> regulatedMarketPolicies, long waitingPriceDelay, int maxAttemptNo, long marketPriceTimeout,
             ExecutionDestinationService executionDestinationService, boolean rejectWhenBloombergIsBest, boolean doNotExecute, 
-            BookDepthValidator bookDepthValidator, OperationStateAuditDao operationStateAuditDao, ApplicationStatus applicationStatus, 
+            OperationStateAuditDao operationStateAuditDao, ApplicationStatus applicationStatus, 
             DataCollector dataCollector, MarketOrderBuilder marketOrderBuilder) throws BestXException {
 
         super(operation, priceService, customerFinder, serialNumberService, regulatedMktIsinsLoader, 
                 regulatedMarketPolicies, waitingPriceDelay, maxAttemptNo, marketPriceTimeout, executionDestinationService, 
-                rejectWhenBloombergIsBest, doNotExecute, bookDepthValidator, null, operationStateAuditDao, applicationStatus, dataCollector, marketOrderBuilder);
+                rejectWhenBloombergIsBest, doNotExecute, null, operationStateAuditDao, applicationStatus, dataCollector, marketOrderBuilder);
             }
 
     @Override
