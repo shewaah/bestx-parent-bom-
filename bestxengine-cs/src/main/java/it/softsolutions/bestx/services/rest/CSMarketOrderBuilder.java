@@ -14,6 +14,7 @@
 
 package it.softsolutions.bestx.services.rest;
 
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -164,8 +165,13 @@ public class CSMarketOrderBuilder implements MarketOrderBuilder {
 				}
 
 			} catch (Exception e) {
-				LOGGER.error("Error while creating Market Order", e);
-				listener.onMarketOrderException(this, e);
+				if (e.getCause() instanceof SocketTimeoutException) {
+					LOGGER.error("Timeout to call ALGO REST Service", e);
+					listener.onMarketOrderTimeout(this);
+				} else {
+					LOGGER.error("Error while creating Market Order", e);
+					listener.onMarketOrderException(this, e);
+				}
 			}
 		});
 	}

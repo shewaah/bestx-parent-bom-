@@ -15,8 +15,8 @@
 package it.softsolutions.bestx.services.rest;
 
 import java.math.BigDecimal;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 
@@ -74,9 +74,14 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
    private static final String CSALGOREST_JSON_KEY_EXCLUDE_DEALERS = "excludeDealers";
    private static final String CSALGOREST_JSON_KEY_TARGET_VENUE = "targetVenue";
 
-   private static final String CSALGOREST_JSON_KEY_EXCEPTIONS = "exceptions";
-   private static final String CSALGOREST_JSON_KEY_EXCEPTION_MESSAGE = "exceptionMessage";
-   private static final String CSALGOREST_JSON_KEY_EXCEPTION_CODE = "exceptionCode";
+   private static final String CSALGOREST_JSON_KEY_EXCEPTIONS = "messages";
+   private static final String CSALGOREST_JSON_KEY_EXCEPTION_MESSAGE = "message";
+   private static final String CSALGOREST_JSON_KEY_EXCEPTION_CODE = "code";
+   private static final String CSALGOREST_JSON_KEY_EXCEPTION_SEVERITY = "severity";
+
+   private static final String CSALGOREST_JSON_KEY_STATUS = "status";
+   private static final String CSALGOREST_JSON_KEY_GREEN = "GREEN";
+   private static final String CSALGOREST_JSON_KEY_RED = "RED";
 
    
    
@@ -308,7 +313,7 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
     		  ExceptionMessageElement exceptionMessage = new ExceptionMessageElement();
     		  exceptionMessage.setExceptionMessage(jsonExceptionMessage.getString(CSALGOREST_JSON_KEY_EXCEPTION_MESSAGE));
     		  exceptionMessage.setExceptionCode(jsonExceptionMessage.getString(CSALGOREST_JSON_KEY_EXCEPTION_CODE));
-    		  exceptionMessage.setExceptionSeverity(jsonExceptionMessage.getString(CSALGOREST_JSON_KEY_SEVERITY));
+    		  exceptionMessage.setExceptionSeverity(jsonExceptionMessage.getString(CSALGOREST_JSON_KEY_EXCEPTION_SEVERITY));
     		  response.getData().getExceptions().add(exceptionMessage);
     	  }
       }
@@ -327,22 +332,32 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
                // Heartbeat check must be done by call GET on the healtcheck URL
                String response = heartbeatClient.get().readEntity(String.class);
                JSONObject objResp = new JSONObject(response);
-               if ("GREEN".equalsIgnoreCase(objResp.getJSONObject("data").getString("status"))) {
+               String currentStatus = objResp.getJSONObject(CSALGOREST_JSON_KEY_DATA).getString(CSALGOREST_JSON_KEY_STATUS);
+               if (CSALGOREST_JSON_KEY_GREEN.equalsIgnoreCase(currentStatus)) {
                   lastError = "";
                   available = true;
-               } else {
-                  List<Object> messages = objResp.getJSONObject("data").getJSONArray("messages").toList();
-                  for (Object errMsg : messages) {
-                     lastError += ((JSONObject)errMsg).getString("message") + "; ";
-                     LOGGER.warn("CS Algo Service status: {}", ((JSONObject)errMsg).getString("message"));
-                  }
+               } else if (CSALGOREST_JSON_KEY_RED.equalsIgnoreCase(currentStatus)) {
+            	   // According to last requirements there are no messages
+            	   LOGGER.warn("CS ALGO REST Service is returning RED status");
                   available = false;
+               } else {
+            	   LOGGER.warn("CS ALGO REST Service is returning an unknown status: {}", currentStatus);
+            	   available = false;
                }
-               Thread.sleep(CHECK_PERIOD);
             } catch (Exception e) {
-               LOGGER.error("Error while trying to check connection status: ", e);
-               lastError = "Error while trying to check connection status: timeout";
+            	if (e.getCause() instanceof SocketTimeoutException) {
+                    lastError = "Error while trying to check connection status: timeout";
+            	} else {
+            		lastError = "Error while trying to check connection status: " + e.getMessage();
+            	}
+               LOGGER.error("Error while trying to check connection status: {}", e, lastError);
                if (keepChecking) available = false;
+            } finally {
+            	try {
+            		Thread.sleep(CHECK_PERIOD);
+            	} catch (Exception e) {
+            		LOGGER.error("Interupted thread", e);
+            	}
             }
          }
          LOGGER.info("Stopping checking the connection to Datalake!");
