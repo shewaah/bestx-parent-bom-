@@ -60,7 +60,7 @@ public class BestXMarketOrderBuilder implements MarketOrderBuilder {
    @Override
    public void buildMarketOrder(Operation operation, MarketOrderBuilderListener listener) {
       // Build MarketOrder
-      MarketOrder marketOrder = new MarketOrder();
+      MarketOrder marketOrder = null;
       Attempt currentAttempt = operation.getLastAttempt();
       Order customerOrder = operation.getOrder();
       
@@ -77,6 +77,7 @@ public class BestXMarketOrderBuilder implements MarketOrderBuilder {
       
       Money limitPrice = calculateTargetPrice(operation);
       if (currentAttempt.getExecutionProposal() != null) {
+         marketOrder = new MarketOrder();
          marketOrder.setValues(operation.getOrder());
          marketOrder.setTransactTime(DateService.newUTCDate());
          marketOrder.setMarket(currentAttempt.getExecutionProposal().getMarket());
@@ -105,14 +106,14 @@ public class BestXMarketOrderBuilder implements MarketOrderBuilder {
       
       try {
          best = currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide()).getPrice();
-         ithBestProp = BookHelper.getIthProposal(currentAttempt.getSortedBook().getProposalBySubState(wantedSubStates, operation.getOrder().getSide()), this.targetPriceMaxLevel);
+         ithBestProp = BookHelper.getIthProposal(currentAttempt.getSortedBook().getAcceptableProposalBySubState(wantedSubStates, operation.getOrder().getSide()), this.targetPriceMaxLevel);
          ithBest = ithBestProp.getPrice();
       } catch(NullPointerException e) {
          LOGGER.warn("NullPointerException trying to manage widen best or get the {}-th best for order {}", this.targetPriceMaxLevel, operation.getOrder().getFixOrderId());
          LOGGER.warn("NullPointerException trace", e);
       }
       try {
-         double spread = BookHelper.getQuoteSpread(currentAttempt.getSortedBook().getProposalBySubState(wantedSubStates, operation.getOrder().getSide()), this.targetPriceMaxLevel);
+         double spread = BookHelper.getQuoteSpread(currentAttempt.getSortedBook().getAcceptableProposalBySubState(wantedSubStates, operation.getOrder().getSide()), this.targetPriceMaxLevel);
          CustomerAttributes custAttr = (CustomerAttributes) operation.getOrder().getCustomer().getCustomerAttributes();
          BigDecimal customerMaxWideSpread = custAttr.getWideQuoteSpread();
          if(customerMaxWideSpread != null && customerMaxWideSpread.doubleValue() < spread) { // must use the spread, not the i-th best
@@ -129,7 +130,7 @@ public class BestXMarketOrderBuilder implements MarketOrderBuilder {
             limitPrice = ithBest;
          }
          if(limitPrice == null) { // necessary to avoid null limit price. See the book depth minimum for execution 
-            if (currentAttempt.getExecutionProposal().getWorstPriceUsed() != null) {
+            if (currentAttempt.getExecutionProposal() != null && currentAttempt.getExecutionProposal().getWorstPriceUsed() != null) {
                limitPrice = currentAttempt.getExecutionProposal().getWorstPriceUsed();
                LOGGER.debug("Use worst price of consolidated proposal as market order limit price: {}", limitPrice == null? "null":limitPrice.getAmount().toString());
             } else {

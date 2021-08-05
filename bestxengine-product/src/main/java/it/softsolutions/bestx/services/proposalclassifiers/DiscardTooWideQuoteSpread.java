@@ -145,6 +145,7 @@ public class DiscardTooWideQuoteSpread implements ProposalClassifier {
 			switch (bookProposal.getProposalState()) {
 			case DROPPED:
 			case REJECTED:
+         case ACCEPTABLE:
 				// doNothing
 				break;
 			default:
