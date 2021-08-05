@@ -634,7 +634,7 @@
 	
     <bean id="defaultMarketOrderBuilder" class="it.softsolutions.bestx.services.BestXMarketOrderBuilder">
         <property name="targetPriceMaxLevel"><value>${TargetPrice.MaxLevel}</value></property>
-        <property name="acceptableSubstates"><value>NONE,PRICE_WORST_THAN_LIMIT,OUTSIDE_SPREAD</value></property>
+        <property name="acceptableSubstates"><value>PRICE_WORST_THAN_LIMIT,OUTSIDE_SPREAD</value></property>
         <property name="bookDepthValidator" ref="bookDepthValidator" />
 		<property name="applicationStatus" ref="applicationStatus" />
 	</bean>
