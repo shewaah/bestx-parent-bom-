@@ -214,7 +214,7 @@ public class SortedBook implements Book, Cloneable {
       if (sideProposals != null) {
          proposals = new ArrayList<ClassifiedProposal>();
          for (ClassifiedProposal prop : sideProposals) {
-            if ((prop.getProposalState() == ProposalState.VALID || prop.getProposalState() == ProposalState.ACCEPTABLE) &&  wantedSubStates.contains(prop.getProposalSubState())) {
+            if (prop.getProposalState() == ProposalState.VALID || (prop.getProposalState() == ProposalState.ACCEPTABLE &&  wantedSubStates.contains(prop.getProposalSubState()))) {
                proposals.add(prop);
             }
          }
