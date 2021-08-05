@@ -1382,5 +1382,14 @@
         <property name="connectionTimeout" value="${CSAlgoRest.service.connectionTimeout}" />
         <property name="responseTimeout" value="${CSAlgoRest.service.responseTimeout}" />
         <property name="algoServiceName" value="${CSAlgoRest.service.serviceName}" />
+        <property name="useSSL" value="${CSAlgoRest.service.useSSL:N}" />
+        <property name="storePath" value="${CSAlgoRest.service.keyStorePath:#{null}}" />
+        <property name="storePassword" value="${CSAlgoRest.service.keyStorePassword:#{null}}" />
+        <property name="storeType" value="${CSAlgoRest.service.keyStoreType:#{null}}" />
+        <property name="trustStorePath" value="${CSAlgoRest.service.trustStorePath:#{null}}" />
+        <property name="trustStorePassword" value="${CSAlgoRest.service.trustStorePassword:#{null}}" />
+        <property name="trustStoreType" value="${CSAlgoRest.service.trustStoreType:#{null}}" />
+        <property name="certAlias" value="${CSAlgoRest.service.certAlias:#{null}}" />
+        <property name="disableCNCheck" value="${CSAlgoRest.service.disableCNCheck:#{null}}" />
 	</bean>
 </beans>

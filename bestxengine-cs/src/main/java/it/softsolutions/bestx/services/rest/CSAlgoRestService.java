@@ -14,12 +14,25 @@
 
 package it.softsolutions.bestx.services.rest;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.SocketTimeoutException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.json.JSONArray;
@@ -84,13 +97,22 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
    private static final String CSALGOREST_JSON_KEY_RED = "RED";
 
    
-   
    private String endpoint;
    private String servicePath;
    private String healthcheckPath;
    private int connectionTimeout;
    private int responseTimeout;
    private String algoServiceName;
+   
+   private String useSSL;
+   private String keyStorePath;
+   private String keyStorePassword;
+   private String keyStoreType;
+   private String trustStorePath;
+   private String trustStorePassword;
+   private String trustStoreType;
+   private String certAlias;
+   private String disableCNCheck;
    
    private boolean active = false;
    private boolean available = false;
@@ -104,24 +126,64 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
 
    @Override
    public void init() throws BestXException {
-      this.restClient = WebClient.create(this.endpoint);
-      this.restClient.path(this.servicePath);
-      this.restClient.type(MediaType.APPLICATION_JSON);
-      this.restClient.accept(MediaType.APPLICATION_JSON);
-      
-      HTTPConduit conduit = WebClient.getConfig(this.restClient).getHttpConduit();
-      conduit.getClient().setConnectionTimeout(this.connectionTimeout);
-      conduit.getClient().setReceiveTimeout(responseTimeout);
-      
-      this.heartbeatClient = WebClient.create(this.endpoint);
-      this.heartbeatClient.path(this.healthcheckPath);
-      this.heartbeatClient.type(MediaType.APPLICATION_JSON);
-      this.heartbeatClient.accept(MediaType.APPLICATION_JSON);
-      
-      HTTPConduit hbConduit = WebClient.getConfig(this.heartbeatClient).getHttpConduit();
-      hbConduit.getClient().setConnectionTimeout(this.connectionTimeout);
-      hbConduit.getClient().setReceiveTimeout(responseTimeout);
+      try {
+         //Message connection initialization
+         this.restClient = WebClient.create(this.endpoint);
+         this.restClient.path(this.servicePath);
+         this.restClient.type(MediaType.APPLICATION_JSON);
+         this.restClient.accept(MediaType.APPLICATION_JSON);
+         
+         HTTPConduit conduit = WebClient.getConfig(this.restClient).getHttpConduit();
+         conduit.getClient().setConnectionTimeout(this.connectionTimeout);
+         conduit.getClient().setReceiveTimeout(responseTimeout);
+         
+         if ("Y".equalsIgnoreCase(this.useSSL)) {
+            setSSL(conduit);
+         }
+         
+         //Heartbeat connection initialization
+         this.heartbeatClient = WebClient.create(this.endpoint);
+         this.heartbeatClient.path(this.healthcheckPath);
+         this.heartbeatClient.type(MediaType.APPLICATION_JSON);
+         this.heartbeatClient.accept(MediaType.APPLICATION_JSON);
+         
+         HTTPConduit hbConduit = WebClient.getConfig(this.heartbeatClient).getHttpConduit();
+         hbConduit.getClient().setConnectionTimeout(this.connectionTimeout);
+         hbConduit.getClient().setReceiveTimeout(responseTimeout);
+         
+         if ("Y".equalsIgnoreCase(this.useSSL)) {
+            setSSL(hbConduit);
+         }
+      } catch (Exception e) {
+         LOGGER.error("Error creating ALGO REST connection", e);
+         throw new BestXException(e);
+      }
    }
+   
+   private void setSSL(HTTPConduit conduit) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException, UnrecoverableKeyException {
+      KeyStore keyStore = KeyStore.getInstance(this.keyStoreType);
+      keyStore.load(new FileInputStream(this.keyStorePath), this.keyStorePassword.toCharArray());
+
+      KeyStore trustStore = KeyStore.getInstance(this.trustStoreType);
+      trustStore.load(new FileInputStream(this.trustStorePath), this.trustStorePassword.toCharArray());
+      
+      KeyManagerFactory factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+      factory.init(keyStore, this.keyStorePassword.toCharArray());
+      
+      TrustManagerFactory tmFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+      tmFactory.init(trustStore);
+      
+      
+      KeyManager[] keyManagers = factory.getKeyManagers();
+      TrustManager[] trustManagers = tmFactory.getTrustManagers();
+      
+      conduit.setTlsClientParameters(new TLSClientParameters());
+      conduit.getTlsClientParameters().setKeyManagers(keyManagers);
+      conduit.getTlsClientParameters().setTrustManagers(trustManagers);
+      conduit.getTlsClientParameters().setCertAlias(this.certAlias);
+      conduit.getTlsClientParameters().setDisableCNCheck("Y".equalsIgnoreCase(this.disableCNCheck));
+   }
+   
    
    @Override
    public void connect() {
@@ -230,6 +292,78 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
    
    public String getLastError() {
       return lastError;
+   }
+   
+   public String getUseSSL() {
+      return useSSL;
+   }
+   
+   public void setUseSSL(String useSSL) {
+      this.useSSL = useSSL;
+   }
+   
+   public String getKeyStorePath() {
+      return keyStorePath;
+   }
+   
+   public void setKeyStorePath(String keyStorePath) {
+      this.keyStorePath = keyStorePath;
+   }
+   
+   public String getKeyStorePassword() {
+      return keyStorePassword;
+   }
+   
+   public void setKeyStorePassword(String keyStorePassword) {
+      this.keyStorePassword = keyStorePassword;
+   }
+   
+   public String getKeyStoreType() {
+      return keyStoreType;
+   }
+   
+   public void setKeyStoreType(String keyStoreType) {
+      this.keyStoreType = keyStoreType;
+   }
+   
+   public String getTrustStorePath() {
+      return trustStorePath;
+   }
+   
+   public void setTrustStorePath(String trustStorePath) {
+      this.trustStorePath = trustStorePath;
+   }
+   
+   public String getTrustStorePassword() {
+      return trustStorePassword;
+   }
+
+   public void setTrustStorePassword(String trustStorePassword) {
+      this.trustStorePassword = trustStorePassword;
+   }
+   
+   public String getTrustStoreType() {
+      return trustStoreType;
+   }
+   
+   public void setTrustStoreType(String trustStoreType) {
+      this.trustStoreType = trustStoreType;
+   }
+   
+   public String getCertAlias() {
+      return certAlias;
+   }
+   
+   public void setCertAlias(String certAlias) {
+      this.certAlias = certAlias;
+   }
+   
+   public String getDisableCNCheck() {
+      return disableCNCheck;
+   }
+   
+   public void setDisableCNCheck(String disableCNCheck) {
+      this.disableCNCheck = disableCNCheck;
    }
 
    private JSONObject callRestService(JSONObject objReq, WebClient client) {
