@@ -39,6 +39,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
 
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.connections.BaseOperatorConsoleAdapter;
@@ -105,10 +106,10 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
    private String algoServiceName;
    
    private String useSSL;
-   private String keyStorePath;
+   private Resource keyStorePath;
    private String keyStorePassword;
    private String keyStoreType;
-   private String trustStorePath;
+   private Resource trustStorePath;
    private String trustStorePassword;
    private String trustStoreType;
    private String certAlias;
@@ -162,10 +163,10 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
    
    private void setSSL(HTTPConduit conduit) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException, UnrecoverableKeyException {
       KeyStore keyStore = KeyStore.getInstance(this.keyStoreType);
-      keyStore.load(new FileInputStream(this.keyStorePath), this.keyStorePassword.toCharArray());
+      keyStore.load(this.keyStorePath.getInputStream(), this.keyStorePassword.toCharArray());
 
       KeyStore trustStore = KeyStore.getInstance(this.trustStoreType);
-      trustStore.load(new FileInputStream(this.trustStorePath), this.trustStorePassword.toCharArray());
+      trustStore.load(this.trustStorePath.getInputStream(), this.trustStorePassword.toCharArray());
       
       KeyManagerFactory factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
       factory.init(keyStore, this.keyStorePassword.toCharArray());
@@ -302,11 +303,11 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
       this.useSSL = useSSL;
    }
    
-   public String getKeyStorePath() {
+   public Resource getKeyStorePath() {
       return keyStorePath;
    }
    
-   public void setKeyStorePath(String keyStorePath) {
+   public void setKeyStorePath(Resource keyStorePath) {
       this.keyStorePath = keyStorePath;
    }
    
@@ -326,11 +327,11 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
       this.keyStoreType = keyStoreType;
    }
    
-   public String getTrustStorePath() {
+   public Resource getTrustStorePath() {
       return trustStorePath;
    }
    
-   public void setTrustStorePath(String trustStorePath) {
+   public void setTrustStorePath(Resource trustStorePath) {
       this.trustStorePath = trustStorePath;
    }
    

@@ -1383,9 +1383,9 @@
         <property name="responseTimeout" value="${CSAlgoRest.service.responseTimeout}" />
         <property name="algoServiceName" value="${CSAlgoRest.service.serviceName}" />
         <property name="useSSL" value="${CSAlgoRest.service.useSSL:N}" />
-        <property name="storePath" value="${CSAlgoRest.service.keyStorePath:#{null}}" />
-        <property name="storePassword" value="${CSAlgoRest.service.keyStorePassword:#{null}}" />
-        <property name="storeType" value="${CSAlgoRest.service.keyStoreType:#{null}}" />
+        <property name="keyStorePath" value="${CSAlgoRest.service.keyStorePath:#{null}}" />
+        <property name="keyStorePassword" value="${CSAlgoRest.service.keyStorePassword:#{null}}" />
+        <property name="keyStoreType" value="${CSAlgoRest.service.keyStoreType:#{null}}" />
         <property name="trustStorePath" value="${CSAlgoRest.service.trustStorePath:#{null}}" />
         <property name="trustStorePassword" value="${CSAlgoRest.service.trustStorePassword:#{null}}" />
         <property name="trustStoreType" value="${CSAlgoRest.service.trustStoreType:#{null}}" />
