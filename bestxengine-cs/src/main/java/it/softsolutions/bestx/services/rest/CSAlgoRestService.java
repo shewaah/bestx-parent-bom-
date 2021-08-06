@@ -14,7 +14,6 @@
 
 package it.softsolutions.bestx.services.rest;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -377,7 +376,6 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
    }
    
    public GetRoutingProposalResponse doGetRoutingProposal(GetRoutingProposalRequest request) {
-      //TODO: manage timeout
       JSONObject jsonRequest = new JSONObject();
       jsonRequest.put(CSALGOREST_JSON_KEY_ISIN, request.getIsin());
       jsonRequest.put(CSALGOREST_JSON_KEY_SIDE, request.getSide());

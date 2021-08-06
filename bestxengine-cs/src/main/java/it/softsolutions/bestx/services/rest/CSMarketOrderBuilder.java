@@ -41,10 +41,8 @@ import it.softsolutions.bestx.services.rest.dto.ExceptionMessageElement;
 import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest;
 import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest.BidAsk;
 import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest.ConsolidatedBookElement;
-import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest.LegalEntity;
 import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest.MarketDataSource;
 import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest.PriceQuality;
-import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest.PriceTypeFIX;
 import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest.Side;
 import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalResponse;
 import it.softsolutions.jsscommon.Money;
@@ -108,9 +106,9 @@ public class CSMarketOrderBuilder implements MarketOrderBuilder {
 				GetRoutingProposalRequest request = new GetRoutingProposalRequest();
 				request.setIsin(operation.getOrder().getInstrumentCode());
 				request.setSide(OrderSide.isBuy(operation.getOrder().getSide()) ? Side.BUY : Side.SELL);
-				request.setPriceTypeFIX(PriceTypeFIX.PERCENTAGE_OF_PAR); // Only price type supported for the moment
+				request.setPriceTypeFIX(1); // Only price type supported for the moment
 				request.setSize(operation.getOrder().getQty());
-				request.setLegalEntity(LegalEntity.ZRH); // FIXME
+				request.setLegalEntity(this.csAlgoService.getAlgoServiceName());
 
 				for (ClassifiedProposal proposal : currentAttempt.getSortedBook().getAskProposals()) {
 					if (proposal.getProposalState() == ProposalState.ACCEPTABLE

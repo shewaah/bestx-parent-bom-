@@ -26,14 +26,6 @@ public class GetRoutingProposalRequest {
 		BUY, SELL
 	};
 
-	public static enum PriceTypeFIX {
-		PERCENTAGE_OF_PAR, UNIT, FIXED_AMOUNT, DISCOUNT_YIELD, PREMIUM, YIELD
-	};
-
-	public static enum LegalEntity {
-		ZRH, APAC, AMER
-	};
-
 	public static enum BidAsk {
 		BID, ASK
 	};
@@ -140,9 +132,9 @@ public class GetRoutingProposalRequest {
 
 	private String isin;
 	private Side side;
-	private PriceTypeFIX priceTypeFIX;
+	private int priceTypeFIX;
 	private BigDecimal size;
-	private LegalEntity legalEntity;
+	private String legalEntity;
 	private List<ConsolidatedBookElement> consolidatedBook = new ArrayList<>();
 
 	public String getIsin() {
@@ -161,11 +153,11 @@ public class GetRoutingProposalRequest {
 		this.side = side;
 	}
 
-	public PriceTypeFIX getPriceTypeFIX() {
+	public int getPriceTypeFIX() {
 		return priceTypeFIX;
 	}
 
-	public void setPriceTypeFIX(PriceTypeFIX priceTypeFIX) {
+	public void setPriceTypeFIX(int priceTypeFIX) {
 		this.priceTypeFIX = priceTypeFIX;
 	}
 
@@ -177,11 +169,11 @@ public class GetRoutingProposalRequest {
 		this.size = size;
 	}
 
-	public LegalEntity getLegalEntity() {
+	public String getLegalEntity() {
 		return legalEntity;
 	}
 
-	public void setLegalEntity(LegalEntity legalEntity) {
+	public void setLegalEntity(String legalEntity) {
 		this.legalEntity = legalEntity;
 	}
 
