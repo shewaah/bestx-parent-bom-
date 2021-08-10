@@ -23,7 +23,9 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.TimeZone;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -66,7 +68,7 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
    private static final String CSALGOREST_JSON_KEY_SIDE = "side";
    private static final String CSALGOREST_JSON_KEY_PRICE_TYPE_FIX = "priceTypeFIX";
    private static final String CSALGOREST_JSON_KEY_SIZE = "size";
-   private static final String CSALGOREST_JSON_KEY_LEGAL_ENTITY = "LegalEntity";
+   private static final String CSALGOREST_JSON_KEY_LEGAL_ENTITY = "legalEntity";
    private static final String CSALGOREST_JSON_KEY_CONSOLIDATED_BOOK = "consolidatedBook";
    private static final String CSALGOREST_JSON_KEY_BID_ASK = "bidAsk";
    private static final String CSALGOREST_JSON_KEY_PRICE = "price";
@@ -113,6 +115,10 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
    private String trustStoreType;
    private String certAlias;
    private String disableCNCheck;
+   private String timeFormatString;
+   private String timeZoneString;
+	
+   private SimpleDateFormat df;
    
    private boolean active = false;
    private boolean available = false;
@@ -127,6 +133,15 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
    @Override
    public void init() throws BestXException {
       try {
+    	  // Date format
+  		 this.df = new SimpleDateFormat(this.timeFormatString);
+  		 if (this.timeZoneString != null && !"".equals(this.timeZoneString.trim())) {
+  			this.df.setTimeZone(TimeZone.getTimeZone(this.timeZoneString));
+   		 }
+  		
+  		 LOGGER.info("Initialized SimpleDateFormat with {} pattern and {} timezone",
+  				this.df.toPattern(), this.df.getTimeZone().toString());
+  		
          //Message connection initialization
          this.restClient = WebClient.create(this.endpoint);
          this.restClient.path(this.servicePath);
@@ -366,6 +381,22 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
       this.disableCNCheck = disableCNCheck;
    }
 
+   public String getTimeFormatString() {
+  	  return timeFormatString;
+   }
+
+   public void setTimeFormatString(String timeFormatString) {
+	  this.timeFormatString = timeFormatString;
+   }
+
+   public String getTimeZoneString() {
+	  return timeZoneString;
+   }
+
+   public void setTimeZoneString(String timeZoneString) {
+	  this.timeZoneString = timeZoneString;
+   }
+
    private JSONObject callRestService(JSONObject objReq, WebClient client) {
       String request = objReq.toString();
       LOGGER.info("Request to REST service: {}", request);
@@ -377,6 +408,7 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
    
    public GetRoutingProposalResponse doGetRoutingProposal(GetRoutingProposalRequest request) {
       JSONObject jsonRequest = new JSONObject();
+      
       jsonRequest.put(CSALGOREST_JSON_KEY_ISIN, request.getIsin());
       jsonRequest.put(CSALGOREST_JSON_KEY_SIDE, request.getSide());
       jsonRequest.put(CSALGOREST_JSON_KEY_PRICE_TYPE_FIX, request.getPriceTypeFIX());
@@ -389,7 +421,7 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
     	  jsonElem.put(CSALGOREST_JSON_KEY_BID_ASK, elem.getBidAsk().toString());
     	  jsonElem.put(CSALGOREST_JSON_KEY_PRICE, elem.getPrice());
     	  jsonElem.put(CSALGOREST_JSON_KEY_SIZE, elem.getSize());
-    	  jsonElem.put(CSALGOREST_JSON_KEY_DATE_TIME, elem.getDateTime()); // TODO Check format
+    	  jsonElem.put(CSALGOREST_JSON_KEY_DATE_TIME, this.df.format(elem.getDateTime()));
     	  jsonElem.put(CSALGOREST_JSON_KEY_PRICE_QUALITY, elem.getPriceQuality().toString());
     	  jsonElem.put(CSALGOREST_JSON_KEY_DEALER_AT_VENUE, elem.getDealerAtVenue());
     	  jsonElem.put(CSALGOREST_JSON_KEY_DATA_SOURCE, elem.getDataSource().toString());

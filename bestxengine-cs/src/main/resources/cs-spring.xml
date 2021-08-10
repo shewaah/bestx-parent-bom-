@@ -1391,5 +1391,7 @@
         <property name="trustStoreType" value="${CSAlgoRest.service.trustStoreType:#{null}}" />
         <property name="certAlias" value="${CSAlgoRest.service.certAlias:#{null}}" />
         <property name="disableCNCheck" value="${CSAlgoRest.service.disableCNCheck:#{null}}" />
+        <property name="timeFormatString" value="${CSAlgoRest.service.Timestamp.Format:yyyy-MM-dd'T'HH:mm:ss.SSS'Z'}" />
+        <property name="timeZoneString" value="${CSAlgoRest.service.Timestamp.Timezone:UTC}" />
 	</bean>
 </beans>
