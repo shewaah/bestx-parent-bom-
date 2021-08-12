@@ -155,7 +155,7 @@ public class CSMarketOrderBuilder implements MarketOrderBuilder {
 					LOGGER.info("Order={}, Selecting for execution market market maker: {} and price {}",
 							operation.getOrder().getFixOrderId(), marketOrder.getMarketMarketMaker(),
 							limitPrice == null ? "null" : limitPrice.getAmount().toString());
-					marketOrder.setVenue(currentAttempt.getExecutionProposal().getVenue());
+					// marketOrder.setVenue(currentAttempt.getExecutionProposal().getVenue());
 
 					listener.onMarketOrderBuilt(this, marketOrder);
 				} else {

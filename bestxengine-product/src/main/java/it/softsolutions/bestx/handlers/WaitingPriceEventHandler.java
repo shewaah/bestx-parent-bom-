@@ -526,7 +526,9 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			if (this.priceResultReceived.getState() == PriceResult.PriceResultState.ERROR) {
 	         if (executable && (BondTypesService.isUST(operation.getOrder().getInstrument()) || customerOrder.isLimitFile())) { 
 	            // it is an executable UST order and there are no prices on consolidated book
-	            csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
+	             csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
+	         } else if (executable && marketOrder != null) {
+	        	 csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
 	         } else {
 	            Customer customer = customerOrder.getCustomer();
 	            // checkOrderAndsetNotAutoExecuteOrder(operation, doNotExecute);
