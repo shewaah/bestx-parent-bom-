@@ -362,7 +362,7 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
       PriceType priceType = (ordType == OrdType.Market ? null : PriceType.Percentage);
       Double price = (ordType == OrdType.Market ? null : marketOrder.getLimit().getAmount().doubleValue());
 
-      String text = null; // Customer notes - can be used to carry info useful to BestX!
+      String text = null; // Customer notes - can be used to carry info useful to BestX:FI-A
 
       TSNewOrderSingle tsNewOrderSingle = new TSNewOrderSingle();
       //instrument

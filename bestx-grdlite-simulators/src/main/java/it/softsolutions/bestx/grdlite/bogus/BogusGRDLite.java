@@ -143,7 +143,7 @@ public class BogusGRDLite implements MQMessageListener {
      * ** InstrumentsTable **************************
      * - ISIN (Key) ID005 ISIN code
      * - Currency Code DS004 ISO Currency code. Currency non ISO
-     * - MinimumPiece MM023 Minimum size accepted by BestX!
+     * - MinimumPiece MM023 Minimum size accepted by BestX:FI-A
      * - UpdateDate - Date of last update of this instrument
      * - CountryCode DS458 ISO Country code (2 char)
      * - Description DS156 Instrument description

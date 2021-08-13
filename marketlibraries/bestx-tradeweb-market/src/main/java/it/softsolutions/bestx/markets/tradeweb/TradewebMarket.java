@@ -851,7 +851,7 @@ public class TradewebMarket extends MarketCommon
 			   sessionId, clOrdID, execType, ordStatus, accruedInterestAmount, accruedInterestRate, lastPrice, contractNo, futSettDate, transactTime, text);
 
 	   String cleanClOrdId = clOrdID.replace("OCR#", ""); // this to manage Tradeweb cancel reply
-	   String cleanText = (text == null && ExecType.Canceled.equals(execType)) ? "Cancel requested by BestX!" : text;
+	   String cleanText = (text == null && ExecType.Canceled.equals(execType)) ? "Cancel requested by BestX:FI-A" : text;
 
 	   try {
 		   final Operation operation = operationRegistry.getExistingOperationById(OperationIdType.TRADEWEB_CLORD_ID, cleanClOrdId);
@@ -900,7 +900,7 @@ public class TradewebMarket extends MarketCommon
 					   price.setSide(operation.getOrder().getSide() == OrderSide.BUY ? ProposalSide.ASK : ProposalSide.BID);
 					   MarketMarketMaker tempMM = marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), data[0]);
 					   if(tempMM == null) {
-						   LOGGER.info("IMPORTANT! Tradeweb returned dealer {} not configured in BestX!. Please configure it", data[0]);
+						   LOGGER.info("IMPORTANT! Tradeweb returned dealer {} not configured in BestX:FI-A. Please configure it", data[0]);
 						   price.setOriginatorID(data[0]);
 					   } else {
 						   price.setMarketMarketMaker(tempMM);
@@ -996,7 +996,7 @@ public class TradewebMarket extends MarketCommon
 
 									   tempMM = marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), quotingDealer);
 									   if(tempMM == null) {
-										   LOGGER.info("IMPORTANT! Tradeweb returned dealer {} not configured in BestX!. Please configure it", quotingDealer);
+										   LOGGER.info("IMPORTANT! Tradeweb returned dealer {} not configured in BestX:FI-A. Please configure it", quotingDealer);
 										   price.setOriginatorID(quotingDealer);
 									   } else {
 										   price.setMarketMarketMaker(tempMM);

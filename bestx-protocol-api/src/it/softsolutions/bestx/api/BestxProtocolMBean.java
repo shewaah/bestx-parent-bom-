@@ -57,7 +57,7 @@ public interface BestxProtocolMBean {
 	public void sendRestartOrderCareCommand (String orderNumber, String requestingUser, boolean superTrader) throws Exception;
 	/**
 	 * Send a wait for incoming trades (for reconciliation) command to bestx engine.
-	 * When the order has been manually executed on a platform whose trades are captured by BestX! feeds, use this command to ask Bestx engine to wait for the trades.
+	 * When the order has been manually executed on a platform whose trades are captured by BestX:FI-A feeds, use this command to ask Bestx engine to wait for the trades.
 	 * @param orderNumber the bestx order number
 	 * @exception Exception when unable to send the requested command
 	 */

@@ -723,7 +723,7 @@ public class MarketAxessMarket extends MarketCommon implements TradeStacPreTrade
       char ordStatus = executionReport.getOrdStatus();
       BigDecimal lastPrice = executionReport.getLastPx();
       // AMC BESTX-313 20170719 added || "".equalsIgnoreCase(text)
-      String cleanText = ((text == null || "".equalsIgnoreCase(text)) && ("" + ExecType.CANCELED).equals(execType)) ? "Cancel requested by BestX!" : text;
+      String cleanText = ((text == null || "".equalsIgnoreCase(text)) && ("" + ExecType.CANCELED).equals(execType)) ? "Cancel requested by BestX:FI-A" : text;
       try {
          final Operation operation = operationRegistry.getExistingOperationById(OperationIdType.MARKETAXESS_CLORD_ID, cleanClOrdId);
 
@@ -740,7 +740,7 @@ public class MarketAxessMarket extends MarketCommon implements TradeStacPreTrade
          catch (BestXException e) {
             LOGGER.warn("Order {} received execution report with state {} and no Market Maker associated to market dealer code {}", operation.getOrder().getFixOrderId(), executionReport.getExecType(),
                   executionReport.getExecBroker());
-            LOGGER.info("IMPORTANT! MarketAxess returned dealer {} not configured in BestX!. Please configure it", executionReport.getExecBroker());
+            LOGGER.info("IMPORTANT! MarketAxess returned dealer {} not configured in BestX:FI-A. Please configure it", executionReport.getExecBroker());
          }
          if (mmm != null) {
             executionReport.setMarketMaker(mmm.getMarketMaker() == null ? null : mmm.getMarketMaker());

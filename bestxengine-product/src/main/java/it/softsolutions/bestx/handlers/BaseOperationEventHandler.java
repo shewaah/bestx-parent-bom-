@@ -515,7 +515,7 @@ public class BaseOperationEventHandler extends DefaultOperationEventHandler {
 	 * - the RFQ expires in the meantime, starting the XBridge Reject mechanism
 	 * - we received the time extension message, but we are no more in a XBridge state,
 	 * so the control arrives here, we have only to ignore this extension because
-	 * on the trader side the RFQ has expired and in BestX! we are already in a new
+	 * on the trader side the RFQ has expired and in BestX:FI-A we are already in a new
 	 * price request phase.
 	 * 
 	 * Method called only from the XBridge market

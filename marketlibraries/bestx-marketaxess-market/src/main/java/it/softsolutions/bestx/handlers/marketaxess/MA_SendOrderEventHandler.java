@@ -216,7 +216,7 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
                if (isCancelRequestedByUser)
                   operation.setStateResilient(new MA_CancelledState("Revoke requested by the customer"), ErrorState.class);
                else if (isCancelBestXInitiative)
-                  operation.setStateResilient(new MA_CancelledState("No answer received after the configurated number of seconds. Order has been automatically cancelled by BestX!"), ErrorState.class);
+                  operation.setStateResilient(new MA_CancelledState("No answer received after the configurated number of seconds. Order has been automatically cancelled by BestX:FI-A"), ErrorState.class);
                else operation.setStateResilient(new MA_CancelledState(), ErrorState.class);
             break;
             case REJECTED:
@@ -305,7 +305,7 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
             quotingDealer = dealer.getDealerID().getValue();
             mmm = marketMakerFinder.getMarketMarketMakerByCode(maExecutionReport.getMarket().getMarketCode(), quotingDealer);
             if (mmm == null) {
-               LOGGER.warn("IMPORTANT! MarketAxess returned dealer {} not configured in BestX!. Please configure it", quotingDealer);
+               LOGGER.warn("IMPORTANT! MarketAxess returned dealer {} not configured in BestX:FI-A. Please configure it", quotingDealer);
                quote.setOriginatorID(quotingDealer);
             }
             else {

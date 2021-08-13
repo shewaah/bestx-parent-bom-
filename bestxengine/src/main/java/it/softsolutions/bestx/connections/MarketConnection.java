@@ -151,9 +151,9 @@ public abstract class MarketConnection {
 
     /**
      * This method is used to check if the market is idle (it means that the xt2 gateway is connected and synchronized to the market). In
-     * some situations, by example when an order enters BestX! while TW is sending us the securities definitions, is not enough to check if
+     * some situations, by example when an order enters BestX:FI-A while TW is sending us the securities definitions, is not enough to check if
      * the price connection is enabled to know if we can perform a price discovery on that market. In fact the price connection has been
-     * enabled at the start of BestX!. While the market is still sending us the securites definitions it is not in idle and will not handle
+     * enabled at the start of BestX:FI-A. While the market is still sending us the securites definitions it is not in idle and will not handle
      * a price request, so we must not send price requests to it.
      * 
      * Here we define a default implementation that returns true. If a market uses to check the price connection, it should, instead, check

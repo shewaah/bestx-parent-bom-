@@ -778,7 +778,7 @@ public class MarketAxessHelper extends MarketPriceDiscoveryHelper {
 		if (ssi == null)
 			return defaultShortSelling;
 		return ssi.getFixCode().charAt(0); // Marketaxess Short Sell management is the FIX standard one.
-		// Default short sell indicator in BestX! is the value to be put in the side when there is no such indication in the market order
+		// Default short sell indicator in BestX:FI-A is the value to be put in the side when there is no such indication in the market order
 	}
 
 }

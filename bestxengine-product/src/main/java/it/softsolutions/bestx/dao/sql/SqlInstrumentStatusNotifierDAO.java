@@ -29,7 +29,7 @@ import it.softsolutions.bestx.services.DateService;
 /**  
 *
 * Purpose: This DAO is the database interface of the InstrumentStatusNotifier service.
-* It performs the SELECT/UPDATE needed when BestX! asks or sets the instrument
+* It performs the SELECT/UPDATE needed when BestX:FI-A asks or sets the instrument
 * quoting status.
 * It has specific methods for the volatility call status.
 * It has been the need to manage the MOT volatility call that drove us to the

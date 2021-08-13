@@ -111,7 +111,7 @@ public class MDSConnectionImpl extends AbstractTradeStacConnection implements Tr
      *             if an error occurred during the initializzation of the
      *             TradeStac Session.
      * @throws BestXException
-     *             if an error occurred at BestX! level.
+     *             if an error occurred at BestX:FI-A level.
      * @throws ConfigError
      *             if there is an error in the configuration at fix level.
      */

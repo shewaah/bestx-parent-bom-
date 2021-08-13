@@ -221,7 +221,7 @@ public class OnExecutionReportRunnable implements Runnable {
       }
       else {
          // use executionDealerCode
-         LOGGER.info("IMPORTANT! Tradeweb returned dealer {} not configured in BestX!. Please configure it", executionDealerCode);
+         LOGGER.info("IMPORTANT! Tradeweb returned dealer {} not configured in BestX:FI-A. Please configure it", executionDealerCode);
          marketExecutionReport.setExecBroker(executionDealerCode);
       }
       //BESTX-348: SP-20180905 added numDaysInterest field

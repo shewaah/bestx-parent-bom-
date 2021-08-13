@@ -43,7 +43,7 @@ import it.softsolutions.bestx.services.timer.quartz.TimerEventListener;
 /**
  * 
  * Purpose: This class implements the service that must manage the end of day automatic processing of the magnet orders. On initialization
- * it starts the timer (this way, if BestX! should crash, on restart the timer will be recreated every time for the same hour) then waits
+ * it starts the timer (this way, if BestX:FI-A should crash, on restart the timer will be recreated every time for the same hour) then waits
  * for its expiration and fetch all the orders. For each of them it will fetch the operation and, in a new thread, call the onTimerExpired
  * method.
  * 

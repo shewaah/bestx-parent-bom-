@@ -24,7 +24,7 @@ import it.softsolutions.bestx.model.Rfq.OrderSide;
 /**
  *
  * Purpose: this class is aimed at modeling an incoming request from the customer for a single simple price discovery
- * BestX! is requested to:
+ * BestX:FI-A is requested to:
  * create an attempt 0 with no validation except the formal ones
  * create an attempt with a price discovery, creation of a consolidated book
  * reply to the MarketDataReq with a MarketDataResp message

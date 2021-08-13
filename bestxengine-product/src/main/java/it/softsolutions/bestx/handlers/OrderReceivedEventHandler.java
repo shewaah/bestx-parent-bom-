@@ -154,7 +154,7 @@ public class OrderReceivedEventHandler extends BaseOperationEventHandler {
 //        		super.onFixRevoke(revokeSourceConnection);
 //        	} else {
             OrderResult orderResult;
-            // BESTX-296 AMC 20170505 when GRDLite answers OK but the instrument has not been created in the DB BestX! must not go in exception
+            // BESTX-296 AMC 20170505 when GRDLite answers OK but the instrument has not been created in the DB BestX:FI-A must not go in exception
 			try {
 				orderResult = orderValidationService.validateOrderFormally(operation, operation.getOrder());
 			} catch (Exception e) {
@@ -196,7 +196,7 @@ public class OrderReceivedEventHandler extends BaseOperationEventHandler {
             // Clean up the callbacksMap
             customService.resetRequest(securityID, operation.getOrder().getFixOrderId());
 
-            // [DR20130326] CRSBXIGR-70 - No request sent to GRDLite by BestX!
+            // [DR20130326] CRSBXIGR-70 - No request sent to GRDLite by BestX:FI-A
             try {
                 customerConnection.sendOrderResponseNack(operation, 
                         operation.getOrder(), 

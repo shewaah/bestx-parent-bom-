@@ -92,7 +92,7 @@ public class Order extends Rfq {
       /**
        * GEt the time force starting from the fix code
        * @param fixCode of the time in force tag
-       * @return the BestX! enum value
+       * @return the BestX:FI-A enum value
        */
       public static TimeInForce getByFixCode(char fixCode) {
          TimeInForce timeInForce = mFIXValueTable.get(fixCode);

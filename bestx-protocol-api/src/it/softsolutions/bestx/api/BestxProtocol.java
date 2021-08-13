@@ -29,7 +29,7 @@ import it.softsolutions.ib4j.clientserver.IBcsMessage;
 import it.softsolutions.ib4j.clientserver.IBcsReqRespClient;
 
 /**
- * This class contains the API for all the commands that the GUI can send to BestX! engine.
+ * This class contains the API for all the commands that the GUI can send to BestX:FI-A engine.
  * The command is allowed if and only if the order is in a status allowing the operation. To see if the command is allowed ,
  * please refer to the column <B><I>Actions</I></B> in the <B><I>TabHistoryOrdini</I></B> DB table
  * As a general rule, bestx engine accepts some of the commands 
@@ -200,7 +200,7 @@ public class BestxProtocol implements BestxProtocolMBean {
 
 	/**
 	 * Send a wait for incoming trades (for reconciliation) command to bestx engine.
-	 * When the order has been manually executed on a platform whose trades are captured by BestX! feeds, use this command to ask Bestx engine to wait for the trades.
+	 * When the order has been manually executed on a platform whose trades are captured by BestX:FI-A feeds, use this command to ask Bestx engine to wait for the trades.
 	 * @param orderNumber the bestx order number
 	 * @exception Exception when unable to send the requested command
 	 */
