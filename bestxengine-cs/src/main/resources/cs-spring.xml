@@ -637,6 +637,7 @@
         <property name="acceptableSubstates"><value>PRICE_WORST_THAN_LIMIT,OUTSIDE_SPREAD</value></property>
         <property name="bookDepthValidator" ref="bookDepthValidator" />
 		<property name="applicationStatus" ref="applicationStatus" />
+        <property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
 	</bean>
 
     <bean id="algoMarketOrderBuilder" class="it.softsolutions.bestx.services.rest.CSMarketOrderBuilder">
@@ -644,11 +645,13 @@
         <property name="marketFinder" ref="dbBasedMarketFinder" />
         <property name="marketMakerFinder" ref="dbBasedMarketMakerFinder" />
         <property name="executor" ref="threadPoolALGOREST" />
+        <property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
 	</bean>
 	
     <bean id="fallbackMarketOrderBuilder" class="it.softsolutions.bestx.services.FallbackMarketOrderBuilder">
         <property name="defaultMarketOrderBuilder" ref="defaultMarketOrderBuilder" />
         <property name="csAlgoMarketOrderBuilder" ref="algoMarketOrderBuilder" />
+        <property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
 	</bean>
 
 	<!-- STRATEGY -->

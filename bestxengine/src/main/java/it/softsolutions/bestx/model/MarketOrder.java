@@ -145,8 +145,8 @@ public class MarketOrder extends Order {
         StringBuilder builder = new StringBuilder();
         builder.append("MarketOrder [market=");
         builder.append(this.market);
-        builder.append(", venue=");
-        builder.append(this.venue);
+        builder.append(", include=");
+        builder.append(beautify(this.getDealers()));
         builder.append(", text=");
         builder.append(this.text);
         builder.append(", marketMarketMaker=");
@@ -171,5 +171,23 @@ public class MarketOrder extends Order {
 	    this.marketSessionId = marketOrder.marketSessionId;
 	    this.dealers = marketOrder.dealers;
 	    this.excludeDealers = marketOrder.excludeDealers;
+    }
+    
+    /** 
+     * Adds to a String (instead of std toString() only the dealer MarketMarketMakerCode
+     * @param dealerList
+     * @return a String with all the dealers' MarketMarketMakerCode
+     * 
+     */
+    public String beautify(List<MarketMarketMakerSpec> dealerList) {
+    	int i = 0;
+    	StringBuilder builder = new StringBuilder();
+    	builder.append("[");
+    	dealers.forEach(mmms -> {
+    		builder.append(mmms.getMarketMakerMarketSpecificCode());
+    		builder.append(", ");
+    	});
+    	builder.append("]");
+    	return builder.toString();
     }
 }

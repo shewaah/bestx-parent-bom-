@@ -31,7 +31,9 @@ import it.softsolutions.bestx.finders.MarketMakerFinder;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Market;
+import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.MarketMarketMaker;
+import it.softsolutions.bestx.model.MarketMarketMakerSpec;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Proposal.ProposalState;
 import it.softsolutions.bestx.model.Proposal.ProposalType;
@@ -55,15 +57,18 @@ import it.softsolutions.jsscommon.Money;
  * date: 27 lug 2021
  * 
  **/
-public class CSMarketOrderBuilder implements MarketOrderBuilder {
+public class CSMarketOrderBuilder extends MarketOrderBuilder {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CSMarketOrderBuilder.class);
 
 	private CSAlgoRestService csAlgoService;
 	private MarketFinder marketFinder;
-	private MarketMakerFinder marketMakerFinder;
 
 	private Executor executor;
+	
+	public CSMarketOrderBuilder() {
+		super();
+	}
 
 	private ConsolidatedBookElement buildConsolidatedBookElement(BidAsk bidAsk, ClassifiedProposal proposal) {
 		ConsolidatedBookElement elem = new ConsolidatedBookElement();
@@ -102,6 +107,7 @@ public class CSMarketOrderBuilder implements MarketOrderBuilder {
 			try {
 				MarketOrder marketOrder = new MarketOrder();
 				Attempt currentAttempt = operation.getLastAttempt();
+				Market market;
 
 				GetRoutingProposalRequest request = new GetRoutingProposalRequest();
 				request.setIsin(operation.getOrder().getInstrumentCode());
@@ -123,7 +129,7 @@ public class CSMarketOrderBuilder implements MarketOrderBuilder {
 					}
 				}
 
-				GetRoutingProposalResponse response = csAlgoService.doGetRoutingProposal(request);
+				GetRoutingProposalResponse response = csAlgoService.doGetRoutingProposal(request);  //TODO should not propagate the exception if there is an error in the message
 
 				List<String> errors = new ArrayList<>();
 
@@ -145,18 +151,58 @@ public class CSMarketOrderBuilder implements MarketOrderBuilder {
 					marketOrder.setValues(operation.getOrder());
 					marketOrder.setTransactTime(DateService.newUTCDate());
 
-					marketOrder.setMarket(marketFinder.getMarketByCode(
-							Market.MarketCode.valueOf(response.getData().getTargetVenue().toString()), null));
-					MarketMarketMaker mmMaker = marketMakerFinder.getMarketMarketMakerByCode(
-							marketOrder.getMarket().getMarketCode(), response.getData().getIncludeDealers().get(0));
-					marketOrder.setMarketMarketMaker(mmMaker);
+					market = marketFinder.getMarketByCode(Market.MarketCode.valueOf(response.getData().getTargetVenue().toString()), null);
+					marketOrder.setMarket(market);
+
+					// Manage include dealers and exclude dealers
+					List<MarketMarketMakerSpec> includeDealers = new ArrayList<MarketMarketMakerSpec>();
+					List<String> includeDealersResp = response.getData().getIncludeDealers();
+					List<String> excludeDealersResp = response.getData().getExcludeDealers();
+					List<MarketMarketMakerSpec> excludeDealers = new ArrayList<MarketMarketMakerSpec>();
+					
+					// add all dealer codes returned as includeDealers to the marketOrder.dealers list
+					// note that if the returned market is Bloomberg we need to be smart ad add all the dealer codes in TSOX for that dealer
+					for(int i = 0; i < includeDealersResp.size();i++) {
+						MarketMarketMaker mmm = this.getMarketMakerFinder().getSmartMarketMarketMakerByCode(
+								market.getMarketCode(), includeDealersResp.get(i));
+						if(mmm == null) continue;
+						if(!Market.isABBGMarket(market.getMarketCode())) {
+							includeDealers.add(new MarketMarketMakerSpec(mmm.getMarketSpecificCode(), mmm.getMarketSpecificCodeSource()));
+							}
+							else {
+								List<MarketMarketMaker> mmList = mmm.getMarketMaker().getMarketMarketMakerForMarket(MarketCode.TSOX);
+								java.util.function.Consumer<? super MarketMarketMaker> addmmsToIncludeList = mmm1 -> includeDealers.add(new MarketMarketMakerSpec(mmm1.getMarketSpecificCode(), mmm1.getMarketSpecificCodeSource()));
+								mmList.forEach(addmmsToIncludeList);
+							}
+					}
+					//remove dealer codes relative to composite prices
+					this.removeCompositePricesFromList(includeDealers, market.getMarketCode());
+					marketOrder.setDealers(includeDealers);
+
+					// add all dealer codes returned as excludeDealers to the marketOrder.excludeDealers list
+					// note that if the returned market is Bloomberg we need to be smart ad add all the dealer codes in TSOX for that dealer
+					for(int i = 0; i < excludeDealersResp.size();i++) {
+						MarketMarketMaker mmm = this.getMarketMakerFinder().getSmartMarketMarketMakerByCode(
+								market.getMarketCode(), excludeDealersResp.get(i));
+						if(mmm == null) continue;
+						if(!Market.isABBGMarket(market.getMarketCode())) {
+							excludeDealers.add(new MarketMarketMakerSpec(mmm.getMarketSpecificCode(), mmm.getMarketSpecificCodeSource()));
+						}
+						else {
+							List<MarketMarketMaker> mmList = mmm.getMarketMaker().getMarketMarketMakerForMarket(MarketCode.TSOX);
+							java.util.function.Consumer<? super MarketMarketMaker> addmmsToExcludeList = mmm2 -> excludeDealers.add(new MarketMarketMakerSpec(mmm2.getMarketSpecificCode(), mmm2.getMarketSpecificCodeSource()));
+							mmList.forEach(addmmsToExcludeList);
+						}
+					}
+					//remove dealer codes relative to composite prices
+					this.removeCompositePricesFromList(excludeDealers, market.getMarketCode());
+					marketOrder.setExcludeDealers(excludeDealers);			
+					
 					marketOrder.setLimit(limitPrice);
 
-					LOGGER.info("Order={}, Selecting for execution market market maker: {} and price {}",
-							operation.getOrder().getFixOrderId(), marketOrder.getMarketMarketMaker(),
-							limitPrice == null ? "null" : limitPrice.getAmount().toString());
-					// marketOrder.setVenue(currentAttempt.getExecutionProposal().getVenue());
-
+					LOGGER.info("Order={}, Selecting for execution market market makers: {} and price {}. Excluding dealers {}",
+							operation.getOrder().getFixOrderId(), marketOrder.beautify(marketOrder.getDealers()),
+							limitPrice == null ? "null" : limitPrice.getAmount(),  marketOrder.beautify(marketOrder.getExcludeDealers()));
 					listener.onMarketOrderBuilt(this, marketOrder);
 				} else {
 					listener.onMarketOrderErrors(this, errors);
@@ -188,14 +234,6 @@ public class CSMarketOrderBuilder implements MarketOrderBuilder {
 
 	public void setMarketFinder(MarketFinder marketFinder) {
 		this.marketFinder = marketFinder;
-	}
-
-	public MarketMakerFinder getMarketMakerFinder() {
-		return marketMakerFinder;
-	}
-
-	public void setMarketMakerFinder(MarketMakerFinder marketMakerFinder) {
-		this.marketMakerFinder = marketMakerFinder;
 	}
 
 	public Executor getExecutor() {

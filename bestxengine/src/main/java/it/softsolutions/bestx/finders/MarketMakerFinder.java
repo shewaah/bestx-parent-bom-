@@ -57,4 +57,15 @@ public interface MarketMakerFinder {
      * @throws BestXException
      */
     MarketMarketMaker getMarketMarketMakerByTSOXCode(String tsoxSpecificCode) throws BestXException;
+    
+    /**
+     * Finds the MarketMarketMaker given the market code. Since Bloomberg has a different management
+	 * with a different set of MarketMarketMakers for the BLP and TSOX, this method allows to encapsulate the logic behind this
+     * @param marketCode the original marketCode
+     * @param marketSpecificCode the string of the market specific code
+     * @return the MarketMarketMaker associated to the marketSpecificCode for that MarketCode (or the associated MarketCode in case of Bloomberg)
+     * @throws BestXException
+     */
+    MarketMarketMaker getSmartMarketMarketMakerByCode(MarketCode marketCode, String marketSpecificCode) throws BestXException;
+    
 }

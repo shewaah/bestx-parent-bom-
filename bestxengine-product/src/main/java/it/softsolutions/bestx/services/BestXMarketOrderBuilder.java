@@ -47,7 +47,7 @@ import it.softsolutions.jsscommon.Money;
 * Creation date: 27 lug 2021 
 * 
 **/
-public class BestXMarketOrderBuilder implements MarketOrderBuilder {
+public class BestXMarketOrderBuilder extends MarketOrderBuilder {
 
    private static final Logger LOGGER = LoggerFactory.getLogger(BestXMarketOrderBuilder.class);
 
@@ -57,7 +57,12 @@ public class BestXMarketOrderBuilder implements MarketOrderBuilder {
    private ApplicationStatus applicationStatus;
    
    
-   @Override
+   public BestXMarketOrderBuilder() {
+	  super();
+   }
+
+
+@Override
    public void buildMarketOrder(Operation operation, MarketOrderBuilderListener listener) {
       // Build MarketOrder
       MarketOrder marketOrder = null;

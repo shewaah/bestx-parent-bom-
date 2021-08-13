@@ -342,7 +342,12 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 	         || priceResult.getState() == PriceResult.PriceResultState.ERROR) {
 			// Fill Attempt
 			currentAttempt.setExecutionProposal(currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide()));
-			this.marketOrderBuilder.buildMarketOrder(operation, operation);
+			try {
+				this.marketOrderBuilder.buildMarketOrder(operation, operation);
+			} catch (Throwable e) {
+				// anything to do exception should be only in test? AMC 202108 BESTX-792
+				LOGGER.error("Problem during the buildMarketOrder call", e);
+			}
 		} else if (priceResult.getState() == PriceResult.PriceResultState.INCOMPLETE) {
 			LOGGER.warn("Order {} , Price result is INCOMPLETE, setting to Warning state", operation.getOrder().getFixOrderId());
 			checkOrderAndsetNotAutoExecuteOrder(operation, doNotExecute);

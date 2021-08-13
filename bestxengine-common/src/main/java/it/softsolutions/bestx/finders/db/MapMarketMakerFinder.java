@@ -19,6 +19,7 @@ import it.softsolutions.bestx.InstrumentedEhcache;
 import it.softsolutions.bestx.dao.MarketMakerDao;
 import it.softsolutions.bestx.exceptions.ObjectNotInitializedException;
 import it.softsolutions.bestx.finders.MarketMakerFinder;
+import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.MarketMaker;
 import it.softsolutions.bestx.model.MarketMarketMaker;
@@ -91,10 +92,48 @@ public class MapMarketMakerFinder implements MarketMakerFinder {
         return marketMaker;
     }
 
-    @Override
-    public MarketMarketMaker getMarketMarketMakerByCode(MarketCode marketCode, String marketSpecificCode)  {
-//        MarketMarketMaker marketMarketMaker = marketMakerDao.getMarketMarketMakerByCode(marketCode, marketSpecificCode);
-        
+   
+	@Override
+	public MarketMarketMaker getSmartMarketMarketMakerByCode(MarketCode marketCode, String marketSpecificCode) throws BestXException {   
+		MarketMarketMaker marketMarketMaker = null;
+		String key = null;
+		if(!Market.isABBGMarket(marketCode)) {
+			key = "S#" + marketCode + '_' + marketSpecificCode;
+			Element element = cache != null ? cache.get(key) : null;
+			marketMarketMaker = element != null ? (MarketMarketMaker) element.getObjectValue() : null;
+
+			if (marketMarketMaker == null) {
+				marketMarketMaker = marketMakerDao.getMarketMarketMakerByCode(marketCode, marketSpecificCode);
+			}
+		}
+		else {
+			key = "S#" + MarketCode.BLOOMBERG + '_' + marketSpecificCode;
+			Element element = cache != null ? cache.get(key) : null;
+			marketMarketMaker = element != null ? (MarketMarketMaker) element.getObjectValue() : null;
+			if (marketMarketMaker == null) {
+				marketMarketMaker = marketMakerDao.getMarketMarketMakerByCode(Market.MarketCode.BLOOMBERG, marketSpecificCode);
+
+				if (marketMarketMaker != null) {
+					cache.put(new Element(key, marketMarketMaker));
+				}
+				else {
+					key = "S#" + MarketCode.TSOX + '_' + marketSpecificCode;
+					element = cache != null ? cache.get(key) : null;
+					marketMarketMaker = element != null ? (MarketMarketMaker) element.getObjectValue() : null;
+					if (marketMarketMaker == null) {
+						marketMarketMaker = marketMakerDao.getMarketMarketMakerByCode(Market.MarketCode.TSOX, marketSpecificCode);
+						if (marketMarketMaker != null) {
+							cache.put(new Element(key, marketMarketMaker));
+						}
+					}
+				}	
+			}
+		}
+		return marketMarketMaker;
+	}
+    	
+	@Override
+    public MarketMarketMaker getMarketMarketMakerByCode(MarketCode marketCode, String marketSpecificCode)  {     
         String key = "S#" + marketCode + '_' + marketSpecificCode;
         Element element = cache != null ? cache.get(key) : null;
         MarketMarketMaker marketMarketMaker = element != null ? (MarketMarketMaker) element.getObjectValue() : null;
@@ -116,6 +155,16 @@ public class MapMarketMakerFinder implements MarketMakerFinder {
      */
     @Override
     public MarketMarketMaker getMarketMarketMakerByTSOXCode(String tsoxSpecificCode) {
-    	return getMarketMarketMakerByCode(MarketCode.TSOX, tsoxSpecificCode);
+    	MarketMarketMaker marketMarketMaker = null;
+    	String key = "S#" + MarketCode.TSOX + '_' + tsoxSpecificCode;
+		Element element = cache != null ? cache.get(key) : null;
+		marketMarketMaker = element != null ? (MarketMarketMaker) element.getObjectValue() : null;
+		if (marketMarketMaker == null) {
+			marketMarketMaker = marketMakerDao.getMarketMarketMakerByCode(Market.MarketCode.TSOX, tsoxSpecificCode);
+		}
+		return marketMarketMaker;
     }
 }
+
+
+    

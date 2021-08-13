@@ -16,18 +16,24 @@ package it.softsolutions.bestx.services;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilderListener;
 import it.softsolutions.bestx.model.MarketOrder;
+import it.softsolutions.bestx.services.proposalclassifiers.BaseMarketMakerClassifier;
 import it.softsolutions.bestx.services.rest.CSMarketOrderBuilder;
 
 /**
  *
  * Purpose: this class is mainly for choose wich builder use following these
- * rules: 1) the heartbeat flows and system status is up. Request are answered
+ * rules: 
+ * 1) the heartbeat flows and system status is up. Request are answered
  * in time with no ERROR. BestX! uses the response to define the execution
- * attempt. If there is a WARNING, BestX! logs the warning. 2) the hearbeat
+ * attempt. If there is a WARNING, BestX! logs the warning. 
+ * 2) the hearbeat
  * flows and the system status is up. Request is timed out. BestX! goes to the
  * fallback algo to define the execution attempt wheter it is a LF or algo
  * order. Other orders (orders that are executed afterwards) are not affected.
@@ -36,18 +42,25 @@ import it.softsolutions.bestx.services.rest.CSMarketOrderBuilder;
  * is responding with 1 or more Errors. Each new order continues to call the
  * service GetRoutingProposal. An error response from GetRoutingProposal does
  * not say anything about the availability of the services, that’s what he
- * heartbeat does. 4) the hearbeat flows and the system status is down. BestX!
- * goes to fallback 5) the heartbeat is timed out. BestX! goes to fallback
+ * heartbeat does. 
+ * 4) the hearbeat flows and the system status is down. BestX!
+ * goes to fallback 
+ * 5) the heartbeat is timed out. BestX! goes to fallback
  *
  * Project Name : bestxengine-cs First created by: stefano.pontillo Creation
  * date: 27 lug 2021
  * 
  **/
-public class FallbackMarketOrderBuilder implements MarketOrderBuilder {
+public class FallbackMarketOrderBuilder extends MarketOrderBuilder {
+	   private static final Logger LOGGER = LoggerFactory.getLogger(FallbackMarketOrderBuilder.class);
 
 	private MarketOrderBuilder defaultMarketOrderBuilder;
+
 	private CSMarketOrderBuilder csAlgoMarketOrderBuilder;
 
+	public FallbackMarketOrderBuilder() {
+		super();
+	}
 	private class FallbackMarketOrderBuilderListener implements MarketOrderBuilderListener {
 		private Operation operation;
 
@@ -62,7 +75,11 @@ public class FallbackMarketOrderBuilder implements MarketOrderBuilder {
 
 		@Override
 		public void onMarketOrderTimeout(MarketOrderBuilder source) {
+			try {
 			FallbackMarketOrderBuilder.this.defaultMarketOrderBuilder.buildMarketOrder(operation, operation);
+			} catch (Exception e) {
+				LOGGER.error("Exception in FallbackMarketOrderBuilder.this.defaultMarketOrderBuilder.buildMarketOrder", e);
+			}
 		}
 
 		@Override
@@ -86,7 +103,11 @@ public class FallbackMarketOrderBuilder implements MarketOrderBuilder {
 		if (csAlgoMarketOrderBuilder.getServiceStatus()) {
 			csAlgoMarketOrderBuilder.buildMarketOrder(operation, new FallbackMarketOrderBuilderListener(operation));
 		} else {
-			defaultMarketOrderBuilder.buildMarketOrder(operation, operation);
+			try {
+				defaultMarketOrderBuilder.buildMarketOrder(operation, operation);
+			} catch (Exception e) {
+				LOGGER.error("Exception in csAlgoMarketOrderBuilder.buildMarketOrder", e);
+			}
 		}
 	}
 

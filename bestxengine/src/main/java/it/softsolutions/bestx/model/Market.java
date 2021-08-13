@@ -17,6 +17,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.softsolutions.bestx.model.Market.MarketCode;
+
 /**
  * 
  * Purpose: class mapping the rows of the database table MarketTable
@@ -38,6 +40,13 @@ public class Market implements Serializable, Cloneable {
     public static enum SubMarketCode {
         MEM, MOT, ETX, TLX, HIMTF, XMOT, CRD
     }
+
+	public static boolean isABBGMarket(MarketCode mktCode)
+	{
+		return (mktCode == MarketCode.BLOOMBERG || 
+				mktCode == MarketCode.BLOOMBERG_HIST || 
+				mktCode == MarketCode.TSOX);
+	}
 
     public static String REGULATED = "R";
     public static String NOT_REGULATED = "NR";
