@@ -27,7 +27,6 @@ import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilderListener;
 import it.softsolutions.bestx.finders.MarketFinder;
-import it.softsolutions.bestx.finders.MarketMakerFinder;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Market;
@@ -150,6 +149,12 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 
 					Money limitPrice = new Money(operation.getOrder().getCurrency(),
 							response.getData().getTargetPrice());
+					Money limitMonitorPrice = null;
+					if (response.getData().getLimitMonitorPrice() != null) {
+						limitMonitorPrice = new Money(operation.getOrder().getCurrency(),
+							response.getData().getLimitMonitorPrice());
+					}
+
 					marketOrder.setValues(operation.getOrder());
 					marketOrder.setTransactTime(DateService.newUTCDate());
 
@@ -212,6 +217,8 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 
 					
 					marketOrder.setLimit(limitPrice);
+					marketOrder.setLimitMonitorPrice(limitMonitorPrice);
+			        marketOrder.setBuilder(this);
 
 					LOGGER.info("Order={}, Selecting for execution market market makers: {} and price {}. Excluding dealers {}",
 							operation.getOrder().getFixOrderId(), marketOrder.beautify(marketOrder.getDealers()),

@@ -95,6 +95,7 @@ import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.services.CSConfigurationPropertyLoader;
 import it.softsolutions.bestx.services.CommissionService;
 import it.softsolutions.bestx.services.ExecutionDestinationService;
+import it.softsolutions.bestx.services.MarketOrderFilterChain;
 import it.softsolutions.bestx.services.OrderValidationService;
 import it.softsolutions.bestx.services.PriceServiceProvider;
 import it.softsolutions.bestx.services.customservice.CustomService;
@@ -191,6 +192,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 	
 	private DataCollector dataCollector;
 	private MarketOrderBuilder marketOrderBuilder;
+	private MarketOrderFilterChain marketOrderFilterChain;
 
 	public long getBondVisionExecTimeout() {
 		return bondVisionExecTimeout;
@@ -673,7 +675,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 
 			handler = new ManualExecutionWaitingPriceEventHandler(operation, getPriceService(operation.getOrder()), customerFinder, serialNumberService,
 					regulatedMktIsinsLoader, regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout,
-					executionDestinationService, rejectWhenBloombergIsBest, doNotExecuteMEW, operationStateAuditDao, applicationStatus, dataCollector, marketOrderBuilder);
+					executionDestinationService, rejectWhenBloombergIsBest, doNotExecuteMEW, operationStateAuditDao, applicationStatus, dataCollector, marketOrderBuilder, marketOrderFilterChain);
 			break;
 		case WaitingPrice:
 			Boolean doNotExecuteWP = CSConfigurationPropertyLoader.getBooleanProperty(CSConfigurationPropertyLoader.LIMITFILE_DONOTEXECUTE, false);
@@ -683,7 +685,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 
 			handler = new WaitingPriceEventHandler(operation, getPriceService(operation.getOrder()), customerFinder, serialNumberService, regulatedMktIsinsLoader,
 					regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout, executionDestinationService,
-					rejectWhenBloombergIsBest, doNotExecuteWP, internalMMcodesList, operationStateAuditDao, applicationStatus, dataCollector, marketOrderBuilder);
+					rejectWhenBloombergIsBest, doNotExecuteWP, internalMMcodesList, operationStateAuditDao, applicationStatus, dataCollector, marketOrderBuilder, marketOrderFilterChain);
 			break;
 		case Error:
 		case Warning:
@@ -1399,4 +1401,14 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
    public void setMarketOrderBuilder(MarketOrderBuilder marketOrderBuilder) {
       this.marketOrderBuilder = marketOrderBuilder;
    }
+
+	public MarketOrderFilterChain getMarketOrderFilterChain() {
+		return marketOrderFilterChain;
+	}
+	
+	public void setMarketOrderFilterChain(MarketOrderFilterChain marketOrderFilterChain) {
+		this.marketOrderFilterChain = marketOrderFilterChain;
+	}
+   
+   
 }

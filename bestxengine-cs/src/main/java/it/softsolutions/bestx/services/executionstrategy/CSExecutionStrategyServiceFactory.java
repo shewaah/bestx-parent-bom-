@@ -46,7 +46,7 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
 	private ApplicationStatus applicationStatus;
 	private MarketConnectionRegistry marketConnectionRegistry;
 	private int minimumRequiredBookDepth = 3;
-	private int centsLFTolerance = 0;
+
 
 
 	public BookClassifier getBookClassifier() {
@@ -103,13 +103,6 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
 		this.minimumRequiredBookDepth = minimumRequiredBookDepth;
 	}
 
-	public int getCentsLFTolerance() {
-		return centsLFTolerance;
-	}
-
-	public void setCentsLFTolerance(int centsLFTolerance) {
-		this.centsLFTolerance = centsLFTolerance;
-	}
 
 	public CSExecutionStrategyServiceFactory() {
     	setInstance(this);
@@ -124,7 +117,7 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
             PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest) {
       switch (priceDiscoveryType) {
       case LIMIT_FILE_PRICEDISCOVERY: {
-         CSLimitFileExecutionStrategyService execService = new CSLimitFileExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest, this.applicationStatus, this.minimumRequiredBookDepth, this.centsLFTolerance);
+         CSLimitFileExecutionStrategyService execService = new CSLimitFileExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest, this.applicationStatus, this.minimumRequiredBookDepth, this.getCentsLFTolerance());
          execService.setMarketFinder(marketFinder);
          execService.setBookClassifier(bookClassifier);
          execService.setBookSorter(bookSorter);

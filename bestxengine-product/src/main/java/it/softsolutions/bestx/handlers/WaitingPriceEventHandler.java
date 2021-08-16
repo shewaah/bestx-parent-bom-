@@ -30,6 +30,7 @@ import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.RegulatedMktIsinsLoader;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
+import it.softsolutions.bestx.bestexec.MarketOrderFilter;
 import it.softsolutions.bestx.dao.OperationStateAuditDao;
 import it.softsolutions.bestx.datacollector.DataCollector;
 import it.softsolutions.bestx.exceptions.CustomerRevokeReceivedException;
@@ -48,6 +49,7 @@ import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Venue;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.ExecutionDestinationService;
+import it.softsolutions.bestx.services.MarketOrderFilterChain;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyService;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyService.Result;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyServiceCallback;
@@ -98,8 +100,10 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 	
 	private DataCollector dataCollector;
 	private MarketOrderBuilder marketOrderBuilder;
+	private MarketOrderFilterChain marketOrderFilterChain;
 	
 	private PriceResult priceResultReceived;
+	
 	/**
 	 * Constructor.
 	 *
@@ -128,7 +132,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			SerialNumberService serialNumberService, RegulatedMktIsinsLoader regulatedMktIsinsLoader, List<String> regulatedMarketPolicies, long waitingPriceDelay, int maxAttemptNo,
 			long marketPriceTimeout, ExecutionDestinationService executionDestinationService, boolean rejectOrderWhenBloombergIsBest,
 			boolean doNotExecute, List<String> internalMMcodes, OperationStateAuditDao operationStateAuditDao, 
-			ApplicationStatus applicationStatus, DataCollector dataCollector, MarketOrderBuilder marketOrderBuilder) throws BestXException{
+			ApplicationStatus applicationStatus, DataCollector dataCollector, MarketOrderBuilder marketOrderBuilder, MarketOrderFilterChain marketOrderFilterChain) throws BestXException{
 		super(operation);
 		this.priceService = priceService;
 		String priceServiceName = priceService.getPriceServiceName();
@@ -154,6 +158,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		this.applicationStatus = applicationStatus;
 		this.dataCollector = dataCollector;
 		this.marketOrderBuilder = marketOrderBuilder;
+		this.marketOrderFilterChain = marketOrderFilterChain;
 	}
 
 	@Override
@@ -519,52 +524,93 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		if (marketOrder != null) {
 		   currentAttempt.setMarketOrder(marketOrder);
 		}
+		
+		MarketOrderFilter.MarketOrderFilterResponse response = this.marketOrderFilterChain.filterMarketOrder(marketOrder, operation);
 
-		ApplicationStatisticsHelper.logStringAndUpdateOrderIds(operation.getOrder(), "Order.Execution_" + this.priceService.getPriceServiceName() + "." + operation.getOrder().getInstrument().getIsin(), this.getClass().getName());
-		// normal flow
-		if(!operation.isNotAutoExecute()) { // limit file with no auto execution case
-			LOGGER.debug("Order {} identified as limit file and auto execution inactive", customerOrder.getFixOrderId());
-
-         boolean executable = !operation.isNotAutoExecute() && (!operation.getOrder().isLimitFile() || !doNotExecute);
-         ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, this.priceResultReceived, rejectOrderWhenBloombergIsBest);
-			
-			if (this.priceResultReceived.getState() == PriceResult.PriceResultState.ERROR) {
-	         if (executable && (BondTypesService.isUST(operation.getOrder().getInstrument()) || customerOrder.isLimitFile())) { 
-	            // it is an executable UST order and there are no prices on consolidated book
-	             csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
-	         } else if (executable && marketOrder != null) {
-	        	 csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
-	         } else {
-	            Customer customer = customerOrder.getCustomer();
-	            // checkOrderAndsetNotAutoExecuteOrder(operation, doNotExecute);
-	            try {
-	               csExecutionStrategyService.manageAutomaticUnexecution(customerOrder, customer);
-	            } catch (BestXException e) {
-	               LOGGER.error("Order {}, error while managing {} price result state {}", customerOrder.getFixOrderId(), this.priceResultReceived.getState().name(), e.getMessage(), e);
-	               operation.removeLastAttempt();
-	               operation.setStateResilient(new WarningState(operation.getState(), e, Messages.getString("PriceService.16")), ErrorState.class);
-	            }
-	         }
-			} else {
-            if(customerOrder.isLimitFile() && doNotExecute) {  // limit file order action +++
-   				LOGGER.info("Order {} could be executed, but BestX is configured to not execute limit file orders.", customerOrder.getFixOrderId());
-   				operation.setStateResilient(new OrderNotExecutableState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
-   			} else { // limit file with auto execution or market order
-   				//2018-07-25 BESTX-334 SP: this call allows BestX to send the price discovery result to OTEX for limit file before sending it to automatic execution
-   				//for limit file which are not found executable (no prices available or out of market) BestX doesn't send any price discovery result  
-   				if (customerSpecificHandler!=null && customerOrder.isLimitFile())
-   					customerSpecificHandler.onPricesResult(this.priceService, this.priceResultReceived);
-   				LOGGER.debug("Order {} identified as limit file with auto execution or market order", customerOrder.getFixOrderId());
-   				csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
-   				// last row in this method for executable operation
-   			}
+		ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, this.priceResultReceived, rejectOrderWhenBloombergIsBest);
+		
+		if (response.getNextAction() == MarketOrderFilter.NextAction.REJECT) {
+			try {
+	            ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
+				operation.setStateResilient(new SendAutoNotExecutionReportState(response.getMessage()), ErrorState.class);
+			} catch (BestXException e) {
+				LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
+				String errorMessage = e.getMessage();
+				operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
 			}
-		} else { // flow for not auto executable orders, limit file and market
-			if (customerSpecificHandler!=null && customerOrder.isLimitFile())
-				customerSpecificHandler.onPricesResult(this.priceService, this.priceResultReceived);
-			LOGGER.debug("Order {} identified as not auto executable. Go to CurandoState", customerOrder.getFixOrderId());
-			operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
-		}	
+		} else if (response.getNextAction() == MarketOrderFilter.NextAction.WAIT) {
+            try {
+               csExecutionStrategyService.manageAutomaticUnexecution(customerOrder, customerOrder.getCustomer());
+            } catch (BestXException e) {
+               LOGGER.error("Order {}, error while managing {} price result state {}", customerOrder.getFixOrderId(), this.priceResultReceived.getState().name(), e.getMessage(), e);
+               operation.removeLastAttempt();
+               operation.setStateResilient(new WarningState(operation.getState(), e, Messages.getString("PriceService.16")), ErrorState.class);
+            }
+		} else {
+
+			ApplicationStatisticsHelper.logStringAndUpdateOrderIds(operation.getOrder(), "Order.Execution_"
+					+ this.priceService.getPriceServiceName() + "." + operation.getOrder().getInstrument().getIsin(),
+					this.getClass().getName());
+			// normal flow
+			if (!operation.isNotAutoExecute()) { // limit file with no auto execution case
+				LOGGER.debug("Order {} identified as limit file and auto execution inactive",
+						customerOrder.getFixOrderId());
+
+				boolean executable = !operation.isNotAutoExecute()
+						&& (!operation.getOrder().isLimitFile() || !doNotExecute);
+
+				if (this.priceResultReceived.getState() == PriceResult.PriceResultState.ERROR) {
+					if (executable && (BondTypesService.isUST(operation.getOrder().getInstrument())
+							|| customerOrder.isLimitFile())) {
+						// it is an executable UST order and there are no prices on consolidated book
+						csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
+					} else if (executable && marketOrder != null) {
+						csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
+					} else {
+						Customer customer = customerOrder.getCustomer();
+						// checkOrderAndsetNotAutoExecuteOrder(operation, doNotExecute);
+						try {
+							csExecutionStrategyService.manageAutomaticUnexecution(customerOrder, customer);
+						} catch (BestXException e) {
+							LOGGER.error("Order {}, error while managing {} price result state {}",
+									customerOrder.getFixOrderId(), this.priceResultReceived.getState().name(),
+									e.getMessage(), e);
+							operation.removeLastAttempt();
+							operation.setStateResilient(
+									new WarningState(operation.getState(), e, Messages.getString("PriceService.16")),
+									ErrorState.class);
+						}
+					}
+				} else {
+					if (customerOrder.isLimitFile() && doNotExecute) { // limit file order action +++
+						LOGGER.info(
+								"Order {} could be executed, but BestX is configured to not execute limit file orders.",
+								customerOrder.getFixOrderId());
+						operation.setStateResilient(
+								new OrderNotExecutableState(Messages.getString("LimitFile.doNotExecute")),
+								ErrorState.class);
+					} else { // limit file with auto execution or market order
+						// 2018-07-25 BESTX-334 SP: this call allows BestX to send the price discovery
+						// result to OTEX for limit file before sending it to automatic execution
+						// for limit file which are not found executable (no prices available or out of
+						// market) BestX doesn't send any price discovery result
+						if (customerSpecificHandler != null && customerOrder.isLimitFile())
+							customerSpecificHandler.onPricesResult(this.priceService, this.priceResultReceived);
+						LOGGER.debug("Order {} identified as limit file with auto execution or market order",
+								customerOrder.getFixOrderId());
+						csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
+						// last row in this method for executable operation
+					}
+				}
+			} else { // flow for not auto executable orders, limit file and market
+				if (customerSpecificHandler != null && customerOrder.isLimitFile())
+					customerSpecificHandler.onPricesResult(this.priceService, this.priceResultReceived);
+				LOGGER.debug("Order {} identified as not auto executable. Go to CurandoState",
+						customerOrder.getFixOrderId());
+				operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")),
+						ErrorState.class);
+			}
+		}
 	}	
 
 	@Override

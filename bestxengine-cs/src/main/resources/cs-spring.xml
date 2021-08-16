@@ -653,6 +653,15 @@
         <property name="csAlgoMarketOrderBuilder" ref="algoMarketOrderBuilder" />
         <property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
 	</bean>
+	
+	<bean id="marketOrderFilterChain" class="it.softsolutions.bestx.services.MarketOrderFilterChain">
+		<property name="filters">
+			<list>
+				<bean class="it.softsolutions.bestx.services.RepeatedMarketOrderFilter" />
+				<bean class="it.softsolutions.bestx.services.TargetPriceMarketOrderFilter" />
+			</list>
+		</property>
+	</bean>
 
 	<!-- STRATEGY -->
 	<bean id="csStrategy" class="it.softsolutions.bestx.CSStrategy">
@@ -718,6 +727,7 @@
 		<property name="applicationStatus" ref="applicationStatus" />
 		<property name="dataCollector" ref="dataCollector" />
 		<property name="marketOrderBuilder" ref="fallbackMarketOrderBuilder" />
+		<property name="marketOrderFilterChain" ref="marketOrderFilterChain" />
 	</bean>
 	
 	<!-- The application status contains global status used by the application -->

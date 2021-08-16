@@ -16,6 +16,9 @@ package it.softsolutions.bestx.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
+import it.softsolutions.jsscommon.Money;
+
 /**
  * 
  * Purpose: this class is mainly for ...
@@ -29,9 +32,12 @@ public class MarketOrder extends Order {
     protected MarketMarketMaker marketMarketMaker;
     private boolean isInternal = false;
     protected String marketSessionId;
+    private Money limitMonitorPrice;
 
 	protected List<MarketMarketMakerSpec> dealers = new ArrayList<MarketMarketMakerSpec>();
 	protected List<MarketMarketMakerSpec> excludeDealers = new ArrayList<MarketMarketMakerSpec>();
+	
+	private MarketOrderBuilder builder;
 	
 	public void setDealers (List<MarketMarketMakerSpec> dealers) {
 		this.dealers = dealers;
@@ -140,7 +146,17 @@ public class MarketOrder extends Order {
         this.marketSessionId = marketSessionId;
     }
 
-    @Override
+    
+    
+    public Money getLimitMonitorPrice() {
+		return limitMonitorPrice;
+	}
+
+	public void setLimitMonitorPrice(Money limitMonitorPrice) {
+		this.limitMonitorPrice = limitMonitorPrice;
+	}
+
+	@Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("MarketOrder [market=");
@@ -155,6 +171,8 @@ public class MarketOrder extends Order {
         builder.append(this.isInternal);
         builder.append(", marketSessionId=");
         builder.append(this.marketSessionId);
+        builder.append(", limitMonitorPrice=");
+        builder.append(this.limitMonitorPrice);
         builder.append("TransactTime=");
         builder.append(this.getTransactTime());
         builder.append("]");
@@ -192,4 +210,14 @@ public class MarketOrder extends Order {
     	else builder.append("]");
     	return builder.toString();
     }
+
+	public MarketOrderBuilder getBuilder() {
+		return builder;
+	}
+
+	public void setBuilder(MarketOrderBuilder builder) {
+		this.builder = builder;
+	}
+    
+    
 }

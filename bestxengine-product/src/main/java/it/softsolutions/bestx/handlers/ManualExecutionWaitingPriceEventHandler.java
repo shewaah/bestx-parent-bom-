@@ -39,6 +39,7 @@ import it.softsolutions.bestx.model.Venue;
 import it.softsolutions.bestx.model.Venue.VenueType;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.ExecutionDestinationService;
+import it.softsolutions.bestx.services.MarketOrderFilterChain;
 import it.softsolutions.bestx.services.price.PriceResult;
 import it.softsolutions.bestx.services.price.PriceService;
 import it.softsolutions.bestx.services.serial.SerialNumberService;
@@ -70,11 +71,11 @@ public class ManualExecutionWaitingPriceEventHandler extends WaitingPriceEventHa
             List<String> regulatedMarketPolicies, long waitingPriceDelay, int maxAttemptNo, long marketPriceTimeout,
             ExecutionDestinationService executionDestinationService, boolean rejectWhenBloombergIsBest, boolean doNotExecute, 
             OperationStateAuditDao operationStateAuditDao, ApplicationStatus applicationStatus, 
-            DataCollector dataCollector, MarketOrderBuilder marketOrderBuilder) throws BestXException {
+            DataCollector dataCollector, MarketOrderBuilder marketOrderBuilder, MarketOrderFilterChain marketOrderFilterChain) throws BestXException {
 
         super(operation, priceService, customerFinder, serialNumberService, regulatedMktIsinsLoader, 
                 regulatedMarketPolicies, waitingPriceDelay, maxAttemptNo, marketPriceTimeout, executionDestinationService, 
-                rejectWhenBloombergIsBest, doNotExecute, null, operationStateAuditDao, applicationStatus, dataCollector, marketOrderBuilder);
+                rejectWhenBloombergIsBest, doNotExecute, null, operationStateAuditDao, applicationStatus, dataCollector, marketOrderBuilder, marketOrderFilterChain);
             }
 
     @Override

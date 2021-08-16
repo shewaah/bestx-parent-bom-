@@ -40,6 +40,7 @@ public abstract class ExecutionStrategyServiceFactory implements ApplicationCont
 
     protected ApplicationContext applicationContext;
     
+	private int centsLFTolerance = 0;    
     
     @Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -59,5 +60,14 @@ public abstract class ExecutionStrategyServiceFactory implements ApplicationCont
 	
 	public static void setInstance(ExecutionStrategyServiceFactory newInstance) {
 		instance = newInstance;
+	}
+	
+
+	public int getCentsLFTolerance() {
+		return centsLFTolerance;
+	}
+
+	public void setCentsLFTolerance(int centsLFTolerance) {
+		this.centsLFTolerance = centsLFTolerance;
 	}
 }

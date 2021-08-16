@@ -453,7 +453,11 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
 	  JSONObject jsonData = jsonResponse.getJSONObject(CSALGOREST_JSON_KEY_DATA);
 	  
       response.getData().setTargetPrice(new BigDecimal(Double.valueOf(jsonData.getDouble(CSALGOREST_JSON_KEY_TARGET_PRICE)).toString()));
-      response.getData().setLimitMonitorPrice(new BigDecimal(Double.valueOf(jsonData.getDouble(CSALGOREST_JSON_KEY_LIMIT_MONITOR_PRICE)).toString()));
+      if (!jsonData.isNull(CSALGOREST_JSON_KEY_LIMIT_MONITOR_PRICE)) {
+    	  response.getData().setLimitMonitorPrice(new BigDecimal(Double.valueOf(jsonData.getDouble(CSALGOREST_JSON_KEY_LIMIT_MONITOR_PRICE)).toString()));
+      } else {
+    	  LOGGER.error("Field limitMonitorPrice not found in JSON reply: {}", jsonResponse);
+      }
       response.getData().setTargetVenue(Venue.valueOf(jsonData.getString(CSALGOREST_JSON_KEY_TARGET_VENUE)));
       
       JSONArray jsonIncludeDealers = jsonData.optJSONArray(CSALGOREST_JSON_KEY_INCLUDE_DEALERS);      
