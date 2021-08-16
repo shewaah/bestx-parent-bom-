@@ -51,8 +51,10 @@ import it.softsolutions.jsscommon.Money;
 
 /**
  *
- * Purpose: this class is mainly for ...
- *
+ * Purpose: this class is creating the MarketOrder with the results of the Algo REST service
+ * NOTE - While it uses market makers code specific to the market, it is possible that some market makers associated to a dealer code in BLP have more dealer codes, possibly different, in TSOX
+ * This is managed adding all the TSOX dealer code associated to a MarketMaker for Bloomberg/TSOX. The duplications that can arise from this management are also managed by deleting from the include list the codes already present in the exclude list
+ * 
  * Project Name : bestxengine-cs First created by: stefano.pontillo Creation
  * date: 27 lug 2021
  * 
@@ -155,30 +157,13 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 					marketOrder.setMarket(market);
 
 					// Manage include dealers and exclude dealers
-					List<MarketMarketMakerSpec> includeDealers = new ArrayList<MarketMarketMakerSpec>();
 					List<String> includeDealersResp = response.getData().getIncludeDealers();
 					List<String> excludeDealersResp = response.getData().getExcludeDealers();
-					List<MarketMarketMakerSpec> excludeDealers = new ArrayList<MarketMarketMakerSpec>();
+					List<MarketMarketMaker> excludeDealers = new ArrayList<MarketMarketMaker>(); // list to use to exclude from includeDealers the MM specified in excludeDealers list 
+					// - Note may be due especially for TSOX dealer codes
+					List<MarketMarketMakerSpec> includeDealersSpecs = new ArrayList<MarketMarketMakerSpec>();
+					List<MarketMarketMakerSpec> excludeDealersSpecs = new ArrayList<MarketMarketMakerSpec>();
 					
-					// add all dealer codes returned as includeDealers to the marketOrder.dealers list
-					// note that if the returned market is Bloomberg we need to be smart ad add all the dealer codes in TSOX for that dealer
-					for(int i = 0; i < includeDealersResp.size();i++) {
-						MarketMarketMaker mmm = this.getMarketMakerFinder().getSmartMarketMarketMakerByCode(
-								market.getMarketCode(), includeDealersResp.get(i));
-						if(mmm == null) continue;
-						if(!Market.isABBGMarket(market.getMarketCode())) {
-							includeDealers.add(new MarketMarketMakerSpec(mmm.getMarketSpecificCode(), mmm.getMarketSpecificCodeSource()));
-							}
-							else {
-								List<MarketMarketMaker> mmList = mmm.getMarketMaker().getMarketMarketMakerForMarket(MarketCode.TSOX);
-								java.util.function.Consumer<? super MarketMarketMaker> addmmsToIncludeList = mmm1 -> includeDealers.add(new MarketMarketMakerSpec(mmm1.getMarketSpecificCode(), mmm1.getMarketSpecificCodeSource()));
-								mmList.forEach(addmmsToIncludeList);
-							}
-					}
-					//remove dealer codes relative to composite prices
-					this.removeCompositePricesFromList(includeDealers, market.getMarketCode());
-					marketOrder.setDealers(includeDealers);
-
 					// add all dealer codes returned as excludeDealers to the marketOrder.excludeDealers list
 					// note that if the returned market is Bloomberg we need to be smart ad add all the dealer codes in TSOX for that dealer
 					for(int i = 0; i < excludeDealersResp.size();i++) {
@@ -186,17 +171,45 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 								market.getMarketCode(), excludeDealersResp.get(i));
 						if(mmm == null) continue;
 						if(!Market.isABBGMarket(market.getMarketCode())) {
-							excludeDealers.add(new MarketMarketMakerSpec(mmm.getMarketSpecificCode(), mmm.getMarketSpecificCodeSource()));
+							excludeDealers.add(mmm);
 						}
 						else {
 							List<MarketMarketMaker> mmList = mmm.getMarketMaker().getMarketMarketMakerForMarket(MarketCode.TSOX);
-							java.util.function.Consumer<? super MarketMarketMaker> addmmsToExcludeList = mmm2 -> excludeDealers.add(new MarketMarketMakerSpec(mmm2.getMarketSpecificCode(), mmm2.getMarketSpecificCodeSource()));
+							java.util.function.Consumer<? super MarketMarketMaker> addmmsToExcludeList = mmm2 -> excludeDealers.add(mmm2);
 							mmList.forEach(addmmsToExcludeList);
 						}
 					}
+					excludeDealers.forEach(marketMarketMaker ->excludeDealersSpecs.add(new MarketMarketMakerSpec(marketMarketMaker.getMarketSpecificCode(), marketMarketMaker.getMarketSpecificCodeSource())));
+					
+					// add all dealer codes returned as includeDealers to the marketOrder.dealers list
+					// note that if the returned market is Bloomberg we need to be smart ad add all the dealer codes in TSOX for that dealer
+					for(int i = 0; i < includeDealersResp.size();i++) {
+						MarketMarketMaker mmm = this.getMarketMakerFinder().getSmartMarketMarketMakerByCode(
+								market.getMarketCode(), includeDealersResp.get(i));
+						if(mmm == null) continue;
+						if(excludeDealers.contains(mmm)) {
+							LOGGER.info("Duplication found in list of MarketMakers between include and exclude lists. Code: {}", mmm.getMarketSpecificCode());
+							continue;
+						}
+						if(!Market.isABBGMarket(market.getMarketCode())) {
+							includeDealersSpecs.add(new MarketMarketMakerSpec(mmm.getMarketSpecificCode(), mmm.getMarketSpecificCodeSource()));
+							}
+							else {
+								List<MarketMarketMaker> mmList = mmm.getMarketMaker().getMarketMarketMakerForMarket(MarketCode.TSOX);
+								java.util.function.Consumer<? super MarketMarketMaker> addmmsToIncludeList = mmm1 -> {
+												if(!excludeDealers.contains(mmm1))  // Add only dealer codes of dealers that are not already in the exclude list
+													includeDealersSpecs.add(new MarketMarketMakerSpec(mmm1.getMarketSpecificCode(), mmm1.getMarketSpecificCodeSource()));
+								};
+								mmList.forEach(addmmsToIncludeList);
+							}
+					}
 					//remove dealer codes relative to composite prices
-					this.removeCompositePricesFromList(excludeDealers, market.getMarketCode());
-					marketOrder.setExcludeDealers(excludeDealers);			
+					this.removeCompositePricesFromList(excludeDealersSpecs, market.getMarketCode());
+					marketOrder.setExcludeDealers(excludeDealersSpecs);			
+					//remove dealer codes relative to composite prices
+					this.removeCompositePricesFromList(includeDealersSpecs, market.getMarketCode());
+					marketOrder.setDealers(includeDealersSpecs);
+
 					
 					marketOrder.setLimit(limitPrice);
 

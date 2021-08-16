@@ -183,11 +183,13 @@ public class MarketOrder extends Order {
     	int i = 0;
     	StringBuilder builder = new StringBuilder();
     	builder.append("[");
-    	dealers.forEach(mmms -> {
+    	dealerList.forEach(mmms -> {
     		builder.append(mmms.getMarketMakerMarketSpecificCode());
     		builder.append(", ");
     	});
-    	builder.append("]");
+    	if(builder.length() > 1)
+    		builder.replace(builder.length() - 2,builder.length(),"]");
+    	else builder.append("]");
     	return builder.toString();
     }
 }

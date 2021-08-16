@@ -36,7 +36,6 @@ import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
-import it.softsolutions.bestx.model.MarketMarketMakerSpec;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.services.DateService;
@@ -276,12 +275,13 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 					operation.removeIdentifier(OperationIdType.MARKETAXESS_SESSION_ID);
 				}
 				//SP20200310 BESTX-542
-            MarketOrder marketOrderMA = currentAttempt.getMarketOrder();
-            List<MarketMarketMakerSpec> dealersMA = currentAttempt.getSortedBook().getValidProposalDealersByMarket(MarketCode.MARKETAXESS, marketOrderMA.getSide());
-            marketOrderMA.setDealers(dealersMA);
+//            MarketOrder marketOrderMA = currentAttempt.getMarketOrder();
+            // removed management of MA dealers for BESTX-901
+//            List<MarketMarketMakerSpec> dealersMA = currentAttempt.getSortedBook().getValidProposalDealersByMarket(MarketCode.MARKETAXESS, marketOrderMA.getSide());
+//            marketOrderMA.setDealers(dealersMA);
             
 				// requested on March 2019 rendez vous un Zurich currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
-				currentAttempt.getMarketOrder().setMarketMarketMaker(null);
+//				currentAttempt.getMarketOrder().setMarketMarketMaker(null);
 				operation.setStateResilient(new MA_StartExecutionState(), ErrorState.class);
 				break;
 			default:

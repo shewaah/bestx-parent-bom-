@@ -687,18 +687,17 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             LOGGER.debug("Updating order coming from BusinessValidationState.");
             operationStateAuditDao.updateOrder(order, operation.getState(), false, order.isLaw262Passed(), comment, null, orderText, operation.isNotAutoExecute());
         }
-        // In queste 2 chiamate potrebbe non esserci sempre tutta la catena (potremmo avere NullPointerException)
+        // In queste chiamate potrebbe non esserci sempre tutta la catena (potremmo avere NullPointerException)
         String proposalMarketMaker = getProposalMarketMakerCode(operation.getLastAttempt());
         String orderMarketMaker = getMarketOrderMarketMakerCode(operation.getLastAttempt());
+        String includeDealers = getMarketOrderIncludeDealers(operation.getLastAttempt());
+        String excludeDealers = getMarketOrderExcludeDealers(operation.getLastAttempt());
+        String orderPrice = getMarketOrderPrice(operation.getLastAttempt());
+        String orderSize = getMarketOrderSize(operation.getLastAttempt());
         String executionMarketMaker = getExecutionReportMarketMaker(operation.getExecutionReports());
         String executionReportPrice = getExecutionReportPrice(operation.getExecutionReports());
         String executionProposalAmount = getLimitAttemptPrice(operation.getLastAttempt());
-        String executionProposalFutSettDate = null; 
         
-        if (operation.getLastAttempt() != null && operation.getLastAttempt().getMarketOrder() != null && operation.getLastAttempt().getMarketOrder().getFutSettDate() != null) {
-           executionProposalFutSettDate = DateService.format(dateFormat, operation.getLastAttempt().getMarketOrder().getFutSettDate());
-        }
-
         OperationState.Type type = newState.getType();
         Market.MarketCode marketCode = newState.getMarketCode();
 
@@ -831,7 +830,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         case Standby: {
             // 20111026 - Ruggero Ticket AKR-1207 : due to the shutdown of Bloomberg some instruments have not the BBSettlementDate or
             // have an old one. The ORDER_BBG_STANDBY message will no more include the settlement date.
-            Object[] params = { proposalMarketMaker, executionProposalAmount };
+            Object[] params = { proposalMarketMaker, executionProposalAmount, orderPrice };
             comment = getComment(marketCode, type, comment, params);
         }
         break;
@@ -840,7 +839,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             case BLOOMBERG:
             case TW:
             case MARKETAXESS: {
-                Object[] params = { orderMarketMaker, executionProposalAmount, executionProposalFutSettDate };
+                Object[] params = { includeDealers, excludeDealers, orderPrice, orderSize};
                 comment = getComment(marketCode, type, comment, params);
             }
             break;
@@ -873,7 +872,8 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         return comment;
     }
 
-/*    private String getExecutionProposalAmount(Attempt lastAttempt) {
+
+	/*    private String getExecutionProposalAmount(Attempt lastAttempt) {
         String res = null;
 
         if (lastAttempt == null) {
@@ -898,6 +898,30 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         return res;
     }
 */    
+	private String getMarketOrderSize(Attempt lastAttempt) {
+		if(lastAttempt != null && lastAttempt.getMarketOrder() != null && lastAttempt.getMarketOrder().getQty()!= null)
+			return lastAttempt.getMarketOrder().getQty().toPlainString();
+		return null;
+	}
+
+	private String getMarketOrderPrice(Attempt lastAttempt) {
+		if(lastAttempt != null && lastAttempt.getMarketOrder() != null && lastAttempt.getMarketOrder().getLimit()!= null)
+			return lastAttempt.getMarketOrder().getLimit().getAmount().toPlainString();
+		return null;
+	}
+
+    private String getMarketOrderExcludeDealers(Attempt lastAttempt) {
+    	if(lastAttempt != null && lastAttempt.getMarketOrder() != null && lastAttempt.getMarketOrder().getExcludeDealers() != null)
+    		return lastAttempt.getMarketOrder().beautify(lastAttempt.getMarketOrder().getExcludeDealers());
+    	return null;
+    }
+    
+    private String getMarketOrderIncludeDealers(Attempt lastAttempt) {
+    	if(lastAttempt != null && lastAttempt.getMarketOrder() != null && lastAttempt.getMarketOrder().getDealers() != null)
+    		return lastAttempt.getMarketOrder().beautify(lastAttempt.getMarketOrder().getDealers());
+    	return null;
+    }
+
     private String getLimitAttemptPrice(Attempt lastAttempt) {
         String res = null;
 
