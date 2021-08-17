@@ -53,8 +53,11 @@ import it.softsolutions.bestx.states.OrderNotExecutableState;
 import it.softsolutions.bestx.states.SendAutoNotExecutionReportState;
 import it.softsolutions.bestx.states.WaitingPriceState;
 import it.softsolutions.bestx.states.WarningState;
+import it.softsolutions.bestx.states.bloomberg.BBG_RejectedState;
 import it.softsolutions.bestx.states.bloomberg.BBG_StartExecutionState;
+import it.softsolutions.bestx.states.marketaxess.MA_RejectedState;
 import it.softsolutions.bestx.states.marketaxess.MA_StartExecutionState;
+import it.softsolutions.bestx.states.tradeweb.TW_RejectedState;
 import it.softsolutions.bestx.states.tradeweb.TW_StartExecutionState;
 
 /**  
@@ -256,7 +259,11 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 					}
 					// requested on March 2019 rendez vous un Zurich currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
 					currentAttempt.getMarketOrder().setMarketMarketMaker(null);
-					operation.setStateResilient(new BBG_StartExecutionState(), ErrorState.class);
+					if(CheckIfBuySideMarketIsConnectedAndEnabled(MarketCode.BLOOMBERG))
+						operation.setStateResilient(new BBG_StartExecutionState(), ErrorState.class);
+					else {
+						operation.setStateResilient(new BBG_RejectedState("Bloomberg Market is unavailable or disabled", false), ErrorState.class);
+					}
 				}
 				break;
 			case TW:
@@ -267,7 +274,11 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 
 				// requested on March 2019 rendez vous un Zurich currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
 				currentAttempt.getMarketOrder().setMarketMarketMaker(null);
-				operation.setStateResilient(new TW_StartExecutionState(), ErrorState.class);
+				if(CheckIfBuySideMarketIsConnectedAndEnabled(MarketCode.TW))
+					operation.setStateResilient(new TW_StartExecutionState(), ErrorState.class);
+				else {
+					operation.setStateResilient(new TW_RejectedState("Tradeweb Market is unavailable or disabled"), ErrorState.class);
+				}
 				break;
 			case MARKETAXESS:
 				String maSessionId = operation.getIdentifier(OperationIdType.MARKETAXESS_SESSION_ID);
@@ -282,7 +293,11 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
             
 				// requested on March 2019 rendez vous un Zurich currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
 //				currentAttempt.getMarketOrder().setMarketMarketMaker(null);
-				operation.setStateResilient(new MA_StartExecutionState(), ErrorState.class);
+				if(CheckIfBuySideMarketIsConnectedAndEnabled(MarketCode.MARKETAXESS))
+					operation.setStateResilient(new MA_StartExecutionState(), ErrorState.class);
+				else {
+					operation.setStateResilient(new MA_RejectedState("MarketAxess Market is unavailable or disabled"), ErrorState.class);
+				}
 				break;
 			default:
 				operation.removeLastAttempt();

@@ -7,7 +7,7 @@
     <packaging>pom</packaging>
     <version>4.7.0-NEUTRONSTAR-210630-SNAPSHOT</version>
 
-    <name>BestX! Engine Develop</name>
+    <name>BestX:FI-A Engine Develop</name>
     <description>Comprising all the modules in bestengine installation for CS</description>
 
     <properties>

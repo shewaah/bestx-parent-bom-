@@ -46,4 +46,9 @@ public class TW_RejectedState extends BaseState implements OperationState {
 	public OperationState clone() throws CloneNotSupportedException {
 		return new TW_RejectedState(this.getComment());
 	}
+
+	@Override
+	public boolean mustSaveBook() {
+		return true;
+	}
 }

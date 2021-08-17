@@ -31,10 +31,10 @@ import it.softsolutions.bestx.services.rest.CSMarketOrderBuilder;
  * Purpose: this class is mainly for choose wich builder use following these
  * rules: 
  * 1) the heartbeat flows and system status is up. Request are answered
- * in time with no ERROR. BestX! uses the response to define the execution
- * attempt. If there is a WARNING, BestX! logs the warning. 
+ * in time with no ERROR. BestX:FI-A uses the response to define the execution
+ * attempt. If there is a WARNING, BestX:FI-A logs the warning. 
  * 2) the hearbeat
- * flows and the system status is up. Request is timed out. BestX! goes to the
+ * flows and the system status is up. Request is timed out. BestX:FI-A goes to the
  * fallback algo to define the execution attempt wheter it is a LF or algo
  * order. Other orders (orders that are executed afterwards) are not affected.
  * 3) the heartbeat flows and system status is up. Request are answered in time
@@ -43,9 +43,8 @@ import it.softsolutions.bestx.services.rest.CSMarketOrderBuilder;
  * service GetRoutingProposal. An error response from GetRoutingProposal does
  * not say anything about the availability of the services, that’s what he
  * heartbeat does. 
- * 4) the hearbeat flows and the system status is down. BestX!
- * goes to fallback 
- * 5) the heartbeat is timed out. BestX! goes to fallback
+ * 4) the hearbeat flows and the system status is down. BeBestX:FI-A * goes to fallback 
+ * 5) the heartbeat is timed out. BeBestX:FI-Aoes to fallback
  *
  * Project Name : bestxengine-cs First created by: stefano.pontillo Creation
  * date: 27 lug 2021

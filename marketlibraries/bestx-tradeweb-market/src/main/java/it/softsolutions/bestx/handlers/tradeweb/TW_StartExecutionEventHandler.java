@@ -18,6 +18,7 @@ import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.connections.MarketBuySideConnection;
 import it.softsolutions.bestx.handlers.BaseOperationEventHandler;
 import it.softsolutions.bestx.states.ErrorState;
+import it.softsolutions.bestx.states.tradeweb.TW_RejectedState;
 import it.softsolutions.bestx.states.tradeweb.TW_SendOrderState;
 
 /**
@@ -39,6 +40,13 @@ public class TW_StartExecutionEventHandler extends BaseOperationEventHandler {
 
     @Override
     public void onNewState(OperationState currentState) {
-    	operation.setStateResilient(new TW_SendOrderState(), ErrorState.class);
+//    	if(this.operation != null && this.operation.getLastAttempt() != null && this.operation.getLastAttempt().getMarketOrder() != null &&
+//    			this.operation.getLastAttempt().getMarketOrder().getMarket() != null &&
+//    			this.operation.getLastAttempt().getMarketOrder().getMarket().isDisabled()) {
+//    		// create a new MarketExecutionReport for the rejection and then go to rejected
+//    		operation.setStateResilient(new TW_RejectedState("Tradeweb market is disabled"), ErrorState.class);
+//    	}
+//    	else
+    		operation.setStateResilient(new TW_SendOrderState(), ErrorState.class);
     }
 }
