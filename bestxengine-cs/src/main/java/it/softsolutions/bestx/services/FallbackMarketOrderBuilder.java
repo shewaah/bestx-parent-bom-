@@ -23,6 +23,7 @@ import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilderListener;
 import it.softsolutions.bestx.model.MarketOrder;
+import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.bestx.services.proposalclassifiers.BaseMarketMakerClassifier;
 import it.softsolutions.bestx.services.rest.CSMarketOrderBuilder;
 
@@ -99,7 +100,7 @@ public class FallbackMarketOrderBuilder extends MarketOrderBuilder {
 		operation.getLastAttempt().updateServiceStatus(csAlgoMarketOrderBuilder.getServiceName(),
 				!csAlgoMarketOrderBuilder.getServiceStatus(), csAlgoMarketOrderBuilder.getDownReason());
 
-		if (csAlgoMarketOrderBuilder.getServiceStatus()) {
+		if (csAlgoMarketOrderBuilder.getServiceStatus() && !BondTypesService.isUST(operation.getOrder().getInstrument())) {
 			csAlgoMarketOrderBuilder.buildMarketOrder(operation, new FallbackMarketOrderBuilderListener(operation));
 		} else {
 			try {
