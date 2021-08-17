@@ -31,6 +31,7 @@ import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
+import it.softsolutions.bestx.model.MarketMaker;
 import it.softsolutions.bestx.model.MarketMarketMaker;
 import it.softsolutions.bestx.model.MarketMarketMakerSpec;
 import it.softsolutions.bestx.model.MarketOrder;
@@ -165,6 +166,8 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 					List<String> includeDealersResp = response.getData().getIncludeDealers();
 					List<String> excludeDealersResp = response.getData().getExcludeDealers();
 					List<MarketMarketMaker> excludeDealers = new ArrayList<MarketMarketMaker>(); // list to use to exclude from includeDealers the MM specified in excludeDealers list 
+					List<MarketMaker> excludeMarketMakers = new ArrayList<MarketMaker>(); // list to avoid duplications in excludeDealers
+					List<MarketMaker> includeMarketMakers = new ArrayList<MarketMaker>(); // list to avoid duplications in includeDealers
 					// - Note may be due especially for TSOX dealer codes
 					List<MarketMarketMakerSpec> includeDealersSpecs = new ArrayList<MarketMarketMakerSpec>();
 					List<MarketMarketMakerSpec> excludeDealersSpecs = new ArrayList<MarketMarketMakerSpec>();
@@ -179,6 +182,9 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 							excludeDealers.add(mmm);
 						}
 						else {
+							if(excludeMarketMakers.contains(mmm.getMarketMaker()))
+									continue;
+							excludeMarketMakers.add(mmm.getMarketMaker());
 							List<MarketMarketMaker> mmList = mmm.getMarketMaker().getMarketMarketMakerForMarket(MarketCode.TSOX);
 							java.util.function.Consumer<? super MarketMarketMaker> addmmsToExcludeList = mmm2 -> excludeDealers.add(mmm2);
 							mmList.forEach(addmmsToExcludeList);
@@ -200,6 +206,9 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 							includeDealersSpecs.add(new MarketMarketMakerSpec(mmm.getMarketSpecificCode(), mmm.getMarketSpecificCodeSource()));
 							}
 							else {
+								if(includeMarketMakers.contains(mmm.getMarketMaker()))
+									continue;
+								includeMarketMakers.add(mmm.getMarketMaker());
 								List<MarketMarketMaker> mmList = mmm.getMarketMaker().getMarketMarketMakerForMarket(MarketCode.TSOX);
 								java.util.function.Consumer<? super MarketMarketMaker> addmmsToIncludeList = mmm1 -> {
 												if(!excludeDealers.contains(mmm1))  // Add only dealer codes of dealers that are not already in the exclude list
