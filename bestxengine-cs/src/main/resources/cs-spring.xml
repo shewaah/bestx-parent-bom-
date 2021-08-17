@@ -987,7 +987,7 @@
                     <property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
 				</bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardWorstPriceProposalClassifier" />
-                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardMarketTriedInEarlierAttemptProposalClassifier" />
+<!--                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardMarketTriedInEarlierAttemptProposalClassifier" -->
 			</list>
 		</property>
 		<property name="bookClassifierList">
@@ -1247,8 +1247,8 @@
         <property name="pricesRespIntervalTimeInSecs"><value>${Price.monitor.intervalInSeconds}</value></property>
         <property name="executionsRespIntervalTimeInSecs"><value>${Execution.monitor.intervalInSeconds}</value></property>
         <property name="historicPricesQuery" value="${HistoricMarket.SQLQuery}" />
-        <property name="numDays" value="${HistoricMarket.NumDays:0}" />
-        <property name="numPricePoints" value="${HistoricMarket.NumPricePoints:0}" />
+        <property name="numDays" value="${HistoricMarket.NumDays:1}" />
+        <property name="numPricePoints" value="${HistoricMarket.NumPricePoints:2}" />
     </bean>
     
     <bean id="bloombergHistoricMarket" parent="historicMarket">

@@ -162,7 +162,10 @@ public class MapMarketMakerFinder implements MarketMakerFinder {
 		if (marketMarketMaker == null) {
 			marketMarketMaker = marketMakerDao.getMarketMarketMakerByCode(Market.MarketCode.TSOX, tsoxSpecificCode);
 		}
-		return marketMarketMaker;
+        if (marketMarketMaker != null) {
+            cache.put(new Element(key, marketMarketMaker));
+        }
+        return marketMarketMaker;
     }
 }
 
