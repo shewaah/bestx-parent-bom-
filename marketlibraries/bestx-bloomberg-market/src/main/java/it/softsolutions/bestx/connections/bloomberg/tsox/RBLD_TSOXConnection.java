@@ -78,6 +78,43 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
    private String traderCode;
    private String destinationMICCode = "BMTF";
 
+   private boolean addBlockedDealers = false;
+   private boolean addIncludeDealers = false;
+   private int blockedDealersMaxNum = 0;
+   private int includeDealersMaxNum = 0;
+
+   public boolean isAddBlockedDealers() {
+	   return addBlockedDealers;
+   }
+
+   public void setAddBlockedDealers(boolean addBlockedDealers) {
+	   this.addBlockedDealers = addBlockedDealers;
+   }
+
+   public boolean isAddIncludeDealers() {
+	   return addIncludeDealers;
+   }
+
+   public void setAddIncludeDealers(boolean addIncludeDealers) {
+	   this.addIncludeDealers = addIncludeDealers;
+   }
+
+   public int getBlockedDealersMaxNum() {
+	   return blockedDealersMaxNum;
+   }
+
+   public void setBlockedDealersMaxNum(int blockedDealersMaxNum) {
+	   this.blockedDealersMaxNum = blockedDealersMaxNum;
+   }
+
+   public int getIncludeDealersMaxNum() {
+	   return includeDealersMaxNum;
+   }
+
+   public void setIncludeDealersMaxNum(int includeDealersMaxNum) {
+	   this.includeDealersMaxNum = includeDealersMaxNum;
+   }
+
    /**
    * @return the destinationMICCode
    */
@@ -433,6 +470,7 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
       //		tsNewOrderSingle.setTradeDate(tradeDate);
       //		tsNewOrderSingle.setEncodedText(encodedText);
 
+      // TODO BESTX-867 add here the management of include/exclude dealers. Use configurable attributes
       LOGGER.info("{}", tsNewOrderSingle);
 
       return tsNewOrderSingle;

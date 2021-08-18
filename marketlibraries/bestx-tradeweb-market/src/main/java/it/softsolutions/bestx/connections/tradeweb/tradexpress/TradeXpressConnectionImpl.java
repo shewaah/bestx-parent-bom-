@@ -84,7 +84,34 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
    private String investmentDecisorID = null;
    private String investmentDecisorRoleQualifier = null;
    private boolean addBlockedDealers = false;
+   private boolean addIncludeDealers = false;
+   private int blockedDealersMaxNum = 0;
+   private int includeDealersMaxNum = 0;
 
+   public boolean isAddIncludeDealers() {
+	return addIncludeDealers;
+}
+
+   public void setAddIncludeDealers(boolean addIncludeDealers) {
+	   this.addIncludeDealers = addIncludeDealers;
+   }
+
+   public int getBlockedDealersMaxNum() {
+	   return blockedDealersMaxNum;
+   }
+
+   public void setBlockedDealersMaxNum(int blockedDealersMaxNum) {
+	   this.blockedDealersMaxNum = blockedDealersMaxNum;
+   }
+
+   public int getIncludeDealersMaxNum() {
+	   return includeDealersMaxNum;
+   }
+
+   public void setIncludeDealersMaxNum(int includeDealersMaxNum) {
+	   this.includeDealersMaxNum = includeDealersMaxNum;
+   }
+   
    public boolean isAddBlockedDealers() {
       return addBlockedDealers;
    }
@@ -299,6 +326,7 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
 
       /** Get Custom Components */
       List<MessageComponent> customComponents = new ArrayList<MessageComponent>();
+      //TODO BESTX-891 manage here the include/exclude dealers. Use configurable attributes
       //BESTX-375: SP-20190122 add blocked dealers custom group to new order single message
       if (addBlockedDealers) {
          BlockedDealersGrpComponent blockedDealersGrpCmp = new BlockedDealersGrpComponent();

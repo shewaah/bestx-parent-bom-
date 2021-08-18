@@ -37,8 +37,10 @@ public interface MarketAxessConnectorMBean {
 	 */
 	void setTraderPartyID(String traderPartyID);
 	
-	void setIncludeDealers(int minDealers);
-	
-	int getIncludeDealers();
-
+	   public boolean isAddIncludeDealers();
+	   public void setAddIncludeDealers(boolean addIncludeDealers);
+	   public int getBlockedDealersMaxNum();
+	   public void setBlockedDealersMaxNum(int blockedDealersMaxNum);
+	   public int getIncludeDealersMaxNum();
+	   public void setIncludeDealersMaxNum(int includeDealersMaxNum);
 }

@@ -90,29 +90,23 @@ import quickfix.field.PartyID;
 
 public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConnection implements TradeStacTradeConnection, TradeStacApplicationCallback, TradeStacSessionCallback, MarketAxessConnectorMBean
 {
-
+   static final Logger LOGGER = LoggerFactory.getLogger(MarketAxessMarket.class);
    private Character investmentDecisionIDSource = null;
    private String investmentDecisorID = null;
    private String executionDecisionID = null;
    private Character defaultTradingCapacity = null;
    private Character defaultShortSelling = '0';
    private Integer investmentDecisionQualifier = null;
-   static final Logger LOGGER = LoggerFactory.getLogger(MarketAxessMarket.class);
    private boolean addBlockedDealers = false;
+   private boolean addIncludeDealers = false;
+   private int blockedDealersMaxNum = 0;
+   private int includeDealersMaxNum = 0;
    private String marketSegmentID = null;
+   private int minIncludeDealers = 1;
+   private String traderPartyID;
+   private SessionID sessionID;
 	
-   public boolean isAddBlockedDealers() {
-	   return addBlockedDealers;
-   }
-
-   public void setAddBlockedDealers(boolean addBlockedDealers) {
-	   this.addBlockedDealers = addBlockedDealers;
-   }
-
-   
-   
-
-	TradeStacTradeConnectionListener tradeStacTradeConnectionListener;  // the market bean
+   TradeStacTradeConnectionListener tradeStacTradeConnectionListener;  // the market bean
 
 	public MarketAxessAutoExecutionConnector (String connectionName) {
 		super(connectionName);
@@ -201,32 +195,11 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 		tradeStacTradeConnectionListener.onOrderReject(sessionID.toString(), requestID, reason);
 	}
 
-	private String traderPartyID;
 
-	private SessionID sessionID;
-	private int includeDealers = 0;
-
-	/**
-	 * @return the includeDealers
-	 */
-	public int getIncludeDealers() {
-		return includeDealers;
-	}
-
-	/**
-	 * @param includeDealers the  to set
-	 */
-	public void setIncludeDealers(int includeDealers) {
-		this.includeDealers = includeDealers;
-	}
-
-	public void setSessionID(SessionID sessionID) {
-		this.sessionID = sessionID;
-	}
 
 	@Override
 	public void sendOrder(MarketOrder marketOrder) throws BestXException {
-		MarketAxessOrder maOrder = new MarketAxessOrder(marketOrder);
+//		MarketAxessOrder maOrder = new MarketAxessOrder(marketOrder);
 		String clOrdID = marketOrder.getMarketSessionId();
 		Instrument instrument = marketOrder.getInstrument();
 		String securityID = instrument.getIsin();
@@ -234,7 +207,7 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 		Double orderQty = marketOrder.getQty().doubleValue();
 		Date settlDate = marketOrder.getFutSettDate();
 		Double price = marketOrder.getLimit().getAmount().doubleValue();
-      String settlementType = marketOrder.getSettlementType();
+        String settlementType = marketOrder.getSettlementType();
 		
 
 		NewOrderSingle newOrderSingle = new NewOrderSingle();
@@ -243,7 +216,7 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 	      newOrderSingle.set(new SettlDate(DateService.formatAsUTC(DateService.dateISO, settlDate)));
 		}
 		newOrderSingle.set(new SettlType(settlementType));
-		newOrderSingle.set(new HandlInst(HandlInst.AUTOMATED_EXECUTION_ORDER_PRIVATE));
+		newOrderSingle.set(new HandlInst(HandlInst.AUTOMATED_EXECUTION_ORDER_PRIVATE)); 
 
 		newOrderSingle.set(new Symbol("N/A"));
 		newOrderSingle.set(new SecurityID(securityID));
@@ -308,31 +281,28 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
       
 		//ESCB Stability Flag
 		newOrderSingle.setField(new MKTXESCBStblty(MKTXESCBStblty.INVESTMENT_OPERATIONS));
-		
-		// da usare se si preferisce usare il solo dealer best
-//		String dealerCode = marketOrder.getMarketMarketMaker() != null ? marketOrder.getMarketMarketMaker().getMarketSpecificCode() : null;
-		
-		
-//	   if(this.includeDealers == 0) {
-//	      newOrderSingle.setField(new IncludeDealers(2));
-//	   } else 
-		if(this.includeDealers == 1 || this.includeDealers == 2) {
-	      newOrderSingle.setField(new IncludeDealers(this.includeDealers));
-	      
-	      // add only dealers with price in price discovery
-	      for(MarketMarketMakerSpec maDealerCode : maOrder.getDealers()) {
-	         NewOrderSingle.NoDealers dealer = new NewOrderSingle.NoDealers();
-	         if(maDealerCode != null) {
-	            dealer.set(new DealerID(maDealerCode.marketMakerCode));
-	            dealer.set(new DealerIDSource(maDealerCode.marketMakerCodeSource));
-	            newOrderSingle.addGroup(dealer);
-	         }
+				
+		if(this.minIncludeDealers == 1 || this.minIncludeDealers == 2) {
+	      newOrderSingle.setField(new IncludeDealers(this.minIncludeDealers));
+	
+	      // BESTX-892 management of include/exclude dealers. Using configurable attributes
+	      // add dealers in the include list
+	      if(marketOrder.getDealers() != null)
+	    	  for(int i = 0 ; i <= includeDealersMaxNum && i < marketOrder.getDealers().size(); i++) {
+	    		  MarketMarketMakerSpec maDealerCode = marketOrder.getDealers().get(i);
+	    		  NewOrderSingle.NoDealers dealer = new NewOrderSingle.NoDealers();
+	    		  if(maDealerCode != null) {
+	    			  dealer.set(new DealerID(maDealerCode.marketMakerCode));
+	    			  dealer.set(new DealerIDSource(maDealerCode.marketMakerCodeSource));
+	    			  newOrderSingle.addGroup(dealer);
+	    		  }
 	      }
 	   }
 
 		// add dealers that must be excluded
 		if(addBlockedDealers) {
-			for(MarketMarketMakerSpec maDealerCode : maOrder.getExcludeDealers()) {
+			for(int i = 0 ; i <= blockedDealersMaxNum && i < marketOrder.getExcludeDealers().size(); i++) {
+				MarketMarketMakerSpec maDealerCode= marketOrder.getExcludeDealers().get(i);
 				NewOrderSingle.NoDealers dealer = new NewOrderSingle.NoDealers();
 				if(maDealerCode != null) {
 					dealer.set(new DealerID(maDealerCode.marketMakerCode));
@@ -434,7 +404,7 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
    }
 
 	   
-	   public void setInvestmentDecisionQualifier(Integer investmentDecisionQualifier) {
+   public void setInvestmentDecisionQualifier(Integer investmentDecisionQualifier) {
 	      this.investmentDecisionQualifier = investmentDecisionQualifier;
    }
 
@@ -484,5 +454,46 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
    public void setMarketSegmentID(String marketSegmentID) {
 	   this.marketSegmentID = marketSegmentID;
    }
+   public boolean isAddIncludeDealers() {
+	return addIncludeDealers;
+   }
 
+   public void setAddIncludeDealers(boolean addIncludeDealers) {
+	   this.addIncludeDealers = addIncludeDealers;
+   }
+
+   public int getBlockedDealersMaxNum() {
+	   return blockedDealersMaxNum;
+   }
+
+   public void setBlockedDealersMaxNum(int blockedDealersMaxNum) {
+	   this.blockedDealersMaxNum = blockedDealersMaxNum;
+   }
+
+   public int getIncludeDealersMaxNum() {
+	   return includeDealersMaxNum;
+   }
+
+   public void setIncludeDealersMaxNum(int includeDealersMaxNum) {
+	   this.includeDealersMaxNum = includeDealersMaxNum;
+   }
+   public boolean isAddBlockedDealers() {
+	   return addBlockedDealers;
+   }
+
+   public void setAddBlockedDealers(boolean addBlockedDealers) {
+	   this.addBlockedDealers = addBlockedDealers;
+   }
+
+   public int getmMinIncludeDealers() {
+	   return minIncludeDealers;
+   }
+
+   public void setMinIncludeDealers(int minIncludeDealers) {
+	   this.minIncludeDealers = minIncludeDealers;
+   }
+
+   public void setSessionID(SessionID sessionID) {
+	   this.sessionID = sessionID;
+   }
 }
