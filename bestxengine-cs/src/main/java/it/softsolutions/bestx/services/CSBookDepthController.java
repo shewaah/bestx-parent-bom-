@@ -63,7 +63,7 @@ public class CSBookDepthController extends BookDepthValidator {
             if (currentAttempt.getSortedBook() != null) {
                 List<ClassifiedProposal> bookDepth = currentAttempt.getSortedBook().getValidSideProposals(order.getSide());
                 if (bookDepth.size() < minimumRequiredBookDepth) {
-                    LOGGER.info("Insufficient book depth ({}, required {}), rejecting order {}.", bookDepth.size(), minimumRequiredBookDepth, order.getFixOrderId());
+                    LOGGER.info("Insufficient book depth ({}, required {}), for order {}, ISIN {}.", bookDepth.size(), minimumRequiredBookDepth, order.getFixOrderId(), order.getInstrumentCode());
                     return false;
                 }
             } else {

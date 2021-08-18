@@ -56,7 +56,7 @@ public class OrderHelper {
             	if (operation.getLastAttempt().getMarketOrder() != null && operation.getLastAttempt().getMarketOrder().getLimitMonitorPrice() != null) {
             		order.setBestPriceDeviationFromLimit(
             				Math.abs(operation.getLastAttempt().getMarketOrder().getLimitMonitorPrice().getAmount().doubleValue() - order.getLimit().getAmount().doubleValue()));
-            	} else if (operation.getLastAttempt().getMarketOrder().getBuilder() != null &&
+            	} else if (operation.getLastAttempt().getMarketOrder() != null && operation.getLastAttempt().getMarketOrder().getBuilder() != null &&
             			operation.getLastAttempt().getMarketOrder().getBuilder() instanceof BestXMarketOrderBuilder) {
             		order.setBestPriceDeviationFromLimit(
             		   PriceController.INSTANCE.getBestProposalDelta(

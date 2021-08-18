@@ -111,12 +111,18 @@ public class BestXMarketOrderBuilder extends MarketOrderBuilder {
       List<ProposalSubState> wantedSubStates = loadConfiguredSubstates();
       
       try {
-         best = currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide()).getPrice();
-         ithBestProp = BookHelper.getIthProposal(currentAttempt.getSortedBook().getAcceptableProposalBySubState(wantedSubStates, operation.getOrder().getSide()), this.targetPriceMaxLevel);
+         best = currentAttempt.getSortedBook().
+        		 getBestProposalBySide(operation.getOrder().getSide()).
+        		 	getPrice();
+         ithBestProp = BookHelper.getIthProposal(currentAttempt.getSortedBook().
+        		 	getAcceptableProposalBySubState(wantedSubStates, operation.getOrder().getSide()), 
+        		 this.targetPriceMaxLevel);
          ithBest = ithBestProp.getPrice();
       } catch(NullPointerException e) {
-         LOGGER.warn("NullPointerException trying to manage widen best or get the {}-th best for order {}", this.targetPriceMaxLevel, operation.getOrder().getFixOrderId());
-         LOGGER.warn("NullPointerException trace", e);
+         LOGGER.info("NullPointerException trying to manage widen best or get the {}-th best for order {}", this.targetPriceMaxLevel, operation.getOrder().getFixOrderId());
+         LOGGER.debug("NullPointerException trace", e);
+         LOGGER.debug("currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide()) = {}",
+        		 currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide()), e);
       }
       try {
          double spread = BookHelper.getQuoteSpread(currentAttempt.getSortedBook().getAcceptableProposalBySubState(wantedSubStates, operation.getOrder().getSide()), this.targetPriceMaxLevel);
