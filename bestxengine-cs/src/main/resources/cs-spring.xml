@@ -987,7 +987,7 @@
                     <property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
 				</bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardWorstPriceProposalClassifier" />
-<!--                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardMarketTriedInEarlierAttemptProposalClassifier" -->
+                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardMarketTriedInEarlierAttemptProposalClassifier"/>
 			</list>
 		</property>
 		<property name="bookClassifierList">
@@ -1101,6 +1101,10 @@
 		<property name="tradeStacClientSession">
 			<bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
 		</property>
+		<property name="includeDealersMaxNum"><value>${Bloomberg.Tsox.Order.IncludeDealersMaxNum}</value></property>
+		<property name="addIncludeDealers"><value>${Bloomberg.Tsox.Order.AddIncludeDealers}</value></property>
+		<property name="blockedDealersMaxNum"><value>${Bloomberg.Tsox.Order.BlockedDealersMaxNum}</value></property>
+		<property name="addBlockedDealers"><value>${Bloomberg.Tsox.Order.AddBlockedDealers}</value></property>
         <property name="tsoxConnectionListener"><ref bean="bloombergMarket"/></property>
 		<property name="destinationMICCode"><value>${Bloomberg.Tsox.DestinationMICCode}</value></property>
 		<property name="traderCode"><value>${Bloomberg.Tsox.TraderCode}</value></property>
@@ -1162,6 +1166,10 @@
 		<property name="tradeStacClientSession">
 			<bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
 		</property>
+		<property name="includeDealersMaxNum"><value>${Tradeweb.Order.IncludeDealersMaxNum}</value></property>
+		<property name="addIncludeDealers"><value>${Tradeweb.Order.AddIncludeDealers}</value></property>
+		<property name="blockedDealersMaxNum"><value>${Tradeweb.Order.BlockedDealersMaxNum}</value></property>
+		<property name="addBlockedDealers"><value>${Tradeweb.Order.AddBlockedDealers}</value></property>
 		<property name="traderCode"><value>${Tradeweb.TraderCode}</value></property>
 		<property name="bestxAlgoID"><value>${Tradeweb.ExecutionDecisionMakerID}</value></property>
 		<property name="defaultShortSelling"><value>${Tradeweb.defaultShortSell}</value></property>

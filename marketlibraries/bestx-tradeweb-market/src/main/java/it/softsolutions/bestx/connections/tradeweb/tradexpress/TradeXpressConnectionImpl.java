@@ -265,7 +265,7 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
       tsInstrument.setSecurityIDSource(SecurityIDSource.IsinNumber);
 
       tsNewOrderSingle.setTSInstrument(tsInstrument);
-      tsNewOrderSingle.setHandlInst(HandlInst.ManualOrderBestExecution);
+      tsNewOrderSingle.setHandlInst(HandlInst.ManualOrderBestExecution);  // TODO BESTX-891 AMC Needs to be amended to a new value 'X' or to a configurable value?
       tsNewOrderSingle.setClOrdID(clOrdID);
       tsNewOrderSingle.setSide(side);
       tsNewOrderSingle.setTransactTime(DateService.newLocalDate());
@@ -327,8 +327,9 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
       /** Get Custom Components */
       List<MessageComponent> customComponents = new ArrayList<MessageComponent>();
       //TODO BESTX-891 manage here the include/exclude dealers. Use configurable attributes
+      // Add in the parties group all dealers in marketOrder.getDealers() with partyrole=1
       //BESTX-375: SP-20190122 add blocked dealers custom group to new order single message
-      if (addBlockedDealers) {
+      if (addBlockedDealers) { // add management of max number of dealers
          BlockedDealersGrpComponent blockedDealersGrpCmp = new BlockedDealersGrpComponent();
          tw.quickfix.field.NoBlockedDealers noBlockedDealers = new tw.quickfix.field.NoBlockedDealers();
 
