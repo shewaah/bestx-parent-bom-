@@ -163,18 +163,20 @@ public class MarketOrder extends Order {
         builder.append(this.market);
         builder.append(", include=");
         builder.append(beautify(this.getDealers()));
+        builder.append(", exclude=");
+        builder.append(beautify(this.getExcludeDealers()));
         builder.append(", text=");
         builder.append(this.text);
         builder.append(", marketMarketMaker=");
         builder.append(this.marketMarketMaker);
-        builder.append(", isInternal=");
-        builder.append(this.isInternal);
         builder.append(", marketSessionId=");
         builder.append(this.marketSessionId);
         builder.append(", limitMonitorPrice=");
         builder.append(this.limitMonitorPrice);
         builder.append("TransactTime=");
         builder.append(this.getTransactTime());
+        builder.append(", isInternal=");
+        builder.append(this.isInternal);
         builder.append("]");
         return builder.toString();
     }
@@ -182,7 +184,7 @@ public class MarketOrder extends Order {
     public void setValues(MarketOrder marketOrder) {
 		super.setValues((Order) marketOrder);
 	    this.market = marketOrder.market;
-	    this.venue =marketOrder.venue;
+	    this.venue = marketOrder.venue;
 	    this.text = marketOrder.text;
 	    this.marketMarketMaker = marketOrder.marketMarketMaker;
 	    this.isInternal = marketOrder.isInternal;
