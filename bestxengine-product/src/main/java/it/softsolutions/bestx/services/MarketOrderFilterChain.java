@@ -5,6 +5,7 @@ import java.util.List;
 
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.bestexec.MarketOrderFilter;
+import it.softsolutions.bestx.executionflow.ExecutionInMarketAction;
 import it.softsolutions.bestx.model.MarketOrder;
 
 public class MarketOrderFilterChain implements MarketOrderFilter {
@@ -20,16 +21,13 @@ public class MarketOrderFilterChain implements MarketOrderFilter {
 	}
 
 	@Override
-	public MarketOrderFilterResponse filterMarketOrder(MarketOrder marketOrder, Operation operation) {
-		MarketOrder lastMarketOrder = marketOrder;
-		MarketOrderFilterResponse response = new MarketOrderFilterResponse(lastMarketOrder, NextAction.EXECUTE, null);
-		for (MarketOrderFilter filter : filters) {
-			if (lastMarketOrder != null) {
-				response = filter.filterMarketOrder(lastMarketOrder, operation);
-				lastMarketOrder = response.getMarketOrder();
-			}
+	public void filterMarketOrder(MarketOrder marketOrder, Operation operation) {
+		if (marketOrder != null && marketOrder.getMarket() != null) {
+			operation.getLastAttempt().setNextAction(new ExecutionInMarketAction());
 		}
-		return response;
+		for (MarketOrderFilter filter : filters) {
+			filter.filterMarketOrder(marketOrder, operation);
+		}
 	}
 	
 	

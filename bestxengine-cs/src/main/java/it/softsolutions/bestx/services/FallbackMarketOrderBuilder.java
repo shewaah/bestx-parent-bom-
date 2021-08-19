@@ -24,7 +24,6 @@ import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilderListener;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.services.instrument.BondTypesService;
-import it.softsolutions.bestx.services.proposalclassifiers.BaseMarketMakerClassifier;
 import it.softsolutions.bestx.services.rest.CSMarketOrderBuilder;
 
 /**
@@ -52,12 +51,12 @@ import it.softsolutions.bestx.services.rest.CSMarketOrderBuilder;
  * 
  **/
 public class FallbackMarketOrderBuilder extends MarketOrderBuilder {
-	   private static final Logger LOGGER = LoggerFactory.getLogger(FallbackMarketOrderBuilder.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(FallbackMarketOrderBuilder.class);
 
 	private MarketOrderBuilder defaultMarketOrderBuilder;
-
 	private CSMarketOrderBuilder csAlgoMarketOrderBuilder;
-
+	private MarketOrderBuilder ustMarketOrderBuilder;
+	
 	public FallbackMarketOrderBuilder() {
 		super();
 	}
@@ -95,19 +94,17 @@ public class FallbackMarketOrderBuilder extends MarketOrderBuilder {
 	}
 
 	@Override
-	public void buildMarketOrder(Operation operation, MarketOrderBuilderListener listener) {
-		// Update algo service status in attempt
+	public void buildMarketOrder(Operation operation, MarketOrderBuilderListener listener) throws Exception {
+		// Update algo service status in attempt (does this make sense for UST?)
 		operation.getLastAttempt().updateServiceStatus(csAlgoMarketOrderBuilder.getServiceName(),
 				!csAlgoMarketOrderBuilder.getServiceStatus(), csAlgoMarketOrderBuilder.getDownReason());
-
-		if (csAlgoMarketOrderBuilder.getServiceStatus() && !BondTypesService.isUST(operation.getOrder().getInstrument())) {
-			csAlgoMarketOrderBuilder.buildMarketOrder(operation, new FallbackMarketOrderBuilderListener(operation));
+		
+		if (BondTypesService.isUST(operation.getOrder().getInstrument())) {
+			this.ustMarketOrderBuilder.buildMarketOrder(operation, operation);
+		} else if (csAlgoMarketOrderBuilder.getServiceStatus() && !BondTypesService.isUST(operation.getOrder().getInstrument())) {
+			this.csAlgoMarketOrderBuilder.buildMarketOrder(operation, new FallbackMarketOrderBuilderListener(operation));
 		} else {
-			try {
-				defaultMarketOrderBuilder.buildMarketOrder(operation, operation);
-			} catch (Exception e) {
-				LOGGER.error("Exception in csAlgoMarketOrderBuilder.buildMarketOrder", e);
-			}
+			this.defaultMarketOrderBuilder.buildMarketOrder(operation, operation);
 		}
 	}
 
@@ -127,4 +124,14 @@ public class FallbackMarketOrderBuilder extends MarketOrderBuilder {
 		this.csAlgoMarketOrderBuilder = csAlgoMarketOrderBuilder;
 	}
 
+	public MarketOrderBuilder getUstMarketOrderBuilder() {
+		return ustMarketOrderBuilder;
+	}
+
+	public void setUstMarketOrderBuilder(MarketOrderBuilder ustMarketOrderBuilder) {
+		this.ustMarketOrderBuilder = ustMarketOrderBuilder;
+	}
+
+	
+	
 }
