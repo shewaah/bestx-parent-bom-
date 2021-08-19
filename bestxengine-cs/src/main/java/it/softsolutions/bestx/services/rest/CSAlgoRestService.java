@@ -503,6 +503,7 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
                JSONObject objResp = new JSONObject(response);
                String currentStatus = objResp.getJSONObject(CSALGOREST_JSON_KEY_DATA).getString(CSALGOREST_JSON_KEY_STATUS);
                if (CSALGOREST_JSON_KEY_GREEN.equalsIgnoreCase(currentStatus)) {
+            	   LOGGER.info("CS ALGO REST Service is returning GREEN status");
                   lastError = "";
                   available = true;
                } else if (CSALGOREST_JSON_KEY_RED.equalsIgnoreCase(currentStatus)) {

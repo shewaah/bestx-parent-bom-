@@ -13,12 +13,8 @@
  */
 package it.softsolutions.bestx.services.executionstrategy;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,22 +25,14 @@ import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.OrderHelper;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
-import it.softsolutions.bestx.model.Attempt;
-import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Customer;
-import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
-import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal.ProposalSubState;
 import it.softsolutions.bestx.model.SortedBook;
-import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.OperationStateAuditDAOProvider;
 import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.bestx.services.price.PriceResult;
-import it.softsolutions.bestx.services.serial.SerialNumberService;
-import it.softsolutions.bestx.states.ErrorState;
-import it.softsolutions.bestx.states.WarningState;
 
 /**
  * 
@@ -56,8 +44,6 @@ import it.softsolutions.bestx.states.WarningState;
  **/
 public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyService {
 
-	private int centsLFTolerance;
-
 	static final Logger LOGGER = LoggerFactory.getLogger(CSLimitFileExecutionStrategyService.class);
 
 	@Deprecated
@@ -66,14 +52,12 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 			int minimumRequiredBookDepth, int centsLFTolerance) {
 		super(executionStrategyServiceCallback, priceResult, rejectOrderWhenBloombergIsBest, applicationStatus,
 				minimumRequiredBookDepth);
-		this.centsLFTolerance = centsLFTolerance;
 	}
 
 	public CSLimitFileExecutionStrategyService(Operation operation, PriceResult priceResult,
 			boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus, int minimumRequiredBookDepth,
 			int centsLFTolerance) {
 		super(operation, priceResult, rejectOrderWhenBloombergIsBest, applicationStatus, minimumRequiredBookDepth);
-		this.centsLFTolerance = centsLFTolerance;
 	}
 
 	@Override

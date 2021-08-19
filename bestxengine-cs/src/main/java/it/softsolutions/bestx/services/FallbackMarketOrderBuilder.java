@@ -97,7 +97,7 @@ public class FallbackMarketOrderBuilder extends MarketOrderBuilder {
 	public void buildMarketOrder(Operation operation, MarketOrderBuilderListener listener) throws Exception {
 		// Update algo service status in attempt (does this make sense for UST?)
 		operation.getLastAttempt().updateServiceStatus(csAlgoMarketOrderBuilder.getServiceName(),
-				!csAlgoMarketOrderBuilder.getServiceStatus(), csAlgoMarketOrderBuilder.getDownReason());
+				!csAlgoMarketOrderBuilder.getServiceStatus(), null);
 		
 		if (BondTypesService.isUST(operation.getOrder().getInstrument())) {
 			this.ustMarketOrderBuilder.buildMarketOrder(operation, operation);

@@ -168,63 +168,6 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	 */
 	@Override
 	public void startExecution(Operation operation, Attempt currentAttempt, SerialNumberService serialNumberService) {
-		// [BESTX-458] If we are in a Monitor Application Status stop the execution and go back
-//		if (this.applicationStatus.getType() == ApplicationStatus.Type.MONITOR) {
-//			try {
-//				ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
-//				String msg;
-//				if (currentAttempt.getMarketOrder() == null) {
-//					msg = Messages.getString("RejectInsufficientBookDepth.0", 3 /*TODO bookDepthValidator.getMinimumRequiredBookDepth()*/);
-//				} else  {
-//					msg = Messages.getString("Monitor.RejectMessage", currentAttempt.getMarketOrder().getMarket().getMicCode());
-//				}
-//				operation.setStateResilient(new SendAutoNotExecutionReportState(msg), ErrorState.class);
-//			} catch (BestXException e) {
-//				LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
-//				String errorMessage = e.getMessage();
-//				operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
-//			}
-//			return;
-//		}
-		
-//		// manage custom strategy to execute UST on Tradeweb with no MMM specified and limit price as specified in client order
-//		if(BondTypesService.isUST(operation.getOrder().getInstrument())) { // BESTX-382
-//			if (!CheckIfBuySideMarketIsConnectedAndEnabled(MarketCode.TW)) { // BESTX-574
-//				String reason = "TW Market is not available";
-//				try {
-//					ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
-//					operation.setStateResilient(new SendAutoNotExecutionReportState(reason), ErrorState.class);
-//				} catch (BestXException e) {
-//					LOGGER.error("Order {}, error while creating report for TW market not available report.", operation.getOrder().getFixOrderId(), e);
-//					String errorMessage = e.getMessage();
-//					operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
-//					
-//				}
-//				return;				
-//			} else {
-//				// override execution proposal every time
-//				MarketOrder marketOrder = new MarketOrder();
-//				currentAttempt.setMarketOrder(marketOrder);
-//				marketOrder.setValues(operation.getOrder());
-//				marketOrder.setTransactTime(DateService.newUTCDate());
-//				try {
-//					marketOrder.setMarket(marketFinder.getMarketByCode(MarketCode.TW, null));
-//				} catch (BestXException e) {
-//					LOGGER.info("Error when trying to send an order to Tradeweb: unable to find market with code {}", MarketCode.TW.name());
-//				}
-//				marketOrder.setVenue(null);
-//				marketOrder.setMarketMarketMaker(null);
-//
-//				marketOrder.setLimit(operation.getOrder().getLimit());  // if order limit is null, send a market order to TW
-//				LOGGER.info("Order={}, Selecting for execution market market maker: null and price null", operation.getOrder().getFixOrderId());
-//				String twSessionId = operation.getIdentifier(OperationIdType.TW_SESSION_ID);
-//				if (twSessionId != null) {
-//					operation.removeIdentifier(OperationIdType.TW_SESSION_ID);
-//				}
-//				operation.setStateResilient(new TW_StartExecutionState(), ErrorState.class);
-//				// last command in method for this case
-//			}
-//		} else {
 			//we must always preserve the existing comment, because it could be the one sent to us through OMS
 			if(currentAttempt == null || currentAttempt.getMarketOrder() == null || currentAttempt.getMarketOrder().getMarket() == null) {
 				LOGGER.warn("Order {},  invalid market order when trying to start execution. currentAttempt.MarketOrder = {}", currentAttempt == null ? "null.null" : currentAttempt.getMarketOrder());
@@ -283,14 +226,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 				if (maSessionId != null) {
 					operation.removeIdentifier(OperationIdType.MARKETAXESS_SESSION_ID);
 				}
-				//SP20200310 BESTX-542
-//            MarketOrder marketOrderMA = currentAttempt.getMarketOrder();
-            // removed management of MA dealers for BESTX-901
-//            List<MarketMarketMakerSpec> dealersMA = currentAttempt.getSortedBook().getValidProposalDealersByMarket(MarketCode.MARKETAXESS, marketOrderMA.getSide());
-//            marketOrderMA.setDealers(dealersMA);
-            
-				// requested on March 2019 rendez vous un Zurich currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
-//				currentAttempt.getMarketOrder().setMarketMarketMaker(null);
+
 				if(CheckIfBuySideMarketIsConnectedAndEnabled(MarketCode.MARKETAXESS))
 					operation.setStateResilient(new MA_StartExecutionState(), ErrorState.class);
 				else {
@@ -302,7 +238,6 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 				operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("MARKET_UNKNOWN",
 						currentAttempt.getMarketOrder().getMarket().getMarketCode().name())), ErrorState.class);
 			}
-//		}
 	}
 
 	public CSExecutionStrategyService() {
@@ -364,85 +299,12 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		//BESTX-865 retry a price discovery every attempt
       operation.setStateResilient(new WaitingPriceState(), ErrorState.class);
 		
-		/*
-		List<MarketMaker> doNotIncludeMM = new ArrayList<MarketMaker>();
-		// move book to a new attempt
-		operation.addAttempt();
-		Order customerOrder = operation.getOrder();
-		Attempt newAttempt = operation.getLastAttempt();
-		// discard all proposals in book which have been used before
-		newAttempt.setSortedBook(bookSorter.getSortedBook(
-				bookClassifier.getClassifiedBook(
-						currentAttempt.getSortedBook().clone(), operation.getOrder(), operation.getAttemptsInCurrentCycle(), null)));
-		// remove dealers that were included in the preceding RFQ/Orders
-		List<Attempt> currentAttempts = 
-				operation.getAttemptsInCurrentCycle();
-
-		currentAttempts.forEach(attempt->{ 
-			currentAttempt.getExecutablePrices().forEach(execPx->{
-				if(execPx.getMarketMaker() != null) {
-					doNotIncludeMM.add(execPx.getMarketMaker());
-				}
-			});
-		});
-
-		// BESTX-736 Only if Limit File and consolidated book is empty
-		boolean emptyConsolidatedBook = newAttempt.getSortedBook().getValidSideProposals(operation.getOrder().getSide()).isEmpty();
-		if (operation.getOrder().isLimitFile() && !operation.isNotAutoExecute() && emptyConsolidatedBook) {
-			this.startExecution(operation, newAttempt, serialNumberService);
-			return;
-		}
-
-		ClassifiedProposal executionProposal = newAttempt.getSortedBook().getBestProposalBySide(customerOrder.getSide());
-		if(executionProposal == null) {
-			this.manageAutomaticUnexecution(customerOrder, customerOrder.getCustomer());
-			return;
-		} else {
-			newAttempt.setExecutionProposal(executionProposal);
-		}
-
-		MarketOrder marketOrder = new MarketOrder();	
-		// maintain price
-		marketOrder.setValues(currentAttempt.getMarketOrder());
-		// generate the list of dealers to be excluded because they have been contacted in one preceding attempt
-		List<MarketMarketMakerSpec> excludeDealers = new ArrayList<MarketMarketMakerSpec>();
-		if (currentAttempt.getExecutionProposal() != null) {
-			marketOrder.setMarket(currentAttempt.getExecutionProposal().getMarket());
-			marketOrder.setMarketMarketMaker(executionProposal.getMarketMarketMaker());
-			List<MarketMarketMaker> doNotIncludeMMM = new ArrayList<MarketMarketMaker>();
-			doNotIncludeMM.forEach(marketMaker->{
-				if(marketMaker.getMarketMarketMakerForMarket(marketOrder.getMarket().getMarketCode()) != null)
-					doNotIncludeMMM.addAll(marketMaker.getMarketMarketMakerForMarket(marketOrder.getMarket().getMarketCode()));
-			});
-			doNotIncludeMMM.forEach(mmm -> {
-				excludeDealers.add(new MarketMarketMakerSpec(mmm.getMarketSpecificCode(), mmm.getMarketSpecificCodeSource()));
-			});
-			marketOrder.setExcludeDealers(excludeDealers);
-		}
-		// create the list of dealers to be included in the order dealers list, which shall not contain any of the excluded dealers
-		List<MarketMarketMakerSpec> dealers = newAttempt.getSortedBook().getValidProposalDealersByMarket(executionProposal.getMarket().getMarketCode(), marketOrder.getSide());
-		dealers.removeAll(excludeDealers);
-		marketOrder.setDealers(dealers);
-		marketOrder.setVenue(null);
-		marketOrder.setMarketSessionId(null);
-		marketOrder.setMarket(executionProposal.getMarket());
-		marketOrder.setTransactTime(DateService.newUTCDate());
-		newAttempt.setMarketOrder(marketOrder);
-		if(!operation.isNotAutoExecute()) {
-			this.startExecution(operation, newAttempt, serialNumberService);
-		} else {
-			LOGGER.info("Order {} is not autoexecutable, go to Curando State", customerOrder.getFixOrderId());
-			operation.setStateResilient(new CurandoState(), ErrorState.class);
-		}
-		*/
 	}
 
 
 	@Override
 	public void acceptOrderRevoke(Operation operation, Attempt currentAttempt,
 			SerialNumberService serialNumberService) {
-		//BESTX-483 TDR 20190828
-//		operation.setStateResilient(new OrderRevocatedState( Messages.getString("REVOKE_ACKNOWLEDGED")), ErrorState.class);	
 		LOGGER.debug("Operation {}, Attempt {}, SerialNumberService {}", operation, currentAttempt, serialNumberService);
 		operation.setStateResilient(new OrderCancelRequestState( Messages.getString("REVOKE_ACKNOWLEDGED")), ErrorState.class);
 	}
@@ -482,9 +344,9 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	    switch (result) {
 	    case MaxDeviationLimitViolated:
 	    case Success:
-	    	if(operation.isNotAutoExecute())
-	    		this.operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
-	    	else
+//	    	if(operation.isNotAutoExecute())
+//	    		this.operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
+//	    	else
 	        try {
 	        	ExecutionReportHelper.prepareForAutoNotExecution(this.operation, SerialNumberServiceProvider.getSerialNumberService(), ExecutionReportState.REJECTED);
 	        	this.operation.setStateResilient(new SendAutoNotExecutionReportState(message), ErrorState.class);
@@ -512,18 +374,18 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	        this.operation.setStateResilient(new WarningState(operation.getState(), null, message), ErrorState.class);
 	        break;
 	    case LimitFileNoPrice:
-	    	if(this.operation.isNotAutoExecute())
-	    		this.operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
-	        else
+//	    	if(this.operation.isNotAutoExecute())
+//	    		this.operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
+//	        else
 	    		this.operation.setStateResilient(new LimitFileNoPriceState(message), ErrorState.class);
 	        break;
 	    case LimitFile:
 	        //Update the BestAndLimitDelta field on the TabHistoryOrdini table
 	        Order order = this.operation.getOrder();
 	        OperationStateAuditDAOProvider.getOperationStateAuditDao().updateOrderBestAndLimitDelta(order, order.getBestPriceDeviationFromLimit());
-	    	if(operation.isNotAutoExecute())
-	    		this.operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
-	    	else
+//	    	if(operation.isNotAutoExecute())
+//	    		this.operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
+//	    	else
 	    		this.operation.setStateResilient(new OrderNotExecutableState(message), ErrorState.class);
 	        break;
 	    default:

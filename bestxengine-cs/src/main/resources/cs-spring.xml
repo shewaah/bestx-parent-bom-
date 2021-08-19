@@ -631,13 +631,18 @@
 			<value>${Execution.minimumRequiredBookDepth}</value>
 		</constructor-arg>
     </bean>
+
+	<bean id="targetPriceCalculator" class="it.softsolutions.bestx.services.TargetPriceCalculator">
+        <property name="targetPriceMaxLevel" value="${TargetPrice.MaxLevel}" />
+        <property name="acceptableSubstates" value="PRICE_WORST_THAN_LIMIT,OUTSIDE_SPREAD" />
+	</bean>
+
+	<bean id="parentMarketOrderBuilder" abstract="true">
+        <property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes:}" />
+	</bean>
 	
-    <bean id="defaultMarketOrderBuilder" class="it.softsolutions.bestx.services.BestXMarketOrderBuilder">
-        <property name="targetPriceMaxLevel"><value>${TargetPrice.MaxLevel}</value></property>
-        <property name="acceptableSubstates"><value>PRICE_WORST_THAN_LIMIT,OUTSIDE_SPREAD</value></property>
-        <property name="bookDepthValidator" ref="bookDepthValidator" />
-		<property name="applicationStatus" ref="applicationStatus" />
-        <property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
+    <bean id="defaultMarketOrderBuilder" class="it.softsolutions.bestx.services.BestXMarketOrderBuilder" parent="parentMarketOrderBuilder">
+		<property name="targetPriceCalculator" ref="targetPriceCalculator" />
 	</bean>
 
     <bean id="algoMarketOrderBuilder" class="it.softsolutions.bestx.services.rest.CSMarketOrderBuilder">
@@ -645,32 +650,40 @@
         <property name="marketFinder" ref="dbBasedMarketFinder" />
         <property name="marketMakerFinder" ref="dbBasedMarketMakerFinder" />
         <property name="executor" ref="threadPoolALGOREST" />
-        <property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
+	</bean>
+	
+	<bean id="ustMarketOrderBuilder" class="it.softsolutions.bestx.services.FixedMarketMarketOrderBuilder">
+		<property name="marketCode" value="TW" />
+        <property name="marketFinder" ref="dbBasedMarketFinder" />
+		<property name="targetPriceCalculator" ref="targetPriceCalculator" />
 	</bean>
 	
     <bean id="fallbackMarketOrderBuilder" class="it.softsolutions.bestx.services.FallbackMarketOrderBuilder">
         <property name="defaultMarketOrderBuilder" ref="defaultMarketOrderBuilder" />
         <property name="csAlgoMarketOrderBuilder" ref="algoMarketOrderBuilder" />
-        <property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
+        <property name="ustMarketOrderBuilder" ref="ustMarketOrderBuilder" />
 	</bean>
 	
 	<bean id="marketOrderFilterChain" class="it.softsolutions.bestx.services.MarketOrderFilterChain">
 		<property name="filters">
 			<list>
-				<bean class="it.softsolutions.bestx.services.RepeatedMarketOrderFilter" />
-				<bean class="it.softsolutions.bestx.services.TargetPriceMarketOrderFilter" />
-				<bean class="it.softsolutions.bestx.services.ApplicationStatusOrderFilter">
-					<property name="applicationStatus" ref="applicationStatus" />
-				</bean>
-				<bean class="it.softsolutions.bestx.services.AutoExecutionOrderFilter">
-					<property name="autoCurandoStatus" ref="autoCurandoStatusManager" />
-				</bean>
-				<bean class="it.softsolutions.bestx.services.BookDepthOrderFilter">
-					<property name="bookDepthValidator" ref="bookDepthValidator" />
-				</bean>
 				<bean class="it.softsolutions.bestx.services.MaxAttemptsMarketOrderFilter">
 					<property name="mifidConfig" ref="mifidConfig" />
 				</bean>
+				<bean class="it.softsolutions.bestx.services.RepeatedMarketOrderFilter" />
+				<bean class="it.softsolutions.bestx.services.AutoExecutionOrderFilter" />
+				<bean class="it.softsolutions.bestx.services.BookDepthOrderFilter">
+					<property name="bookDepthValidator" ref="bookDepthValidator" />
+				</bean>
+				<bean class="it.softsolutions.bestx.services.TargetPriceMarketOrderFilter" />
+				<bean class="it.softsolutions.bestx.services.AutoExecutionStatusOrderFilter">
+					<property name="autoCurandoStatus" ref="autoCurandoStatusManager" />
+				</bean>
+				<bean class="it.softsolutions.bestx.services.ApplicationStatusOrderFilter">
+					<property name="applicationStatus" ref="applicationStatus" />
+				</bean>
+
+				<bean class="it.softsolutions.bestx.services.CSUSTTargetPriceOrderFilter" />
 			</list>
 		</property>
 	</bean>

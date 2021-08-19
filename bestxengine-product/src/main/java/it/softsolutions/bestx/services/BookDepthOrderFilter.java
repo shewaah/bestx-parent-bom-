@@ -3,6 +3,7 @@ package it.softsolutions.bestx.services;
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.bestexec.MarketOrderFilter;
+import it.softsolutions.bestx.executionflow.ExecutionInMarketAction;
 import it.softsolutions.bestx.executionflow.RejectOrderAction;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
@@ -20,7 +21,7 @@ public class BookDepthOrderFilter implements MarketOrderFilter {
 					operation.getLastAttempt().setNextAction(new RejectOrderAction(Messages.getString("RejectInsufficientBookDepth.0", bookDepthValidator.getMinimumRequiredBookDepth())));
 				}
 			}
-		}	
+		}
 	}
 
 	public BookDepthValidator getBookDepthValidator() {
