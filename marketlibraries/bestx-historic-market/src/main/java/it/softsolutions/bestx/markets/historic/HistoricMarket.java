@@ -149,7 +149,7 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 			
 			Long marketId = market.getOriginalMarket().getMarketId();
 			if (Market.MarketCode.BLOOMBERG.equals(market.getOriginalMarket().getMarketCode())) {
-				marketId = 2L; // FIXME Problem for TSOX... use MarketId of TSOX
+				marketId = marketFinder.getMarketByCode(Market.MarketCode.TSOX, null).getMarketId(); 
 			}
 			namedParameters.put("paramMarketId", marketId);
 			
