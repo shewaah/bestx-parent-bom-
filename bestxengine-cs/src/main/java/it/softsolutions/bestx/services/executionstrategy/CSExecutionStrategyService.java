@@ -36,9 +36,7 @@ import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
-import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
-import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.OperationStateAuditDAOProvider;
 import it.softsolutions.bestx.services.SerialNumberServiceProvider;
 import it.softsolutions.bestx.services.booksorter.BookSorterImpl;
@@ -171,62 +169,62 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	@Override
 	public void startExecution(Operation operation, Attempt currentAttempt, SerialNumberService serialNumberService) {
 		// [BESTX-458] If we are in a Monitor Application Status stop the execution and go back
-		if (this.applicationStatus.getType() == ApplicationStatus.Type.MONITOR) {
-			try {
-				ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
-				String msg;
-				if (currentAttempt.getMarketOrder() == null) {
-					msg = Messages.getString("RejectInsufficientBookDepth.0", 3 /*TODO bookDepthValidator.getMinimumRequiredBookDepth()*/);
-				} else  {
-					msg = Messages.getString("Monitor.RejectMessage", currentAttempt.getMarketOrder().getMarket().getMicCode());
-				}
-				operation.setStateResilient(new SendAutoNotExecutionReportState(msg), ErrorState.class);
-			} catch (BestXException e) {
-				LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
-				String errorMessage = e.getMessage();
-				operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
-			}
-			return;
-		}
+//		if (this.applicationStatus.getType() == ApplicationStatus.Type.MONITOR) {
+//			try {
+//				ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
+//				String msg;
+//				if (currentAttempt.getMarketOrder() == null) {
+//					msg = Messages.getString("RejectInsufficientBookDepth.0", 3 /*TODO bookDepthValidator.getMinimumRequiredBookDepth()*/);
+//				} else  {
+//					msg = Messages.getString("Monitor.RejectMessage", currentAttempt.getMarketOrder().getMarket().getMicCode());
+//				}
+//				operation.setStateResilient(new SendAutoNotExecutionReportState(msg), ErrorState.class);
+//			} catch (BestXException e) {
+//				LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
+//				String errorMessage = e.getMessage();
+//				operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
+//			}
+//			return;
+//		}
 		
-		// manage custom strategy to execute UST on Tradeweb with no MMM specified and limit price as specified in client order
-		if(BondTypesService.isUST(operation.getOrder().getInstrument())) { // BESTX-382
-			if (!CheckIfBuySideMarketIsConnectedAndEnabled(MarketCode.TW)) { // BESTX-574
-				String reason = "TW Market is not available";
-				try {
-					ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
-					operation.setStateResilient(new SendAutoNotExecutionReportState(reason), ErrorState.class);
-				} catch (BestXException e) {
-					LOGGER.error("Order {}, error while creating report for TW market not available report.", operation.getOrder().getFixOrderId(), e);
-					String errorMessage = e.getMessage();
-					operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
-					
-				}
-				return;				
-			} else {
-				// override execution proposal every time
-				MarketOrder marketOrder = new MarketOrder();
-				currentAttempt.setMarketOrder(marketOrder);
-				marketOrder.setValues(operation.getOrder());
-				marketOrder.setTransactTime(DateService.newUTCDate());
-				try {
-					marketOrder.setMarket(marketFinder.getMarketByCode(MarketCode.TW, null));
-				} catch (BestXException e) {
-					LOGGER.info("Error when trying to send an order to Tradeweb: unable to find market with code {}", MarketCode.TW.name());
-				}
-				marketOrder.setVenue(null);
-				marketOrder.setMarketMarketMaker(null);
-
-				marketOrder.setLimit(operation.getOrder().getLimit());  // if order limit is null, send a market order to TW
-				LOGGER.info("Order={}, Selecting for execution market market maker: null and price null", operation.getOrder().getFixOrderId());
-				String twSessionId = operation.getIdentifier(OperationIdType.TW_SESSION_ID);
-				if (twSessionId != null) {
-					operation.removeIdentifier(OperationIdType.TW_SESSION_ID);
-				}
-				operation.setStateResilient(new TW_StartExecutionState(), ErrorState.class);
-				// last command in method for this case
-			}
-		} else {
+//		// manage custom strategy to execute UST on Tradeweb with no MMM specified and limit price as specified in client order
+//		if(BondTypesService.isUST(operation.getOrder().getInstrument())) { // BESTX-382
+//			if (!CheckIfBuySideMarketIsConnectedAndEnabled(MarketCode.TW)) { // BESTX-574
+//				String reason = "TW Market is not available";
+//				try {
+//					ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
+//					operation.setStateResilient(new SendAutoNotExecutionReportState(reason), ErrorState.class);
+//				} catch (BestXException e) {
+//					LOGGER.error("Order {}, error while creating report for TW market not available report.", operation.getOrder().getFixOrderId(), e);
+//					String errorMessage = e.getMessage();
+//					operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
+//					
+//				}
+//				return;				
+//			} else {
+//				// override execution proposal every time
+//				MarketOrder marketOrder = new MarketOrder();
+//				currentAttempt.setMarketOrder(marketOrder);
+//				marketOrder.setValues(operation.getOrder());
+//				marketOrder.setTransactTime(DateService.newUTCDate());
+//				try {
+//					marketOrder.setMarket(marketFinder.getMarketByCode(MarketCode.TW, null));
+//				} catch (BestXException e) {
+//					LOGGER.info("Error when trying to send an order to Tradeweb: unable to find market with code {}", MarketCode.TW.name());
+//				}
+//				marketOrder.setVenue(null);
+//				marketOrder.setMarketMarketMaker(null);
+//
+//				marketOrder.setLimit(operation.getOrder().getLimit());  // if order limit is null, send a market order to TW
+//				LOGGER.info("Order={}, Selecting for execution market market maker: null and price null", operation.getOrder().getFixOrderId());
+//				String twSessionId = operation.getIdentifier(OperationIdType.TW_SESSION_ID);
+//				if (twSessionId != null) {
+//					operation.removeIdentifier(OperationIdType.TW_SESSION_ID);
+//				}
+//				operation.setStateResilient(new TW_StartExecutionState(), ErrorState.class);
+//				// last command in method for this case
+//			}
+//		} else {
 			//we must always preserve the existing comment, because it could be the one sent to us through OMS
 			if(currentAttempt == null || currentAttempt.getMarketOrder() == null || currentAttempt.getMarketOrder().getMarket() == null) {
 				LOGGER.warn("Order {},  invalid market order when trying to start execution. currentAttempt.MarketOrder = {}", currentAttempt == null ? "null.null" : currentAttempt.getMarketOrder());
@@ -304,7 +302,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 				operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("MARKET_UNKNOWN",
 						currentAttempt.getMarketOrder().getMarket().getMarketCode().name())), ErrorState.class);
 			}
-		}
+//		}
 	}
 
 	public CSExecutionStrategyService() {

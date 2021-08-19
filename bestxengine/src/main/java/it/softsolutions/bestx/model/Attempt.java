@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import it.softsolutions.bestx.executionflow.MarketOrderNextAction;
+
 /**  
 *
 * Purpose: this class is mainly for ...  
@@ -51,7 +53,9 @@ public class Attempt {
     private InternalAttempt internalAttempt;
     
     private AttemptState attemptState;
-    
+ 
+	private MarketOrderNextAction nextAction;
+	
     public InternalAttempt getInternalAttempt() {
 		return internalAttempt;
 	}
@@ -158,4 +162,14 @@ public class Attempt {
 	public Map<String, ServiceStatus> getServicesStatus() {
 	   return this.serviceStatus;
 	}
+
+	public MarketOrderNextAction getNextAction() {
+		return nextAction;
+	}
+
+	public void setNextAction(MarketOrderNextAction nextAction) {
+		this.nextAction = nextAction;
+	}
+	
+	
 }

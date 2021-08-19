@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.softsolutions.bestx.CustomerAttributes;
-import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
@@ -31,10 +30,8 @@ import it.softsolutions.bestx.handlers.BookHelper;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.MarketOrder;
-import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal.ProposalSubState;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
-import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.jsscommon.Money;
 
 
@@ -62,24 +59,11 @@ public class BestXMarketOrderBuilder extends MarketOrderBuilder {
    }
 
 
-@Override
+   @Override
    public void buildMarketOrder(Operation operation, MarketOrderBuilderListener listener) {
       // Build MarketOrder
       MarketOrder marketOrder = null;
       Attempt currentAttempt = operation.getLastAttempt();
-      Order customerOrder = operation.getOrder();
-      
-      /* BXMNT-327 */
-      if (!bookDepthValidator.isBookDepthValid(currentAttempt, customerOrder) && !customerOrder.isLimitFile()
-            && !operation.isNotAutoExecute()) { // market order action +++
-         if (!BondTypesService.isUST(operation.getOrder().getInstrument()) || this.applicationStatus.getType() == ApplicationStatus.Type.MONITOR) {
-            List<String> errors = new ArrayList<>();
-            errors.add(Messages.getString("RejectInsufficientBookDepth.0", bookDepthValidator.getMinimumRequiredBookDepth()));
-            listener.onMarketOrderErrors(this, errors);
-            return;
-         }
-      }
-      
       Money limitPrice = calculateTargetPrice(operation);
       if (currentAttempt.getExecutionProposal() != null) {
          marketOrder = new MarketOrder();

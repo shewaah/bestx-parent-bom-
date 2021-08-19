@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
+import it.softsolutions.bestx.executionflow.MarketOrderNextAction;
 import it.softsolutions.jsscommon.Money;
 
 /**
@@ -200,7 +201,7 @@ public class MarketOrder extends Order {
      * 
      */
     public String beautify(List<MarketMarketMakerSpec> dealerList) {
-    	int i = 0;
+    	// TODO Possible improvement: dealerList.stream().map(MarketMarketMakerSpec::getMarketMakerMarketSpecificCode).collect(Collectors.joining(", ", "[", "]"));
     	StringBuilder builder = new StringBuilder();
     	builder.append("[");
     	dealerList.forEach(mmms -> {
@@ -220,6 +221,6 @@ public class MarketOrder extends Order {
 	public void setBuilder(MarketOrderBuilder builder) {
 		this.builder = builder;
 	}
-    
+
     
 }

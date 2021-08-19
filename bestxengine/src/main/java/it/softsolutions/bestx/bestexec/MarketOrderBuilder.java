@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,9 +79,7 @@ public abstract class MarketOrderBuilder {
 	 * @return null if is not possible to create the market order
 	 * @throws Exception
 	 */
-	public void buildMarketOrder(Operation operation, MarketOrderBuilderListener listener) throws Exception {
-		throw new NotImplementedException("buildMarketOrder has not implemented in class " + this.getClass());
-	}
+	public abstract void buildMarketOrder(Operation operation, MarketOrderBuilderListener listener) throws Exception;
 
 	/**
 	 * Removes from the input list (of MarketMarketMakerSpec) the codes related to a composite price

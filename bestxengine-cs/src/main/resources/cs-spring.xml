@@ -659,6 +659,18 @@
 			<list>
 				<bean class="it.softsolutions.bestx.services.RepeatedMarketOrderFilter" />
 				<bean class="it.softsolutions.bestx.services.TargetPriceMarketOrderFilter" />
+				<bean class="it.softsolutions.bestx.services.ApplicationStatusOrderFilter">
+					<property name="applicationStatus" ref="applicationStatus" />
+				</bean>
+				<bean class="it.softsolutions.bestx.services.AutoExecutionOrderFilter">
+					<property name="autoCurandoStatus" ref="autoCurandoStatusManager" />
+				</bean>
+				<bean class="it.softsolutions.bestx.services.BookDepthOrderFilter">
+					<property name="bookDepthValidator" ref="bookDepthValidator" />
+				</bean>
+				<bean class="it.softsolutions.bestx.services.MaxAttemptsMarketOrderFilter">
+					<property name="mifidConfig" ref="mifidConfig" />
+				</bean>
 			</list>
 		</property>
 	</bean>
@@ -1101,10 +1113,10 @@
 		<property name="tradeStacClientSession">
 			<bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
 		</property>
-		<property name="includeDealersMaxNum"><value>${Bloomberg.Tsox.Order.IncludeDealersMaxNum}</value></property>
-		<property name="addIncludeDealers"><value>${Bloomberg.Tsox.Order.AddIncludeDealers}</value></property>
-		<property name="blockedDealersMaxNum"><value>${Bloomberg.Tsox.Order.BlockedDealersMaxNum}</value></property>
-		<property name="addBlockedDealers"><value>${Bloomberg.Tsox.Order.AddBlockedDealers}</value></property>
+		<property name="includeDealersMaxNum"><value>${Bloomberg.Tsox.Order.IncludeDealersMaxNum:0}</value></property>
+		<property name="addIncludeDealers"><value>${Bloomberg.Tsox.Order.AddIncludeDealers:false}</value></property>
+		<property name="blockedDealersMaxNum"><value>${Bloomberg.Tsox.Order.BlockedDealersMaxNum:0}</value></property>
+		<property name="addBlockedDealers"><value>${Bloomberg.Tsox.Order.AddBlockedDealers:false}</value></property>
         <property name="tsoxConnectionListener"><ref bean="bloombergMarket"/></property>
 		<property name="destinationMICCode"><value>${Bloomberg.Tsox.DestinationMICCode}</value></property>
 		<property name="traderCode"><value>${Bloomberg.Tsox.TraderCode}</value></property>
@@ -1166,10 +1178,10 @@
 		<property name="tradeStacClientSession">
 			<bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
 		</property>
-		<property name="includeDealersMaxNum"><value>${Tradeweb.Order.IncludeDealersMaxNum}</value></property>
-		<property name="addIncludeDealers"><value>${Tradeweb.Order.AddIncludeDealers}</value></property>
-		<property name="blockedDealersMaxNum"><value>${Tradeweb.Order.BlockedDealersMaxNum}</value></property>
-		<property name="addBlockedDealers"><value>${Tradeweb.Order.AddBlockedDealers}</value></property>
+		<property name="includeDealersMaxNum"><value>${Tradeweb.Order.IncludeDealersMaxNum:0}</value></property>
+		<property name="addIncludeDealers"><value>${Tradeweb.Order.AddIncludeDealers:false}</value></property>
+		<property name="blockedDealersMaxNum"><value>${Tradeweb.Order.BlockedDealersMaxNum:0}</value></property>
+		<property name="addBlockedDealers"><value>${Tradeweb.Order.AddBlockedDealers:false}</value></property>
 		<property name="traderCode"><value>${Tradeweb.TraderCode}</value></property>
 		<property name="bestxAlgoID"><value>${Tradeweb.ExecutionDecisionMakerID}</value></property>
 		<property name="defaultShortSelling"><value>${Tradeweb.defaultShortSell}</value></property>
@@ -1227,10 +1239,10 @@
 		<property name="tradeStacClientSession">
 			<bean class="it.softsolutions.tradestac2.client.TradeStacClient"/>
 		</property>
-		<property name="includeDealersMaxNum"><value>${MarketAxess.Order.IncludeDealersMaxNum}</value></property>
-		<property name="addIncludeDealers"><value>${MarketAxess.Order.AddIncludeDealers}</value></property>
-		<property name="blockedDealersMaxNum"><value>${MarketAxess.Order.BlockedDealersMaxNum}</value></property>
-		<property name="addBlockedDealers"><value>${MarketAxess.Order.AddBlockedDealers}</value></property>
+		<property name="includeDealersMaxNum"><value>${MarketAxess.Order.IncludeDealersMaxNum:0}</value></property>
+		<property name="addIncludeDealers"><value>${MarketAxess.Order.AddIncludeDealers:false}</value></property>
+		<property name="blockedDealersMaxNum"><value>${MarketAxess.Order.BlockedDealersMaxNum:0}</value></property>
+		<property name="addBlockedDealers"><value>${MarketAxess.Order.AddBlockedDealers:false}</value></property>
 		<property name="traderPartyID"><value>${Marketaxess.Order.TraderPartyID}</value></property>
 		<property name="investmentDecisionIDSource"><value>${MarketAxess.InvestmentDecisionMakerIDSource}</value></property>
 		<property name="investmentDecisionQualifier"><value>${MarketAxess.InvestmentDecisionQualifier}</value></property>
