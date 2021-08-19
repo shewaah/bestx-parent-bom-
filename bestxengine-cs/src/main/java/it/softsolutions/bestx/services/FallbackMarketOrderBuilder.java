@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilderListener;
+import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.bestx.services.rest.CSMarketOrderBuilder;
@@ -98,10 +99,9 @@ public class FallbackMarketOrderBuilder extends MarketOrderBuilder {
 		// Update algo service status in attempt (does this make sense for UST?)
 		operation.getLastAttempt().updateServiceStatus(csAlgoMarketOrderBuilder.getServiceName(),
 				!csAlgoMarketOrderBuilder.getServiceStatus(), null);
-		
 		if (BondTypesService.isUST(operation.getOrder().getInstrument())) {
 			this.ustMarketOrderBuilder.buildMarketOrder(operation, operation);
-		} else if (csAlgoMarketOrderBuilder.getServiceStatus() && !BondTypesService.isUST(operation.getOrder().getInstrument())) {
+		} else if (csAlgoMarketOrderBuilder.getServiceStatus()) {
 			this.csAlgoMarketOrderBuilder.buildMarketOrder(operation, new FallbackMarketOrderBuilderListener(operation));
 		} else {
 			this.defaultMarketOrderBuilder.buildMarketOrder(operation, operation);

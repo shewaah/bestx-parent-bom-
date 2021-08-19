@@ -53,7 +53,12 @@ public class BestXMarketOrderBuilder extends MarketOrderBuilder {
          marketOrder.setMarketMarketMaker(currentAttempt.getExecutionProposal().getMarketMarketMaker());
          Money limitPrice = this.targetPriceCalculator.calculateTargetPrice(operation);
          marketOrder.setLimit(limitPrice);
-         LOGGER.info("Order={}, Selecting for execution market market maker: {} and price {}", operation.getOrder().getFixOrderId(), marketOrder.getMarketMarketMaker(), limitPrice == null? "null":limitPrice.getAmount().toString());
+         String cleanMarketName = marketOrder.getMarket().getName().indexOf("_HIST") >= 0 ? 
+        		 			marketOrder.getMarket().getName().substring(0, marketOrder.getMarket().getName().indexOf("_HIST")):
+        		 				marketOrder.getMarket().getName();
+         LOGGER.info("Order={}, Selecting for execution market: {}, and price {}", 
+        		 operation.getOrder().getFixOrderId(), 
+        		 cleanMarketName, limitPrice == null? "null":limitPrice.getAmount().toString());
          marketOrder.setVenue(currentAttempt.getExecutionProposal().getVenue());
          marketOrder.setBuilder(this);
       }
