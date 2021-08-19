@@ -87,10 +87,19 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
    private boolean addIncludeDealers = false;
    private int blockedDealersMaxNum = 0;
    private int includeDealersMaxNum = 0;
+   private char handlInstr = '3';
+
+   public char getHandlInstr() {
+	return handlInstr;
+}
+
+   public void setHandlInstr(char handlInstr) {
+	   this.handlInstr = handlInstr;
+   }
 
    public boolean isAddIncludeDealers() {
-	return addIncludeDealers;
-}
+	   return addIncludeDealers;
+   }
 
    public void setAddIncludeDealers(boolean addIncludeDealers) {
 	   this.addIncludeDealers = addIncludeDealers;
@@ -265,7 +274,7 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
       tsInstrument.setSecurityIDSource(SecurityIDSource.IsinNumber);
 
       tsNewOrderSingle.setTSInstrument(tsInstrument);
-      tsNewOrderSingle.setHandlInst(HandlInst.ManualOrderBestExecution);  // TODO BESTX-891 AMC Needs to be amended to a new value 'X' or to a configurable value?
+      tsNewOrderSingle.setHandlInst(HandlInst.getInstanceForFIXValue(this.handlInstr));  // TODO BESTX-891 AMC Needs to be amended to a new value 'X' or to a configurable value?
       tsNewOrderSingle.setClOrdID(clOrdID);
       tsNewOrderSingle.setSide(side);
       tsNewOrderSingle.setTransactTime(DateService.newLocalDate());
@@ -319,6 +328,21 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
          tsNoPartyIDsList.add(tsNoPartyBestDealer);
       tsNoPartyIDsList.add(tsNoPartyTrader);
 
+      // BESTX-891 manage here the include/exclude dealers. Use configurable attributes
+      // Add in the parties group all dealers in marketOrder.getDealers() with partyrole=1
+      if(isAddIncludeDealers()) {
+    	  for(int i = 0; i < marketOrder.getDealers().size() && i < includeDealersMaxNum; i++) {
+		      TSNoPartyID inclDealer = new TSNoPartyID();
+		      inclDealer.setPartyID(marketOrder.getDealers().get(i).getMarketMakerMarketSpecificCode());
+		      inclDealer.setPartyIDSource(PartyIDSource.getInstanceForFIXValue(
+		    		  marketOrder.getDealers().
+		    		  	get(i).
+		    		  		getMarketMakerMarketSpecificCodeSource().charAt(0)));
+		      inclDealer.setPartyRole(PartyRole.ExecutingFirm);
+		      tsNoPartyIDsList.add(inclDealer);
+    	  }
+    	  
+      }
       TSParties tsParties = new TSParties();
       tsParties.setTSNoPartyIDsList(tsNoPartyIDsList);
 
@@ -326,24 +350,22 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
 
       /** Get Custom Components */
       List<MessageComponent> customComponents = new ArrayList<MessageComponent>();
-      //TODO BESTX-891 manage here the include/exclude dealers. Use configurable attributes
-      // Add in the parties group all dealers in marketOrder.getDealers() with partyrole=1
       //BESTX-375: SP-20190122 add blocked dealers custom group to new order single message
       if (addBlockedDealers) { // add management of max number of dealers
          BlockedDealersGrpComponent blockedDealersGrpCmp = new BlockedDealersGrpComponent();
          tw.quickfix.field.NoBlockedDealers noBlockedDealers = new tw.quickfix.field.NoBlockedDealers();
 
          if (marketOrder.getExcludeDealers().size() > 0) {
-            noBlockedDealers.setValue(marketOrder.getExcludeDealers().size());
+            noBlockedDealers.setValue(Integer.min(marketOrder.getExcludeDealers().size(), getBlockedDealersMaxNum()));
             blockedDealersGrpCmp.set(noBlockedDealers);
 
-            for (MarketMarketMakerSpec blockedDealer : marketOrder.getExcludeDealers()) {
-               NoBlockedDealers blockedDealersGrp = new NoBlockedDealers();
-
-               BlockedDealer blckDealer = new BlockedDealer();
-               blckDealer.setValue(blockedDealer.getMarketMakerMarketSpecificCode());
-               blockedDealersGrp.set(blckDealer);
-               blockedDealersGrpCmp.addGroup(blockedDealersGrp);
+            for (int i = 0; i < marketOrder.getExcludeDealers().size() && i < getBlockedDealersMaxNum(); i++) {
+            	MarketMarketMakerSpec blockedDealer = marketOrder.getExcludeDealers().get(i);
+            	NoBlockedDealers blockedDealersGrp = new NoBlockedDealers();
+            	BlockedDealer blckDealer = new BlockedDealer();
+            	blckDealer.setValue(blockedDealer.getMarketMakerMarketSpecificCode());
+            	blockedDealersGrp.set(blckDealer);
+            	blockedDealersGrpCmp.addGroup(blockedDealersGrp);
             }
             customComponents.add(blockedDealersGrpCmp);
          }
@@ -460,5 +482,4 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
    public void setInvestmentDecisorRoleQualifier(String investmentDecisorRoleQualifier) {
       this.investmentDecisorRoleQualifier = investmentDecisorRoleQualifier;
    }
-
 }

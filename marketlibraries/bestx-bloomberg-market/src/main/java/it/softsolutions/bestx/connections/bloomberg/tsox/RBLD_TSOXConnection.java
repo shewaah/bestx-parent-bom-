@@ -25,6 +25,7 @@ import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.connections.tradestac.AbstractTradeStacConnection;
 import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.Market;
+import it.softsolutions.bestx.model.MarketMarketMakerSpec;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.services.DateService;
@@ -433,7 +434,29 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
       tsNoPartyIDsList.add(trader);
       tsNoPartyIDsList.add(investmentDecisor);
       tsNoPartyIDsList.add(enteringFirm);
-
+      
+      // BESTX-867 management of include dealers. Use configurable attributes
+      if(isAddIncludeDealers())
+      for (int i = 0; i < includeDealersMaxNum && i < marketOrder.getDealers().size(); i++) {
+    	  MarketMarketMakerSpec dealer = marketOrder.getDealers().get(i);
+    	  TSNoPartyID incldealer = new TSNoPartyID();
+    	  incldealer.setPartyID(dealer.getMarketMakerMarketSpecificCode());
+    	  incldealer.setPartyIDSource(PartyIDSource.ProprietaryCustomCode);
+    	  incldealer.setPartyRole(PartyRole.AcceptableCounterparty);
+          tsNoPartyIDsList.add(incldealer);
+      }
+      
+      // BESTX-867 a management of exclude dealers. Use configurable attributes
+      if(isAddBlockedDealers())
+      for (int i = 0; i < blockedDealersMaxNum && i < marketOrder.getExcludeDealers().size(); i++) {
+    	  MarketMarketMakerSpec dealer = marketOrder.getExcludeDealers().get(i);
+    	  TSNoPartyID excldealer = new TSNoPartyID();
+    	  excldealer.setPartyID(dealer.getMarketMakerMarketSpecificCode());
+    	  excldealer.setPartyIDSource(PartyIDSource.ProprietaryCustomCode);
+    	  excldealer.setPartyRole(PartyRole.UnacceptableCounterparty);
+          tsNoPartyIDsList.add(excldealer);
+      }
+      
       TSParties tsParties = new TSParties();
       tsParties.setTSNoPartyIDsList(tsNoPartyIDsList);
 
@@ -470,7 +493,8 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
       //		tsNewOrderSingle.setTradeDate(tradeDate);
       //		tsNewOrderSingle.setEncodedText(encodedText);
 
-      // TODO BESTX-867 add here the management of include/exclude dealers. Use configurable attributes
+
+
       LOGGER.info("{}", tsNewOrderSingle);
 
       return tsNewOrderSingle;
