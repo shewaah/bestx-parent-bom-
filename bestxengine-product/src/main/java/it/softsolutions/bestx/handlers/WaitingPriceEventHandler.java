@@ -543,8 +543,13 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			}
 		} else if (currentAttempt.getNextAction() instanceof FreezeOrderAction) {
             try {
-            	if (((FreezeOrderAction) currentAttempt.getNextAction()).getNextPanel() == NextPanel.ORDERS_NO_AUTOEXECUTION) {
-            		this.operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
+            	FreezeOrderAction freezeOrderAction = (FreezeOrderAction) currentAttempt.getNextAction();
+            	if (freezeOrderAction.getNextPanel() == NextPanel.ORDERS_NO_AUTOEXECUTION) {
+            		this.operation.setStateResilient(new CurandoState(freezeOrderAction.getMessage()), ErrorState.class);
+            	} else if (freezeOrderAction.getNextPanel() == NextPanel.LIMIT_FILE) {
+            		this.operation.setStateResilient(new OrderNotExecutableState(freezeOrderAction.getMessage()), ErrorState.class);
+            	} else if (freezeOrderAction.getNextPanel() == NextPanel.LIMIT_FILE_NO_PRICE) {
+            		this.operation.setStateResilient(new LimitFileNoPriceState(freezeOrderAction.getMessage()), ErrorState.class);
             	} else {
             		csExecutionStrategyService.manageAutomaticUnexecution(customerOrder, customerOrder.getCustomer());
             	}

@@ -15,12 +15,14 @@ public class ApplicationStatusOrderFilter implements MarketOrderFilter {
 
 	private ApplicationStatus applicationStatus;
 	
+	private BookDepthValidator bookDepthValidator;
+	
 	@Override
 	public void filterMarketOrder(MarketOrder marketOrder, Operation operation) {
 		if (operation.getLastAttempt().getNextAction() instanceof ExecutionInMarketAction) {
 			if (this.applicationStatus.getType() == ApplicationStatus.Type.MONITOR) {
 				List<ClassifiedProposal> validBook = operation.getLastAttempt().getSortedBook().getValidSideProposals(operation.getOrder().getSide());
-				if (!validBook.isEmpty()) {
+				if (!validBook.isEmpty() && this.bookDepthValidator.isBookDepthValid(operation.getLastAttempt(), operation.getOrder())) {
 					String bestMarketCode = validBook.get(0).getMarket().getMicCode();
 					operation.getLastAttempt().setNextAction(new RejectOrderAction(Messages.getString("Monitor.RejectMessage", bestMarketCode)));
 				} else {
@@ -37,5 +39,15 @@ public class ApplicationStatusOrderFilter implements MarketOrderFilter {
 	public void setApplicationStatus(ApplicationStatus applicationStatus) {
 		this.applicationStatus = applicationStatus;
 	}
+
+	public BookDepthValidator getBookDepthValidator() {
+		return bookDepthValidator;
+	}
+
+	public void setBookDepthValidator(BookDepthValidator bookDepthValidator) {
+		this.bookDepthValidator = bookDepthValidator;
+	}
+	
+	
 	
 }

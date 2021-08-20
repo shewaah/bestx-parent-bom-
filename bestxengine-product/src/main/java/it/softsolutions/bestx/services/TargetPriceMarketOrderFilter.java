@@ -21,7 +21,7 @@ public class TargetPriceMarketOrderFilter implements MarketOrderFilter {
 		if (operation.getOrder().isLimitFile()) { // 59=1 40=2 (Limit File Order)
 			// If target price is worse
 			if (marketOrder == null) {
-				operation.getLastAttempt().setNextAction(new FreezeOrderAction(null)); // TODO Check if LF or LFNP
+				operation.getLastAttempt().setNextAction(new FreezeOrderAction(null, null)); // TODO Check if LF or LFNP
 			} else if (this.isTargetPriceWorseThanOriginalOrderPrice(operation.getOrder().getSide(), operation.getOrder().getLimit().getAmount(), marketOrder.getLimit().getAmount())) {
 				int centsLFTolerance = ExecutionStrategyServiceFactory.getInstance().getCentsLFTolerance();
 				
@@ -32,7 +32,7 @@ public class TargetPriceMarketOrderFilter implements MarketOrderFilter {
 				if (differenceCents.compareTo(new BigDecimal(centsLFTolerance)) <= 0) { // Price is worse but it is inside tolerance
 					marketOrder.setLimit(operation.getOrder().getLimit());
 				} else { // Price is worse and outside tolerance
-					operation.getLastAttempt().setNextAction(new FreezeOrderAction(null)); // TODO Check if LF or LFNP
+					operation.getLastAttempt().setNextAction(new FreezeOrderAction(null, null)); // TODO Check if LF or LFNP
 				}
 			}
 		} else if (operation.getOrder().getLimit() != null && operation.getOrder().getLimit().getAmount() != null) { // 59=0 40=2 (ALGO Limit Order)

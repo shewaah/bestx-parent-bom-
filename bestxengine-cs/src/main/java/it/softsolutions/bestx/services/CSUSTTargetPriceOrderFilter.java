@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
+import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.bestexec.MarketOrderFilter;
 import it.softsolutions.bestx.executionflow.FreezeOrderAction;
@@ -39,7 +40,7 @@ public class CSUSTTargetPriceOrderFilter implements MarketOrderFilter {
 						BigDecimal differenceAbs = targetPrice.subtract(limitPrice).abs();
 						BigDecimal differenceCents = differenceAbs.multiply(new BigDecimal(100));
 						if (differenceCents.compareTo(new BigDecimal(centsLFTolerance)) >= 0) { // Price is worse but it is inside tolerance
-							operation.getLastAttempt().setNextAction(new FreezeOrderAction(NextPanel.LIMIT_FILE));
+							operation.getLastAttempt().setNextAction(new FreezeOrderAction(NextPanel.LIMIT_FILE, Messages.getString("LimitFile")));
 						}
 
 					}

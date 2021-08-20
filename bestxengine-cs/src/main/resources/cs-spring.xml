@@ -681,6 +681,7 @@
 				</bean>
 				<bean class="it.softsolutions.bestx.services.ApplicationStatusOrderFilter">
 					<property name="applicationStatus" ref="applicationStatus" />
+					<property name="bookDepthValidator" ref="bookDepthValidator" />
 				</bean>
 
 				<bean class="it.softsolutions.bestx.services.CSUSTTargetPriceOrderFilter" />
