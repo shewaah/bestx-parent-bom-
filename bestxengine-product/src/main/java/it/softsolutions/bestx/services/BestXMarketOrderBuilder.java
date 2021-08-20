@@ -64,7 +64,7 @@ public class BestXMarketOrderBuilder extends MarketOrderBuilder {
 			marketOrder.setTransactTime(DateService.newUTCDate());
 			marketOrder.setMarket(marketOrderProposal.getMarket());
 			Money limitPrice = this.targetPriceCalculator.calculateTargetPrice(operation);
-			marketOrder.setLimit(limitPrice != null ? limitPrice : operation.getOrder().getLimit());
+			marketOrder.setLimit(limitPrice != null ? limitPrice : marketOrderProposal.getPrice());
 			String cleanMarketName = marketOrder.getMarket().getName().indexOf("_HIST") >= 0
 					? marketOrder.getMarket().getName().substring(0, marketOrder.getMarket().getName().indexOf("_HIST"))
 					: marketOrder.getMarket().getName(); // TODO Probably use effective market?
