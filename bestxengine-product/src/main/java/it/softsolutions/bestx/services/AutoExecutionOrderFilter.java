@@ -12,7 +12,7 @@ public class AutoExecutionOrderFilter implements MarketOrderFilter {
 	@Override
 	public void filterMarketOrder(MarketOrder marketOrder, Operation operation) {
 		if (operation.isNotAutoExecute()) {
-			operation.getLastAttempt().setNextAction(new FreezeOrderAction(NextPanel.ORDERS_NO_AUTOEXECUTION, Messages.getString("LimitFile.doNotExecute")));
+			operation.getLastAttempt().setNextAction(new FreezeOrderAction(NextPanel.ORDERS_NO_AUTOEXECUTION, Messages.getString("LimitFile.doNotExecute"), true));
 		}
 	}
 	

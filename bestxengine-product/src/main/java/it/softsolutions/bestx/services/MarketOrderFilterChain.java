@@ -26,7 +26,9 @@ public class MarketOrderFilterChain implements MarketOrderFilter {
 			operation.getLastAttempt().setNextAction(new ExecutionInMarketAction());
 		}
 		for (MarketOrderFilter filter : filters) {
-			filter.filterMarketOrder(marketOrder, operation);
+			if (operation.getLastAttempt().getNextAction() == null || !operation.getLastAttempt().getNextAction().isFinalDecision()) {
+				filter.filterMarketOrder(marketOrder, operation);
+			}
 		}
 	}
 	

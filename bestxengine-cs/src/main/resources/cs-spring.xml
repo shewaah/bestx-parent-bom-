@@ -645,14 +645,14 @@
 		<property name="targetPriceCalculator" ref="targetPriceCalculator" />
 	</bean>
 
-    <bean id="algoMarketOrderBuilder" class="it.softsolutions.bestx.services.rest.CSMarketOrderBuilder">
+    <bean id="algoMarketOrderBuilder" class="it.softsolutions.bestx.services.rest.CSMarketOrderBuilder" parent="parentMarketOrderBuilder">
         <property name="csAlgoService" ref="algoRestService" />
         <property name="marketFinder" ref="dbBasedMarketFinder" />
         <property name="marketMakerFinder" ref="dbBasedMarketMakerFinder" />
         <property name="executor" ref="threadPoolALGOREST" />
 	</bean>
 	
-	<bean id="ustMarketOrderBuilder" class="it.softsolutions.bestx.services.FixedMarketMarketOrderBuilder">
+	<bean id="ustMarketOrderBuilder" class="it.softsolutions.bestx.services.FixedMarketMarketOrderBuilder" parent="parentMarketOrderBuilder">
 		<property name="marketCode" value="TW" />
         <property name="marketFinder" ref="dbBasedMarketFinder" />
 		<property name="targetPriceCalculator" ref="targetPriceCalculator" />

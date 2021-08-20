@@ -13,6 +13,12 @@ public class FreezeOrderAction extends MarketOrderNextAction {
 		this.message = message;
 	}
 	
+	public FreezeOrderAction(NextPanel nextPanel, String message, boolean finalDecision) {
+		super(Action.FREEZE, finalDecision);
+		this.nextPanel = nextPanel;
+		this.message = message;
+	}	
+	
 	public NextPanel getNextPanel() {
 		return this.nextPanel;
 	}

@@ -11,8 +11,12 @@
 * Any additional licenses, terms and conditions, if any, are defined in file 'LICENSE.txt', 
 * which may be part of this software package.
 */
- 
+
 package it.softsolutions.bestx.services;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,56 +25,63 @@ import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilderListener;
 import it.softsolutions.bestx.model.Attempt;
+import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.MarketOrder;
+import it.softsolutions.bestx.model.Proposal.ProposalSubState;
+import it.softsolutions.bestx.model.SortedBook;
 import it.softsolutions.jsscommon.Money;
 
-
-/**  
-*
-* Purpose: this class is mainly for ...  
-*
-* Project Name : bestxengine-product 
-* First created by: stefano.pontillo 
-* Creation date: 27 lug 2021 
-* 
-**/
+/**
+ *
+ * Purpose: this class is mainly for ...
+ *
+ * Project Name : bestxengine-product First created by: stefano.pontillo
+ * Creation date: 27 lug 2021
+ * 
+ **/
 public class BestXMarketOrderBuilder extends MarketOrderBuilder {
 
-   private static final Logger LOGGER = LoggerFactory.getLogger(BestXMarketOrderBuilder.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(BestXMarketOrderBuilder.class);
 
-   private TargetPriceCalculator targetPriceCalculator;
-   
-   @Override
-   public void buildMarketOrder(Operation operation, MarketOrderBuilderListener listener) {
-      MarketOrder marketOrder = null;
-      Attempt currentAttempt = operation.getLastAttempt();
-      if (currentAttempt.getExecutionProposal() != null) {
-         marketOrder = new MarketOrder();
-         marketOrder.setValues(operation.getOrder());
-         marketOrder.setTransactTime(DateService.newUTCDate());
-         marketOrder.setMarket(currentAttempt.getExecutionProposal().getMarket());
+	private TargetPriceCalculator targetPriceCalculator;
 
-         marketOrder.setMarketMarketMaker(currentAttempt.getExecutionProposal().getMarketMarketMaker());
-         Money limitPrice = this.targetPriceCalculator.calculateTargetPrice(operation);
-         marketOrder.setLimit(limitPrice);
-         String cleanMarketName = marketOrder.getMarket().getName().indexOf("_HIST") >= 0 ? 
-        		 			marketOrder.getMarket().getName().substring(0, marketOrder.getMarket().getName().indexOf("_HIST")):
-        		 				marketOrder.getMarket().getName();
-         LOGGER.info("Order={}, Selecting for execution market: {}, and price {}", 
-        		 operation.getOrder().getFixOrderId(), 
-        		 cleanMarketName, limitPrice == null? "null":limitPrice.getAmount().toString());
-         marketOrder.setVenue(currentAttempt.getExecutionProposal().getVenue());
-         marketOrder.setBuilder(this);
-      }
-      listener.onMarketOrderBuilt(this, marketOrder);
-   }
+	@Override
+	public void buildMarketOrder(Operation operation, MarketOrderBuilderListener listener) {
+		MarketOrder marketOrder = null;
+		Attempt currentAttempt = operation.getLastAttempt();
+
+		SortedBook sortedBook = currentAttempt.getSortedBook();
+		
+		List<ClassifiedProposal> consideredProposals = new ArrayList<>();
+		consideredProposals.addAll(sortedBook.getValidSideProposals(operation.getOrder().getSide()));
+		consideredProposals.addAll(sortedBook.getProposalBySubState(Arrays.asList(ProposalSubState.PRICE_WORST_THAN_LIMIT), operation.getOrder().getSide()));
+
+		ClassifiedProposal marketOrderProposal = !consideredProposals.isEmpty() ? consideredProposals.get(0) : null;
+		
+		if (marketOrderProposal != null) {
+			marketOrder = new MarketOrder();
+			marketOrder.setValues(operation.getOrder());
+			marketOrder.setTransactTime(DateService.newUTCDate());
+			marketOrder.setMarket(marketOrderProposal.getMarket());
+			Money limitPrice = this.targetPriceCalculator.calculateTargetPrice(operation);
+			marketOrder.setLimit(limitPrice != null ? limitPrice : operation.getOrder().getLimit());
+			String cleanMarketName = marketOrder.getMarket().getName().indexOf("_HIST") >= 0
+					? marketOrder.getMarket().getName().substring(0, marketOrder.getMarket().getName().indexOf("_HIST"))
+					: marketOrder.getMarket().getName(); // TODO Probably use effective market?
+			LOGGER.info("Order={}, Selecting for execution market: {}, and price {}", operation.getOrder().getFixOrderId(),
+					cleanMarketName, limitPrice == null ? "null" : limitPrice.getAmount().toString());
+			marketOrder.setBuilder(this);
+		}
+		
+		listener.onMarketOrderBuilt(this, marketOrder);
+	}
 
 	public TargetPriceCalculator getTargetPriceCalculator() {
 		return targetPriceCalculator;
 	}
-	
+
 	public void setTargetPriceCalculator(TargetPriceCalculator targetPriceCalculator) {
 		this.targetPriceCalculator = targetPriceCalculator;
 	}
-   
+
 }

@@ -22,11 +22,20 @@ public class ApplicationStatusOrderFilter implements MarketOrderFilter {
 		if (operation.getLastAttempt().getNextAction() instanceof ExecutionInMarketAction) {
 			if (this.applicationStatus.getType() == ApplicationStatus.Type.MONITOR) {
 				List<ClassifiedProposal> validBook = operation.getLastAttempt().getSortedBook().getValidSideProposals(operation.getOrder().getSide());
-				if (!validBook.isEmpty() && this.bookDepthValidator.isBookDepthValid(operation.getLastAttempt(), operation.getOrder())) {
-					String bestMarketCode = validBook.get(0).getMarket().getMicCode();
-					operation.getLastAttempt().setNextAction(new RejectOrderAction(Messages.getString("Monitor.RejectMessage", bestMarketCode)));
-				} else {
-					operation.getLastAttempt().setNextAction(new RejectOrderAction(Messages.getString("RejectInsufficientBookDepth.0", 1)));
+				if (operation.getOrder().isLimitFile()) {
+					if (!validBook.isEmpty()) { // If LF we need to check only that book is not empty
+						String bestMarketCode = validBook.get(0).getMarket().getMicCode();
+						operation.getLastAttempt().setNextAction(new RejectOrderAction(Messages.getString("Monitor.RejectMessage", bestMarketCode)));
+					} else {
+						operation.getLastAttempt().setNextAction(new RejectOrderAction(Messages.getString("RejectInsufficientBookDepth.0", this.bookDepthValidator.getMinimumRequiredBookDepth())));
+					}
+				} else { // If ALGO we need to check book depth
+					if (this.bookDepthValidator.isBookDepthValid(operation.getLastAttempt(), operation.getOrder())) {
+						String bestMarketCode = validBook.get(0).getMarket().getMicCode();
+						operation.getLastAttempt().setNextAction(new RejectOrderAction(Messages.getString("Monitor.RejectMessage", bestMarketCode)));
+					} else {
+						operation.getLastAttempt().setNextAction(new RejectOrderAction(Messages.getString("RejectInsufficientBookDepth.0", this.bookDepthValidator.getMinimumRequiredBookDepth())));
+					}
 				}
 			}
 		}
