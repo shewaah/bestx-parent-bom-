@@ -1,5 +1,6 @@
 package it.softsolutions.bestx.services;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import it.softsolutions.bestx.executionflow.FreezeOrderAction.NextPanel;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Proposal.ProposalSubState;
+import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyServiceFactory;
 
 public class ApplicationStatusOrderFilter implements MarketOrderFilter {
 
@@ -33,7 +35,17 @@ public class ApplicationStatusOrderFilter implements MarketOrderFilter {
 					} else if (!validBook.isEmpty()) {
 						operation.getLastAttempt().setNextAction(new RejectOrderAction(Messages.getString("Monitor.RejectMessage", validBook.get(0).getMarket().getMicCode()), true));
 					} else if (!worsePriceBook.isEmpty()) {
-						operation.getLastAttempt().setNextAction(new FreezeOrderAction(NextPanel.LIMIT_FILE, Messages.getString("LimitFile"), true));
+						int centsLFTolerance = ExecutionStrategyServiceFactory.getInstance().getCentsLFTolerance();
+						
+						BigDecimal targetPrice = worsePriceBook.get(0).getPrice().getAmount();
+						BigDecimal limitPrice = operation.getOrder().getLimit().getAmount();
+						BigDecimal differenceAbs = targetPrice.subtract(limitPrice).abs();
+						BigDecimal differenceCents = differenceAbs.multiply(new BigDecimal(100));
+						if (differenceCents.compareTo(new BigDecimal(centsLFTolerance)) > 0) { // Price is NOT inside tolerance
+							operation.getLastAttempt().setNextAction(new FreezeOrderAction(NextPanel.LIMIT_FILE, Messages.getString("LimitFile"), true));
+						} else {
+							operation.getLastAttempt().setNextAction(new RejectOrderAction(Messages.getString("Monitor.RejectMessage", worsePriceBook.get(0).getMarket().getMicCode()), true));
+						}
 					} else {
 						operation.getLastAttempt().setNextAction(new FreezeOrderAction(NextPanel.LIMIT_FILE_NO_PRICE, Messages.getString("LimitFile.NoPrices"), true));
 					}

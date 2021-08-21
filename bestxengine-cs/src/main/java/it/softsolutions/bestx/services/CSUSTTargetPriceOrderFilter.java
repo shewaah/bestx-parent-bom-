@@ -40,7 +40,7 @@ public class CSUSTTargetPriceOrderFilter implements MarketOrderFilter {
 						BigDecimal differenceAbs = targetPrice.subtract(limitPrice).abs();
 						BigDecimal differenceCents = differenceAbs.multiply(new BigDecimal(100));
 						if (differenceCents.compareTo(new BigDecimal(centsLFTolerance)) > 0) { // Price is NOT inside tolerance
-							operation.getLastAttempt().setNextAction(new FreezeOrderAction(NextPanel.LIMIT_FILE, Messages.getString("LimitFile")));
+							operation.getLastAttempt().setNextAction(new FreezeOrderAction(NextPanel.LIMIT_FILE, Messages.getString("LimitFile"), true));
 						}
 
 					}
