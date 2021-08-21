@@ -35,11 +35,11 @@ public class CSUSTTargetPriceOrderFilter implements MarketOrderFilter {
 					if (!proposalsDiscardedByLimitPrice.isEmpty()) {
 						int centsLFTolerance = ExecutionStrategyServiceFactory.getInstance().getCentsLFTolerance();
 						
-						BigDecimal targetPrice = marketOrder.getLimit().getAmount();
+						BigDecimal targetPrice = proposalsDiscardedByLimitPrice.get(0).getPrice().getAmount();
 						BigDecimal limitPrice = operation.getOrder().getLimit().getAmount();
 						BigDecimal differenceAbs = targetPrice.subtract(limitPrice).abs();
 						BigDecimal differenceCents = differenceAbs.multiply(new BigDecimal(100));
-						if (differenceCents.compareTo(new BigDecimal(centsLFTolerance)) >= 0) { // Price is worse but it is inside tolerance
+						if (differenceCents.compareTo(new BigDecimal(centsLFTolerance)) > 0) { // Price is NOT inside tolerance
 							operation.getLastAttempt().setNextAction(new FreezeOrderAction(NextPanel.LIMIT_FILE, Messages.getString("LimitFile")));
 						}
 
