@@ -139,15 +139,12 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 	private Counter pendingJobs;
 	private Timer responses;
 
-	private boolean rejectWhenBloombergIsBest;
 	private OperationStateAuditDao operationStateAuditDao;
 	// ================================================================================
 	// new section
 	// ================================================================================
 	// TODO Monitoring-BX
 	private long timePriceDiscoveryNotifyTimeout;
-
-	private boolean variableOrdersPerMinute = false;
 
 	@Override
 	public long getTimePriceDiscoveryNotifyTimeout() {
@@ -328,10 +325,6 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 			this.ps = ps;
 		}
 
-	    private void setNotAutoExecuteOrder(Operation operation) {
-    		operation.setNotAutoExecute(false);
-	    }
-	    
 		@Override
 		public void run() {
 			try {
@@ -376,7 +369,7 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 						} else {
 							Customer customer = operation.getOrder().getCustomer();
 							try {
-								ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, null, rejectWhenBloombergIsBest);
+								ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, null);
 								csExecutionStrategyService.manageAutomaticUnexecution(plainRequest.order, customer);
 							} catch (BestXException be) {
 								LOGGER.error("Order {}, error while managing no market available situation {}", plainRequest.order.getFixOrderId(), e.getMessage(), e);
@@ -817,12 +810,6 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 		}
 	}
 
-	/**
-	 * @param rejectWhenBloombergIsBest the rejectWhenBloombergIsBest to set
-	 */
-	public void setRejectWhenBloombergIsBest(boolean rejectWhenBloombergIsBest) {
-		this.rejectWhenBloombergIsBest = rejectWhenBloombergIsBest;
-	}
 
 	@Override
 	public String getImplementationVersion() {
@@ -867,10 +854,4 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 		this.operationStateAuditDao = operationStateAuditDao;
 	}
 
-	/**
-	 * @param variableOrdersPerMinute the variableOrdersPerMinute to set
-	 */
-	public void setVariableOrdersPerMinute(boolean variableOrdersPerMinute) {
-		this.variableOrdersPerMinute = variableOrdersPerMinute;
-	}
 }

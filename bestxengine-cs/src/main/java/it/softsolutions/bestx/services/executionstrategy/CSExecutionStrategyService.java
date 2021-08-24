@@ -24,11 +24,13 @@ import org.slf4j.LoggerFactory;
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.MarketConnectionRegistry;
 import it.softsolutions.bestx.Messages;
+import it.softsolutions.bestx.MifidConfig;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationIdType;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.bestexec.BookClassifier;
 import it.softsolutions.bestx.connections.MarketConnection;
+import it.softsolutions.bestx.executionflow.RejectOrderAction;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.handlers.ExecutionReportHelper;
 import it.softsolutions.bestx.model.Attempt;
@@ -43,7 +45,6 @@ import it.softsolutions.bestx.services.booksorter.BookSorterImpl;
 import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.bestx.services.price.PriceResult;
 import it.softsolutions.bestx.services.serial.SerialNumberService;
-import it.softsolutions.bestx.states.CurandoState;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.LimitFileNoPriceState;
 import it.softsolutions.bestx.states.OrderCancelRequestState;
@@ -69,9 +70,8 @@ import it.softsolutions.bestx.states.tradeweb.TW_StartExecutionState;
  **/
 public abstract class CSExecutionStrategyService implements ExecutionStrategyService, CSExecutionStrategyServiceMBean {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CSExecutionStrategyService.class);
-	//    protected ExecutionStrategyServiceCallback executionStrategyServiceCallback;
+
 	protected PriceResult priceResult = null;
-	protected boolean rejectOrderWhenBloombergIsBest;
 
 	protected List<MarketCode> allMarketsToTry;
 	protected Operation operation;
@@ -80,9 +80,8 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	protected BookClassifier bookClassifier;
 	protected BookSorterImpl bookSorter;
 	protected ApplicationStatus applicationStatus;
+	protected MifidConfig mifidConfig;
 	private MarketConnectionRegistry marketConnectionRegistry;
-	protected int minimumRequiredBookDepth = 3;
-
 	
 	public MarketConnectionRegistry getMarketConnectionRegistry() {
 		return marketConnectionRegistry;
@@ -139,16 +138,6 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		this.applicationStatus = applicationStatus;
 	}
 
-	
-	
-	public int getMinimumRequiredBookDepth() {
-		return minimumRequiredBookDepth;
-	}
-
-	public void setMinimumRequiredBookDepth(int minimumRequiredBookDepth) {
-		this.minimumRequiredBookDepth = minimumRequiredBookDepth;
-	}
-
 	@Override
 	public abstract void manageAutomaticUnexecution(Order order, Customer customer) throws BestXException;
 
@@ -183,17 +172,6 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 			
 			switch (currentAttempt.getMarketOrder().getMarket().getMarketCode()) {
 			case BLOOMBERG:
-				if (rejectOrderWhenBloombergIsBest) {
-					// send not execution report
-					try {
-						ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
-						operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("RejectWhenBloombergBest.0")), ErrorState.class);
-					} catch (BestXException e) {
-						LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
-						String errorMessage = e.getMessage();
-						operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
-					}
-				} else {
 					String bbg_orderID = operation.getIdentifier(OperationIdType.BLOOMBERG_CLORD_ID);
 					if (bbg_orderID != null) {
 						operation.removeIdentifier(OperationIdType.BLOOMBERG_CLORD_ID);
@@ -205,7 +183,6 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 					else {
 						operation.setStateResilient(new BBG_RejectedState("Bloomberg Market is unavailable or disabled", false), ErrorState.class);
 					}
-				}
 				break;
 			case TW:
 				String twSessionId = operation.getIdentifier(OperationIdType.TW_SESSION_ID);
@@ -244,29 +221,14 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		super();
 	}
 
-	@Deprecated
-	public CSExecutionStrategyService(ExecutionStrategyServiceCallback executionStrategyServiceCallback, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus, int minimumRequiredBookDepth) {
-		if (executionStrategyServiceCallback == null) {
-			throw new IllegalArgumentException("executionStrategyServiceCallback is null");
-		}
-
-		//        this.executionStrategyServiceCallback = executionStrategyServiceCallback;
-		this.priceResult = priceResult;
-		this.rejectOrderWhenBloombergIsBest = rejectOrderWhenBloombergIsBest;
-		this.applicationStatus = applicationStatus;
-		this.minimumRequiredBookDepth = minimumRequiredBookDepth;
-	}
-
-	public CSExecutionStrategyService(Operation operation, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus, int minimumRequiredBookDepth) {
+	public CSExecutionStrategyService(Operation operation, PriceResult priceResult, ApplicationStatus applicationStatus, MifidConfig mifidConfig) {
 		if (operation == null) {
 			throw new IllegalArgumentException("operation is null");
 		}
-
 		this.operation = operation;
 		this.priceResult = priceResult;
-		this.rejectOrderWhenBloombergIsBest = rejectOrderWhenBloombergIsBest;
 		this.applicationStatus = applicationStatus;
-		this.minimumRequiredBookDepth = minimumRequiredBookDepth;
+		this.mifidConfig = mifidConfig;
 	}
 
 	/**
@@ -294,10 +256,15 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 			manageAutomaticUnexecution(order, order.getCustomer());
 			return;
 		}
-		// ###  End
 		
+		// ###  End
+		if (operation.hasPassedMaxAttempt(this.mifidConfig.getNumRetry())) {
+			ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
+			operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("EventNoMoreRetry.0")), ErrorState.class);
+			return;
+		}
 		//BESTX-865 retry a price discovery every attempt
-      operation.setStateResilient(new WaitingPriceState(), ErrorState.class);
+		operation.setStateResilient(new WaitingPriceState(), ErrorState.class);
 		
 	}
 

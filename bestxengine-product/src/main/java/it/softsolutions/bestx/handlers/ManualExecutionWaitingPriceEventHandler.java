@@ -69,13 +69,13 @@ public class ManualExecutionWaitingPriceEventHandler extends WaitingPriceEventHa
     public ManualExecutionWaitingPriceEventHandler(Operation operation, PriceService priceService, CustomerFinder customerFinder,
             SerialNumberService serialNumberService, RegulatedMktIsinsLoader regulatedMktIsinsLoader,
             List<String> regulatedMarketPolicies, long waitingPriceDelay, int maxAttemptNo, long marketPriceTimeout,
-            ExecutionDestinationService executionDestinationService, boolean rejectWhenBloombergIsBest, boolean doNotExecute, 
+            ExecutionDestinationService executionDestinationService, boolean doNotExecute, 
             OperationStateAuditDao operationStateAuditDao, ApplicationStatus applicationStatus, 
             DataCollector dataCollector, MarketOrderBuilder marketOrderBuilder, MarketOrderFilterChain marketOrderFilterChain) throws BestXException {
 
         super(operation, priceService, customerFinder, serialNumberService, regulatedMktIsinsLoader, 
                 regulatedMarketPolicies, waitingPriceDelay, maxAttemptNo, marketPriceTimeout, executionDestinationService, 
-                rejectWhenBloombergIsBest, doNotExecute, null, operationStateAuditDao, applicationStatus, dataCollector, marketOrderBuilder, marketOrderFilterChain);
+                doNotExecute, null, operationStateAuditDao, applicationStatus, dataCollector, marketOrderBuilder, marketOrderFilterChain);
             }
 
     @Override

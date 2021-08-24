@@ -150,7 +150,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 	private int mtsCreditExecTimeout;
 	private long bondVisionExecTimeout = 120 * 1000;
 	private int sendExecRepTimeout;
-	private String matchingMMcode;
 	private List<String> internalMMcodesList;
 	private CommissionService commissionService;
 	private RegulatedMktIsinsLoader regulatedMktIsinsLoader;
@@ -160,7 +159,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 	private ExecutionDestinationService executionDestinationService;
 	private long waitingCMFTimeout = 90000; // default value is 90 seconds
 	private PriceServiceProvider priceServiceProvider;
-	private boolean rejectWhenBloombergIsBest;
 
 	private Map<String, MultipleQuotesHandler> multipleQuotesHandlers = new HashMap<String, MultipleQuotesHandler>();
 	private long grdLiteLoadResponseTimeout;
@@ -549,7 +547,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 			break;
 		case Rejected: {
 			if (marketCode == null) {
-				handler = new CSRejectedEventHandler(operation, rejectWhenBloombergIsBest, serialNumberService, this.dataCollector);
+				handler = new CSRejectedEventHandler(operation, serialNumberService, this.dataCollector);
 				break;
 			}
 			else {
@@ -675,7 +673,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 
 			handler = new ManualExecutionWaitingPriceEventHandler(operation, getPriceService(operation.getOrder()), customerFinder, serialNumberService,
 					regulatedMktIsinsLoader, regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout,
-					executionDestinationService, rejectWhenBloombergIsBest, doNotExecuteMEW, operationStateAuditDao, applicationStatus, dataCollector, marketOrderBuilder, marketOrderFilterChain);
+					executionDestinationService, doNotExecuteMEW, operationStateAuditDao, applicationStatus, dataCollector, marketOrderBuilder, marketOrderFilterChain);
 			break;
 		case WaitingPrice:
 			Boolean doNotExecuteWP = CSConfigurationPropertyLoader.getBooleanProperty(CSConfigurationPropertyLoader.LIMITFILE_DONOTEXECUTE, false);
@@ -685,7 +683,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 
 			handler = new WaitingPriceEventHandler(operation, getPriceService(operation.getOrder()), customerFinder, serialNumberService, regulatedMktIsinsLoader,
 					regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout, executionDestinationService,
-					rejectWhenBloombergIsBest, doNotExecuteWP, internalMMcodesList, operationStateAuditDao, applicationStatus, dataCollector, marketOrderBuilder, marketOrderFilterChain);
+					doNotExecuteWP, internalMMcodesList, operationStateAuditDao, applicationStatus, dataCollector, marketOrderBuilder, marketOrderFilterChain);
 			break;
 		case Error:
 		case Warning:
@@ -845,16 +843,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 	 */
 	public void setMarketMakerFinder(MarketMakerFinder marketMakerFinder) {
 		this.marketMakerFinder = marketMakerFinder;
-	}
-
-	/**
-	 * Set the matching market maker code.
-	 * 
-	 * @param matchingMMcode
-	 *            : the market maker code
-	 */
-	public void setMatchingMMcode(String matchingMMcode) {
-		this.matchingMMcode = matchingMMcode;
 	}
 
 	/**
@@ -1077,26 +1065,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 	public void setMtsCreditExecTimeout(int mtsCreditExecTimeout) {
 		this.mtsCreditExecTimeout = mtsCreditExecTimeout;
 	}
-
-	/**
-	 * Check if we must reject orders if Bloomberg is Best.
-	 * 
-	 * @return the rejectWhenBloombergIsBest
-	 */
-	public boolean isRejectWhenBloombergIsBest() {
-		return rejectWhenBloombergIsBest;
-	}
-
-	/**
-	 * Set the reject orders when Bloomberg is Best flag.
-	 * 
-	 * @param rejectWhenBloombergIsBest
-	 *            the rejectWhenBloombergIsBest to set
-	 */
-	public void setRejectWhenBloombergIsBest(boolean rejectWhenBloombergIsBest) {
-		this.rejectWhenBloombergIsBest = rejectWhenBloombergIsBest;
-	}
-
 
 	/**
 	 * Gets the cs-spring internal market exec timeout.

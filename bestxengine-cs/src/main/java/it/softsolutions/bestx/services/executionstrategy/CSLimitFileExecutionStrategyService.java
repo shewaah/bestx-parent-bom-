@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Messages;
+import it.softsolutions.bestx.MifidConfig;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.OrderHelper;
@@ -46,18 +47,9 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 
 	static final Logger LOGGER = LoggerFactory.getLogger(CSLimitFileExecutionStrategyService.class);
 
-	@Deprecated
-	public CSLimitFileExecutionStrategyService(ExecutionStrategyServiceCallback executionStrategyServiceCallback,
-			PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus,
-			int minimumRequiredBookDepth, int centsLFTolerance) {
-		super(executionStrategyServiceCallback, priceResult, rejectOrderWhenBloombergIsBest, applicationStatus,
-				minimumRequiredBookDepth);
-	}
-
 	public CSLimitFileExecutionStrategyService(Operation operation, PriceResult priceResult,
-			boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus, int minimumRequiredBookDepth,
-			int centsLFTolerance) {
-		super(operation, priceResult, rejectOrderWhenBloombergIsBest, applicationStatus, minimumRequiredBookDepth);
+			ApplicationStatus applicationStatus, MifidConfig mifidConfig) {
+		super(operation, priceResult, applicationStatus, mifidConfig);
 	}
 
 	@Override
@@ -72,14 +64,8 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 
 		if (BondTypesService.isUST(operation.getOrder().getInstrument())
 				&& operation.getLastAttempt().getMarketOrder() != null
-				&& operation.getLastAttempt().getMarketOrder().getMarket().getMarketCode() == MarketCode.TW) { // have
-																												// got a
-																												// rejection
-																												// on
-																												// the
-																												// single
-																												// attempt
-																												// on TW
+				&& operation.getLastAttempt().getMarketOrder().getMarket().getMarketCode() == MarketCode.TW) {
+			// have got a rejection on the single attempt on TW
 			onUnexecutionResult(Result.USSingleAttemptNotExecuted, Messages.getString("UnexecutionReason.0"));
 			return;
 		}
@@ -126,125 +112,4 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 
 		}
 	}
-
-//	@Override
-//	// [BESTX-570] Method implemented to intercept LF UST orders
-//	public void startExecution(Operation operation, Attempt currentAttempt, SerialNumberService serialNumberService) {
-//		Order order = operation.getOrder();
-//		SortedBook sortedBook = currentAttempt.getSortedBook();
-//
-//		// List<ProposalSubState> wantedSubStates = Arrays.asList(ProposalSubState.NONE
-//		// /*, ProposalSubState.PRICE_WORST_THAN_LIMIT*/);
-//		boolean emptyOriginalBook = sortedBook == null || sortedBook.getSideProposals(order.getSide()).isEmpty();
-//		boolean onePriceWorse = sortedBook != null && !sortedBook
-//				.getProposalBySubState(Arrays.asList(ProposalSubState.PRICE_WORST_THAN_LIMIT), order.getSide())
-//				.isEmpty();
-//
-//		if (BondTypesService.isUST(operation.getOrder().getInstrument())) {
-//
-//			LOGGER.debug("Executing LF start execution strategy for UST bonds for order {}",
-//					operation.getOrder().getFixOrderId());
-//
-//			LOGGER.info(
-//					"OrderId: {}. Original book is empty: {}. There is at least one price discarded because of being worse than limit: {}",
-//					operation.getOrder().getFixOrderId(), emptyOriginalBook, onePriceWorse);
-//
-//			if (priceResult.getState() == PriceResult.PriceResultState.COMPLETE) {
-//				LOGGER.debug("OrderId: {}. Going to execution because there is a not empty consolidated book",
-//						operation.getOrder().getFixOrderId());
-//				super.startExecution(operation, currentAttempt, serialNumberService);
-//			} else if (emptyOriginalBook && this.applicationStatus.getType() == ApplicationStatus.Type.EXECUTION) {
-//				LOGGER.debug("OrderId: {}. Going to execution because there is a completely empty original book",
-//						operation.getOrder().getFixOrderId());
-//				super.startExecution(operation, currentAttempt, serialNumberService);
-//			} else if (!onePriceWorse && this.applicationStatus.getType() == ApplicationStatus.Type.EXECUTION) {
-//				LOGGER.debug(
-//						"OrderId: {}. Going to execution because there are no prices discarded for being worse than limit",
-//						operation.getOrder().getFixOrderId());
-//				super.startExecution(operation, currentAttempt, serialNumberService);
-//			} else {
-//				boolean createOrder = this.applicationStatus.getType() == ApplicationStatus.Type.MONITOR;
-//				this.checkToleranceAndDecide(operation, currentAttempt, serialNumberService, createOrder);
-//			}
-//		} else {
-//			if (currentAttempt.getMarketOrder() != null || (priceResult != null && priceResult.getState() == PriceResult.PriceResultState.COMPLETE)) {
-//				LOGGER.debug("OrderId: {}. Going to execution because there is a not empty consolidated book",
-//						operation.getOrder().getFixOrderId());
-//				super.startExecution(operation, currentAttempt, serialNumberService);
-//			} else {
-//				this.checkToleranceAndDecide(operation, currentAttempt, serialNumberService, true);
-//			}
-//
-//		}
-//	}
-//	
-//	private void checkToleranceAndDecide(Operation operation, Attempt currentAttempt, SerialNumberService serialNumberService, boolean createOrder) {
-//		Order order = operation.getOrder();
-//		SortedBook sortedBook = currentAttempt.getSortedBook();
-//		
-//		boolean priceInToleranceFound = false;
-//		if (sortedBook != null) {
-//			List<ClassifiedProposal> proposalsDiscardedByLimitPrice = sortedBook.getProposalBySubState(
-//					Arrays.asList(ProposalSubState.PRICE_WORST_THAN_LIMIT), order.getSide());
-//
-//			Set<Market> marketsAlreadyTried = new HashSet<>(); 
-//			for (Attempt previousAttempt : operation.getAttemptsInCurrentCycle()) {
-//				if (previousAttempt.getMarketOrder() != null && previousAttempt.getMarketOrder().getMarket() != null) {
-//					marketsAlreadyTried.add(previousAttempt.getMarketOrder().getMarket());
-//				}
-//			}
-//			
-//			if (!marketsAlreadyTried.isEmpty()) {
-//				List<ClassifiedProposal> filteredList = new ArrayList<>();
-//				for (ClassifiedProposal proposal : proposalsDiscardedByLimitPrice) {
-//					if (!marketsAlreadyTried.contains(proposal.getMarket())) {
-//						filteredList.add(proposal);
-//					}
-//				}
-//				proposalsDiscardedByLimitPrice = filteredList;
-//			}
-//			
-//			if (!proposalsDiscardedByLimitPrice.isEmpty()) {
-//				ClassifiedProposal proposal = proposalsDiscardedByLimitPrice.get(0);
-//				BigDecimal proposalPrice = proposal.getPrice().getAmount();
-//				BigDecimal limitPrice = order.getLimit().getAmount();
-//				BigDecimal differenceAbs = proposalPrice.subtract(limitPrice).abs();
-//				BigDecimal differenceCents = differenceAbs.multiply(new BigDecimal(100));
-//				if (differenceCents.compareTo(new BigDecimal(this.centsLFTolerance)) <= 0) {
-//					priceInToleranceFound = true;
-//					if (createOrder) {
-//						MarketOrder marketOrder = new MarketOrder();
-//						currentAttempt.setMarketOrder(marketOrder);
-//						marketOrder.setValues(operation.getOrder());
-//						marketOrder.setTransactTime(DateService.newUTCDate());
-//						marketOrder.setMarket(proposal.getMarket());
-//						marketOrder.setMarketMarketMaker(proposal.getMarketMarketMaker());
-//						marketOrder.setLimit(operation.getOrder().getLimit());  // if order limit is null, send a market order to TW
-//						LOGGER.info("Order={}, Selecting for execution market market maker: {} and price {}", operation.getOrder().getFixOrderId(), marketOrder.getMarketMarketMaker(), limitPrice.toString());
-//					}
-//				}
-//			}
-//		}
-//
-//		if (priceInToleranceFound) {
-//			LOGGER.debug("OrderId: {}. Going to execution because price is inside tolerance parmaeter",
-//					operation.getOrder().getFixOrderId());
-//			super.startExecution(operation, currentAttempt, serialNumberService);
-//		} else {
-//			try {
-//				LOGGER.debug("OrderId: {}. Managing unexecution", operation.getOrder().getFixOrderId());
-//				this.manageAutomaticUnexecution(order, order.getCustomer());
-//			} catch (BestXException e) {
-//				LOGGER.error("Order {}, error while managing {} price result state {}", order.getFixOrderId(),
-//						priceResult.getState().name(), e.getMessage(), e);
-//				operation.removeLastAttempt();
-//				operation.setStateResilient(
-//						new WarningState(operation.getState(), e, Messages.getString("PriceService.16")),
-//						ErrorState.class);
-//			}
-//		}
-//
-//	}
-	
-
 }

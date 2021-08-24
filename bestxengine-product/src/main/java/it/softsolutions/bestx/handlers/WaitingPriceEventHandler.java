@@ -94,7 +94,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 	private List<String> internalMMcodes;
 
 	protected final ExecutionDestinationService executionDestinationService;
-	private boolean rejectOrderWhenBloombergIsBest;
 	private OperationStateAuditDao operationStateAuditDao;
 	protected boolean doNotExecute;
 	private ApplicationStatus applicationStatus;
@@ -131,7 +130,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 
 	public WaitingPriceEventHandler(Operation operation, PriceService priceService, CustomerFinder customerFinder,
 			SerialNumberService serialNumberService, RegulatedMktIsinsLoader regulatedMktIsinsLoader, List<String> regulatedMarketPolicies, long waitingPriceDelay, int maxAttemptNo,
-			long marketPriceTimeout, ExecutionDestinationService executionDestinationService, boolean rejectOrderWhenBloombergIsBest,
+			long marketPriceTimeout, ExecutionDestinationService executionDestinationService,
 			boolean doNotExecute, List<String> internalMMcodes, OperationStateAuditDao operationStateAuditDao, 
 			ApplicationStatus applicationStatus, DataCollector dataCollector, MarketOrderBuilder marketOrderBuilder, MarketOrderFilterChain marketOrderFilterChain) throws BestXException{
 		super(operation);
@@ -148,7 +147,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		this.waitingPriceDelay = waitingPriceDelay;
 		this.marketPriceTimeout = marketPriceTimeout;
 		this.executionDestinationService = executionDestinationService;
-		this.rejectOrderWhenBloombergIsBest = rejectOrderWhenBloombergIsBest;
 
 		this.internalMMcodes = internalMMcodes;
 		if (this.internalMMcodes == null) {
@@ -214,7 +212,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			// Create the execution strategy with a null priceResult, we did not receive any price
 			try {
 				ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation,
-						null, rejectOrderWhenBloombergIsBest);
+						null);
 				csExecutionStrategyService.manageAutomaticUnexecution(order, customer);
 			}
 			catch (BestXException e) {
@@ -319,31 +317,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		}
 		LOGGER.debug("Order {}, No customer revoke received.", operation.getOrder().getFixOrderId());
 
-		// AMC 20190208 BESTX-385 best on bloomberg requires to be managed with auto unexecution when best on bloomberg is configured for auto unexecution
-//		ClassifiedProposal executionProposal = currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide());
-//		boolean doRejectThisBestOnBloomberg = executionProposal != null && executionProposal.getMarket().getMarketCode() == Market.MarketCode.BLOOMBERG && rejectOrderWhenBloombergIsBest;
-//		if(doRejectThisBestOnBloomberg)
-//			LOGGER.debug("Best price on Bloomberg. Order {} must be rejected back to OMS", customerOrder.getFixOrderId());
-//		else
-//			LOGGER.debug("Best not on Bloomberg or flag rejectOrderWhenBloombergIsBest is false");
-		
-		//SP-20210714 BESTX-865 check max number of retries also for all limit file orders 
-//      if (operation.hasPassedMaxAttempt(maxAttemptNo)) {
-//         LOGGER.info("Order={}, Max number of attempts reached.", operation.getOrder().getFixOrderId());
-//         currentAttempt.setByPassableForVenueAlreadyTried(true);
-//
-//         try {
-//            ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
-//            operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("EventNoMoreRetry.0")), ErrorState.class);
-//            return;
-//         } catch (BestXException e) {
-//            LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
-//            String errorMessage = e.getMessage();
-//            operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
-//            return;
-//         }
-//      }
-		
 		if (priceResult.getState() == PriceResult.PriceResultState.COMPLETE
 	         || priceResult.getState() == PriceResult.PriceResultState.ERROR) {
 			// Fill Attempt
@@ -529,7 +502,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		
 		this.marketOrderFilterChain.filterMarketOrder(marketOrder, operation);
 
-		ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, this.priceResultReceived, rejectOrderWhenBloombergIsBest);
+		ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, this.priceResultReceived);
 		
 		if (currentAttempt.getNextAction() instanceof RejectOrderAction) {
 			try {

@@ -31,9 +31,8 @@ public class CSRejectedEventHandler extends RejectedEventHandler {
 	/**
 	 * @param operation
 	 */
-	public CSRejectedEventHandler(Operation operation, boolean rejectWhenBloombergIsBest, SerialNumberService serialNumberService, DataCollector dataCollector) {
+	public CSRejectedEventHandler(Operation operation, SerialNumberService serialNumberService, DataCollector dataCollector) {
 		super(operation, serialNumberService, dataCollector);
-		this.rejectWhenBloombergIsBest = rejectWhenBloombergIsBest;
 	}
 
     @Override
@@ -42,7 +41,7 @@ public class CSRejectedEventHandler extends RejectedEventHandler {
     		this.dataCollector.sendPobex(operation);
     	}
     	/* ask to the CSExecutionStrategy for the next steps */
-    	ExecutionStrategyService executionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, priceResult, rejectWhenBloombergIsBest);
+    	ExecutionStrategyService executionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, priceResult);
     	try {
 //            if (operation.isStopped()) return;
     		executionStrategyService.manageMarketReject(operation, operation.getLastAttempt(), serialNumberService);

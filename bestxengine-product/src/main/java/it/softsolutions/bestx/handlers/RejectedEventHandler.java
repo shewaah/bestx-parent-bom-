@@ -38,14 +38,10 @@ import it.softsolutions.bestx.states.WarningState;
  **/
 public class RejectedEventHandler extends BaseOperationEventHandler {
 
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = -828153138571045312L;
+private static final long serialVersionUID = -828153138571045312L;
 	private static final Logger LOGGER = LoggerFactory.getLogger(RejectedEventHandler.class);
 	protected SerialNumberService serialNumberService;
 	protected PriceResult priceResult;
-	protected boolean rejectWhenBloombergIsBest;
 
 	protected DataCollector dataCollector;
 	
@@ -67,7 +63,7 @@ public class RejectedEventHandler extends BaseOperationEventHandler {
     		this.dataCollector.sendPobex(operation);
     	}
        	/* ask to the CSExecutionStrategy for the next steps */
-    	ExecutionStrategyService executionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, priceResult, rejectWhenBloombergIsBest);
+    	ExecutionStrategyService executionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, priceResult);
     	try {
 //            if (operation.isStopped()) return;
     		executionStrategyService.manageMarketReject(operation, operation.getLastAttempt(), serialNumberService);

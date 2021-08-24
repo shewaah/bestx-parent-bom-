@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.CustomerAttributes;
 import it.softsolutions.bestx.Messages;
+import it.softsolutions.bestx.MifidConfig;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.model.Customer;
@@ -37,24 +38,10 @@ import it.softsolutions.bestx.services.price.PriceResult;
  **/
 public class CSNormalExecutionStrategyService extends CSExecutionStrategyService{
 
-    static final Logger LOGGER = LoggerFactory.getLogger(CSNormalExecutionStrategyService.class);
-    /**
-     * Instantiate the Credit Suisse execution strategy service.
-     * 
-     * @param executionStrategyServiceCallback
-     *            : callback that manages the result
-     * @param priceResult
-     *            : the result of the price discovery, can be null especially when there are no markets available.
-     * @param rejectOrderWhenBloombergIsBest
-     *            : flag to reject or not orders if the best execution is on Bloomberg
-     */
-    @Deprecated
-    public CSNormalExecutionStrategyService(ExecutionStrategyServiceCallback executionStrategyServiceCallback, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus, int minimumRequiredBookDepth) {
-    	super(executionStrategyServiceCallback, priceResult, rejectOrderWhenBloombergIsBest, applicationStatus, minimumRequiredBookDepth);  
-    }
+    private static final Logger LOGGER = LoggerFactory.getLogger(CSNormalExecutionStrategyService.class);
 
-    public CSNormalExecutionStrategyService(Operation operation, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus, int minimumRequiredBookDepth) {
-    	super(operation, priceResult, rejectOrderWhenBloombergIsBest, applicationStatus, minimumRequiredBookDepth);  
+    public CSNormalExecutionStrategyService(Operation operation, PriceResult priceResult, ApplicationStatus applicationStatus, MifidConfig mifidConfig) {
+    	super(operation, priceResult, applicationStatus, mifidConfig);  
     }
 
     /** 
