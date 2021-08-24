@@ -50,11 +50,16 @@ public class ApplicationStatusOrderFilter implements MarketOrderFilter {
 						operation.getLastAttempt().setNextAction(new FreezeOrderAction(NextPanel.LIMIT_FILE_NO_PRICE, Messages.getString("LimitFile.NoPrices"), true));
 					}
 				} else { // If ALGO we need to check book depth
-					if (this.bookDepthValidator.isBookDepthValid(operation.getLastAttempt(), operation.getOrder())) {
-						String bestMarketCode = validBook.get(0).getMarket().getMicCode();
-						operation.getLastAttempt().setNextAction(new RejectOrderAction(Messages.getString("Monitor.RejectMessage", bestMarketCode), true));
+					if (marketOrder.getBuilder() instanceof FixedMarketMarketOrderBuilder) {
+						if (this.bookDepthValidator.isBookDepthValid(operation.getLastAttempt(), operation.getOrder())) {
+							String bestMarketCode = validBook.get(0).getMarket().getMicCode();
+							operation.getLastAttempt().setNextAction(new RejectOrderAction(Messages.getString("Monitor.RejectMessage", bestMarketCode), true));
+						} else {
+							operation.getLastAttempt().setNextAction(new RejectOrderAction(Messages.getString("RejectInsufficientBookDepth.0", this.bookDepthValidator.getMinimumRequiredBookDepth()), true));
+						}
 					} else {
-						operation.getLastAttempt().setNextAction(new RejectOrderAction(Messages.getString("RejectInsufficientBookDepth.0", this.bookDepthValidator.getMinimumRequiredBookDepth()), true));
+						String bestMarketCode = marketOrder.getMarket().getMicCode();
+						operation.getLastAttempt().setNextAction(new RejectOrderAction(Messages.getString("Monitor.RejectMessage", bestMarketCode), true));
 					}
 				}
 			}
