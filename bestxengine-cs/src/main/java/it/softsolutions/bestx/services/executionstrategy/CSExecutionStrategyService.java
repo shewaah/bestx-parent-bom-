@@ -30,7 +30,6 @@ import it.softsolutions.bestx.OperationIdType;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.bestexec.BookClassifier;
 import it.softsolutions.bestx.connections.MarketConnection;
-import it.softsolutions.bestx.executionflow.RejectOrderAction;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.handlers.ExecutionReportHelper;
 import it.softsolutions.bestx.model.Attempt;
@@ -258,7 +257,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		}
 		
 		// ###  End
-		if (operation.hasPassedMaxAttempt(this.mifidConfig.getNumRetry())) {
+		if (operation.hasPassedMaxAttempt(this.mifidConfig.getNumRetry() - 1)) {
 			ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
 			operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("EventNoMoreRetry.0")), ErrorState.class);
 			return;

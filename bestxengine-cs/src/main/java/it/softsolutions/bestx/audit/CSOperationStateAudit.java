@@ -52,6 +52,7 @@ import it.softsolutions.bestx.model.ExecutionReport;
 import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.MarketExecutionReport;
+import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.ServiceStatus;
 import it.softsolutions.bestx.services.DateService;
@@ -78,7 +79,6 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         Action.COMMAND_RESEND_EXECUTIONREPORT };
     private static final Action[] rejectableActions = { Action.NOT_EXECUTED, Action.MANUAL_MANAGE, Action.SEND_DES_DATA };
     private static final Action[] bbgStandByActions = { Action.MANUAL_MANAGE, Action.NOT_EXECUTED, Action.AUTO_MANUAL_ORDER, Action.ORDER_RETRY, Action.SEND_DDE_DATA };
-    private static final Action[] matchBaseActions = { Action.ORDER_RETRY, Action.MANUAL_MANAGE };
     private static final Action[] matchFoundActions = { Action.ORDER_RETRY, Action.MANUAL_MANAGE, Action.MERGE_ORDER };
     private static final Action[] curandoActions = { Action.SEND_DDE_DATA };
     private static final Action[] limitFileNoPriceActions = { Action.MANUAL_MANAGE, Action.NOT_EXECUTED, Action.SEND_MSG_TO_OTEX, Action.ORDER_RETRY, Action.SEND_DDE_DATA };
@@ -95,8 +95,6 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
     private List<String> internalMMcodesList;
     static private String dateFormat = "dd/MM/yyyy";
     
-    private boolean isLogEnabled = false;
-
     private final Map<String, Long> startSaveTimeInMillis = new ConcurrentHashMap<String, Long>();
 
     /**
@@ -542,7 +540,6 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
                     internalCust = ((CustomerAttributes) custAttr).getInternalCustomer();
                     LOGGER.debug("Order {}, customer {}, extracted the attribute InternalCustomer, value {}", order.getFixOrderId(), customer.getName(), internalCust);
                 }
-                Market execMkt = executionReport != null ? executionReport.getMarket() : null;
                 boolean executingOnInternalMarket = false;
                 // 20110610 - Ruggero
                 // The execution destination can be AKIS only for customer for which the IS has been allowed
@@ -906,19 +903,19 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
 
 	private String getMarketOrderPrice(Attempt lastAttempt) {
 		if(lastAttempt != null && lastAttempt.getMarketOrder() != null && lastAttempt.getMarketOrder().getLimit()!= null)
-			return lastAttempt.getMarketOrder().getLimit().getAmount().toPlainString();
+			return MarketOrder.beautifyBigDecimal(lastAttempt.getMarketOrder().getLimit().getAmount(), 1, 5);
 		return null;
 	}
 
     private String getMarketOrderExcludeDealers(Attempt lastAttempt) {
     	if(lastAttempt != null && lastAttempt.getMarketOrder() != null && lastAttempt.getMarketOrder().getExcludeDealers() != null)
-    		return lastAttempt.getMarketOrder().beautify(lastAttempt.getMarketOrder().getExcludeDealers());
+    		return MarketOrder.beautifyListOfDealers(lastAttempt.getMarketOrder().getExcludeDealers());
     	return null;
     }
     
     private String getMarketOrderIncludeDealers(Attempt lastAttempt) {
     	if(lastAttempt != null && lastAttempt.getMarketOrder() != null && lastAttempt.getMarketOrder().getDealers() != null)
-    		return lastAttempt.getMarketOrder().beautify(lastAttempt.getMarketOrder().getDealers());
+    		return MarketOrder.beautifyListOfDealers(lastAttempt.getMarketOrder().getDealers());
     	return null;
     }
 

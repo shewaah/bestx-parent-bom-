@@ -13,11 +13,13 @@
  */
 package it.softsolutions.bestx.model;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
-import it.softsolutions.bestx.executionflow.MarketOrderNextAction;
 import it.softsolutions.jsscommon.Money;
 
 /**
@@ -163,9 +165,9 @@ public class MarketOrder extends Order {
         builder.append("MarketOrder [market=");
         builder.append(this.market);
         builder.append(", include=");
-        builder.append(beautify(this.getDealers()));
+        builder.append(beautifyListOfDealers(this.getDealers()));
         builder.append(", exclude=");
-        builder.append(beautify(this.getExcludeDealers()));
+        builder.append(beautifyListOfDealers(this.getExcludeDealers()));
         builder.append(", text=");
         builder.append(this.text);
         builder.append(", marketMarketMaker=");
@@ -200,19 +202,19 @@ public class MarketOrder extends Order {
      * @return a String with all the dealers' MarketMarketMakerCode
      * 
      */
-    public String beautify(List<MarketMarketMakerSpec> dealerList) {
-    	// TODO Possible improvement: dealerList.stream().map(MarketMarketMakerSpec::getMarketMakerMarketSpecificCode).collect(Collectors.joining(", ", "[", "]"));
-    	StringBuilder builder = new StringBuilder();
-    	builder.append("[");
-    	dealerList.forEach(mmms -> {
-    		builder.append(mmms.getMarketMakerMarketSpecificCode());
-    		builder.append(", ");
-    	});
-    	if(builder.length() > 1)
-    		builder.replace(builder.length() - 2,builder.length(),"]");
-    	else builder.append("]");
-    	return builder.toString();
+    public static String beautifyListOfDealers(List<MarketMarketMakerSpec> dealerList) {
+    	return dealerList.stream().map(MarketMarketMakerSpec::getMarketMakerMarketSpecificCode).collect(Collectors.joining(", ", "[", "]"));
     }
+    
+	public static String beautifyBigDecimal(BigDecimal inputValue, int minScale, int maxScale) {
+		int scale = inputValue.stripTrailingZeros().scale();
+		if (scale < minScale) {
+			scale = minScale;
+		} else if (scale > maxScale) {
+			scale = maxScale;
+		}
+		return inputValue.setScale(scale, RoundingMode.HALF_UP).toPlainString();
+	}
 
 	public MarketOrderBuilder getBuilder() {
 		return builder;

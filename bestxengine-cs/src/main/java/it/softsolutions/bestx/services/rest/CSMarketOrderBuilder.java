@@ -230,8 +230,9 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 			        marketOrder.setBuilder(this);
 
 					LOGGER.info("Order={}, Selecting for execution market market makers: {} and price {}. Excluding dealers {}",
-							operation.getOrder().getFixOrderId(), marketOrder.beautify(marketOrder.getDealers()),
-							limitPrice == null ? "null" : limitPrice.getAmount(),  marketOrder.beautify(marketOrder.getExcludeDealers()));
+							operation.getOrder().getFixOrderId(), MarketOrder.beautifyListOfDealers(marketOrder.getDealers()),
+							limitPrice == null ? "null" : MarketOrder.beautifyBigDecimal(limitPrice.getAmount(), 1, 5),
+							MarketOrder.beautifyListOfDealers(marketOrder.getExcludeDealers()));
 					listener.onMarketOrderBuilt(this, marketOrder);
 				} else {
 					listener.onMarketOrderErrors(this, errors);
