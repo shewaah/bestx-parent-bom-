@@ -29,10 +29,12 @@ public class CSUSTTargetPriceOrderFilter implements MarketOrderFilter {
 				SortedBook sortedBook = operation.getLastAttempt().getSortedBook();
 				
 				if (sortedBook != null) {
+					
+					List<ClassifiedProposal> validProposals = sortedBook.getValidSideProposals(order.getSide());
 					List<ClassifiedProposal> proposalsDiscardedByLimitPrice = sortedBook.getProposalBySubState(
 							Arrays.asList(ProposalSubState.PRICE_WORST_THAN_LIMIT), order.getSide());
 
-					if (!proposalsDiscardedByLimitPrice.isEmpty()) {
+					if (validProposals.isEmpty() && !proposalsDiscardedByLimitPrice.isEmpty()) {
 						int centsLFTolerance = ExecutionStrategyServiceFactory.getInstance().getCentsLFTolerance();
 						
 						BigDecimal targetPrice = proposalsDiscardedByLimitPrice.get(0).getPrice().getAmount();
