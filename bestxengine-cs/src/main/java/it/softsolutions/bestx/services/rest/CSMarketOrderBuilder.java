@@ -149,7 +149,7 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 				if (errors.isEmpty()) {
 
 					Money limitPrice = new Money(operation.getOrder().getCurrency(),
-							response.getData().getTargetPrice());
+							MarketOrder.beautifyBigDecimal(response.getData().getTargetPrice(), 1, 5));
 					Money limitMonitorPrice = null;
 					if (response.getData().getLimitMonitorPrice() != null) {
 						limitMonitorPrice = new Money(operation.getOrder().getCurrency(),
@@ -231,7 +231,7 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 
 					LOGGER.info("Order={}, Selecting for execution market market makers: {} and price {}. Excluding dealers {}",
 							operation.getOrder().getFixOrderId(), MarketOrder.beautifyListOfDealers(marketOrder.getDealers()),
-							limitPrice == null ? "null" : MarketOrder.beautifyBigDecimal(limitPrice.getAmount(), 1, 5),
+							limitPrice == null ? "null" : limitPrice,
 							MarketOrder.beautifyListOfDealers(marketOrder.getExcludeDealers()));
 					listener.onMarketOrderBuilt(this, marketOrder);
 				} else {
