@@ -13,9 +13,13 @@
  */
 package it.softsolutions.bestx.handlers.tradeweb;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.connections.MarketBuySideConnection;
+import it.softsolutions.bestx.connections.MarketConnection;
 import it.softsolutions.bestx.handlers.BaseOperationEventHandler;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.tradeweb.TW_RejectedState;
@@ -33,20 +37,40 @@ import it.softsolutions.bestx.states.tradeweb.TW_SendOrderState;
 public class TW_StartExecutionEventHandler extends BaseOperationEventHandler {
     
     private static final long serialVersionUID = -9102220412689184343L;
+	private MarketConnection marketConnection;
+	private static final Logger LOGGER = LoggerFactory.getLogger(TW_StartExecutionEventHandler.class);
 
-    public TW_StartExecutionEventHandler(Operation operation, MarketBuySideConnection twConnection, long orderCancelDelay) {
+    public TW_StartExecutionEventHandler(Operation operation, MarketConnection twConnection, long orderCancelDelay) {
         super(operation);
+        this.marketConnection=twConnection;
     }
 
     @Override
     public void onNewState(OperationState currentState) {
-//    	if(this.operation != null && this.operation.getLastAttempt() != null && this.operation.getLastAttempt().getMarketOrder() != null &&
-//    			this.operation.getLastAttempt().getMarketOrder().getMarket() != null &&
-//    			this.operation.getLastAttempt().getMarketOrder().getMarket().isDisabled()) {
-//    		// create a new MarketExecutionReport for the rejection and then go to rejected
-//    		operation.setStateResilient(new TW_RejectedState("Tradeweb market is disabled"), ErrorState.class);
-//    	}
-//    	else
+    	if(CheckIfBuySideMarketIsConnectedAndEnabled())
     		operation.setStateResilient(new TW_SendOrderState(), ErrorState.class);
+    	else
+    		operation.setStateResilient(new TW_RejectedState(), ErrorState.class);
     }
+    
+	
+	/**
+	 * Check if buy side market is connected and enabled.
+	 *
+	 * @return true, if successful
+	 */
+	public boolean CheckIfBuySideMarketIsConnectedAndEnabled (){
+		if(marketConnection == null) return false;
+		if (!marketConnection.isBuySideConnectionEnabled()) {             
+			LOGGER.info("Market Tradeweb is not enabled");
+			return false;			
+		}
+		
+		if (!marketConnection.isBuySideConnectionAvailable()) {             
+			LOGGER.info("MarketCode Tradeweb is not available");
+			return false;			
+		}		
+
+		return true;		
+	}
 }

@@ -32,6 +32,7 @@ import it.softsolutions.bestx.MifidConfig;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationIdType;
 import it.softsolutions.bestx.OperationState;
+import it.softsolutions.bestx.OperationState.Type;
 import it.softsolutions.bestx.OperationStateListener;
 import it.softsolutions.bestx.RegulatedMktIsinsLoader;
 import it.softsolutions.bestx.connections.MarketBuySideConnection;
@@ -744,10 +745,15 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         	else {
         		reason = orderMarketMaker;
         	}
-        	//BESTX-725 - SP03092020 - also BBG send POBEX in the reject state
-        	Boolean isPOBEXMkt = marketCode != null && (marketCode.equals(Market.MarketCode.TW) || marketCode.equals(Market.MarketCode.BLOOMBERG));
-            comment = getComment(isPOBEXMkt, marketCode, type, comment, isPOBEXMkt ? createPobexInformation(operation) : reason);
-            break;
+        	boolean wasRejectedBecauseDisabledOrUnavailableMarket = Type.StartExecution.equals(oldState.getType()); 
+        	if(wasRejectedBecauseDisabledOrUnavailableMarket)
+        		comment = getComment(true, marketCode, Type.MarketDisabled, comment);
+        	else {
+        		//BESTX-725 - SP03092020 - also BBG send POBEX in the reject state
+        		Boolean isPOBEXMkt = marketCode != null && (marketCode.equals(Market.MarketCode.TW) || marketCode.equals(Market.MarketCode.BLOOMBERG));
+        		comment = getComment(isPOBEXMkt, marketCode, type, comment, isPOBEXMkt ? createPobexInformation(operation) : reason);
+        	}
+        	break;
         case ManageCounter: {
             String counterOfferAmount = df.format(operation.getLastAttempt().getExecutablePrice(0).getClassifiedProposal().getPrice().getAmount());
             comment = getComment(false, marketCode, type, comment, counterOfferAmount);
@@ -869,32 +875,6 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         return comment;
     }
 
-
-	/*    private String getExecutionProposalAmount(Attempt lastAttempt) {
-        String res = null;
-
-        if (lastAttempt == null) {
-            return res;
-        }
-
-        try {
-            if (lastAttempt.getExecutionProposal() != null
-                            && lastAttempt.getExecutionProposal().getPrice() != null
-                            && lastAttempt.getExecutionProposal().getPrice().getAmount() != null) {
-
-                res = df.format(lastAttempt.getExecutionProposal().getPrice().getAmount());
-            }
-            else if (lastAttempt.getExecutablePrice(0) != null && lastAttempt.getExecutionProposal() != null
-                            && lastAttempt.getExecutionProposal().getPrice() != null
-                            && lastAttempt.getExecutionProposal().getPrice().getAmount() != null) {
-
-                res = df.format(lastAttempt.getExecutionProposal().getPrice().getAmount());
-            }
-        } catch (NullPointerException e) {
-        }
-        return res;
-    }
-*/    
 	private String getMarketOrderSize(Attempt lastAttempt) {
 		if(lastAttempt != null && lastAttempt.getMarketOrder() != null && lastAttempt.getMarketOrder().getQty()!= null)
 			return lastAttempt.getMarketOrder().getQty().toPlainString();

@@ -649,13 +649,13 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 		case StartExecution: {
 			switch (marketCode) {
 			case BLOOMBERG:
-				handler = new BBG_StartExecutionEventHandler(operation);
+				handler = new BBG_StartExecutionEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BLOOMBERG));
 				break;
 			case TW:
-				handler = new TW_StartExecutionEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.TW).getBuySideConnection(), orderCancelDelay);
+				handler = new TW_StartExecutionEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.TW), orderCancelDelay);
 				break;
 			case MARKETAXESS:
-				handler = new MA_StartExecutionEventHandler(operation);
+				handler = new MA_StartExecutionEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.MARKETAXESS));
 				break;
 			default:
 				throw new BestXException(Messages.getString("StrategyUnexpectedMarketCode.0", marketCode));

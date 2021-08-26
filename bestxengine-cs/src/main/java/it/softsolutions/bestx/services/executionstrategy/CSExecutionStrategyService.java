@@ -177,11 +177,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 					}
 					// requested on March 2019 rendez vous un Zurich currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
 					currentAttempt.getMarketOrder().setMarketMarketMaker(null);
-					if(CheckIfBuySideMarketIsConnectedAndEnabled(MarketCode.BLOOMBERG))
 						operation.setStateResilient(new BBG_StartExecutionState(), ErrorState.class);
-					else {
-						operation.setStateResilient(new BBG_RejectedState("Bloomberg Market is unavailable or disabled", false), ErrorState.class);
-					}
 				break;
 			case TW:
 				String twSessionId = operation.getIdentifier(OperationIdType.TW_SESSION_ID);
@@ -191,11 +187,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 
 				// requested on March 2019 rendez vous un Zurich currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
 				currentAttempt.getMarketOrder().setMarketMarketMaker(null);
-				if(CheckIfBuySideMarketIsConnectedAndEnabled(MarketCode.TW))
 					operation.setStateResilient(new TW_StartExecutionState(), ErrorState.class);
-				else {
-					operation.setStateResilient(new TW_RejectedState("Tradeweb Market is unavailable or disabled"), ErrorState.class);
-				}
 				break;
 			case MARKETAXESS:
 				String maSessionId = operation.getIdentifier(OperationIdType.MARKETAXESS_SESSION_ID);
@@ -203,11 +195,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 					operation.removeIdentifier(OperationIdType.MARKETAXESS_SESSION_ID);
 				}
 
-				if(CheckIfBuySideMarketIsConnectedAndEnabled(MarketCode.MARKETAXESS))
 					operation.setStateResilient(new MA_StartExecutionState(), ErrorState.class);
-				else {
-					operation.setStateResilient(new MA_RejectedState("MarketAxess Market is unavailable or disabled"), ErrorState.class);
-				}
 				break;
 			default:
 				operation.removeLastAttempt();
@@ -360,33 +348,6 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	        break;
 	    }
 	}
-	
-	/**
-	 * Check if buy side market is connected and enabled.
-	 *
-	 * @param marketCode the market code
-	 * @return true, if successful
-	 */
-	public boolean CheckIfBuySideMarketIsConnectedAndEnabled (MarketCode marketCode){
-		MarketConnection marketConnection = marketConnectionRegistry.getMarketConnection(marketCode);
-		if (marketConnection == null) {
-			LOGGER.error("MarketCode {} is not contained in market connection list", marketCode.toString());
-			return false;
-		}
-		
-		if (!marketConnection.isBuySideConnectionEnabled()) {             
-			LOGGER.info("MarketCode {} is not enabled", marketCode.toString());
-			return false;			
-		}
-		
-		if (!marketConnection.isBuySideConnectionAvailable()) {             
-			LOGGER.info("MarketCode {} is not available", marketCode.toString());
-			return false;			
-		}		
-
-		return true;		
-	}
-
 }
 /**
  * As a side effect purges the market code used in the attempt from the currentMarkets
