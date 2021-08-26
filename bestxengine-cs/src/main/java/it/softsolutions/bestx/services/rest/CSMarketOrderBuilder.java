@@ -23,6 +23,7 @@ import java.util.concurrent.Executor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilderListener;
@@ -104,7 +105,7 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 	}
 
 	@Override
-	public void buildMarketOrder(Operation operation, MarketOrderBuilderListener listener) {
+	public void buildMarketOrder(Operation operation, MarketOrderBuilderListener listener) throws BestXException {
 		this.executor.execute(() -> {
 			try {
 				MarketOrder marketOrder = new MarketOrder();
@@ -131,7 +132,7 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 					}
 				}
 
-				GetRoutingProposalResponse response = csAlgoService.doGetRoutingProposal(request);  //TODO should not propagate the exception if there is an error in the message
+				GetRoutingProposalResponse response = csAlgoService.doGetRoutingProposal(request);
 
 				List<String> errors = new ArrayList<>();
 
@@ -239,6 +240,10 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 				}
 
 			} catch (Exception e) {
+				if(e instanceof IllegalArgumentException && e.getMessage().contains("Venue.")) {
+					LOGGER.error(e.getMessage(), e);
+					listener.onMarketOrderException(this, e);
+				}
 				if (e.getCause() instanceof SocketTimeoutException) {
 					LOGGER.error("Timeout to call ALGO REST Service", e);
 					listener.onMarketOrderTimeout(this);

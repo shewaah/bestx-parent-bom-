@@ -323,9 +323,8 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			currentAttempt.setExecutionProposal(currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide()));
 			try {
 				this.marketOrderBuilder.buildMarketOrder(operation, operation);
-			} catch (Throwable e) {
-				// anything to do exception should be only in test? AMC 202108 BESTX-792
-				LOGGER.error("Problem during the buildMarketOrder call", e);
+			} catch (Exception e) {
+				operation.setStateResilient(new WarningState(operation.getState(), e, e.getMessage()), ErrorState.class);
 			}
 		} else if (priceResult.getState() == PriceResult.PriceResultState.INCOMPLETE) {
 			LOGGER.warn("Order {} , Price result is INCOMPLETE, setting to Warning state", operation.getOrder().getFixOrderId());
@@ -542,7 +541,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			LOGGER.error("Exception received while calling GetRoutingProposal", ex);
 			ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
 			// TODO Internationalize message
-			operation.setStateResilient(new SendAutoNotExecutionReportState("Exception during the creation of market order"), ErrorState.class);
+			operation.setStateResilient(new SendAutoNotExecutionReportState("Exception during the creation of market order: " + ex.getMessage()), ErrorState.class);
 		}
 		catch (BestXException e) {
 			LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
