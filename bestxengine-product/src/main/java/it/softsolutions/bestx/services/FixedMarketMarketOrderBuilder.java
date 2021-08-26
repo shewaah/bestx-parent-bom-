@@ -22,6 +22,11 @@ public class FixedMarketMarketOrderBuilder extends MarketOrderBuilder {
 		marketOrder.setTransactTime(DateService.newUTCDate());
 		marketOrder.setMarket(this.marketFinder.getMarketByCode(this.marketCode, null));
 		Money limitPrice = this.targetPriceCalculator.calculateTargetPrice(operation);
+		
+		if (limitPrice != null) {
+			limitPrice = new Money(limitPrice.getCurrency(), MarketOrder.beautifyBigDecimal(limitPrice.getAmount(), 1, 5));
+		}
+		
 		marketOrder.setLimit(limitPrice != null ? limitPrice : operation.getOrder().getLimit());
 		marketOrder.setBuilder(this);
 

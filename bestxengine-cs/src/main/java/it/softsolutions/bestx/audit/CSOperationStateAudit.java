@@ -883,7 +883,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
 
 	private String getMarketOrderPrice(Attempt lastAttempt) {
 		if(lastAttempt != null && lastAttempt.getMarketOrder() != null && lastAttempt.getMarketOrder().getLimit()!= null)
-			return MarketOrder.beautifyBigDecimal(lastAttempt.getMarketOrder().getLimit().getAmount(), 1, 5);
+			return lastAttempt.getMarketOrder().getLimit().getAmount().toPlainString();
 		return null;
 	}
 
