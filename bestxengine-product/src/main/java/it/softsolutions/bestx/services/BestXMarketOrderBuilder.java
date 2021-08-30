@@ -69,7 +69,7 @@ public class BestXMarketOrderBuilder extends MarketOrderBuilder {
 					? marketOrder.getMarket().getName().substring(0, marketOrder.getMarket().getName().indexOf("_HIST"))
 					: marketOrder.getMarket().getName(); // TODO Probably use effective market?
 					
-			if (limitPrice != null) {
+			if (limitPrice != null && limitPrice.getCurrency() != null) {
 				limitPrice = new Money(limitPrice.getCurrency(), MarketOrder.beautifyBigDecimal(limitPrice.getAmount(), 1, 5));
 			}
 					
