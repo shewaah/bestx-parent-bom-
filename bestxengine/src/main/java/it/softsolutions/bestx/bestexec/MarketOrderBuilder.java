@@ -76,6 +76,7 @@ public abstract class MarketOrderBuilder {
 	 * This method take informations from operation to create the market order for the current attempt
 	 * 
 	 * @param operation
+	 * @param listener is normally the operation. The Event Handler of the status where this method is called (normally WaitingPricesEventHandler) needs to implement the MarketOrderBuilderListener interface
 	 * @return null if is not possible to create the market order
 	 * @throws Exception
 	 */

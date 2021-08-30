@@ -104,7 +104,14 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 		return elem;
 	}
 
+	/**
+	 *
+	 * @implSpec
+	 * Note that if the MMM has not been configured in TSOX (and this is checked only for BBG markets) 
+	 * then we are using the BPipe code for both BPipe and TSOX channels, since they are identical  
+	 */
 	@Override
+
 	public void buildMarketOrder(Operation operation, MarketOrderBuilderListener listener) throws BestXException {
 		this.executor.execute(() -> {
 			try {
@@ -179,7 +186,7 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 						MarketMarketMaker mmm = this.getMarketMakerFinder().getSmartMarketMarketMakerByCode(
 								market.getMarketCode(), excludeDealersResp.get(i));
 						if(mmm == null) continue;
-						if(!Market.isABBGMarket(market.getMarketCode())) {
+						if(!Market.isABBGMarket(market.getMarketCode()) || mmm.getMarketMaker().getMarketMarketMakerForMarket(MarketCode.TSOX).isEmpty()) {
 							excludeDealers.add(mmm);
 						}
 						else {
@@ -194,16 +201,16 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 					excludeDealers.forEach(marketMarketMaker ->excludeDealersSpecs.add(new MarketMarketMakerSpec(marketMarketMaker.getMarketSpecificCode(), marketMarketMaker.getMarketSpecificCodeSource())));
 					
 					// add all dealer codes returned as includeDealers to the marketOrder.dealers list
-					// note that if the returned market is Bloomberg we need to be smart ad add all the dealer codes in TSOX for that dealer
+					// note that if the returned market is Bloomberg we need to be smart and may be necessary to add all the dealer codes in TSOX for that dealer
 					for(int i = 0; i < includeDealersResp.size();i++) {
 						MarketMarketMaker mmm = this.getMarketMakerFinder().getSmartMarketMarketMakerByCode(
 								market.getMarketCode(), includeDealersResp.get(i));
 						if(mmm == null) continue;
 						if(excludeDealers.contains(mmm)) {
-							LOGGER.info("Duplication found in list of MarketMakers between include and exclude lists. Code: {}", mmm.getMarketSpecificCode());
+							LOGGER.error("Order: {}, duplication found in list of MarketMakers between include and exclude lists. Code: {}", operation.getOrder().getFixOrderId(), mmm.getMarketSpecificCode());
 							continue;
 						}
-						if(!Market.isABBGMarket(market.getMarketCode())) {
+						if(!Market.isABBGMarket(market.getMarketCode()) || mmm.getMarketMaker().getMarketMarketMakerForMarket(MarketCode.TSOX).isEmpty()) {
 							includeDealersSpecs.add(new MarketMarketMakerSpec(mmm.getMarketSpecificCode(), mmm.getMarketSpecificCodeSource()));
 							}
 							else {

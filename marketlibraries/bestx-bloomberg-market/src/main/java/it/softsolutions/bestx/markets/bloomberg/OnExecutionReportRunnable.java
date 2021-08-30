@@ -33,6 +33,7 @@ import it.softsolutions.bestx.model.ExecutablePriceAskComparator;
 import it.softsolutions.bestx.model.ExecutablePriceBidComparator;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.model.Market;
+import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.MarketExecutionReport;
 import it.softsolutions.bestx.model.MarketMarketMaker;
 import it.softsolutions.bestx.model.Order;
@@ -222,7 +223,7 @@ public class OnExecutionReportRunnable implements Runnable {
       if (dealerCode != null) {
          MarketMarketMaker mmm = null;
          try {
-            mmm = marketMakerFinder.getMarketMarketMakerByTSOXCode(dealerCode);
+             mmm = marketMakerFinder.getSmartMarketMarketMakerByCode(MarketCode.BLOOMBERG, dealerCode);
          }
          catch (BestXException e) {
             LOGGER.error("Exception occurred", e);
@@ -386,8 +387,9 @@ public class OnExecutionReportRunnable implements Runnable {
 	                     if (groups.get(i).isSetField(CompDealerID.FIELD)) {
 	                        String quotingDealer = groups.get(i).getField(new StringField(CompDealerID.FIELD)).getValue();
 
-	                        //tempMM = marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), quotingDealer);
-	                        tempMM = marketMakerFinder.getMarketMarketMakerByTSOXCode(quotingDealer);
+	                        //tempMM = marketMakerFinder.getMarketMarketMakerByTSOXCode(quotingDealer);
+	                        tempMM = marketMakerFinder.getSmartMarketMarketMakerByCode(MarketCode.BLOOMBERG, quotingDealer);
+
 	                        if (tempMM == null) {
 	                           LOGGER.info("IMPORTANT! Bloomberg returned dealer {} not configured in BestX:FI-A. Please configure it", quotingDealer);
 	                           price.setOriginatorID(quotingDealer);

@@ -43,6 +43,7 @@ public class MA_StartExecutionEventHandler extends BaseOperationEventHandler {
 
     public MA_StartExecutionEventHandler(Operation operation, MarketConnection marketConnection) {
         super(operation);
+        this.marketConnection = marketConnection;
     }
 
     @Override
