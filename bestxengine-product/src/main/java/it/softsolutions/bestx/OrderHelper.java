@@ -51,7 +51,7 @@ public class OrderHelper {
             List<ClassifiedProposal> bookProposals = sortedBook.getSideProposals(order.getSide());
 
             BigDecimal limitPrice = order.getLimit().getAmount();
-            LOGGER.debug("Order {} limit price {}, starting calculating delta from best proposal price.", order.getFixOrderId(), limitPrice.doubleValue());
+            LOGGER.debug("Order {} limit price {}, starting calculating delta from limit monitor price.", order.getFixOrderId(), limitPrice.doubleValue());
             try {
             	if (operation.getLastAttempt().getMarketOrder() != null && operation.getLastAttempt().getMarketOrder().getLimitMonitorPrice() != null) {
             		order.setBestPriceDeviationFromLimit(

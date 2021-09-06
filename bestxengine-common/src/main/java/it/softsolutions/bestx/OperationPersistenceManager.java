@@ -54,6 +54,8 @@ import it.softsolutions.bestx.services.DateService;
 public class OperationPersistenceManager implements OperationStateListener, Initializer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OperationPersistenceManager.class);
+    
+    private final String logString = "Retrieved {} operations";
 
     private boolean keepTerminalOperation;
     private SessionFactory sessionFactory;
@@ -310,12 +312,14 @@ public class OperationPersistenceManager implements OperationStateListener, Init
             query.setTimestamp("to", new Timestamp(dateTo.getTimeInMillis()));
             operations = query.list();
 
-            if (operations != null && operations.size() > 0) {
+            if (operations != null && !operations.isEmpty()) {
                 for (Operation operation : operations) {
                 	try {
                 		operationFactory.initOperation(operation);
                 	} catch(org.hibernate.HibernateException hibex) {
                 		LOGGER.warn("Unable to retrieve operation for order {}, due to exception", operation.getOrder().getFixOrderId(), hibex);
+                		// FIXME try to call the operation restore
+                		
                 	}
                 }
             } else {
@@ -329,7 +333,7 @@ public class OperationPersistenceManager implements OperationStateListener, Init
                 session.close();
             }
         }
-        LOGGER.info("Retrieved {} operations", (operations != null ? operations.size() : 0));
+        LOGGER.info(logString, (operations != null ? operations.size() : 0));
         return operations;
     }
 
@@ -509,7 +513,7 @@ public class OperationPersistenceManager implements OperationStateListener, Init
                session.close();
            }
        }
-       LOGGER.info("Retrieved {} operations", (operations != null ? operations.size() : 0));
+       LOGGER.info(logString, (operations != null ? operations.size() : 0));
        return operations;
     }
 
@@ -539,7 +543,7 @@ public class OperationPersistenceManager implements OperationStateListener, Init
 						// TODO
 					}
 	            	
-	    	        LOGGER.info("Retrieved {} operations", (operations != null ? operations.size() : 0));
+	    	        LOGGER.info(logString, (operations != null ? operations.size() : 0));
 
 	            } else {
 	                LOGGER.warn("No operations retrieved");

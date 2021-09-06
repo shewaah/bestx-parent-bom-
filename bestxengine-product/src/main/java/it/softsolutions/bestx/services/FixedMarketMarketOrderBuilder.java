@@ -9,6 +9,10 @@ import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.jsscommon.Money;
 
 public class FixedMarketMarketOrderBuilder extends MarketOrderBuilder {
+	
+	public FixedMarketMarketOrderBuilder() {
+		super("Default");
+	}
 
 	private MarketFinder marketFinder;
 	private MarketCode marketCode;

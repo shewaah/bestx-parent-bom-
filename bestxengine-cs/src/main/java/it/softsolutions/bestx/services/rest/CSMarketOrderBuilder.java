@@ -70,7 +70,7 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 	private Executor executor;
 	
 	public CSMarketOrderBuilder() {
-		super();
+		super("Rest Service");
 	}
 
 	private ConsolidatedBookElement buildConsolidatedBookElement(BidAsk bidAsk, ClassifiedProposal proposal) {
@@ -108,7 +108,8 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 	 *
 	 * @implSpec
 	 * Note that if the MMM has not been configured in TSOX (and this is checked only for BBG markets) 
-	 * then we are using the BPipe code for both BPipe and TSOX channels, since they are identical  
+	 * then we are using the BPipe code for both BPipe and TSOX channels, since they are identical 
+	 * Note also that no validation of returned values is attempted
 	 */
 	@Override
 
@@ -172,59 +173,14 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 
 					// Manage include dealers and exclude dealers
 					List<String> includeDealersResp = response.getData().getIncludeDealers();
-					List<String> excludeDealersResp = response.getData().getExcludeDealers();
-					List<MarketMarketMaker> excludeDealers = new ArrayList<MarketMarketMaker>(); // list to use to exclude from includeDealers the MM specified in excludeDealers list 
-					List<MarketMaker> excludeMarketMakers = new ArrayList<MarketMaker>(); // list to avoid duplications in excludeDealers
-					List<MarketMaker> includeMarketMakers = new ArrayList<MarketMaker>(); // list to avoid duplications in includeDealers
-					// - Note may be due especially for TSOX dealer codes
-					List<MarketMarketMakerSpec> includeDealersSpecs = new ArrayList<MarketMarketMakerSpec>();
-					List<MarketMarketMakerSpec> excludeDealersSpecs = new ArrayList<MarketMarketMakerSpec>();
+					List<String> excludeDealersResp = response.getData().getExcludeDealers();					// - Note may be due especially for TSOX dealer codes
+					List<MarketMarketMakerSpec> includeDealersSpecs = new ArrayList<>();
+					List<MarketMarketMakerSpec> excludeDealersSpecs = new ArrayList<>();
 					
-					// add all dealer codes returned as excludeDealers to the marketOrder.excludeDealers list
-					// note that if the returned market is Bloomberg we need to be smart ad add all the dealer codes in TSOX for that dealer
-					for(int i = 0; i < excludeDealersResp.size();i++) {
-						MarketMarketMaker mmm = this.getMarketMakerFinder().getSmartMarketMarketMakerByCode(
-								market.getMarketCode(), excludeDealersResp.get(i));
-						if(mmm == null) continue;
-						if(!Market.isABBGMarket(market.getMarketCode()) || mmm.getMarketMaker().getMarketMarketMakerForMarket(MarketCode.TSOX).isEmpty()) {
-							excludeDealers.add(mmm);
-						}
-						else {
-							if(excludeMarketMakers.contains(mmm.getMarketMaker()))
-									continue;
-							excludeMarketMakers.add(mmm.getMarketMaker());
-							List<MarketMarketMaker> mmList = mmm.getMarketMaker().getMarketMarketMakerForMarket(MarketCode.TSOX);
-							java.util.function.Consumer<? super MarketMarketMaker> addmmsToExcludeList = mmm2 -> excludeDealers.add(mmm2);
-							mmList.forEach(addmmsToExcludeList);
-						}
-					}
-					excludeDealers.forEach(marketMarketMaker ->excludeDealersSpecs.add(new MarketMarketMakerSpec(marketMarketMaker.getMarketSpecificCode(), marketMarketMaker.getMarketSpecificCodeSource())));
-					
-					// add all dealer codes returned as includeDealers to the marketOrder.dealers list
-					// note that if the returned market is Bloomberg we need to be smart and may be necessary to add all the dealer codes in TSOX for that dealer
-					for(int i = 0; i < includeDealersResp.size();i++) {
-						MarketMarketMaker mmm = this.getMarketMakerFinder().getSmartMarketMarketMakerByCode(
-								market.getMarketCode(), includeDealersResp.get(i));
-						if(mmm == null) continue;
-						if(excludeDealers.contains(mmm)) {
-							LOGGER.error("Order: {}, duplication found in list of MarketMakers between include and exclude lists. Code: {}", operation.getOrder().getFixOrderId(), mmm.getMarketSpecificCode());
-							continue;
-						}
-						if(!Market.isABBGMarket(market.getMarketCode()) || mmm.getMarketMaker().getMarketMarketMakerForMarket(MarketCode.TSOX).isEmpty()) {
-							includeDealersSpecs.add(new MarketMarketMakerSpec(mmm.getMarketSpecificCode(), mmm.getMarketSpecificCodeSource()));
-							}
-							else {
-								if(includeMarketMakers.contains(mmm.getMarketMaker()))
-									continue;
-								includeMarketMakers.add(mmm.getMarketMaker());
-								List<MarketMarketMaker> mmList = mmm.getMarketMaker().getMarketMarketMakerForMarket(MarketCode.TSOX);
-								java.util.function.Consumer<? super MarketMarketMaker> addmmsToIncludeList = mmm1 -> {
-												if(!excludeDealers.contains(mmm1))  // Add only dealer codes of dealers that are not already in the exclude list
-													includeDealersSpecs.add(new MarketMarketMakerSpec(mmm1.getMarketSpecificCode(), mmm1.getMarketSpecificCodeSource()));
-								};
-								mmList.forEach(addmmsToIncludeList);
-							}
-					}
+					includeDealersResp.forEach(dealerCode -> includeDealersSpecs.add(createNewMarketMarketMakerSpec(dealerCode, market)));
+					excludeDealersResp.forEach(dealerCode -> excludeDealersSpecs.add(createNewMarketMarketMakerSpec(dealerCode, market)));
+					// AMC 20210831 removed all logic after asked by client
+
 					//remove dealer codes relative to composite prices
 					this.removeCompositePricesFromList(excludeDealersSpecs, market.getMarketCode());
 					marketOrder.setExcludeDealers(excludeDealersSpecs);			
@@ -260,6 +216,19 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 				}
 			}
 		});
+	}
+
+	private MarketMarketMakerSpec createNewMarketMarketMakerSpec(String dealerCode, Market market) {
+		MarketMarketMaker mmm = null;
+		try {
+			mmm = this.getMarketMakerFinder().getSmartMarketMarketMakerByCode(market.getMarketCode(), dealerCode);
+		} catch (BestXException e) {
+			;// nothing to do
+		}
+		if(mmm == null) {
+			return new MarketMarketMakerSpec(dealerCode, dealerCode.length() > 8 ? "B" : "C");
+		}
+		return new MarketMarketMakerSpec(dealerCode, mmm.getMarketSpecificCodeSource());
 	}
 
 	public CSAlgoRestService getCsAlgoService() {

@@ -33,13 +33,19 @@ import it.softsolutions.jsscommon.Money;
 
 /**
  *
- * Purpose: this class is mainly for ...
+ * Purpose: this class is the standard product way BestX adopts to create a MarketOrder for execution attempts
+ * It uses the consolidated book created in the price discovery step as the only source of data
  *
  * Project Name : bestxengine-product First created by: stefano.pontillo
  * Creation date: 27 lug 2021
  * 
  **/
 public class BestXMarketOrderBuilder extends MarketOrderBuilder {
+	
+	public BestXMarketOrderBuilder() {
+		super("Default");
+	}
+
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(BestXMarketOrderBuilder.class);
 

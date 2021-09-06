@@ -81,7 +81,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(WaitingPriceEventHandler.class);
 	// Monitorable
-	// private static NumericValueMonitor totalPriceRequestsMonitor = null;
 	private static Map<String, Long> totalPriceRequests = new HashMap<String, Long>();
 	private static Map<String, Long> pendingPriceRequests = new HashMap<String, Long>();
 
@@ -90,7 +89,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 	protected final long waitingPriceDelay;
 	protected final long marketPriceTimeout;
 	private final int maxAttemptNo;
-	//private final Venue INTERNAL_MM_VENUE;
 	private List<String> internalMMcodes;
 
 	protected final ExecutionDestinationService executionDestinationService;
@@ -505,17 +503,18 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		
 		if (currentAttempt.getNextAction() instanceof RejectOrderAction) {
 			try {
-				String rejectMessage = ((RejectOrderAction) currentAttempt.getNextAction()).getRejectReason();
+				String rejectMessage = builder.getName() + ": " + ((RejectOrderAction) currentAttempt.getNextAction()).getRejectReason();
 	            ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
 				operation.setStateResilient(new SendAutoNotExecutionReportState(rejectMessage), ErrorState.class);
 			} catch (BestXException e) {
-				LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
+				LOGGER.error("Order {}, error while starting automatic not execution using {}", operation.getOrder().getFixOrderId(), builder.getName(), e);
 				String errorMessage = e.getMessage();
 				operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
 			}
 		} else if (currentAttempt.getNextAction() instanceof FreezeOrderAction) {
             try {
             	FreezeOrderAction freezeOrderAction = (FreezeOrderAction) currentAttempt.getNextAction();
+            	String freezeMessage = builder.getName() + ": " + freezeOrderAction.getMessage();
             	if (freezeOrderAction.getNextPanel() == NextPanel.ORDERS_NO_AUTOEXECUTION) {
             		this.operation.setStateResilient(new CurandoState(freezeOrderAction.getMessage()), ErrorState.class);
             	} else if (freezeOrderAction.getNextPanel() == NextPanel.LIMIT_FILE) {

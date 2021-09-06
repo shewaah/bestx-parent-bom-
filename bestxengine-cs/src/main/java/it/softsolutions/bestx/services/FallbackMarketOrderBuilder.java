@@ -59,7 +59,7 @@ public class FallbackMarketOrderBuilder extends MarketOrderBuilder {
 	private MarketOrderBuilder ustMarketOrderBuilder;
 	
 	public FallbackMarketOrderBuilder() {
-		super();
+		super("Fallback");
 	}
 	private class FallbackMarketOrderBuilderListener implements MarketOrderBuilderListener {
 		private Operation operation;
@@ -76,7 +76,8 @@ public class FallbackMarketOrderBuilder extends MarketOrderBuilder {
 		@Override
 		public void onMarketOrderTimeout(MarketOrderBuilder source) {
 			try {
-			FallbackMarketOrderBuilder.this.defaultMarketOrderBuilder.buildMarketOrder(operation, operation);
+				LOGGER.info("MarketOrderBuilder: timeout reached for order {}", operation.getOrder().getFixOrderId());
+				FallbackMarketOrderBuilder.this.defaultMarketOrderBuilder.buildMarketOrder(operation, operation);
 			} catch (Exception e) {
 				LOGGER.error("Exception in FallbackMarketOrderBuilder.this.defaultMarketOrderBuilder.buildMarketOrder", e);
 			}
@@ -84,6 +85,7 @@ public class FallbackMarketOrderBuilder extends MarketOrderBuilder {
 
 		@Override
 		public void onMarketOrderException(MarketOrderBuilder source, Exception ex) {
+			LOGGER.info("MarketOrderBuilder: exception {} for order {}", ex.toString(), operation.getOrder().getFixOrderId());
 			this.operation.onMarketOrderException(FallbackMarketOrderBuilder.this, ex);
 		}
 
