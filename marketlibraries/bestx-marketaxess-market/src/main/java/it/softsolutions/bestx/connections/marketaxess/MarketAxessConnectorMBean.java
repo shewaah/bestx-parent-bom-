@@ -36,11 +36,13 @@ public interface MarketAxessConnectorMBean {
 	 * @param traderPartyID the trader id used to send orders
 	 */
 	void setTraderPartyID(String traderPartyID);
-	
-	   public boolean isAddIncludeDealers();
-	   public void setAddIncludeDealers(boolean addIncludeDealers);
-	   public int getBlockedDealersMaxNum();
-	   public void setBlockedDealersMaxNum(int blockedDealersMaxNum);
-	   public int getIncludeDealersMaxNum();
-	   public void setIncludeDealersMaxNum(int includeDealersMaxNum);
+
+	public boolean isAddIncludeDealers();
+	public void setAddIncludeDealers(boolean addBlockedDealers);
+	public boolean isAddBlockedDealers();
+	public void setAddBlockedDealers(boolean addBlockedDealers);
+	public int getBlockedDealersMaxNum();
+	public void setBlockedDealersMaxNum(int blockedDealersMaxNum);
+	public int getIncludeDealersMaxNum();
+	public void setIncludeDealersMaxNum(int includeDealersMaxNum);
 }
