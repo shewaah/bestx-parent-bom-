@@ -76,9 +76,10 @@
                 <entry key="it.softsolutions.bestx.cs:name=ApplicationControl" value-ref="applicationController" />
                 <entry key="it.softsolutions.bestx.cs:name=AutomaticCurandoStatus" value-ref="autoCurandoStatusManager" />
                 <entry key="it.softsolutions.bestx.cs:name=Oms1FixCustomerConnection" value-ref="oms1CustomerAdapter" />
-                <entry key="it.softsolutions.bestx.cs:name=BloombergMarketConnection" value-ref="bloombergMarket" />
 				<entry key="it.softsolutions.bestx.cs:name=TradewebMarketConnection" value-ref="tradewebMarket" />
 				<entry key="it.softsolutions.bestx.cs:name=TradewebXpressConnection" value-ref="tradexpressConnector" />
+                <entry key="it.softsolutions.bestx.cs:name=BloombergMarketConnection" value-ref="bloombergMarket" />
+                <entry key="it.softsolutions.bestx.cs:name=RBLD_TSOXConnection" value-ref="tsoxConnector" />
 				<entry key="it.softsolutions.bestx.cs:name=MarketAxessMarketConnection" value-ref="marketAxessMarket" />
 				<entry key="it.softsolutions.bestx.cs:name=MarketAxessConnectionImpl" value-ref="autoExecutionTradeConnector" />
                 <entry key="it.softsolutions.bestx.cs:name=NormalPriceService" value-ref="normalPriceService" />
@@ -117,10 +118,11 @@
 						<prop key="it.softsolutions.bestx.cs:name=Oms1FixCustomerConnection">it.softsolutions.bestx.management.FixCustomerAdapterMBean</prop>
 <!-- 						<prop key="it.softsolutions.bestx.cs:name=Oms2FixCustomerConnection">it.softsolutions.bestx.management.FixCustomerAdapterMBean</prop> -->
 						<prop key="it.softsolutions.bestx.cs:name=BloombergMarketConnection">it.softsolutions.bestx.management.MarketMXBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=MarketAxessConnectionImpl">it.softsolutions.bestx.connections.marketaxess.MarketAxessConnectorMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=TradewebMarketConnection">it.softsolutions.bestx.management.MarketMXBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=TradewebXpressConnection">it.softsolutions.bestx.connections.TradeStacConnectorMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=MarketAxessMarketConnection">it.softsolutions.bestx.management.MarketMXBean</prop>
-						<prop key="it.softsolutions.bestx.cs:name=MarketAxessConnectionImpl">it.softsolutions.bestx.connections.marketaxess.MarketAxessConnectorMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=RBLD_TSOXConnection">it.softsolutions.bestx.connections.TradeStacConnectorMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=PriceService">it.softsolutions.bestx.management.PriceServiceMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=OperatorConsoleAdapter">it.softsolutions.bestx.management.OperatorConsoleAdapterMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=OperationRestore">it.softsolutions.bestx.management.SimpleOperationRestorerMBean</prop>
