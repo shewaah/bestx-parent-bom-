@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.softsolutions.bestx.BestXException;
+import it.softsolutions.bestx.connections.TradeStacConnectorMBean;
 import it.softsolutions.bestx.connections.tradestac.AbstractTradeStacConnection;
 import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.MarketMarketMakerSpec;
@@ -69,7 +70,7 @@ import tw.quickfix.field.TradingMode;
  * 
  **/
 @SuppressWarnings("deprecation")
-public class TradeXpressConnectionImpl extends AbstractTradeStacConnection implements TradeXpressConnection {
+public class TradeXpressConnectionImpl extends AbstractTradeStacConnection implements TradeXpressConnection, TradeStacConnectorMBean {
 
    private static final Logger LOGGER = LoggerFactory.getLogger(TradeXpressConnectionImpl.class);
    private TradeXpressConnectionListener tradeXpressConnectionListener;
