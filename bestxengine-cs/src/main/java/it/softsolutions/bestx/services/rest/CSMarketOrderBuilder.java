@@ -195,7 +195,7 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 
 					LOGGER.info("Order={}, Selecting for execution market market makers: {} and price {}. Excluding dealers {}",
 							operation.getOrder().getFixOrderId(), MarketOrder.beautifyListOfDealers(marketOrder.getDealers()),
-							limitPrice == null ? "null" : limitPrice,
+							limitPrice == null ? "null" : limitPrice.getAmount(),
 							MarketOrder.beautifyListOfDealers(marketOrder.getExcludeDealers()));
 					listener.onMarketOrderBuilt(this, marketOrder);
 				} else {
