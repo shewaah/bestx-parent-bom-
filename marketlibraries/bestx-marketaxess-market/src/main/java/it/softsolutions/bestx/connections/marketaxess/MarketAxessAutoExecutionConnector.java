@@ -308,7 +308,7 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 	 */
 	private void addBlockedDealers(MarketOrder marketOrder, NewOrderSingle newOrderSingle) {
 		if(marketOrder.getExcludeDealers() != null) {		
-			for(int i = 0 ; i <= blockedDealersMaxNum && i < marketOrder.getExcludeDealers().size(); i++) {
+			for(int i = 0 ; i < blockedDealersMaxNum && i < marketOrder.getExcludeDealers().size(); i++) {
 				MarketMarketMakerSpec maDealerCode= marketOrder.getExcludeDealers().get(i);
 				NewOrderSingle.NoDealers dealer = new NewOrderSingle.NoDealers();
 				if(maDealerCode != null) {
@@ -327,7 +327,7 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 	 */
 	private void addIncludeDealers(MarketOrder marketOrder, NewOrderSingle newOrderSingle) {
 		if(marketOrder.getDealers() != null)
-	    	  for(int i = 0 ; i <= includeDealersMaxNum && i < marketOrder.getDealers().size(); i++) {
+	    	  for(int i = 0 ; i < includeDealersMaxNum && i < marketOrder.getDealers().size(); i++) {
 	    		  MarketMarketMakerSpec maDealerCode = marketOrder.getDealers().get(i);
 	    		  NewOrderSingle.NoDealers dealer = new NewOrderSingle.NoDealers();
 	    		  if(maDealerCode != null) {
