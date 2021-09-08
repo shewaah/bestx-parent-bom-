@@ -1247,6 +1247,7 @@
 		<property name="tradeStacClientSession">
 			<bean class="it.softsolutions.tradestac2.client.TradeStacClient"/>
 		</property>
+		<property name="minIncludeDealers"><value>${Marketaxess.Order.MinDealers:0}</value></property>
 		<property name="includeDealersMaxNum"><value>${MarketAxess.Order.IncludeDealersMaxNum:0}</value></property>
 		<property name="addIncludeDealers"><value>${MarketAxess.Order.AddIncludeDealers:false}</value></property>
 		<property name="blockedDealersMaxNum"><value>${MarketAxess.Order.BlockedDealersMaxNum:0}</value></property>
