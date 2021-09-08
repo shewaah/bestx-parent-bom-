@@ -1189,7 +1189,7 @@
 		<property name="addIncludeDealers"><value>${Tradeweb.Order.AddIncludeDealers:false}</value></property>
 		<property name="blockedDealersMaxNum"><value>${Tradeweb.Order.BlockedDealersMaxNum:0}</value></property>
 		<property name="addBlockedDealers"><value>${Tradeweb.Order.AddBlockedDealers:false}</value></property>
-		<property name="handlInstr" value='3' />
+		<property name="handlInstr" value='X' />
 		<property name="traderCode"><value>${Tradeweb.TraderCode}</value></property>
 		<property name="bestxAlgoID"><value>${Tradeweb.ExecutionDecisionMakerID}</value></property>
 		<property name="defaultShortSelling"><value>${Tradeweb.defaultShortSell}</value></property>
