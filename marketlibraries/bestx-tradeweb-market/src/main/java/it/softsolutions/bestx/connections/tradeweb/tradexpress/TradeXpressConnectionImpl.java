@@ -275,7 +275,7 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
       tsInstrument.setSecurityIDSource(SecurityIDSource.IsinNumber);
 
       tsNewOrderSingle.setTSInstrument(tsInstrument);
-      tsNewOrderSingle.setHandlInst(HandlInst.getInstanceForFIXValue(this.handlInstr));  // TODO BESTX-891 AMC Needs to be amended to a new value 'X' or to a configurable value?
+      tsNewOrderSingle.setHandlInst(HandlInst.getInstanceForFIXValue(this.handlInstr));
       tsNewOrderSingle.setClOrdID(clOrdID);
       tsNewOrderSingle.setSide(side);
       tsNewOrderSingle.setTransactTime(DateService.newLocalDate());
