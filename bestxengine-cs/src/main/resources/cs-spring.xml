@@ -672,11 +672,13 @@
 		<property name="filters">
 			<list>
 				<bean class="it.softsolutions.bestx.services.RepeatedMarketOrderFilter" />
+				<bean class="it.softsolutions.bestx.services.CSALGORESTValidationMarketOrderFilter" />
 				<bean class="it.softsolutions.bestx.services.AutoExecutionOrderFilter" />
 				<bean class="it.softsolutions.bestx.services.BookDepthOrderFilter">
 					<property name="bookDepthValidator" ref="bookDepthValidator" />
 				</bean>
-				<bean class="it.softsolutions.bestx.services.TargetPriceMarketOrderFilter" />
+				<bean class="it.softsolutions.bestx.services.CSLimitMonitorPriceMarketOrderFilter" />
+				<bean class="it.softsolutions.bestx.services.OrderLimitPriceMarketOrderFilter" />
 				<bean class="it.softsolutions.bestx.services.AutoExecutionStatusOrderFilter">
 					<property name="autoCurandoStatus" ref="autoCurandoStatusManager" />
 				</bean>

@@ -82,6 +82,9 @@ public class BestXMarketOrderBuilder extends MarketOrderBuilder {
 					limitPrice = new Money(limitPrice.getCurrency(), MarketOrder.beautifyBigDecimal(limitPrice.getAmount(), 1, 5));
 				} 
 			}
+			
+			marketOrder.setLimitMonitorPrice(marketOrder.getLimit());
+			
 			LOGGER.info("Order={}, Selecting for execution market: {}, and price {}", operation.getOrder().getFixOrderId(),
 					cleanMarketName, limitPrice == null ? "null" : limitPrice);
 			marketOrder.setBuilder(this);

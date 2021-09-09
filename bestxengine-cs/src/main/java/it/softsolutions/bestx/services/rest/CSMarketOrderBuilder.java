@@ -157,12 +157,17 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 
 				if (errors.isEmpty()) {
 
+					
 					Money limitPrice = new Money(operation.getOrder().getCurrency(),
 							MarketOrder.beautifyBigDecimal(response.getData().getTargetPrice(), 1, 5));
 					Money limitMonitorPrice = null;
 					if (response.getData().getLimitMonitorPrice() != null) {
 						limitMonitorPrice = new Money(operation.getOrder().getCurrency(),
 							response.getData().getLimitMonitorPrice());
+					} else {
+						if (operation.getOrder().getLimit() != null && operation.getOrder().getLimit().getAmount() != null) {
+							throw new RuntimeException("Invalid limit monitor price received from service");
+						}
 					}
 
 					marketOrder.setValues(operation.getOrder());

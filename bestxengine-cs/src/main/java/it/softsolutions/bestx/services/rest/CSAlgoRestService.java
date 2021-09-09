@@ -451,8 +451,26 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
 	  }
 	  
 	  JSONObject jsonData = jsonResponse.getJSONObject(CSALGOREST_JSON_KEY_DATA);
+
+	  if (jsonData.isNull(CSALGOREST_JSON_KEY_TARGET_VENUE)) {
+		  throw new RuntimeException("Inconsistent information received from service");
+	  } else {
+		  String venueString = jsonData.getString(CSALGOREST_JSON_KEY_TARGET_VENUE);
+		  if (Venue.BLOOMBERG.toString().equals(venueString)) {
+			  response.getData().setTargetVenue(Venue.BLOOMBERG);
+		  } else if (Venue.MARKETAXESS.toString().equals(venueString)) {
+			  response.getData().setTargetVenue(Venue.MARKETAXESS);
+		  } else if (Venue.TW.toString().equals(venueString)) {
+			  response.getData().setTargetVenue(Venue.TW);
+		  } else {
+			  throw new RuntimeException("Unrecognized execution venue received from service");
+		  }
+	  }
 	  
-      response.getData().setTargetPrice(new BigDecimal(Double.valueOf(jsonData.getDouble(CSALGOREST_JSON_KEY_TARGET_PRICE)).toString()));
+	  if (!jsonData.isNull(CSALGOREST_JSON_KEY_TARGET_PRICE)) {
+		  response.getData().setTargetPrice(new BigDecimal(Double.valueOf(jsonData.getDouble(CSALGOREST_JSON_KEY_TARGET_PRICE)).toString()));
+	  }
+      
       if (!jsonData.isNull(CSALGOREST_JSON_KEY_LIMIT_MONITOR_PRICE)) {
     	  response.getData().setLimitMonitorPrice(new BigDecimal(Double.valueOf(jsonData.getDouble(CSALGOREST_JSON_KEY_LIMIT_MONITOR_PRICE)).toString()));
       } else {
