@@ -12,16 +12,33 @@ import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.handlers.BookHelper;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
+import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Proposal.ProposalSubState;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.jsscommon.Money;
 
+
+/**
+ * @author anna.cochetti
+ * This class calculates the target price depending on: the book depth,
+ * a spread to widen the best price in case the book depth is not enough (customerMaxWideSpread)
+ * (WIP documentation)
+ */
 public class TargetPriceCalculator {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(TargetPriceCalculator.class);
 
 	private int targetPriceMaxLevel;
 	private String acceptableSubstates;
+	private int decimalDigitdRounding=5;
+
+	public int getDecimalDigitdRounding() {
+		return decimalDigitdRounding;
+	}
+
+	public void setDecimalDigitdRounding(int decimalDigitdRounding) {
+		this.decimalDigitdRounding = decimalDigitdRounding;
+	}
 
 	/**
 	 * @param order          client order
@@ -96,6 +113,15 @@ public class TargetPriceCalculator {
 			}
 		} catch (Exception e) {
 			LOGGER.warn("Problem appeared while calculating target price", e);
+		}
+		if(limitPrice != null) {
+			if(limitPrice.getStringCurrency() != null) {
+				limitPrice = new Money(limitPrice.getStringCurrency(), MarketOrder.beautifyBigDecimal(limitPrice.getAmount(), 1, decimalDigitdRounding));
+			} else {
+				if (limitPrice.getCurrency() != null) {
+					limitPrice = new Money(limitPrice.getCurrency(), MarketOrder.beautifyBigDecimal(limitPrice.getAmount(), 1, decimalDigitdRounding));
+				}
+			}
 		}
 		return limitPrice;
 	}

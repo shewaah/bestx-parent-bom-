@@ -514,7 +514,6 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		} else if (currentAttempt.getNextAction() instanceof FreezeOrderAction) {
             try {
             	FreezeOrderAction freezeOrderAction = (FreezeOrderAction) currentAttempt.getNextAction();
-            	String freezeMessage = builder.getName() + ": " + freezeOrderAction.getMessage();
             	if (freezeOrderAction.getNextPanel() == NextPanel.ORDERS_NO_AUTOEXECUTION) {
             		this.operation.setStateResilient(new CurandoState(freezeOrderAction.getMessage()), ErrorState.class);
             	} else if (freezeOrderAction.getNextPanel() == NextPanel.LIMIT_FILE) {

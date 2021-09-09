@@ -38,7 +38,7 @@ import net.sf.ehcache.Element;
 **/
 public class MapMarketMakerFinder implements MarketMakerFinder {
 
-    private MarketMakerDao marketMakerDao;
+    private MarketMakerDao marketMakerDao = null;
     private Ehcache cache;
 
     public void init() throws BestXException {

@@ -15,7 +15,9 @@
 package it.softsolutions.bestx.audit;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -89,16 +91,27 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
     private CustomerFinder customerFinder;
     private MarketConnectionRegistry marketConnectionRegistry;
     private OperationStateAuditDao operationStateAuditDao;
-    private static final DecimalFormat df = new DecimalFormat("#,##0.000#");
+//    private static final DecimalFormat df = new DecimalFormat("#,##0.000#");
+    private NumberFormat df = DecimalFormat.getInstance();
+
     private RegulatedMktIsinsLoader regulatedMktIsinsLoader;
     private List<String> regulatedMarketPolicies;
     private String internalMMcodes;
     private List<String> internalMMcodesList;
-    static private String dateFormat = "dd/MM/yyyy";
+    private static String dateFormat = "dd/MM/yyyy";
     
-    private final Map<String, Long> startSaveTimeInMillis = new ConcurrentHashMap<String, Long>();
+    private final Map<String, Long> startSaveTimeInMillis = new ConcurrentHashMap<>();
+    
+    
 
-    /**
+    public CSOperationStateAudit() {
+		super();           
+	    df.setMinimumFractionDigits(1);
+	    df.setMaximumFractionDigits(10);
+	    df.setRoundingMode(RoundingMode.HALF_DOWN);
+	}
+
+	/**
      * Sets the mifid config.
      * 
      * @param mifidConfig
@@ -164,7 +177,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
          * the object, so RAKRO doesn't contain AKRO, instead with the string RAKRO contains AKRO and it's not correct (it seems to be only
          * a test environment's problem).
          */
-        internalMMcodesList = new ArrayList<String>();
+        internalMMcodesList = new ArrayList<>();
         String[] mmSplit = internalMMcodes.split(",");
         for (int count = 0; count < mmSplit.length; count++) {
             internalMMcodesList.add(mmSplit[count]);
@@ -370,10 +383,10 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         break;
         case Executed: {
         	List<Attempt> attemptList = operation.getAttempts();
-        	if(attemptList.size() > 0 ) {
+        	if(!attemptList.isEmpty()) {
 
         		Attempt attempt = attemptList.get(attemptList.size() - 1);
-        		if (operation.getExecutionReports().size() > 0) {
+        		if (!operation.getExecutionReports().isEmpty()) {
         			try {
         				ExecutionReport executionReport = operation.getExecutionReports().get(operation.getExecutionReports().size() - 1);
         				operationStateAuditDao.finalizeOrder(order, operation.getLastAttempt(), operation.getExecutionReports().get(executionReportNo), executionReport.getTransactTime());
@@ -430,7 +443,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
 //            List<Attempt> attemptList = operation.getAttempts();
 //            Attempt attempt = attemptList.get(attemptList.size() - 1);
            	Attempt attempt = operation.getLastAttempt();
-           	if (operation.getExecutionReports().size() > 0) {
+           	if (!operation.getExecutionReports().isEmpty()) {
            	   ExecutionReport executionReport = operation.getExecutionReports().get(operation.getExecutionReports().size() - 1);
                if (operation.lastSavedAttempt == attemptNo) {
             	   operationStateAuditDao.updateAttempt(order.getFixOrderId(), attempt, tsn, attemptNo, executionReport.getTicket(), executionReport);
@@ -631,6 +644,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         try {
             res = lastAttempt.getExecutionProposal().getMarketMarketMaker().getMarketMaker().getCode();
         } catch (NullPointerException e) {
+        	// nothing to do
         }
         return res;
     }
@@ -657,6 +671,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         try {
             res = df.format(executionReports.get(executionReports.size() - 1).getLastPx());
         } catch (NullPointerException e) {
+        // nothing to do
         }
         return res;
     }
@@ -780,6 +795,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             case MARKETAXESS: {
             	Object[] params = { executionMarketMaker, executionReportPrice };
             	comment = getComment(false, marketCode, type, comment, params);
+            	break;
             }
             default:
                 comment = getComment(false, marketCode, type, comment);

@@ -639,6 +639,7 @@
 	<bean id="targetPriceCalculator" class="it.softsolutions.bestx.services.TargetPriceCalculator">
         <property name="targetPriceMaxLevel" value="${TargetPrice.MaxLevel}" />
         <property name="acceptableSubstates" value="PRICE_WORST_THAN_LIMIT,OUTSIDE_SPREAD" />
+        <property name="decimalDigitdRounding"><value>5</value></property>
 	</bean>
 
 	<bean id="parentMarketOrderBuilder" abstract="true">

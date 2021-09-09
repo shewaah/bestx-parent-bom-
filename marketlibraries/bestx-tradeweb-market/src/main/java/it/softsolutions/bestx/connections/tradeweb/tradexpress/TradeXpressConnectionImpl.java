@@ -86,8 +86,8 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
    private String investmentDecisorRoleQualifier = null;
    private boolean addBlockedDealers = false;
    private boolean addIncludeDealers = false;
-   private int blockedDealersMaxNum = 0;
-   private int includeDealersMaxNum = 0;
+   private int blockedDealersMaxNum = 1000;
+   private int includeDealersMaxNum = 1000;
    private char handlInstr = '3';
 
    public char getHandlInstr() {
@@ -227,11 +227,12 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
       // onMTF (22635) //marketOrder.setMifidRestricted(true);
       int tradingMode = Integer.parseInt(defaultTradingMode); // got from configuration
       if (marketOrder.isMiFIDRestricted() != null && !marketOrder.isMiFIDRestricted())
-         tradingMode = TradingMode.OFF_MTF; //"offMTF";
+    	  //"offMTF";
+    	  tradingMode = TradingMode.OFF_MTF;
       // removed for BESTX-395
       //        else if(marketOrder.isMiFIDRestricted() != null && marketOrder.isMiFIDRestricted())
       //        	tradingMode = TradingMode.ON_MTF; //"onMTF";
-      List<Field<?>> customFields = new ArrayList<Field<?>>();
+      List<Field<?>> customFields = new ArrayList<>();
       customFields.add(new TradingMode(tradingMode));
 
       // trading capacity
@@ -239,7 +240,7 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
       if (tradingMode == TradingMode.ON_MTF || tradingMode == TradingMode.ON_EUMTF) { // BESTX-395
          Character clientTradingCapacity = TradewebDataHelper.convertTradingCapacity(marketOrder);
          if (clientTradingCapacity == null)
-            clientTradingCapacity = defaultTradingCapacity; //defaultTradingCapacity='P';
+            clientTradingCapacity = defaultTradingCapacity;
          customFields.add(new ClientTradingCapacity(clientTradingCapacity));
          // ShortSellingIndicator (23066)
          int shortSellInd = TradewebDataHelper.convertShortSellIndicator(marketOrder, defaultShortSelling);
@@ -258,7 +259,7 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
       Double orderQty = marketOrder.getQty().doubleValue();
       Date settlDate = marketOrder.getFutSettDate();
       String settlementType = marketOrder.getSettlementType();
-      OrdType ordType = OrdType.Market;
+      OrdType ordType;
       if (marketOrder.getLimit() != null) {
          ordType = OrdType.Limit;
          Double price = marketOrder.getLimit().getAmount().doubleValue();
@@ -306,7 +307,7 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
          tsNoPartyBestDealer.setPartyIDSource(PartyIDSource.BIC);
          tsNoPartyBestDealer.setPartyRole(PartyRole.ExecutingFirm);
       }
-      List<TSNoPartyID> tsNoPartyIDsList = new ArrayList<TSNoPartyID>();
+      List<TSNoPartyID> tsNoPartyIDsList = new ArrayList<>();
       if (tradingMode == TradingMode.ON_MTF || tradingMode == TradingMode.ON_EUMTF) {
          // ## Execution within firm #### is BESTX
          TSNoPartyID tsNoPartyExecutionWithinFirm = new TSNoPartyID();
@@ -350,13 +351,13 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
       tsNewOrderSingle.setTSParties(tsParties);
 
       /** Get Custom Components */
-      List<MessageComponent> customComponents = new ArrayList<MessageComponent>();
+      List<MessageComponent> customComponents = new ArrayList<>();
       //BESTX-375: SP-20190122 add blocked dealers custom group to new order single message
       if (addBlockedDealers) { // add management of max number of dealers
          BlockedDealersGrpComponent blockedDealersGrpCmp = new BlockedDealersGrpComponent();
          tw.quickfix.field.NoBlockedDealers noBlockedDealers = new tw.quickfix.field.NoBlockedDealers();
 
-         if (marketOrder.getExcludeDealers().size() > 0) {
+         if (!marketOrder.getExcludeDealers().isEmpty()) {
             noBlockedDealers.setValue(Integer.min(marketOrder.getExcludeDealers().size(), getBlockedDealersMaxNum()));
             blockedDealersGrpCmp.set(noBlockedDealers);
 

@@ -31,8 +31,6 @@ import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Market;
-import it.softsolutions.bestx.model.Market.MarketCode;
-import it.softsolutions.bestx.model.MarketMaker;
 import it.softsolutions.bestx.model.MarketMarketMaker;
 import it.softsolutions.bestx.model.MarketMarketMakerSpec;
 import it.softsolutions.bestx.model.MarketOrder;
@@ -156,9 +154,8 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 				}
 
 				if (errors.isEmpty()) {
-
 					Money limitPrice = new Money(operation.getOrder().getCurrency(),
-							MarketOrder.beautifyBigDecimal(response.getData().getTargetPrice(), 1, 5));
+							response.getData().getTargetPrice());
 					Money limitMonitorPrice = null;
 					if (response.getData().getLimitMonitorPrice() != null) {
 						limitMonitorPrice = new Money(operation.getOrder().getCurrency(),
