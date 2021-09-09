@@ -45,4 +45,6 @@ public interface MarketAxessConnectorMBean {
 	public void setBlockedDealersMaxNum(int blockedDealersMaxNum);
 	public int getIncludeDealersMaxNum();
 	public void setIncludeDealersMaxNum(int includeDealersMaxNum);
+   public int getMinIncludeDealers();
+   public void setMinIncludeDealers(int minIncludeDealers);
 }

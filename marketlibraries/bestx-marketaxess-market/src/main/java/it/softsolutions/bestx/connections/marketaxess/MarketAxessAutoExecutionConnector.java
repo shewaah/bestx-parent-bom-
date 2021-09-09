@@ -25,8 +25,6 @@ import it.softsolutions.bestx.connections.tradestac2.TradeStacTradeConnection;
 import it.softsolutions.bestx.connections.tradestac2.TradeStacTradeConnectionListener;
 import it.softsolutions.bestx.exceptions.ObjectNotInitializedException;
 import it.softsolutions.bestx.markets.marketaxess.MarketAxessExecutionReport;
-import it.softsolutions.bestx.markets.marketaxess.MarketAxessMarket;
-import it.softsolutions.bestx.markets.marketaxess.MarketAxessOrder;
 import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.MarketMarketMakerSpec;
 import it.softsolutions.bestx.model.MarketOrder;
@@ -39,9 +37,7 @@ import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.HandlInst
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.IncludeDealers;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.MKTXESCBStblty;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.MKTXTargetLevel;
-import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.NoPartyIDs;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.Notes;
-import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.OrdStatus;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.OrdType;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.OrderQty;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.OrigClOrdID;
@@ -51,7 +47,6 @@ import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.PartyRole
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.Price;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.PriceType;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.QtyType;
-import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.RefMsgType;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.RefSeqNum;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.SecurityID;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.SecurityIDSource;
@@ -59,7 +54,6 @@ import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.SettlDate
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.SettlType;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.Side;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.Symbol;
-import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.Text;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.fields.TransactTime;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.messages.ExecutionReport;
 import it.softsolutions.marketlibraries.marketaxessfibuysidefix.messages.NewOrderSingle;
@@ -505,7 +499,7 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 	   this.addBlockedDealers = addBlockedDealers;
    }
 
-   public int getmMinIncludeDealers() {
+   public int getMinIncludeDealers() {
 	   return minIncludeDealers;
    }
 
