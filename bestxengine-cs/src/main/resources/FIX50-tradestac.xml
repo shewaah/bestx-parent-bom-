@@ -2078,6 +2078,7 @@
       <component name="TrdRegTimestamps" required="N"/>
       <field name="RefOrderID" required="N"/>
       <field name="RefOrderIDSource" required="N"/>
+      <component name="BlockedDealers" required="N"/>
       <field name="MarketSegmentID" required="N"/>
       <field name="StagedOrderIsInquiry" required="N"/>
       <field name="AutoExRuleInst" required="N" />
@@ -5466,6 +5467,12 @@
 			<field name="NoteText" required="N" />
 		</group>
 	</component>
+	<!-- Added custom component -->
+	<component name="BlockedDealers">
+		<group name="NoBlockedDealers" required="N">
+			<field name="BlockedDealer" required="N"/>
+		</group>
+	</component>
     <component name="CompDealers">
       <group name="NoCompDealers" required="N">
         <field name="CompDealerID" required="N"/>
@@ -5583,6 +5590,7 @@
       <value enum="3" description="MANUAL_ORDER"/>
 	  <value enum="y" description="AUTO_ROUTE"/>
 	  <value enum="z" description="MANUAL_ROUTE"/>
+	  <value enum="X" description="TW_AUTO_TRADING"/>
     </field>
     <field number="22" name="SecurityIDSource" type="STRING">
       <value enum="1" description="CUSIP"/>
