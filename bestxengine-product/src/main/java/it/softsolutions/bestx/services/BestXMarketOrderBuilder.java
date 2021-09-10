@@ -77,7 +77,7 @@ public class BestXMarketOrderBuilder extends MarketOrderBuilder {
 					: marketOrder.getMarket().getName(); // TODO Probably use effective market?
 			
 			LOGGER.info("Order={}, Selecting for execution market: {}, and price {}", operation.getOrder().getFixOrderId(),
-					cleanMarketName, limitPrice == null ? "null" : limitPrice.getAmount());
+					cleanMarketName, marketOrder.getLimit() == null ? "null" :  marketOrder.getLimit().getAmount());
 			marketOrder.setBuilder(this);
 		}
 		
