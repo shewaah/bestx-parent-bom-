@@ -71,7 +71,6 @@ public abstract class MarketOrderBuilder {
 			return isCompositePriceMarketMaker(marketMarketMaker.getMarketMaker().getCode());
 		}
 		else {
-			LOGGER.info("Unable to get market maker code for composite price check. MarketMarketMaker: {}", marketMarketMaker);
 			return false;
 		}
 	}
