@@ -68,7 +68,8 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 	private Executor executor;
 	
 	public CSMarketOrderBuilder() {
-		super("Rest Service");
+      super();
+//		super("Rest Service");
 	}
 
 	private ConsolidatedBookElement buildConsolidatedBookElement(BidAsk bidAsk, ClassifiedProposal proposal) {

@@ -11,7 +11,8 @@ import it.softsolutions.jsscommon.Money;
 public class FixedMarketMarketOrderBuilder extends MarketOrderBuilder {
 	
 	public FixedMarketMarketOrderBuilder() {
-		super("Default");
+      super();
+//		super("Default");
 	}
 
 	private MarketFinder marketFinder;

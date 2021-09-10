@@ -43,11 +43,14 @@ import it.softsolutions.bestx.model.MarketMarketMakerSpec;
 public abstract class MarketOrderBuilder {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MarketOrderBuilder.class);
 	
-	public MarketOrderBuilder(String name) {
+   public MarketOrderBuilder() {
+   }
+
+   public MarketOrderBuilder(String name) {
 		this.setName(name);
 	}
 	
-	private String name;
+	private String name = "";
 	private Set<String> marketMakerCompositeCodesSet;
 	private String marketMakerCompositeCodes;
 	private MarketMakerFinder marketMakerFinder;

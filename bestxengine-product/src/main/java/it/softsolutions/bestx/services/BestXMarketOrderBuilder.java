@@ -43,7 +43,8 @@ import it.softsolutions.jsscommon.Money;
 public class BestXMarketOrderBuilder extends MarketOrderBuilder {
 	
 	public BestXMarketOrderBuilder() {
-		super("Default");
+	   super();
+	   //super("Default");
 	}
 
 

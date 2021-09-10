@@ -648,6 +648,7 @@
 	
     <bean id="defaultMarketOrderBuilder" class="it.softsolutions.bestx.services.BestXMarketOrderBuilder" parent="parentMarketOrderBuilder">
 		<property name="targetPriceCalculator" ref="targetPriceCalculator" />
+		<property name="name" value="${MarketOrderBuilderName:Fallback}" />
 	</bean>
 
     <bean id="algoMarketOrderBuilder" class="it.softsolutions.bestx.services.rest.CSMarketOrderBuilder" parent="parentMarketOrderBuilder">
@@ -655,18 +656,21 @@
         <property name="marketFinder" ref="dbBasedMarketFinder" />
         <property name="marketMakerFinder" ref="dbBasedMarketMakerFinder" />
         <property name="executor" ref="threadPoolALGOREST" />
+		<property name="name" value="${CSMarketOrderBuilderName:Get Routing Proposal}" />
 	</bean>
 	
 	<bean id="ustMarketOrderBuilder" class="it.softsolutions.bestx.services.FixedMarketMarketOrderBuilder" parent="parentMarketOrderBuilder">
 		<property name="marketCode" value="TW" />
         <property name="marketFinder" ref="dbBasedMarketFinder" />
 		<property name="targetPriceCalculator" ref="targetPriceCalculator" />
+		<property name="name" value="${FixedMarketMarketOrderBuilder:Fallback}" />
 	</bean>
 	
     <bean id="fallbackMarketOrderBuilder" class="it.softsolutions.bestx.services.FallbackMarketOrderBuilder">
         <property name="defaultMarketOrderBuilder" ref="defaultMarketOrderBuilder" />
         <property name="csAlgoMarketOrderBuilder" ref="algoMarketOrderBuilder" />
         <property name="ustMarketOrderBuilder" ref="ustMarketOrderBuilder" />
+		<property name="name" value="${FallbackMarketOrderBuilder:Fallback}" />
 	</bean>
 	
 	<bean id="marketOrderFilterChain" class="it.softsolutions.bestx.services.MarketOrderFilterChain">
