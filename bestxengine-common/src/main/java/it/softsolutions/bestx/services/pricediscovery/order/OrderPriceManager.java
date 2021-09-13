@@ -100,37 +100,37 @@ public class OrderPriceManager implements ProposalAggregatorListener {
             filterProposals(book.getBidProposals());
             LOGGER.debug("Actual book: {}", book);
             
-            // 2b. choose the best price between multiple market makers for the same bank [RR20140926-CRSBXTEM-127]
-            Map<String, Proposal> receivedProposals = new HashMap<String, Proposal>();
-            List<Proposal> allProposals = new ArrayList<Proposal>();
-            allProposals.addAll(book.getAskProposals());
-            allProposals.addAll(book.getBidProposals());
-            for (Proposal proposal : allProposals) {
-                if (proposal.getVenue() != null && proposal.getSide() != null && proposal.getPrice() != null) {
-                    String key = proposal.getVenue().getMarket().getName() + "#" + proposal.getVenue().getCode() + "#" + proposal.getSide();
-                    if (receivedProposals.containsKey(key)) {
-                        Proposal availableProp = receivedProposals.get(key);
-                        // Money compareTo : zero if values are equal, -1 if other is greater, 1 if other is smaller than the object
-                        // from a buyer point of view the lesser the ask price the better
-                        // from a seller point of view the higher the bid price the better
-                        if ((proposal.getSide().equals(ProposalSide.ASK) && proposal.getPrice().compareTo(availableProp.getPrice()) > 0) ||
-                            (proposal.getSide().equals(ProposalSide.BID) && proposal.getPrice().compareTo(availableProp.getPrice()) < 0)) {
-                            receivedProposals.put(key, proposal);
-                        }
-                    } else {
-                        receivedProposals.put(key, proposal);
-                    }
-                } else {
-                    LOGGER.warn("Proposal with venue or side or price null, it is not suitable for a book, we ignore it: {}", proposal);
-                    continue;
-                }
-            }
-            book.getAskProposals().clear();
-            book.getBidProposals().clear();
-            for(Proposal bestProposal : receivedProposals.values()) {
-                book.addProposal(bestProposal);
-            }
-            LOGGER.debug("Duplicated removed book: {}", book);
+//            // 2b. choose the best price between multiple market makers for the same bank [RR20140926-CRSBXTEM-127]
+//            Map<String, Proposal> receivedProposals = new HashMap<String, Proposal>();
+//            List<Proposal> allProposals = new ArrayList<Proposal>();
+//            allProposals.addAll(book.getAskProposals());
+//            allProposals.addAll(book.getBidProposals());
+//            for (Proposal proposal : allProposals) {
+//                if (proposal.getVenue() != null && proposal.getSide() != null && proposal.getPrice() != null) {
+//                    String key = proposal.getVenue().getMarket().getName() + "#" + proposal.getVenue().getCode() + "#" + proposal.getSide();
+//                    if (receivedProposals.containsKey(key)) {
+//                        Proposal availableProp = receivedProposals.get(key);
+//                        // Money compareTo : zero if values are equal, -1 if other is greater, 1 if other is smaller than the object
+//                        // from a buyer point of view the lesser the ask price the better
+//                        // from a seller point of view the higher the bid price the better
+//                        if ((proposal.getSide().equals(ProposalSide.ASK) && proposal.getPrice().compareTo(availableProp.getPrice()) > 0) ||
+//                            (proposal.getSide().equals(ProposalSide.BID) && proposal.getPrice().compareTo(availableProp.getPrice()) < 0)) {
+//                            receivedProposals.put(key, proposal);
+//                        }
+//                    } else {
+//                        receivedProposals.put(key, proposal);
+//                    }
+//                } else {
+//                    LOGGER.warn("Proposal with venue or side or price null, it is not suitable for a book, we ignore it: {}", proposal);
+//                    continue;
+//                }
+//            }
+//            book.getAskProposals().clear();
+//            book.getBidProposals().clear();
+//            for(Proposal bestProposal : receivedProposals.values()) {
+//                book.addProposal(bestProposal);
+//            }
+//            LOGGER.debug("Duplicated removed book: {}", book);
             
             // 3. notify the MarketPriceConnectionListener
             marketPriceConnectionListener.onMarketBookComplete(marketCode, book);

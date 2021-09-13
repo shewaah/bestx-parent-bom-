@@ -9,3 +9,5 @@
 /bestxengine-cs/katalon-bx.log
 /bestxengine-cs/katalon-qf.log
 /bestxengine-cs/mqjms.log*
+/bestx-mq-jmx-client-app/mqjms.log*
+

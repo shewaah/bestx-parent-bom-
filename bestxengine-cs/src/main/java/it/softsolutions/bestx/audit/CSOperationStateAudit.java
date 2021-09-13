@@ -15,7 +15,9 @@
 package it.softsolutions.bestx.audit;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +34,7 @@ import it.softsolutions.bestx.MifidConfig;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationIdType;
 import it.softsolutions.bestx.OperationState;
+import it.softsolutions.bestx.OperationState.Type;
 import it.softsolutions.bestx.OperationStateListener;
 import it.softsolutions.bestx.RegulatedMktIsinsLoader;
 import it.softsolutions.bestx.connections.MarketBuySideConnection;
@@ -52,7 +55,9 @@ import it.softsolutions.bestx.model.ExecutionReport;
 import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.MarketExecutionReport;
+import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
+import it.softsolutions.bestx.model.ServiceStatus;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.ManualManageState;
@@ -77,7 +82,6 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         Action.COMMAND_RESEND_EXECUTIONREPORT };
     private static final Action[] rejectableActions = { Action.NOT_EXECUTED, Action.MANUAL_MANAGE, Action.SEND_DES_DATA };
     private static final Action[] bbgStandByActions = { Action.MANUAL_MANAGE, Action.NOT_EXECUTED, Action.AUTO_MANUAL_ORDER, Action.ORDER_RETRY, Action.SEND_DDE_DATA };
-    private static final Action[] matchBaseActions = { Action.ORDER_RETRY, Action.MANUAL_MANAGE };
     private static final Action[] matchFoundActions = { Action.ORDER_RETRY, Action.MANUAL_MANAGE, Action.MERGE_ORDER };
     private static final Action[] curandoActions = { Action.SEND_DDE_DATA };
     private static final Action[] limitFileNoPriceActions = { Action.MANUAL_MANAGE, Action.NOT_EXECUTED, Action.SEND_MSG_TO_OTEX, Action.ORDER_RETRY, Action.SEND_DDE_DATA };
@@ -87,18 +91,27 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
     private CustomerFinder customerFinder;
     private MarketConnectionRegistry marketConnectionRegistry;
     private OperationStateAuditDao operationStateAuditDao;
-    private static final DecimalFormat df = new DecimalFormat("#,##0.000#");
+//    private static final DecimalFormat df = new DecimalFormat("#,##0.000#");
+    private NumberFormat df = DecimalFormat.getInstance();
+
     private RegulatedMktIsinsLoader regulatedMktIsinsLoader;
     private List<String> regulatedMarketPolicies;
     private String internalMMcodes;
     private List<String> internalMMcodesList;
-    static private String dateFormat = "dd/MM/yyyy";
+    private static String dateFormat = "dd/MM/yyyy";
     
-    private boolean isLogEnabled = false;
+    private final Map<String, Long> startSaveTimeInMillis = new ConcurrentHashMap<>();
+    
+    
 
-    private final Map<String, Long> startSaveTimeInMillis = new ConcurrentHashMap<String, Long>();
+    public CSOperationStateAudit() {
+		super();           
+	    df.setMinimumFractionDigits(1);
+	    df.setMaximumFractionDigits(10);
+	    df.setRoundingMode(RoundingMode.HALF_DOWN);
+	}
 
-    /**
+	/**
      * Sets the mifid config.
      * 
      * @param mifidConfig
@@ -164,7 +177,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
          * the object, so RAKRO doesn't contain AKRO, instead with the string RAKRO contains AKRO and it's not correct (it seems to be only
          * a test environment's problem).
          */
-        internalMMcodesList = new ArrayList<String>();
+        internalMMcodesList = new ArrayList<>();
         String[] mmSplit = internalMMcodes.split(",");
         for (int count = 0; count < mmSplit.length; count++) {
             internalMMcodesList.add(mmSplit[count]);
@@ -359,6 +372,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             try {
             		operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);
                 	auditMarketStatus(order.getFixOrderId(), attemptNo);
+                	auditServicesStatus(order.getFixOrderId(), operation.getLastAttempt(), attemptNo);
                 if ((oldStateType == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry) && (operation.getLastAttempt().getSortedBook() != null)) {
                     operationStateAuditDao.saveNewBook(order.getFixOrderId(), attemptNo, operation.getLastAttempt().getSortedBook());
                 }
@@ -369,10 +383,10 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         break;
         case Executed: {
         	List<Attempt> attemptList = operation.getAttempts();
-        	if(attemptList.size() > 0 ) {
+        	if(!attemptList.isEmpty()) {
 
         		Attempt attempt = attemptList.get(attemptList.size() - 1);
-        		if (operation.getExecutionReports().size() > 0) {
+        		if (!operation.getExecutionReports().isEmpty()) {
         			try {
         				ExecutionReport executionReport = operation.getExecutionReports().get(operation.getExecutionReports().size() - 1);
         				operationStateAuditDao.finalizeOrder(order, operation.getLastAttempt(), operation.getExecutionReports().get(executionReportNo), executionReport.getTransactTime());
@@ -401,6 +415,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             if (oldState.getType() == OperationState.Type.ManualExecutionWaitingPrice) {
                 operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);
                 auditMarketStatus(order.getFixOrderId(), attemptNo);
+                auditServicesStatus(order.getFixOrderId(), operation.getLastAttempt(), attemptNo);
                 if ((oldStateType == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry) && (operation.getLastAttempt().getSortedBook() != null)) {
                 	operationStateAuditDao.saveNewBook(order.getFixOrderId(), attemptNo, operation.getLastAttempt().getSortedBook());
                 }
@@ -418,6 +433,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             //[RR20130807] we must always save the new attempt when we reach this status
             operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);
             auditMarketStatus(order.getFixOrderId(), attemptNo);
+            auditServicesStatus(order.getFixOrderId(), operation.getLastAttempt(), attemptNo);
             if ((oldStateType == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry) && (operation.getLastAttempt().getSortedBook() != null)) {
                 operationStateAuditDao.saveNewBook(order.getFixOrderId(), attemptNo, operation.getLastAttempt().getSortedBook());
             }
@@ -427,7 +443,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
 //            List<Attempt> attemptList = operation.getAttempts();
 //            Attempt attempt = attemptList.get(attemptList.size() - 1);
            	Attempt attempt = operation.getLastAttempt();
-           	if (operation.getExecutionReports().size() > 0) {
+           	if (!operation.getExecutionReports().isEmpty()) {
            	   ExecutionReport executionReport = operation.getExecutionReports().get(operation.getExecutionReports().size() - 1);
                if (operation.lastSavedAttempt == attemptNo) {
             	   operationStateAuditDao.updateAttempt(order.getFixOrderId(), attempt, tsn, attemptNo, executionReport.getTicket(), executionReport);
@@ -458,6 +474,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         case InternalGetExecutableQuote: {
             operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);
             auditMarketStatus(order.getFixOrderId(), attemptNo);
+            auditServicesStatus(order.getFixOrderId(), operation.getLastAttempt(), attemptNo);
             if (oldStateType == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry) {
             	operationStateAuditDao.saveNewBook(order.getFixOrderId(), attemptNo, operation.getLastAttempt().getSortedBook());
             }
@@ -470,6 +487,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             case MARKETAXESS: {
                 operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);
                 auditMarketStatus(order.getFixOrderId(), attemptNo);
+                auditServicesStatus(order.getFixOrderId(), operation.getLastAttempt(), attemptNo);
 //                if (oldStateType == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry || newState.mustSaveBook()) {
                   if(operation.getLastAttempt().getSortedBook() != null) {
                 	operationStateAuditDao.saveNewBook(order.getFixOrderId(), attemptNo, operation.getLastAttempt().getSortedBook());
@@ -488,6 +506,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             try {
             	operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);
                 auditMarketStatus(order.getFixOrderId(), attemptNo);
+                auditServicesStatus(order.getFixOrderId(), operation.getLastAttempt(), attemptNo);
                 if ((oldStateType == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry || oldStateType == OperationState.Type.Rejected) && (operation.getLastAttempt().getSortedBook() != null)) {
                 	operationStateAuditDao.saveNewBook(order.getFixOrderId(), attemptNo, operation.getLastAttempt().getSortedBook());
                 }
@@ -502,8 +521,9 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             try {
             	//if(oldStateType != Type.Rejected) {   When state is rejected the attempt has no more been saved already 
             		// typical scenario where the save must not be attempted is when the market rejected handler detect a wide spread condition
-        		operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);	
+               operation.lastSavedAttempt = operationStateAuditDao.saveNewAttempt(order.getFixOrderId(), operation.getLastAttempt(), null, attemptNo, null, operation.lastSavedAttempt);	
             	auditMarketStatus(order.getFixOrderId(), attemptNo);
+               auditServicesStatus(order.getFixOrderId(), operation.getLastAttempt(), attemptNo);
             	//} 
                if(oldStateType != OperationState.Type.Rejected) { 
 	            	if (oldStateType == OperationState.Type.WaitingPrice || oldStateType == OperationState.Type.CurandoRetry) {
@@ -534,7 +554,6 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
                     internalCust = ((CustomerAttributes) custAttr).getInternalCustomer();
                     LOGGER.debug("Order {}, customer {}, extracted the attribute InternalCustomer, value {}", order.getFixOrderId(), customer.getName(), internalCust);
                 }
-                Market execMkt = executionReport != null ? executionReport.getMarket() : null;
                 boolean executingOnInternalMarket = false;
                 // 20110610 - Ruggero
                 // The execution destination can be AKIS only for customer for which the IS has been allowed
@@ -625,6 +644,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         try {
             res = lastAttempt.getExecutionProposal().getMarketMarketMaker().getMarketMaker().getCode();
         } catch (NullPointerException e) {
+        	// nothing to do
         }
         return res;
     }
@@ -651,6 +671,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         try {
             res = df.format(executionReports.get(executionReports.size() - 1).getLastPx());
         } catch (NullPointerException e) {
+        // nothing to do
         }
         return res;
     }
@@ -679,18 +700,17 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             LOGGER.debug("Updating order coming from BusinessValidationState.");
             operationStateAuditDao.updateOrder(order, operation.getState(), false, order.isLaw262Passed(), comment, null, orderText, operation.isNotAutoExecute());
         }
-        // In queste 2 chiamate potrebbe non esserci sempre tutta la catena (potremmo avere NullPointerException)
+        // In queste chiamate potrebbe non esserci sempre tutta la catena (potremmo avere NullPointerException)
         String proposalMarketMaker = getProposalMarketMakerCode(operation.getLastAttempt());
         String orderMarketMaker = getMarketOrderMarketMakerCode(operation.getLastAttempt());
+        String includeDealers = getMarketOrderIncludeDealers(operation.getLastAttempt());
+        String excludeDealers = getMarketOrderExcludeDealers(operation.getLastAttempt());
+        String orderPrice = getMarketOrderPrice(operation.getLastAttempt());
+        String orderSize = getMarketOrderSize(operation.getLastAttempt());
         String executionMarketMaker = getExecutionReportMarketMaker(operation.getExecutionReports());
         String executionReportPrice = getExecutionReportPrice(operation.getExecutionReports());
         String executionProposalAmount = getLimitAttemptPrice(operation.getLastAttempt());
-        String executionProposalFutSettDate = null; 
         
-        if (operation.getLastAttempt() != null && operation.getLastAttempt().getMarketOrder() != null && operation.getLastAttempt().getMarketOrder().getFutSettDate() != null) {
-           executionProposalFutSettDate = DateService.format(dateFormat, operation.getLastAttempt().getMarketOrder().getFutSettDate());
-        }
-
         OperationState.Type type = newState.getType();
         Market.MarketCode marketCode = newState.getMarketCode();
 
@@ -740,10 +760,15 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         	else {
         		reason = orderMarketMaker;
         	}
-        	//BESTX-725 - SP03092020 - also BBG send POBEX in the reject state
-        	Boolean isPOBEXMkt = marketCode != null && (marketCode.equals(Market.MarketCode.TW) || marketCode.equals(Market.MarketCode.BLOOMBERG));
-            comment = getComment(isPOBEXMkt, marketCode, type, comment, isPOBEXMkt ? createPobexInformation(operation) : reason);
-            break;
+        	boolean wasRejectedBecauseDisabledOrUnavailableMarket = Type.StartExecution.equals(oldState.getType()); 
+        	if(wasRejectedBecauseDisabledOrUnavailableMarket)
+        		comment = getComment(true, marketCode, Type.MarketDisabled, comment);
+        	else {
+        		//BESTX-725 - SP03092020 - also BBG send POBEX in the reject state
+        		Boolean isPOBEXMkt = marketCode != null && (marketCode.equals(Market.MarketCode.TW) || marketCode.equals(Market.MarketCode.BLOOMBERG));
+        		comment = getComment(isPOBEXMkt, marketCode, type, comment, isPOBEXMkt ? createPobexInformation(operation) : reason);
+        	}
+        	break;
         case ManageCounter: {
             String counterOfferAmount = df.format(operation.getLastAttempt().getExecutablePrice(0).getClassifiedProposal().getPrice().getAmount());
             comment = getComment(false, marketCode, type, comment, counterOfferAmount);
@@ -770,6 +795,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             case MARKETAXESS: {
             	Object[] params = { executionMarketMaker, executionReportPrice };
             	comment = getComment(false, marketCode, type, comment, params);
+            	break;
             }
             default:
                 comment = getComment(false, marketCode, type, comment);
@@ -823,7 +849,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         case Standby: {
             // 20111026 - Ruggero Ticket AKR-1207 : due to the shutdown of Bloomberg some instruments have not the BBSettlementDate or
             // have an old one. The ORDER_BBG_STANDBY message will no more include the settlement date.
-            Object[] params = { proposalMarketMaker, executionProposalAmount };
+            Object[] params = { proposalMarketMaker, executionProposalAmount, orderPrice };
             comment = getComment(marketCode, type, comment, params);
         }
         break;
@@ -832,7 +858,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             case BLOOMBERG:
             case TW:
             case MARKETAXESS: {
-                Object[] params = { orderMarketMaker, executionProposalAmount, executionProposalFutSettDate };
+                Object[] params = { includeDealers, excludeDealers, orderPrice, orderSize};
                 comment = getComment(marketCode, type, comment, params);
             }
             break;
@@ -865,31 +891,30 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         return comment;
     }
 
-/*    private String getExecutionProposalAmount(Attempt lastAttempt) {
-        String res = null;
+	private String getMarketOrderSize(Attempt lastAttempt) {
+		if(lastAttempt != null && lastAttempt.getMarketOrder() != null && lastAttempt.getMarketOrder().getQty()!= null)
+			return lastAttempt.getMarketOrder().getQty().toPlainString();
+		return null;
+	}
 
-        if (lastAttempt == null) {
-            return res;
-        }
+	private String getMarketOrderPrice(Attempt lastAttempt) {
+		if(lastAttempt != null && lastAttempt.getMarketOrder() != null && lastAttempt.getMarketOrder().getLimit()!= null)
+			return lastAttempt.getMarketOrder().getLimit().getAmount().toPlainString();
+		return null;
+	}
 
-        try {
-            if (lastAttempt.getExecutionProposal() != null
-                            && lastAttempt.getExecutionProposal().getPrice() != null
-                            && lastAttempt.getExecutionProposal().getPrice().getAmount() != null) {
-
-                res = df.format(lastAttempt.getExecutionProposal().getPrice().getAmount());
-            }
-            else if (lastAttempt.getExecutablePrice(0) != null && lastAttempt.getExecutionProposal() != null
-                            && lastAttempt.getExecutionProposal().getPrice() != null
-                            && lastAttempt.getExecutionProposal().getPrice().getAmount() != null) {
-
-                res = df.format(lastAttempt.getExecutionProposal().getPrice().getAmount());
-            }
-        } catch (NullPointerException e) {
-        }
-        return res;
+    private String getMarketOrderExcludeDealers(Attempt lastAttempt) {
+    	if(lastAttempt != null && lastAttempt.getMarketOrder() != null && lastAttempt.getMarketOrder().getExcludeDealers() != null)
+    		return MarketOrder.beautifyListOfDealers(lastAttempt.getMarketOrder().getExcludeDealers());
+    	return null;
     }
-*/    
+    
+    private String getMarketOrderIncludeDealers(Attempt lastAttempt) {
+    	if(lastAttempt != null && lastAttempt.getMarketOrder() != null && lastAttempt.getMarketOrder().getDealers() != null)
+    		return MarketOrder.beautifyListOfDealers(lastAttempt.getMarketOrder().getDealers());
+    	return null;
+    }
+
     private String getLimitAttemptPrice(Attempt lastAttempt) {
         String res = null;
 
@@ -939,7 +964,17 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             operationStateAuditDao.saveMarketAttemptStatus(orderId, attemptNo, marketConnection.getMarketCode(), disabled, marketConnection.getDisableComment());
         }
     }
-
+    
+    private void auditServicesStatus(String orderId, Attempt currentAttempt, int attemptNo) {
+       Map<String, ServiceStatus> status = currentAttempt.getServicesStatus();
+       
+       for (String service : status.keySet()) {
+          operationStateAuditDao.saveServiceAttemptStatus(orderId, attemptNo, service, status.get(service).isDisabled(), status.get(service).getDownCause());
+       }
+    }
+    
+    
+    
     private void checkPreRequisites() throws ObjectNotInitializedException {
         if (operationStateAuditDao == null) {
             throw new ObjectNotInitializedException("Operation state audit DAO not set");

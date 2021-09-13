@@ -295,18 +295,22 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
         try {
             List<ClassifiedProposal> proposalToBeSaved = new ArrayList<ClassifiedProposal>();
             if(sortedBook != null && sortedBook.getAskProposals() != null && sortedBook.getBidProposals() != null){
-	            for (int i = 0; i < sortedBook.getAskProposals().size(); i++) {
+               for (int i = 0; i < sortedBook.getAskProposals().size(); i++) {
 	                // assume that they have the same depth
 	                count = i;
 	                ClassifiedProposal pAsk = sortedBook.getAskProposals().get(i);
-	                ClassifiedProposal pBid = sortedBook.getBidProposals().get(i);
-	                if (BigDecimal.ZERO.compareTo(pAsk.getQty()) <= 0 || BigDecimal.ZERO.compareTo(pAsk.getPrice().getAmount()) <= 0 || BigDecimal.ZERO.compareTo(pBid.getQty()) <= 0
-	                                || BigDecimal.ZERO.compareTo(pBid.getPrice().getAmount()) <= 0) {
-	
+	                if (BigDecimal.ZERO.compareTo(pAsk.getQty()) <= 0 || BigDecimal.ZERO.compareTo(pAsk.getPrice().getAmount()) <= 0) {
 	                    proposalToBeSaved.add(pAsk);
-	                    proposalToBeSaved.add(pBid);
 	                }
 	            }
+               for (int i = 0; i < sortedBook.getBidProposals().size(); i++) {
+                  // assume that they have the same depth
+                  count = i;
+                  ClassifiedProposal pBid = sortedBook.getBidProposals().get(i);
+                  if (BigDecimal.ZERO.compareTo(pBid.getQty()) <= 0 || BigDecimal.ZERO.compareTo(pBid.getPrice().getAmount()) <= 0) {
+                      proposalToBeSaved.add(pBid);
+                  }
+              }
 	            saveProposals(orderId, attemptNo, sortedBook.getInstrument(), proposalToBeSaved);
             }	
 	        long sTime = (DateService.currentTimeMillis() - t0);
@@ -424,6 +428,9 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 //	                   //BESTX-680 show in the aggregated book in GUI
 //                      stmt.setInt(12, 0);
 //                      LOGGER.trace("param12 FlagScartato 0");
+                   } else if (proposal != null && proposal.getProposalState() == Proposal.ProposalState.ACCEPTABLE) {
+                      stmt.setInt(12, 3);
+                      LOGGER.trace("param12 FlagScartato 3");
 	                } else if (proposal != null && proposal.getProposalState() == Proposal.ProposalState.REJECTED) {
 	                   stmt.setInt(12, 1);
 	                   LOGGER.trace("param12 FlagScartato 1");
@@ -669,6 +676,9 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 					if (proposal != null && proposal.getProposalState() == Proposal.ProposalState.DROPPED) {
 						stmt.setInt(10, 2);
 						LOGGER.trace("param10 FlagScartato 2");
+               } else if (proposal != null && proposal.getProposalState() == Proposal.ProposalState.ACCEPTABLE) {
+                  stmt.setInt(12, 3);
+                  LOGGER.trace("param12 FlagScartato 3");
 					} else if (proposal != null && proposal.getProposalState() == Proposal.ProposalState.REJECTED) {
 						stmt.setInt(10, 1);
 						LOGGER.trace("param10 FlagScartato 1");
@@ -754,6 +764,9 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 		}
 	}
 
+	
+	
+	
     
     @Override
     public int saveNewAttempt(final String orderId, final Attempt attempt, final String tsn, final int attemptNo, final String ticketNum, int lastSavedAttempt) {
@@ -2089,4 +2102,31 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
       });
       this.transactionManager.commit(status);
    }
+
+   @Override
+   public void saveServiceAttemptStatus(String orderId, int attemptNo, String serviceCode, boolean disabled, String downCause) {
+      final String sql = "INSERT INTO TentativiStatoServizi (NumOrdine, " + // 1
+            " Attempt," + // 2
+            " ServiceCode," + // 3
+            " Disabled," + // 4
+            " DownCause" + // 5
+            ") VALUES (?,?,?,?,?)";
+      
+      LOGGER.debug("Start saveServiceAttemptStatus to TentativiStatoServizi for order {}", orderId);
+      long t0 = DateService.currentTimeMillis();
+      TransactionStatus status = this.transactionManager.getTransaction(def);
+      jdbcTemplate.update(sql, new PreparedStatementSetter() {
+         @Override
+         public void setValues(PreparedStatement stmt) throws SQLException {
+             stmt.setString(1, orderId);
+             stmt.setInt(2, attemptNo);
+             stmt.setString(3, serviceCode);
+             stmt.setBoolean(4, disabled);
+             stmt.setString(5, downCause);
+         }
+     });
+     this.transactionManager.commit(status);
+     LOGGER.info("[AUDIT],StoreTime={},Stop saveServiceAttemptStatus", (DateService.currentTimeMillis() - t0));
+   }
+
 }

@@ -53,8 +53,8 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 	private MarketMakerFinder marketMakerFinder;
 	private VenueFinder venueFinder;
 	
-	private int numPricePoints;
-	private int numDays;
+	private int numPricePoints = 2;
+	private int numDays = 1;
 	
 	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 	
@@ -139,7 +139,7 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 		String isin = instrument.getIsin();
 		Market market = this.marketFinder.getMarketByCode(this.marketCode, null);
 
-		LOGGER.debug("Requesting price to Bloomberg for ISIN: {}", isin);
+		LOGGER.debug("Requesting price to {} for ISIN: {}",this.getMarketCode(),  isin);
 		try {
 			Map<String, Object> namedParameters = new HashMap<>();
 			namedParameters.put("paramIsin", isin);
@@ -148,8 +148,8 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 			namedParameters.put("paramNumDays", this.numDays);
 			
 			Long marketId = market.getOriginalMarket().getMarketId();
-			if (marketId == 1) {
-				marketId = 2L; // FIXME Problem for TSOX...
+			if (Market.MarketCode.BLOOMBERG.equals(market.getOriginalMarket().getMarketCode())) {
+				marketId = marketFinder.getMarketByCode(Market.MarketCode.TSOX, null).getMarketId(); 
 			}
 			namedParameters.put("paramMarketId", marketId);
 			
@@ -192,7 +192,7 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
         	Market originalMarket = historicMarket.getOriginalMarket();
         	MarketCode originalMarketCode = originalMarket.getMarketCode();
         	
-            MarketMarketMaker marketMarketMaker = this.marketMakerFinder.getMarketMarketMakerByCode(originalMarketCode, marketMarketMakerCode);
+            MarketMarketMaker marketMarketMaker = this.marketMakerFinder.getSmartMarketMarketMakerByCode(originalMarketCode, marketMarketMakerCode);
             if (marketMarketMaker == null) {
             	return null;
             }

@@ -24,6 +24,7 @@ import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.SortedBook;
+import it.softsolutions.bestx.services.BestXMarketOrderBuilder;
 import it.softsolutions.bestx.services.PriceController;
 
 /**  
@@ -50,13 +51,21 @@ public class OrderHelper {
             List<ClassifiedProposal> bookProposals = sortedBook.getSideProposals(order.getSide());
 
             BigDecimal limitPrice = order.getLimit().getAmount();
-            LOGGER.debug("Order {} limit price {}, starting calculating delta from best proposal price.", order.getFixOrderId(), limitPrice.doubleValue());
+            LOGGER.debug("Order {} limit price {}, starting calculating delta from limit monitor price.", order.getFixOrderId(), limitPrice.doubleValue());
             try {
-               order.setBestPriceDeviationFromLimit(
+            	if (operation.getLastAttempt().getMarketOrder() != null && operation.getLastAttempt().getMarketOrder().getLimitMonitorPrice() != null) {
+            		order.setBestPriceDeviationFromLimit(
+            				Math.abs(operation.getLastAttempt().getMarketOrder().getLimitMonitorPrice().getAmount().doubleValue() - order.getLimit().getAmount().doubleValue()));
+            	} else if (operation.getLastAttempt().getMarketOrder() != null && operation.getLastAttempt().getMarketOrder().getBuilder() != null &&
+            			operation.getLastAttempt().getMarketOrder().getBuilder() instanceof BestXMarketOrderBuilder) {
+            		order.setBestPriceDeviationFromLimit(
             		   PriceController.INSTANCE.getBestProposalDelta(
             				   limitPrice.doubleValue() > 0.0 ? limitPrice : BigDecimal.ZERO, bookProposals, customer));
-            }
-            catch (BestXException e) {
+            	} else {
+            		LOGGER.error("limitMonitorPrice value not available for order {}, using default", order.getFixOrderId());
+            		order.setBestPriceDeviationFromLimit(null);
+            	}
+            } catch (BestXException e) {
                order.setBestPriceDeviationFromLimit(null);
             }
          }

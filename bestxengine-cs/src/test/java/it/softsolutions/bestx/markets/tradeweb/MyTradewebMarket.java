@@ -238,7 +238,7 @@ public class MyTradewebMarket {
 				    // Forniti da TW 27.01 ore 16.37
 //					String[] isinCodes = new String[] { "XS0495913229", "XS0084657039", "XS0104440986", "XS0463509959", "XS0550978364", "USE0002VAC84", "XS0498817542", "ES0211845237", "XS0366202694" };
 					
-				    // Mail Patrick Mayo del 05.12  - Testing scenarios for integration BestX!-Tradeweb
+				    // Mail Patrick Mayo del 05.12  - Testing scenarios for integration BestX:FI-A-Tradeweb
 					String[] isinCodes = new String[] { "FR0010163543", "FR0010517417", "FR0011619436", "FR0011461037", "FR0118462128", "FR0120746609" };
 				    
 //				    String[] isinCodes = new String[] { "FR0010379255" };

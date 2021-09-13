@@ -26,6 +26,7 @@ import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.RegulatedMktIsinsLoader;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
+import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
 import it.softsolutions.bestx.dao.OperationStateAuditDao;
 import it.softsolutions.bestx.datacollector.DataCollector;
 import it.softsolutions.bestx.exceptions.CustomerRevokeReceivedException;
@@ -36,9 +37,9 @@ import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Venue;
 import it.softsolutions.bestx.model.Venue.VenueType;
-import it.softsolutions.bestx.services.BookDepthValidator;
 import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.ExecutionDestinationService;
+import it.softsolutions.bestx.services.MarketOrderFilterChain;
 import it.softsolutions.bestx.services.price.PriceResult;
 import it.softsolutions.bestx.services.price.PriceService;
 import it.softsolutions.bestx.services.serial.SerialNumberService;
@@ -68,11 +69,13 @@ public class ManualExecutionWaitingPriceEventHandler extends WaitingPriceEventHa
     public ManualExecutionWaitingPriceEventHandler(Operation operation, PriceService priceService, CustomerFinder customerFinder,
             SerialNumberService serialNumberService, RegulatedMktIsinsLoader regulatedMktIsinsLoader,
             List<String> regulatedMarketPolicies, long waitingPriceDelay, int maxAttemptNo, long marketPriceTimeout,
-            ExecutionDestinationService executionDestinationService, boolean rejectWhenBloombergIsBest, boolean doNotExecute, 
-            BookDepthValidator bookDepthValidator, OperationStateAuditDao operationStateAuditDao, ApplicationStatus applicationStatus, DataCollector dataCollector) throws BestXException {
+            ExecutionDestinationService executionDestinationService, boolean doNotExecute, 
+            OperationStateAuditDao operationStateAuditDao, ApplicationStatus applicationStatus, 
+            DataCollector dataCollector, MarketOrderBuilder marketOrderBuilder, MarketOrderFilterChain marketOrderFilterChain) throws BestXException {
 
         super(operation, priceService, customerFinder, serialNumberService, regulatedMktIsinsLoader, 
-                regulatedMarketPolicies, waitingPriceDelay, maxAttemptNo, marketPriceTimeout, executionDestinationService, rejectWhenBloombergIsBest, doNotExecute, bookDepthValidator, null, operationStateAuditDao, 2/*ignored*/, applicationStatus, dataCollector);
+                regulatedMarketPolicies, waitingPriceDelay, maxAttemptNo, marketPriceTimeout, executionDestinationService, 
+                doNotExecute, null, operationStateAuditDao, applicationStatus, dataCollector, marketOrderBuilder, marketOrderFilterChain);
             }
 
     @Override

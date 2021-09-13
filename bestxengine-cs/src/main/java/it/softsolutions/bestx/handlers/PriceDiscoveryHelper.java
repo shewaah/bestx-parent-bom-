@@ -1,6 +1,7 @@
 package it.softsolutions.bestx.handlers;
 
 import java.math.RoundingMode;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import it.softsolutions.bestx.connections.OperatorConsoleConnection;
 import it.softsolutions.bestx.connections.ib4j.PriceDiscoveryMessage;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Order;
+import it.softsolutions.bestx.model.Proposal.ProposalSubState;
 import it.softsolutions.bestx.model.Proposal.ProposalType;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.SortedBook;
@@ -38,23 +40,30 @@ public class PriceDiscoveryHelper {
 		List<ClassifiedProposal> sideBook = null;
 		List<ClassifiedProposal> otherSideBook = null;
 		if(OrderSide.BUY.equals(order.getSide())) {
-			sideBook = book.getValidSideProposals(order.getSide());
+			sideBook = book.getProposalBySubState(Arrays.asList(ProposalSubState.NONE, ProposalSubState.PRICE_WORST_THAN_LIMIT, ProposalSubState.OUTSIDE_SPREAD), order.getSide());
 			otherSideBook = book.getBidProposals();
 		} else  {
-			sideBook = book.getValidSideProposals(order.getSide());
+			sideBook = book.getProposalBySubState(Arrays.asList(ProposalSubState.NONE, ProposalSubState.PRICE_WORST_THAN_LIMIT, ProposalSubState.OUTSIDE_SPREAD), order.getSide());
 			otherSideBook = book.getAskProposals();
 		}
 
 		Map<String, ClassifiedProposal> propMap = new HashMap<String, ClassifiedProposal>();
 		for (ClassifiedProposal prop: otherSideBook) {
-			propMap.put(prop.getMarket().getMicCode()+"_"+prop.getMarketMarketMaker().getMarketMaker().getCode(), prop);
+			if (!prop.getMarket().isHistoric()) {
+				propMap.put(prop.getMarket().getMicCode()+"_"+prop.getMarketMarketMaker().getMarketMaker().getCode(), prop);
+			}
 		}
 		for (int i = 0; i < sideBook.size() && i< bookDepth; i++) {
 			ClassifiedProposal prop = sideBook.get(i);
 			sidePrices.add(createPriceRow(prop, rank, priceDecimals, order));
-			ClassifiedProposal othProp = propMap.get(prop.getMarket().getMicCode()+"_"+prop.getMarketMarketMaker().getMarketMaker().getCode());
-			if (othProp!=null) {
-				otherSidePrices.add(createPriceRow(othProp, rank, priceDecimals, order));
+			
+			if (!prop.getMarket().isHistoric()) {
+				ClassifiedProposal othProp = propMap.get(prop.getMarket().getMicCode()+"_"+prop.getMarketMarketMaker().getMarketMaker().getCode());
+				if (othProp!=null) {
+					otherSidePrices.add(createPriceRow(othProp, rank, priceDecimals, order));
+				} else {
+					otherSidePrices.add(createNoPriceRow(prop, rank));
+				}
 			} else {
 				otherSidePrices.add(createNoPriceRow(prop, rank));
 			}
@@ -107,6 +116,7 @@ public class PriceDiscoveryHelper {
 		case CLOSED: return "N/A";
 		case INDICATIVE: return "I";
 		case TRADEABLE: return "T";
+		case COMPOSITE: return "C";
 		case RESTRICTED_TRADEABLE: return "RT";
 		case COUNTER: return "T";
 		case SPREAD_ON_BEST: return "N/A";

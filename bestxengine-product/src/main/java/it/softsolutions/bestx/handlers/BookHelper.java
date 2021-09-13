@@ -25,7 +25,6 @@ import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal.ProposalState;
-import it.softsolutions.bestx.model.Proposal.ProposalSubState;
 import it.softsolutions.bestx.model.Rfq;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.SortedBook;
@@ -148,9 +147,10 @@ public class BookHelper {
       else if (ProposalState.VALID == sortedProposals.get(sortedProposals.size() - 1).getProposalState())
          return sortedProposals.get(sortedProposals.size() - 1);
       else {
-         for (int index = 0; i < sortedProposals.size(); index++)
-            if (ProposalState.VALID != sortedProposals.get(index).getProposalState())
-               return sortedProposals.get(index - 1);
+         //Get the first valid proposal
+         for (int index = 0; index < sortedProposals.size(); index++)
+            if (ProposalState.VALID == sortedProposals.get(index).getProposalState())
+               return sortedProposals.get(index);
       }
       return null;
    }
@@ -160,26 +160,18 @@ public class BookHelper {
 		   return null;
 	   
 	   if (sortedProposals.size() >= i && i > 0 && (ProposalState.VALID == sortedProposals.get(i - 1).getProposalState() ||
-			   (ProposalState.REJECTED == sortedProposals.get(i - 1).getProposalState() &&
-			   sortedProposals.get(i - 1).getProposalSubState() != null && 
-			   (sortedProposals.get(i - 1).getProposalSubState() == ProposalSubState.PRICE_WORST_THAN_LIMIT ||
-			   sortedProposals.get(i - 1).getProposalSubState() == ProposalSubState.OUTSIDE_SPREAD))))
+	         ProposalState.ACCEPTABLE == sortedProposals.get(i - 1).getProposalState()))
 		   return sortedProposals.get(i - 1);
 	   else if (ProposalState.VALID == sortedProposals.get(sortedProposals.size() - 1).getProposalState() || 
-			   (ProposalState.REJECTED == sortedProposals.get(sortedProposals.size() - 1).getProposalState() &&
-			   sortedProposals.get(sortedProposals.size() - 1).getProposalSubState() != null && 
-			   (sortedProposals.get(sortedProposals.size() - 1).getProposalSubState() == ProposalSubState.PRICE_WORST_THAN_LIMIT ||
-			   sortedProposals.get(sortedProposals.size() - 1).getProposalSubState() == ProposalSubState.OUTSIDE_SPREAD)))
+			   ProposalState.ACCEPTABLE == sortedProposals.get(sortedProposals.size() - 1).getProposalState())
 		   return sortedProposals.get(sortedProposals.size() - 1);
 	   else {
-		   for (int index = 0; i < sortedProposals.size(); index++) {
+		   for (int index = 0; index < sortedProposals.size(); index++) {
+	         //Get the first acceptable proposal
 			   ClassifiedProposal classifiedProposal = sortedProposals.get(index);
-			   if ((ProposalState.VALID != classifiedProposal.getProposalState()) || 
-					   (ProposalState.REJECTED == classifiedProposal.getProposalState() &&
-					   classifiedProposal.getProposalSubState() != null && 
-					   (classifiedProposal.getProposalSubState() == ProposalSubState.PRICE_WORST_THAN_LIMIT ||
-					   classifiedProposal.getProposalSubState() == ProposalSubState.OUTSIDE_SPREAD)))
-				   return sortedProposals.get(index - 1);
+			   if (ProposalState.VALID == classifiedProposal.getProposalState() || 
+					   ProposalState.ACCEPTABLE == classifiedProposal.getProposalState()) 
+				   return sortedProposals.get(index);
 		   }
 	   }
 	   return null;

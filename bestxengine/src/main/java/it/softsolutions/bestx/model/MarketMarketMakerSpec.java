@@ -47,4 +47,37 @@ public class MarketMarketMakerSpec {
 	public String getMarketMakerMarketSpecificCodeSource () {
 		return this.marketMakerCodeSource;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((marketMakerCode == null) ? 0 : marketMakerCode.hashCode());
+		result = prime * result + ((marketMakerCodeSource == null) ? 0 : marketMakerCodeSource.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MarketMarketMakerSpec other = (MarketMarketMakerSpec) obj;
+		if (marketMakerCode == null) {
+			if (other.marketMakerCode != null)
+				return false;
+		} else if (!marketMakerCode.equals(other.marketMakerCode))
+			return false;
+		if (marketMakerCodeSource == null) {
+			if (other.marketMakerCodeSource != null)
+				return false;
+		} else if (!marketMakerCodeSource.equals(other.marketMakerCodeSource))
+			return false;
+		return true;
+	}
+	
+	
 }

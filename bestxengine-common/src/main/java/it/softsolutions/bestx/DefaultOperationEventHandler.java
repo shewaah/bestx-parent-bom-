@@ -15,10 +15,12 @@ package it.softsolutions.bestx;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
 /** 
  *
  * Purpose: this is the handler that exposes default methods implementations for the management of
@@ -38,6 +40,7 @@ import it.softsolutions.bestx.model.ExecutionReport;
 import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.MarketExecutionReport;
+import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Quote;
@@ -229,7 +232,27 @@ public class DefaultOperationEventHandler implements OperationEventListener {
 	public void onQuoteResult(PriceService source, QuoteResult quoteResult) {
 		defaultAction();
 	}
+	
+	@Override
+	public void onMarketOrderBuilt(MarketOrderBuilder builder, MarketOrder marketOrder) {
+		LOGGER.info("Market order built in an incorrect state. Connection source : {}, order {}", builder, marketOrder);
+	}	
 
+	@Override
+	public void onMarketOrderTimeout(MarketOrderBuilder builder) {
+		LOGGER.info("Market order timeout in an incorrect state. Connection source : {}", builder);
+	}
+	
+	@Override
+	public void onMarketOrderException(MarketOrderBuilder builder, Exception ex) {
+		LOGGER.info("Market order exception in an incorrect state. Connection source : {}, exception {}", builder, ex);
+	}
+	
+	@Override
+	public void onMarketOrderErrors(MarketOrderBuilder builder, List<String> errors) {
+		LOGGER.info("Market order built in an incorrect state. Connection source : {}, errors {}", builder, errors);
+	}
+	
 	@Override
 	public void onMarketExecutionReport(MarketBuySideConnection source, Order order, MarketExecutionReport marketExecutionReport) {
 		defaultAction();

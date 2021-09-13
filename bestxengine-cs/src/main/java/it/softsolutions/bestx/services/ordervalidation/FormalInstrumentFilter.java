@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 /**  
  *
- * Purpose: this class checks if the order's instrument is known to BestX!
+ * Purpose: this class checks if the order's instrument is known to BestX:FI-A
  * If not the order must be rejected. 
  *
  * Project Name : bestxengine-cs 

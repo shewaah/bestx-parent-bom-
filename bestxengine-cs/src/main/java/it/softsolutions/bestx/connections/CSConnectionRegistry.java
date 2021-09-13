@@ -37,6 +37,7 @@ public class CSConnectionRegistry implements ConnectionRegistry, ConnectionListe
 	private Connection mqPriceDiscoveryConnection;
 	private Connection grdLiteConnection;
 	private Connection datalakeConnection;
+   private Connection csAlgoRestServiceConnection;
 	
 
 	/**
@@ -186,5 +187,16 @@ public class CSConnectionRegistry implements ConnectionRegistry, ConnectionListe
    @Override
    public Connection getDatalakeConnection() {
       return datalakeConnection;
+   }
+
+   
+   @Override
+   public Connection getCsAlgoRestServiceConnection() {
+      return csAlgoRestServiceConnection;
+   }
+
+   
+   public void setCsAlgoRestServiceConnection(Connection csAlgoRestServiceConnection) {
+      this.csAlgoRestServiceConnection = csAlgoRestServiceConnection;
    }
 }

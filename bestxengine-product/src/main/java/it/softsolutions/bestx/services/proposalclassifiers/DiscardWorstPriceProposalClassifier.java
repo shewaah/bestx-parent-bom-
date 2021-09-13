@@ -37,7 +37,7 @@ public class DiscardWorstPriceProposalClassifier implements ProposalClassifier {
 		        && (order.getSide() == OrderSide.BUY && proposal.getSide() == ProposalSide.ASK && proposal.getPrice().getAmount().doubleValue() > order.getLimit().getAmount().doubleValue() || (order
 		                .getSide() == OrderSide.SELL && proposal.getSide() == ProposalSide.BID && proposal.getPrice().getAmount().doubleValue() < order.getLimit().getAmount().doubleValue()))) {
 
-			proposal.setProposalState(Proposal.ProposalState.REJECTED);
+			proposal.setProposalState(Proposal.ProposalState.ACCEPTABLE);
 			proposal.setProposalSubState(Proposal.ProposalSubState.PRICE_WORST_THAN_LIMIT);
 			proposal.setReason(REJECT_REASON);
 			LOGGER.debug("Proposal rejected for Order {}, price {}, limit {}", order.getFixOrderId(), proposal.getPrice().getAmount().doubleValue(), order.getLimit().getAmount().doubleValue());

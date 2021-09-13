@@ -31,6 +31,7 @@ import it.softsolutions.bestx.model.MarketOrder;
  * 
  **/
 
+@Deprecated
 public class MarketAxessOrder extends MarketOrder {
 
 	

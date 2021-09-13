@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.MarketConnectionRegistry;
 import it.softsolutions.bestx.Messages;
+import it.softsolutions.bestx.MifidConfig;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationIdType;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
@@ -32,32 +33,29 @@ import it.softsolutions.bestx.connections.MarketConnection;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.handlers.ExecutionReportHelper;
 import it.softsolutions.bestx.model.Attempt;
-import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
-import it.softsolutions.bestx.model.MarketMaker;
-import it.softsolutions.bestx.model.MarketMarketMaker;
-import it.softsolutions.bestx.model.MarketMarketMakerSpec;
-import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
-import it.softsolutions.bestx.services.DateService;
 import it.softsolutions.bestx.services.OperationStateAuditDAOProvider;
 import it.softsolutions.bestx.services.SerialNumberServiceProvider;
 import it.softsolutions.bestx.services.booksorter.BookSorterImpl;
 import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.bestx.services.price.PriceResult;
 import it.softsolutions.bestx.services.serial.SerialNumberService;
-import it.softsolutions.bestx.states.CurandoState;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.LimitFileNoPriceState;
 import it.softsolutions.bestx.states.OrderCancelRequestState;
 import it.softsolutions.bestx.states.OrderNotExecutableState;
 import it.softsolutions.bestx.states.SendAutoNotExecutionReportState;
+import it.softsolutions.bestx.states.WaitingPriceState;
 import it.softsolutions.bestx.states.WarningState;
+import it.softsolutions.bestx.states.bloomberg.BBG_RejectedState;
 import it.softsolutions.bestx.states.bloomberg.BBG_StartExecutionState;
+import it.softsolutions.bestx.states.marketaxess.MA_RejectedState;
 import it.softsolutions.bestx.states.marketaxess.MA_StartExecutionState;
+import it.softsolutions.bestx.states.tradeweb.TW_RejectedState;
 import it.softsolutions.bestx.states.tradeweb.TW_StartExecutionState;
 
 /**  
@@ -71,9 +69,8 @@ import it.softsolutions.bestx.states.tradeweb.TW_StartExecutionState;
  **/
 public abstract class CSExecutionStrategyService implements ExecutionStrategyService, CSExecutionStrategyServiceMBean {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CSExecutionStrategyService.class);
-	//    protected ExecutionStrategyServiceCallback executionStrategyServiceCallback;
+
 	protected PriceResult priceResult = null;
-	protected boolean rejectOrderWhenBloombergIsBest;
 
 	protected List<MarketCode> allMarketsToTry;
 	protected Operation operation;
@@ -82,9 +79,8 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	protected BookClassifier bookClassifier;
 	protected BookSorterImpl bookSorter;
 	protected ApplicationStatus applicationStatus;
+	protected MifidConfig mifidConfig;
 	private MarketConnectionRegistry marketConnectionRegistry;
-	protected int minimumRequiredBookDepth = 3;
-
 	
 	public MarketConnectionRegistry getMarketConnectionRegistry() {
 		return marketConnectionRegistry;
@@ -141,16 +137,6 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		this.applicationStatus = applicationStatus;
 	}
 
-	
-	
-	public int getMinimumRequiredBookDepth() {
-		return minimumRequiredBookDepth;
-	}
-
-	public void setMinimumRequiredBookDepth(int minimumRequiredBookDepth) {
-		this.minimumRequiredBookDepth = minimumRequiredBookDepth;
-	}
-
 	@Override
 	public abstract void manageAutomaticUnexecution(Order order, Customer customer) throws BestXException;
 
@@ -170,63 +156,6 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	 */
 	@Override
 	public void startExecution(Operation operation, Attempt currentAttempt, SerialNumberService serialNumberService) {
-		// [BESTX-458] If we are in a Monitor Application Status stop the execution and go back
-		if (this.applicationStatus.getType() == ApplicationStatus.Type.MONITOR) {
-			try {
-				ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
-				String msg;
-				if (currentAttempt.getMarketOrder() == null) {
-					msg = Messages.getString("RejectInsufficientBookDepth.0", 3 /*TODO bookDepthValidator.getMinimumRequiredBookDepth()*/);
-				} else  {
-					msg = Messages.getString("Monitor.RejectMessage", currentAttempt.getMarketOrder().getMarket().getMicCode());
-				}
-				operation.setStateResilient(new SendAutoNotExecutionReportState(msg), ErrorState.class);
-			} catch (BestXException e) {
-				LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
-				String errorMessage = e.getMessage();
-				operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
-			}
-			return;
-		}
-		
-		// manage custom strategy to execute UST on Tradeweb with no MMM specified and limit price as specified in client order
-		if(BondTypesService.isUST(operation.getOrder().getInstrument())) { // BESTX-382
-			if (!CheckIfBuySideMarketIsConnectedAndEnabled(MarketCode.TW)) { // BESTX-574
-				String reason = "TW Market is not available";
-				try {
-					ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
-					operation.setStateResilient(new SendAutoNotExecutionReportState(reason), ErrorState.class);
-				} catch (BestXException e) {
-					LOGGER.error("Order {}, error while creating report for TW market not available report.", operation.getOrder().getFixOrderId(), e);
-					String errorMessage = e.getMessage();
-					operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
-					
-				}
-				return;				
-			} else {
-				// override execution proposal every time
-				MarketOrder marketOrder = new MarketOrder();
-				currentAttempt.setMarketOrder(marketOrder);
-				marketOrder.setValues(operation.getOrder());
-				marketOrder.setTransactTime(DateService.newUTCDate());
-				try {
-					marketOrder.setMarket(marketFinder.getMarketByCode(MarketCode.TW, null));
-				} catch (BestXException e) {
-					LOGGER.info("Error when trying to send an order to Tradeweb: unable to find market with code {}", MarketCode.TW.name());
-				}
-				marketOrder.setVenue(null);
-				marketOrder.setMarketMarketMaker(null);
-
-				marketOrder.setLimit(operation.getOrder().getLimit());  // if order limit is null, send a market order to TW
-				LOGGER.info("Order={}, Selecting for execution market market maker: null and price null", operation.getOrder().getFixOrderId());
-				String twSessionId = operation.getIdentifier(OperationIdType.TW_SESSION_ID);
-				if (twSessionId != null) {
-					operation.removeIdentifier(OperationIdType.TW_SESSION_ID);
-				}
-				operation.setStateResilient(new TW_StartExecutionState(), ErrorState.class);
-				// last command in method for this case
-			}
-		} else {
 			//we must always preserve the existing comment, because it could be the one sent to us through OMS
 			if(currentAttempt == null || currentAttempt.getMarketOrder() == null || currentAttempt.getMarketOrder().getMarket() == null) {
 				LOGGER.warn("Order {},  invalid market order when trying to start execution. currentAttempt.MarketOrder = {}", currentAttempt == null ? "null.null" : currentAttempt.getMarketOrder());
@@ -242,25 +171,13 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 			
 			switch (currentAttempt.getMarketOrder().getMarket().getMarketCode()) {
 			case BLOOMBERG:
-				if (rejectOrderWhenBloombergIsBest) {
-					// send not execution report
-					try {
-						ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
-						operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("RejectWhenBloombergBest.0")), ErrorState.class);
-					} catch (BestXException e) {
-						LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
-						String errorMessage = e.getMessage();
-						operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
-					}
-				} else {
 					String bbg_orderID = operation.getIdentifier(OperationIdType.BLOOMBERG_CLORD_ID);
 					if (bbg_orderID != null) {
 						operation.removeIdentifier(OperationIdType.BLOOMBERG_CLORD_ID);
 					}
 					// requested on March 2019 rendez vous un Zurich currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
 					currentAttempt.getMarketOrder().setMarketMarketMaker(null);
-					operation.setStateResilient(new BBG_StartExecutionState(), ErrorState.class);
-				}
+						operation.setStateResilient(new BBG_StartExecutionState(), ErrorState.class);
 				break;
 			case TW:
 				String twSessionId = operation.getIdentifier(OperationIdType.TW_SESSION_ID);
@@ -270,57 +187,35 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 
 				// requested on March 2019 rendez vous un Zurich currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
 				currentAttempt.getMarketOrder().setMarketMarketMaker(null);
-				operation.setStateResilient(new TW_StartExecutionState(), ErrorState.class);
+					operation.setStateResilient(new TW_StartExecutionState(), ErrorState.class);
 				break;
 			case MARKETAXESS:
 				String maSessionId = operation.getIdentifier(OperationIdType.MARKETAXESS_SESSION_ID);
 				if (maSessionId != null) {
 					operation.removeIdentifier(OperationIdType.MARKETAXESS_SESSION_ID);
 				}
-				//SP20200310 BESTX-542
-            MarketOrder marketOrderMA = currentAttempt.getMarketOrder();
-            List<MarketMarketMakerSpec> dealersMA = currentAttempt.getSortedBook().getValidProposalDealersByMarket(MarketCode.MARKETAXESS, marketOrderMA.getSide());
-            marketOrderMA.setDealers(dealersMA);
-            
-				// requested on March 2019 rendez vous un Zurich currentAttempt.getMarketOrder().setVenue(currentAttempt.getExecutionProposal().getVenue());
-				currentAttempt.getMarketOrder().setMarketMarketMaker(null);
-				operation.setStateResilient(new MA_StartExecutionState(), ErrorState.class);
+
+					operation.setStateResilient(new MA_StartExecutionState(), ErrorState.class);
 				break;
 			default:
 				operation.removeLastAttempt();
 				operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("MARKET_UNKNOWN",
 						currentAttempt.getMarketOrder().getMarket().getMarketCode().name())), ErrorState.class);
 			}
-		}
 	}
 
 	public CSExecutionStrategyService() {
 		super();
 	}
 
-	@Deprecated
-	public CSExecutionStrategyService(ExecutionStrategyServiceCallback executionStrategyServiceCallback, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus, int minimumRequiredBookDepth) {
-		if (executionStrategyServiceCallback == null) {
-			throw new IllegalArgumentException("executionStrategyServiceCallback is null");
-		}
-
-		//        this.executionStrategyServiceCallback = executionStrategyServiceCallback;
-		this.priceResult = priceResult;
-		this.rejectOrderWhenBloombergIsBest = rejectOrderWhenBloombergIsBest;
-		this.applicationStatus = applicationStatus;
-		this.minimumRequiredBookDepth = minimumRequiredBookDepth;
-	}
-
-	public CSExecutionStrategyService(Operation operation, PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest, ApplicationStatus applicationStatus, int minimumRequiredBookDepth) {
+	public CSExecutionStrategyService(Operation operation, PriceResult priceResult, ApplicationStatus applicationStatus, MifidConfig mifidConfig) {
 		if (operation == null) {
 			throw new IllegalArgumentException("operation is null");
 		}
-
 		this.operation = operation;
 		this.priceResult = priceResult;
-		this.rejectOrderWhenBloombergIsBest = rejectOrderWhenBloombergIsBest;
 		this.applicationStatus = applicationStatus;
-		this.minimumRequiredBookDepth = minimumRequiredBookDepth;
+		this.mifidConfig = mifidConfig;
 	}
 
 	/**
@@ -348,85 +243,22 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 			manageAutomaticUnexecution(order, order.getCustomer());
 			return;
 		}
-		// ###  End
 		
-		List<MarketMaker> doNotIncludeMM = new ArrayList<MarketMaker>();
-		// move book to a new attempt
-		operation.addAttempt();
-		Order customerOrder = operation.getOrder();
-		Attempt newAttempt = operation.getLastAttempt();
-		// discard all proposals in book which have been used before
-		newAttempt.setSortedBook(bookSorter.getSortedBook(
-				bookClassifier.getClassifiedBook(
-						currentAttempt.getSortedBook().clone(), operation.getOrder(), operation.getAttemptsInCurrentCycle(), null)));
-		// remove dealers that were included in the preceding RFQ/Orders
-		List<Attempt> currentAttempts = 
-				operation.getAttemptsInCurrentCycle();
-
-		currentAttempts.forEach(attempt->{ 
-			currentAttempt.getExecutablePrices().forEach(execPx->{
-				if(execPx.getMarketMaker() != null) {
-					doNotIncludeMM.add(execPx.getMarketMaker());
-				}
-			});
-		});
-
-		// BESTX-736 Only if Limit File and consolidated book is empty
-		boolean emptyConsolidatedBook = newAttempt.getSortedBook().getValidSideProposals(operation.getOrder().getSide()).isEmpty();
-		if (operation.getOrder().isLimitFile() && !operation.isNotAutoExecute() && emptyConsolidatedBook) {
-			this.startExecution(operation, newAttempt, serialNumberService);
+		// ###  End
+		if (operation.hasPassedMaxAttempt(this.mifidConfig.getNumRetry() - 1)) {
+			ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
+			operation.setStateResilient(new SendAutoNotExecutionReportState(Messages.getString("EventNoMoreRetry.0")), ErrorState.class);
 			return;
 		}
-
-		ClassifiedProposal executionProposal = newAttempt.getSortedBook().getBestProposalBySide(customerOrder.getSide());
-		if(executionProposal == null) {
-			this.manageAutomaticUnexecution(customerOrder, customerOrder.getCustomer());
-			return;
-		} else {
-			newAttempt.setExecutionProposal(executionProposal);
-		}
-
-		MarketOrder marketOrder = new MarketOrder();	
-		// maintain price
-		marketOrder.setValues(currentAttempt.getMarketOrder());
-		// generate the list of dealers to be excluded because they have been contacted in one preceding attempt
-		List<MarketMarketMakerSpec> excludeDealers = new ArrayList<MarketMarketMakerSpec>();
-		if (currentAttempt.getExecutionProposal() != null) {
-			marketOrder.setMarket(currentAttempt.getExecutionProposal().getMarket());
-			marketOrder.setMarketMarketMaker(executionProposal.getMarketMarketMaker());
-			List<MarketMarketMaker> doNotIncludeMMM = new ArrayList<MarketMarketMaker>();
-			doNotIncludeMM.forEach(marketMaker->{
-				if(marketMaker.getMarketMarketMakerForMarket(marketOrder.getMarket().getMarketCode()) != null)
-					doNotIncludeMMM.addAll(marketMaker.getMarketMarketMakerForMarket(marketOrder.getMarket().getMarketCode()));
-			});
-			doNotIncludeMMM.forEach(mmm -> {
-				excludeDealers.add(new MarketMarketMakerSpec(mmm.getMarketSpecificCode(), mmm.getMarketSpecificCodeSource()));
-			});
-			marketOrder.setExcludeDealers(excludeDealers);
-		}
-		// create the list of dealers to be included in the order dealers list, which shall not contain any of the excluded dealers
-		List<MarketMarketMakerSpec> dealers = newAttempt.getSortedBook().getValidProposalDealersByMarket(executionProposal.getMarket().getMarketCode(), marketOrder.getSide());
-		dealers.removeAll(excludeDealers);
-		marketOrder.setDealers(dealers);
-		marketOrder.setVenue(null);
-		marketOrder.setMarketSessionId(null);
-		marketOrder.setMarket(executionProposal.getMarket());
-		marketOrder.setTransactTime(DateService.newUTCDate());
-		newAttempt.setMarketOrder(marketOrder);
-		if(!operation.isNotAutoExecute()) {
-			this.startExecution(operation, newAttempt, serialNumberService);
-		} else {
-			LOGGER.info("Order {} is not autoexecutable, go to Curando State", customerOrder.getFixOrderId());
-			operation.setStateResilient(new CurandoState(), ErrorState.class);
-		}
+		//BESTX-865 retry a price discovery every attempt
+		operation.setStateResilient(new WaitingPriceState(), ErrorState.class);
+		
 	}
 
 
 	@Override
 	public void acceptOrderRevoke(Operation operation, Attempt currentAttempt,
 			SerialNumberService serialNumberService) {
-		//BESTX-483 TDR 20190828
-//		operation.setStateResilient(new OrderRevocatedState( Messages.getString("REVOKE_ACKNOWLEDGED")), ErrorState.class);	
 		LOGGER.debug("Operation {}, Attempt {}, SerialNumberService {}", operation, currentAttempt, serialNumberService);
 		operation.setStateResilient(new OrderCancelRequestState( Messages.getString("REVOKE_ACKNOWLEDGED")), ErrorState.class);
 	}
@@ -466,9 +298,9 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	    switch (result) {
 	    case MaxDeviationLimitViolated:
 	    case Success:
-	    	if(operation.isNotAutoExecute())
-	    		this.operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
-	    	else
+//	    	if(operation.isNotAutoExecute())
+//	    		this.operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
+//	    	else
 	        try {
 	        	ExecutionReportHelper.prepareForAutoNotExecution(this.operation, SerialNumberServiceProvider.getSerialNumberService(), ExecutionReportState.REJECTED);
 	        	this.operation.setStateResilient(new SendAutoNotExecutionReportState(message), ErrorState.class);
@@ -496,18 +328,18 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	        this.operation.setStateResilient(new WarningState(operation.getState(), null, message), ErrorState.class);
 	        break;
 	    case LimitFileNoPrice:
-	    	if(this.operation.isNotAutoExecute())
-	    		this.operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
-	        else
+//	    	if(this.operation.isNotAutoExecute())
+//	    		this.operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
+//	        else
 	    		this.operation.setStateResilient(new LimitFileNoPriceState(message), ErrorState.class);
 	        break;
 	    case LimitFile:
 	        //Update the BestAndLimitDelta field on the TabHistoryOrdini table
 	        Order order = this.operation.getOrder();
 	        OperationStateAuditDAOProvider.getOperationStateAuditDao().updateOrderBestAndLimitDelta(order, order.getBestPriceDeviationFromLimit());
-	    	if(operation.isNotAutoExecute())
-	    		this.operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
-	    	else
+//	    	if(operation.isNotAutoExecute())
+//	    		this.operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);
+//	    	else
 	    		this.operation.setStateResilient(new OrderNotExecutableState(message), ErrorState.class);
 	        break;
 	    default:
@@ -516,33 +348,6 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	        break;
 	    }
 	}
-	
-	/**
-	 * Check if buy side market is connected and enabled.
-	 *
-	 * @param marketCode the market code
-	 * @return true, if successful
-	 */
-	public boolean CheckIfBuySideMarketIsConnectedAndEnabled (MarketCode marketCode){
-		MarketConnection marketConnection = marketConnectionRegistry.getMarketConnection(marketCode);
-		if (marketConnection == null) {
-			LOGGER.error("MarketCode {} is not contained in market connection list", marketCode.toString());
-			return false;
-		}
-		
-		if (!marketConnection.isBuySideConnectionEnabled()) {             
-			LOGGER.info("MarketCode {} is not enabled", marketCode.toString());
-			return false;			
-		}
-		
-		if (!marketConnection.isBuySideConnectionAvailable()) {             
-			LOGGER.info("MarketCode {} is not available", marketCode.toString());
-			return false;			
-		}		
-
-		return true;		
-	}
-
 }
 /**
  * As a side effect purges the market code used in the attempt from the currentMarkets

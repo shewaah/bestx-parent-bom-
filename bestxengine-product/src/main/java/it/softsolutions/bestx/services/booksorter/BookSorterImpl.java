@@ -66,7 +66,7 @@ public class BookSorterImpl implements BookSorter {
       try {
          Collections.sort(classifiedProposals, comparator);
          for (int i = 0; i < classifiedProposals.size(); i++)
-            LOGGER.info("{}{}{}", instrument == null ? "null" : instrument.getIsin(), i, classifiedProposals.get(i).toStringShort());
+            LOGGER.info("{} {}{}", instrument == null ? "null" : instrument.getIsin(), i, classifiedProposals.get(i).toStringShort());
       }
       catch (IllegalArgumentException e) {
          LOGGER.warn("Inconsistent informations in sorting book - proposals size {} - error {} ", classifiedProposals.size(), e);

@@ -22,9 +22,11 @@ import org.slf4j.LoggerFactory;
 
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Operation;
+import it.softsolutions.bestx.connections.TradeStacConnectorMBean;
 import it.softsolutions.bestx.connections.tradestac.AbstractTradeStacConnection;
 import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.Market;
+import it.softsolutions.bestx.model.MarketMarketMakerSpec;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.services.DateService;
@@ -68,15 +70,51 @@ import quickfix.SessionID;
  * 
  **/
 @SuppressWarnings("deprecation")
-public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements TSOXConnection {
+public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements TSOXConnection, TradeStacConnectorMBean {
 
    private static final Logger LOGGER = LoggerFactory.getLogger(RBLD_TSOXConnection.class);
 
    private TSOXConnectionListener tsoxConnectionListener;
-   private TradeStacClientSession tradeStacClientSession;
 
    private String traderCode;
    private String destinationMICCode = "BMTF";
+
+   private boolean addBlockedDealers = false;
+   private boolean addIncludeDealers = false;
+   private int blockedDealersMaxNum = 1000;
+   private int includeDealersMaxNum = 1000;
+
+   public boolean isAddBlockedDealers() {
+	   return addBlockedDealers;
+   }
+
+   public void setAddBlockedDealers(boolean addBlockedDealers) {
+	   this.addBlockedDealers = addBlockedDealers;
+   }
+
+   public boolean isAddIncludeDealers() {
+	   return addIncludeDealers;
+   }
+
+   public void setAddIncludeDealers(boolean addIncludeDealers) {
+	   this.addIncludeDealers = addIncludeDealers;
+   }
+
+   public int getBlockedDealersMaxNum() {
+	   return blockedDealersMaxNum;
+   }
+
+   public void setBlockedDealersMaxNum(int blockedDealersMaxNum) {
+	   this.blockedDealersMaxNum = blockedDealersMaxNum;
+   }
+
+   public int getIncludeDealersMaxNum() {
+	   return includeDealersMaxNum;
+   }
+
+   public void setIncludeDealersMaxNum(int includeDealersMaxNum) {
+	   this.includeDealersMaxNum = includeDealersMaxNum;
+   }
 
    /**
    * @return the destinationMICCode
@@ -180,7 +218,7 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
     * @return the tsox tradercode
     */
    public String getTsoxTradercode() {
-      return traderCode;
+      return getTraderCode();
    }
 
    /**
@@ -227,19 +265,6 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
      */
    public RBLD_TSOXConnection(){
       super(Market.MarketCode.BLOOMBERG + "#tsox");
-   }
-
-   /**
-    * Initializes a newly created {@link STPConnector}.
-    *
-    * @throws TradeStacException if an error occurred in the FIX connection initialization
-    * @throws BestXException if an error occurred
-    * @throws ConfigError 
-    */
-   public void init() throws TradeStacException, BestXException, ConfigError {
-      super.init();
-
-      tradeStacClientSession = super.getTradeStacClientSession();
    }
 
    @Override
@@ -290,13 +315,12 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
    public void onBusinessMessageReject(SessionID sessionID, TSBusinessMessageReject tsBusinessMessageReject) throws TradeStacException {
       LOGGER.info("{}, {}", sessionID, tsBusinessMessageReject);
 
-      // FIXME check if complete:
       // check if the message is requiring the resend of the original message
-      switch (tsBusinessMessageReject.getBusinessRejectReason()) {
-         // if so, do it
-         // else ask to put order to warning state
-         case ApplicationNotAvailable:
-         default:
+//      switch (tsBusinessMessageReject.getBusinessRejectReason()) {
+//         // if so, do it
+//         // else ask to put order to warning state
+//         case ApplicationNotAvailable:
+//         default:
             if (tsBusinessMessageReject.getBusinessRejectRefID() == null) {
                LOGGER.error("onBusinessMessageReject with null BusinessRejectRefID received, reason was {}", tsBusinessMessageReject.getText());
             }
@@ -306,8 +330,8 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
             else if (tsBusinessMessageReject.getRefMsgType() == MsgType.OrderCancelRequest) {
                tsoxConnectionListener.onCancelReject(sessionID.toString(), tsBusinessMessageReject.getBusinessRejectRefID(), tsBusinessMessageReject.getText());
             }
-         break;
-      }
+//         break;
+//      }
    }
 
    @Override
@@ -335,7 +359,7 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
       }
 
       try {
-         tradeStacClientSession.manageNewOrderSingle(tsNewOrderSingle); //tsNewOrderSingle.toFIXMessage()
+         getTradeStacClientSession().manageNewOrderSingle(tsNewOrderSingle); //tsNewOrderSingle.toFIXMessage()
       }
       catch (TradeStacException e) {
          throw new BestXException(String.format("Error managing newOrderSingle [%s]", tsNewOrderSingle), e);
@@ -362,7 +386,7 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
       PriceType priceType = (ordType == OrdType.Market ? null : PriceType.Percentage);
       Double price = (ordType == OrdType.Market ? null : marketOrder.getLimit().getAmount().doubleValue());
 
-      String text = null; // Customer notes - can be used to carry info useful to BestX!
+      String text = null; // Customer notes - can be used to carry info useful to BestX:FI-A
 
       TSNewOrderSingle tsNewOrderSingle = new TSNewOrderSingle();
       //instrument
@@ -392,11 +416,34 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
       enteringFirm.setPartyIDSource(PartyIDSource.ProprietaryCustomCode);
       enteringFirm.setPartyRole(PartyRole.EnteringFirm);
 
-      List<TSNoPartyID> tsNoPartyIDsList = new ArrayList<TSNoPartyID>();
+      List<TSNoPartyID> tsNoPartyIDsList = new ArrayList<>();
       tsNoPartyIDsList.add(trader);
       tsNoPartyIDsList.add(investmentDecisor);
       tsNoPartyIDsList.add(enteringFirm);
-
+      
+      // BESTX-867 management of include dealers. Use configurable attributes
+      if(isAddIncludeDealers()) {
+    	  for (int i = 0; i < includeDealersMaxNum && i < marketOrder.getDealers().size(); i++) {
+    		  MarketMarketMakerSpec dealer = marketOrder.getDealers().get(i);
+    		  TSNoPartyID incldealer = new TSNoPartyID();
+    		  incldealer.setPartyID(dealer.getMarketMakerMarketSpecificCode());
+    		  incldealer.setPartyIDSource(PartyIDSource.ProprietaryCustomCode);
+    		  incldealer.setPartyRole(PartyRole.AcceptableCounterparty);
+    		  tsNoPartyIDsList.add(incldealer);
+    	  }
+      }      
+      // BESTX-867 a management of exclude dealers. Use configurable attributes
+      if(isAddBlockedDealers()) {
+    	  for (int i = 0; i < blockedDealersMaxNum && i < marketOrder.getExcludeDealers().size(); i++) {
+    		  MarketMarketMakerSpec dealer = marketOrder.getExcludeDealers().get(i);
+    		  TSNoPartyID excldealer = new TSNoPartyID();
+    		  excldealer.setPartyID(dealer.getMarketMakerMarketSpecificCode());
+    		  excldealer.setPartyIDSource(PartyIDSource.ProprietaryCustomCode);
+    		  excldealer.setPartyRole(PartyRole.UnacceptableCounterparty);
+    		  tsNoPartyIDsList.add(excldealer);
+    	  }
+      }
+      
       TSParties tsParties = new TSParties();
       tsParties.setTSNoPartyIDsList(tsNoPartyIDsList);
 
@@ -419,19 +466,21 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
       tsNewOrderSingle.setHandlInst(HandlInst.ManualOrderBestExecution); // required for scenario FI 1 -- correction asked by TJ Senkhas
 
       // set custom fields
-      List<Field<?>> customFields = new ArrayList<Field<?>>();
-      Field<Character> AutoExRuleIns = new Field<Character>(22515, new Character('y')); // required for scenario FI 1 -- correction asked by TJ Senkhas
-      customFields.add(AutoExRuleIns);
-      Field<String> stagedOrderIsInquiry = new Field<String>(9575, "Y");
+      List<Field<?>> customFields = new ArrayList<>();
+      Field<Character> autoExRuleIns = new Field<>(22515, 'y'); // required for scenario FI 1 -- correction asked by TJ Senkhas
+      customFields.add(autoExRuleIns);
+      Field<String> stagedOrderIsInquiry = new Field<>(9575, "Y");
       customFields.add(stagedOrderIsInquiry);
-      Field<Integer> qtyType = new Field<Integer>(854, 0);
+      Field<Integer> qtyType = new Field<>(854, 0);
       customFields.add(qtyType);
-      Field<String> marketSegmentID = new Field<String>(1300, this.getDestinationMICCode());
+      Field<String> marketSegmentID = new Field<>(1300, this.getDestinationMICCode());
       customFields.add(marketSegmentID);
       tsNewOrderSingle.setCustomFields(customFields);
 
       //		tsNewOrderSingle.setTradeDate(tradeDate);
       //		tsNewOrderSingle.setEncodedText(encodedText);
+
+
 
       LOGGER.info("{}", tsNewOrderSingle);
 
@@ -500,7 +549,6 @@ public class RBLD_TSOXConnection extends AbstractTradeStacConnection implements 
 		String clordid = tsOrderCancelReject.getOrigClOrdID();
 		String text = tsOrderCancelReject.getText();
         this.tsoxConnectionListener.onCancelReject(sessionID.toString(), clordid, text);
-	}
-		
+	}		
 	
 }

@@ -3,13 +3,13 @@
     <parent>
         <artifactId>bestxengine-parent</artifactId>
         <groupId>it.softsolutions.bestx</groupId>
-        <version>4.7.0-SNAPSHOT</version>
+        <version>4.7.0-NEUTRONSTAR-210630-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>bestx-protocol-api</artifactId>
     <packaging>jar</packaging>
-    <name>BestX - protocol API</name>
+    <name>BestX:FI-A - protocol API</name>
     <description>Creates and sends messages to bestxengine: clients are app GUI and automated test</description>
 
     <dependencies>

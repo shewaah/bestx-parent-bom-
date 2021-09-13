@@ -37,17 +37,15 @@ import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.SqlParameter;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.transaction.TransactionStatus;
 
 import it.softsolutions.bestx.Messages;
-import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.dao.OperationStateAuditDao;
 import it.softsolutions.bestx.exceptions.SaveBookException;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
-import it.softsolutions.bestx.model.ExecutablePrice;
 import it.softsolutions.bestx.model.Commission.CommissionType;
+import it.softsolutions.bestx.model.ExecutablePrice;
 import it.softsolutions.bestx.model.ExecutionReport;
 import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.Market.MarketCode;
@@ -409,6 +407,10 @@ public class SqlOperationStateAuditDao implements OperationStateAuditDao {
                if (proposal != null && proposal.getProposalState() == Proposal.ProposalState.DROPPED) {
                   stmt.setInt(12, 2);
                   LOGGER.trace("param12 FlagScartato 2");
+               } 
+               else if (proposal != null && proposal.getProposalState() == Proposal.ProposalState.ACCEPTABLE) {
+                  stmt.setInt(12, 3);
+                  LOGGER.trace("param12 FlagScartato 3");
                }
                else if (proposal != null && proposal.getProposalState() == Proposal.ProposalState.REJECTED) {
                   stmt.setInt(12, 1);
@@ -600,6 +602,9 @@ public class SqlOperationStateAuditDao implements OperationStateAuditDao {
 					if (proposal != null && proposal.getProposalState() == Proposal.ProposalState.DROPPED) {
 						stmt.setInt(10, 2);
 						LOGGER.trace("param10 FlagScartato 2");
+               } else if (proposal != null && proposal.getProposalState() == Proposal.ProposalState.ACCEPTABLE) {
+                  stmt.setInt(12, 3);
+                  LOGGER.trace("param12 FlagScartato 3");
 					} else if (proposal != null && proposal.getProposalState() == Proposal.ProposalState.REJECTED) {
 						stmt.setInt(10, 1);
 						LOGGER.trace("param10 FlagScartato 1");
@@ -1940,5 +1945,10 @@ public class SqlOperationStateAuditDao implements OperationStateAuditDao {
          }
       });
 
+   }
+
+   @Override
+   public void saveServiceAttemptStatus(String orderId, int attemptNo, String serviceCode, boolean disabled, String downCause) {
+      // Not to be implemented
    }
 }

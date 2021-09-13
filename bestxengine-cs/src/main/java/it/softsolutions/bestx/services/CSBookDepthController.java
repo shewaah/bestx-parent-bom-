@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Order;
-import it.softsolutions.bestx.services.instrument.BondTypesService;
 
 /**
  * 
@@ -51,19 +50,11 @@ public class CSBookDepthController extends BookDepthValidator {
             throw new IllegalArgumentException("currentAttempt cannot be null");
         }
         
-//        if (order.isLimitFile()) {
-//            LOGGER.info("Order {}, consider book as valid because order is LimitFile", order.getFixOrderId());
-////            return true;
-//        }
-        
-//		if(BondTypesService.isUST(order.getInstrument()))
-//			return true; // BESTX-382
-
         if (this.minimumRequiredBookDepth > 0) {//this.minimumRequiredBookDepth = 0
             if (currentAttempt.getSortedBook() != null) {
                 List<ClassifiedProposal> bookDepth = currentAttempt.getSortedBook().getValidSideProposals(order.getSide());
                 if (bookDepth.size() < minimumRequiredBookDepth) {
-                    LOGGER.info("Insufficient book depth ({}, required {}), rejecting order {}.", bookDepth.size(), minimumRequiredBookDepth, order.getFixOrderId());
+                    LOGGER.info("Insufficient book depth ({}, required {}), for order {}, ISIN {}.", bookDepth.size(), minimumRequiredBookDepth, order.getFixOrderId(), order.getInstrumentCode());
                     return false;
                 }
             } else {

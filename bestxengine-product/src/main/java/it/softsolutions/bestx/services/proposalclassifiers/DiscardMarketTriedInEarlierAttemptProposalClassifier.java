@@ -27,7 +27,6 @@ import it.softsolutions.bestx.bestexec.ProposalClassifier;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedBook;
 import it.softsolutions.bestx.model.ClassifiedProposal;
-import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.model.MarketExecutionReport;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal;
@@ -57,13 +56,13 @@ public class DiscardMarketTriedInEarlierAttemptProposalClassifier implements Pro
 					// fill
 					if (execReports != null && execReports.size() != 0) {
 						LOGGER.debug("Order {}, check the execution reports", order.getFixOrderId());
-						proposal.setProposalState(Proposal.ProposalState.REJECTED);
+						proposal.setProposalState(Proposal.ProposalState.ACCEPTABLE);
 						proposal.setReason(Messages.getString("DiscardMarketTriedInEarlierAttemptProposalClassifier.0"));
 					} else {
 						// there are no market execution reports at all
 						LOGGER.debug("Order {}, no execution reports, check the if the market allows to reuse prices.", order.getFixOrderId());
 						if (proposal.getMarket() != null && a.getMarketOrder().getMarket().getEffectiveMarket().equals(proposal.getMarket().getEffectiveMarket()) && !proposal.getMarket().getEffectiveMarket().isReusePrices()) {
-							proposal.setProposalState(Proposal.ProposalState.REJECTED);
+							proposal.setProposalState(Proposal.ProposalState.ACCEPTABLE);
 							proposal.setReason(Messages.getString("DiscardMarketTriedInEarlierAttemptProposalClassifier.0"));
 						}
 					}

@@ -25,7 +25,7 @@ import it.softsolutions.bestx.model.Order;
 
 /**  
  *
- * Purpose: this class checks if the order's isin country is known to BestX!
+ * Purpose: this class checks if the order's isin country is known to BestX:FI-A
  * If not the order must be rejected. 
  *
  * Project Name : bestxengine-product 

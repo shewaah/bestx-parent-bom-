@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.softsolutions.bestx.BestXException;
+import it.softsolutions.bestx.connections.TradeStacConnectorMBean;
 import it.softsolutions.bestx.connections.tradestac.AbstractTradeStacConnection;
 import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.MarketMarketMakerSpec;
@@ -69,7 +70,7 @@ import tw.quickfix.field.TradingMode;
  * 
  **/
 @SuppressWarnings("deprecation")
-public class TradeXpressConnectionImpl extends AbstractTradeStacConnection implements TradeXpressConnection {
+public class TradeXpressConnectionImpl extends AbstractTradeStacConnection implements TradeXpressConnection, TradeStacConnectorMBean {
 
    private static final Logger LOGGER = LoggerFactory.getLogger(TradeXpressConnectionImpl.class);
    private TradeXpressConnectionListener tradeXpressConnectionListener;
@@ -84,7 +85,43 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
    private String investmentDecisorID = null;
    private String investmentDecisorRoleQualifier = null;
    private boolean addBlockedDealers = false;
+   private boolean addIncludeDealers = false;
+   private int blockedDealersMaxNum = 1000;
+   private int includeDealersMaxNum = 1000;
+   private char handlInstr = '3';
 
+   public char getHandlInstr() {
+	return handlInstr;
+}
+
+   public void setHandlInstr(char handlInstr) {
+	   this.handlInstr = handlInstr;
+   }
+
+   public boolean isAddIncludeDealers() {
+	   return addIncludeDealers;
+   }
+
+   public void setAddIncludeDealers(boolean addIncludeDealers) {
+	   this.addIncludeDealers = addIncludeDealers;
+   }
+
+   public int getBlockedDealersMaxNum() {
+	   return blockedDealersMaxNum;
+   }
+
+   public void setBlockedDealersMaxNum(int blockedDealersMaxNum) {
+	   this.blockedDealersMaxNum = blockedDealersMaxNum;
+   }
+
+   public int getIncludeDealersMaxNum() {
+	   return includeDealersMaxNum;
+   }
+
+   public void setIncludeDealersMaxNum(int includeDealersMaxNum) {
+	   this.includeDealersMaxNum = includeDealersMaxNum;
+   }
+   
    public boolean isAddBlockedDealers() {
       return addBlockedDealers;
    }
@@ -190,11 +227,12 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
       // onMTF (22635) //marketOrder.setMifidRestricted(true);
       int tradingMode = Integer.parseInt(defaultTradingMode); // got from configuration
       if (marketOrder.isMiFIDRestricted() != null && !marketOrder.isMiFIDRestricted())
-         tradingMode = TradingMode.OFF_MTF; //"offMTF";
+    	  //"offMTF";
+    	  tradingMode = TradingMode.OFF_MTF;
       // removed for BESTX-395
       //        else if(marketOrder.isMiFIDRestricted() != null && marketOrder.isMiFIDRestricted())
       //        	tradingMode = TradingMode.ON_MTF; //"onMTF";
-      List<Field<?>> customFields = new ArrayList<Field<?>>();
+      List<Field<?>> customFields = new ArrayList<>();
       customFields.add(new TradingMode(tradingMode));
 
       // trading capacity
@@ -202,7 +240,7 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
       if (tradingMode == TradingMode.ON_MTF || tradingMode == TradingMode.ON_EUMTF) { // BESTX-395
          Character clientTradingCapacity = TradewebDataHelper.convertTradingCapacity(marketOrder);
          if (clientTradingCapacity == null)
-            clientTradingCapacity = defaultTradingCapacity; //defaultTradingCapacity='P';
+            clientTradingCapacity = defaultTradingCapacity;
          customFields.add(new ClientTradingCapacity(clientTradingCapacity));
          // ShortSellingIndicator (23066)
          int shortSellInd = TradewebDataHelper.convertShortSellIndicator(marketOrder, defaultShortSelling);
@@ -221,7 +259,7 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
       Double orderQty = marketOrder.getQty().doubleValue();
       Date settlDate = marketOrder.getFutSettDate();
       String settlementType = marketOrder.getSettlementType();
-      OrdType ordType = OrdType.Market;
+      OrdType ordType;
       if (marketOrder.getLimit() != null) {
          ordType = OrdType.Limit;
          Double price = marketOrder.getLimit().getAmount().doubleValue();
@@ -238,7 +276,7 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
       tsInstrument.setSecurityIDSource(SecurityIDSource.IsinNumber);
 
       tsNewOrderSingle.setTSInstrument(tsInstrument);
-      tsNewOrderSingle.setHandlInst(HandlInst.ManualOrderBestExecution);
+      tsNewOrderSingle.setHandlInst(HandlInst.getInstanceForFIXValue(this.handlInstr));
       tsNewOrderSingle.setClOrdID(clOrdID);
       tsNewOrderSingle.setSide(side);
       tsNewOrderSingle.setTransactTime(DateService.newLocalDate());
@@ -269,7 +307,7 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
          tsNoPartyBestDealer.setPartyIDSource(PartyIDSource.BIC);
          tsNoPartyBestDealer.setPartyRole(PartyRole.ExecutingFirm);
       }
-      List<TSNoPartyID> tsNoPartyIDsList = new ArrayList<TSNoPartyID>();
+      List<TSNoPartyID> tsNoPartyIDsList = new ArrayList<>();
       if (tradingMode == TradingMode.ON_MTF || tradingMode == TradingMode.ON_EUMTF) {
          // ## Execution within firm #### is BESTX
          TSNoPartyID tsNoPartyExecutionWithinFirm = new TSNoPartyID();
@@ -292,29 +330,44 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
          tsNoPartyIDsList.add(tsNoPartyBestDealer);
       tsNoPartyIDsList.add(tsNoPartyTrader);
 
+      // BESTX-891 manage here the include/exclude dealers. Use configurable attributes
+      // Add in the parties group all dealers in marketOrder.getDealers() with partyrole=1
+      if(isAddIncludeDealers()) {
+    	  for(int i = 0; i < marketOrder.getDealers().size() && i < includeDealersMaxNum; i++) {
+		      TSNoPartyID inclDealer = new TSNoPartyID();
+		      inclDealer.setPartyID(marketOrder.getDealers().get(i).getMarketMakerMarketSpecificCode());
+		      inclDealer.setPartyIDSource(PartyIDSource.getInstanceForFIXValue(
+		    		  marketOrder.getDealers().
+		    		  	get(i).
+		    		  		getMarketMakerMarketSpecificCodeSource().charAt(0)));
+		      inclDealer.setPartyRole(PartyRole.ExecutingFirm);
+		      tsNoPartyIDsList.add(inclDealer);
+    	  }
+    	  
+      }
       TSParties tsParties = new TSParties();
       tsParties.setTSNoPartyIDsList(tsNoPartyIDsList);
 
       tsNewOrderSingle.setTSParties(tsParties);
 
       /** Get Custom Components */
-      List<MessageComponent> customComponents = new ArrayList<MessageComponent>();
+      List<MessageComponent> customComponents = new ArrayList<>();
       //BESTX-375: SP-20190122 add blocked dealers custom group to new order single message
-      if (addBlockedDealers) {
+      if (addBlockedDealers) { // add management of max number of dealers
          BlockedDealersGrpComponent blockedDealersGrpCmp = new BlockedDealersGrpComponent();
          tw.quickfix.field.NoBlockedDealers noBlockedDealers = new tw.quickfix.field.NoBlockedDealers();
 
-         if (marketOrder.getExcludeDealers().size() > 0) {
-            noBlockedDealers.setValue(marketOrder.getExcludeDealers().size());
+         if (!marketOrder.getExcludeDealers().isEmpty()) {
+            noBlockedDealers.setValue(Integer.min(marketOrder.getExcludeDealers().size(), getBlockedDealersMaxNum()));
             blockedDealersGrpCmp.set(noBlockedDealers);
 
-            for (MarketMarketMakerSpec blockedDealer : marketOrder.getExcludeDealers()) {
-               NoBlockedDealers blockedDealersGrp = new NoBlockedDealers();
-
-               BlockedDealer blckDealer = new BlockedDealer();
-               blckDealer.setValue(blockedDealer.getMarketMakerMarketSpecificCode());
-               blockedDealersGrp.set(blckDealer);
-               blockedDealersGrpCmp.addGroup(blockedDealersGrp);
+            for (int i = 0; i < marketOrder.getExcludeDealers().size() && i < getBlockedDealersMaxNum(); i++) {
+            	MarketMarketMakerSpec blockedDealer = marketOrder.getExcludeDealers().get(i);
+            	NoBlockedDealers blockedDealersGrp = new NoBlockedDealers();
+            	BlockedDealer blckDealer = new BlockedDealer();
+            	blckDealer.setValue(blockedDealer.getMarketMakerMarketSpecificCode());
+            	blockedDealersGrp.set(blckDealer);
+            	blockedDealersGrpCmp.addGroup(blockedDealersGrp);
             }
             customComponents.add(blockedDealersGrpCmp);
          }
@@ -431,5 +484,4 @@ public class TradeXpressConnectionImpl extends AbstractTradeStacConnection imple
    public void setInvestmentDecisorRoleQualifier(String investmentDecisorRoleQualifier) {
       this.investmentDecisorRoleQualifier = investmentDecisorRoleQualifier;
    }
-
 }

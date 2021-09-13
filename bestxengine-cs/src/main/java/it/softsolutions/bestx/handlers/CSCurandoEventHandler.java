@@ -89,8 +89,7 @@ public class CSCurandoEventHandler extends CSBaseOperationEventHandler {
 
    @Override
    public void onRevoke() {
-      ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, null,
-            true);
+      ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, null);
       csExecutionStrategyService.acceptOrderRevoke(operation, operation.getLastAttempt(), SerialNumberServiceProvider.getSerialNumberService());
    }
 

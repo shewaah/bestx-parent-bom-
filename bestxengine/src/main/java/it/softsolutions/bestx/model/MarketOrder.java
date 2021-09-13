@@ -13,8 +13,14 @@
  */
 package it.softsolutions.bestx.model;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
+import it.softsolutions.jsscommon.Money;
 
 /**
  * 
@@ -29,9 +35,12 @@ public class MarketOrder extends Order {
     protected MarketMarketMaker marketMarketMaker;
     private boolean isInternal = false;
     protected String marketSessionId;
+    private Money limitMonitorPrice;
 
 	protected List<MarketMarketMakerSpec> dealers = new ArrayList<MarketMarketMakerSpec>();
 	protected List<MarketMarketMakerSpec> excludeDealers = new ArrayList<MarketMarketMakerSpec>();
+	
+	private MarketOrderBuilder builder;
 	
 	public void setDealers (List<MarketMarketMakerSpec> dealers) {
 		this.dealers = dealers;
@@ -140,23 +149,37 @@ public class MarketOrder extends Order {
         this.marketSessionId = marketSessionId;
     }
 
-    @Override
+    
+    
+    public Money getLimitMonitorPrice() {
+		return limitMonitorPrice;
+	}
+
+	public void setLimitMonitorPrice(Money limitMonitorPrice) {
+		this.limitMonitorPrice = limitMonitorPrice;
+	}
+
+	@Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("MarketOrder [market=");
         builder.append(this.market);
-        builder.append(", venue=");
-        builder.append(this.venue);
+        builder.append(", include=");
+        builder.append(beautifyListOfDealers(this.getDealers()));
+        builder.append(", exclude=");
+        builder.append(beautifyListOfDealers(this.getExcludeDealers()));
         builder.append(", text=");
         builder.append(this.text);
         builder.append(", marketMarketMaker=");
         builder.append(this.marketMarketMaker);
-        builder.append(", isInternal=");
-        builder.append(this.isInternal);
         builder.append(", marketSessionId=");
         builder.append(this.marketSessionId);
+        builder.append(", limitMonitorPrice=");
+        builder.append(this.limitMonitorPrice);
         builder.append("TransactTime=");
         builder.append(this.getTransactTime());
+        builder.append(", isInternal=");
+        builder.append(this.isInternal);
         builder.append("]");
         return builder.toString();
     }
@@ -164,7 +187,7 @@ public class MarketOrder extends Order {
     public void setValues(MarketOrder marketOrder) {
 		super.setValues((Order) marketOrder);
 	    this.market = marketOrder.market;
-	    this.venue =marketOrder.venue;
+	    this.venue = marketOrder.venue;
 	    this.text = marketOrder.text;
 	    this.marketMarketMaker = marketOrder.marketMarketMaker;
 	    this.isInternal = marketOrder.isInternal;
@@ -172,4 +195,34 @@ public class MarketOrder extends Order {
 	    this.dealers = marketOrder.dealers;
 	    this.excludeDealers = marketOrder.excludeDealers;
     }
+    
+    /** 
+     * Adds to a String (instead of std toString() only the dealer MarketMarketMakerCode
+     * @param dealerList
+     * @return a String with all the dealers' MarketMarketMakerCode
+     * 
+     */
+    public static String beautifyListOfDealers(List<MarketMarketMakerSpec> dealerList) {
+    	return dealerList.stream().map(MarketMarketMakerSpec::getMarketMakerMarketSpecificCode).collect(Collectors.joining(", ", "[", "]"));
+    }
+    
+	public static String beautifyBigDecimal(BigDecimal inputValue, int minScale, int maxScale) {
+		int scale = inputValue.stripTrailingZeros().scale();
+		if (scale < minScale) {
+			scale = minScale;
+		} else if (scale > maxScale) {
+			scale = maxScale;
+		}
+		return inputValue.setScale(scale, RoundingMode.HALF_UP).toPlainString();
+	}
+
+	public MarketOrderBuilder getBuilder() {
+		return builder;
+	}
+
+	public void setBuilder(MarketOrderBuilder builder) {
+		this.builder = builder;
+	}
+
+    
 }

@@ -13,6 +13,7 @@
  */
 package it.softsolutions.bestx;
 
+import it.softsolutions.bestx.bestexec.MarketOrderBuilderListener;
 import it.softsolutions.bestx.connections.CustomerConnectionListener;
 import it.softsolutions.bestx.connections.MarketBuySideConnectionListener;
 import it.softsolutions.bestx.connections.OperatorConsoleConnectionListener;
@@ -32,7 +33,7 @@ import it.softsolutions.bestx.services.timer.TimerServiceListener;
 * 
 **/
 public interface OperationEventListener extends TimerServiceListener, CustomerConnectionListener, TradingConsoleConnectionListener, OperatorConsoleConnectionListener, PriceServiceListener,
-        MarketBuySideConnectionListener, ExecutionStrategyServiceCallback {
+        MarketBuySideConnectionListener, ExecutionStrategyServiceCallback, MarketOrderBuilderListener {
     
     /**
      * Action to be performed when the operation enters a new state, like starting timers, etc. Since event handlers are state-specific,

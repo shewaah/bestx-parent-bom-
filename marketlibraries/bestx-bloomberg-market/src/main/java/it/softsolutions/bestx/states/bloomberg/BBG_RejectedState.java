@@ -53,5 +53,9 @@ public class BBG_RejectedState extends BaseState implements Cloneable {
     public boolean mustForceAutoNotExecution() {
         return forceAutoUnexecution;
     }
-	
+
+	@Override
+	public boolean mustSaveBook() {
+		return true;
+	}
 }

@@ -24,7 +24,6 @@ import it.softsolutions.bestx.bestexec.ProposalClassifier;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedBook;
 import it.softsolutions.bestx.model.ClassifiedProposal;
-import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Proposal.ProposalSubState;
@@ -55,7 +54,7 @@ public class DiscardOldProposalClassifier extends BaseMarketMakerClassifier impl
 //			long ptime = proposal.getTimestamp().getTime();
 			// twelveHoursAgo.setTime(twelveHoursAgo.getTime()-43200000 /* 12 * 60 * 60 *100*/ );
 			if (proposal.getTimestamp().before(twelveHoursAgo)) {
-				proposal.setProposalState(Proposal.ProposalState.REJECTED);
+				proposal.setProposalState(Proposal.ProposalState.ACCEPTABLE);
 				proposal.setProposalSubState(ProposalSubState.TOO_OLD);
 				proposal.setReason(Messages.getString("DiscardOldProposalClassifier.0", (proposal.getTimestamp() != null ? 
 						DateService.format("dd/MM/yyyy", proposal.getTimestamp()) : "")));

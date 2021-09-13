@@ -131,6 +131,16 @@ public class ChannelStatusReplyMessage extends IBcsMessage {
            setIntProperty(IB4JOperatorConsoleMessage.FLD_DL_CHANNEL_STATUS, 0);
         }
         
+        //CS ALGO Rest Service status
+        Connection csAlgoConnection = connectionRegistry.getCsAlgoRestServiceConnection();
+        if (csAlgoConnection != null) {
+           setStringProperty(IB4JOperatorConsoleMessage.FLD_ALGO_REST_CHANNEL_NAME, csAlgoConnection.getConnectionName());
+           setIntProperty(IB4JOperatorConsoleMessage.FLD_ALGO_REST_CHANNEL_STATUS, csAlgoConnection.isConnected() ? 1 : 0);
+        } else {
+           setStringProperty(IB4JOperatorConsoleMessage.FLD_ALGO_REST_CHANNEL_NAME, "RestServiceConnection");
+           setIntProperty(IB4JOperatorConsoleMessage.FLD_ALGO_REST_CHANNEL_STATUS, 0);
+        }
+        
         LOGGER.debug("ChannelStatusReplyMessage = {}", this);
     }
 }

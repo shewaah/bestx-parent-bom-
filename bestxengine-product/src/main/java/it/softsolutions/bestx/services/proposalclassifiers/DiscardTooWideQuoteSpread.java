@@ -145,6 +145,7 @@ public class DiscardTooWideQuoteSpread implements ProposalClassifier {
 			switch (bookProposal.getProposalState()) {
 			case DROPPED:
 			case REJECTED:
+         case ACCEPTABLE:
 				// doNothing
 				break;
 			default:
@@ -180,7 +181,7 @@ public class DiscardTooWideQuoteSpread implements ProposalClassifier {
 			LOGGER.trace("proposal's price = {}, retrieved bestPrice = {} > delta = {}%", classifiedProposal.getPrice().getAmount(), bestPrice, deltaPerc);
 			
 			if (deltaPerc > spreadPercent) {
-				classifiedProposal.setProposalState(Proposal.ProposalState.REJECTED);
+				classifiedProposal.setProposalState(Proposal.ProposalState.ACCEPTABLE);
 				classifiedProposal.setReason(Messages.getString("BestBook.21", deltaPerc, spreadPercent));
 				classifiedProposal.setProposalSubState(ProposalSubState.OUTSIDE_SPREAD);
 			}

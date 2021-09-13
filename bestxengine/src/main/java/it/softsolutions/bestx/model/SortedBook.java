@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Proposal.ProposalSide;
 import it.softsolutions.bestx.model.Proposal.ProposalState;
@@ -163,20 +162,6 @@ public class SortedBook implements Book, Cloneable {
 		return result;
 	}
 
-	public List<ClassifiedProposal> getAcceptableSideProposals(Rfq.OrderSide side) {
-		List<ClassifiedProposal> sideProposals = getSideProposals(side);
-
-		List<ClassifiedProposal> result = new ArrayList<ClassifiedProposal>();
-		for (ClassifiedProposal prop : sideProposals) {
-			if (prop.getProposalState() == ProposalState.VALID ||
-					(prop.getProposalState() == ProposalState.REJECTED &&
-						prop.getProposalSubState() != null && (prop.getProposalSubState() == ProposalSubState.PRICE_WORST_THAN_LIMIT ||
-						prop.getProposalSubState() == ProposalSubState.OUTSIDE_SPREAD))) {
-				result.add(prop);
-			}
-		}
-		return result;
-	}
 
 	/**
 	 * Look for proposals in one of the substates passed as arguments.
@@ -207,6 +192,35 @@ public class SortedBook implements Book, Cloneable {
 		}
 		return proposals;
 	}
+	
+	/**
+	 * This manage only valid and acceptable proposals
+	 * 
+	 * @param wantedSubStates
+	 * @param side
+	 * @return
+	 */
+   public List<ClassifiedProposal> getAcceptableProposalBySubState(List<ProposalSubState> wantedSubStates, Rfq.OrderSide side) {
+      if (wantedSubStates == null) {
+         throw new IllegalArgumentException("List of wanted states cannot be null");
+      }
+      if (side == null) {
+         throw new IllegalArgumentException("Side cannot be null");
+      }
+
+      List<ClassifiedProposal> sideProposals = getSideProposals(side);
+
+      List<ClassifiedProposal> proposals = null;
+      if (sideProposals != null) {
+         proposals = new ArrayList<ClassifiedProposal>();
+         for (ClassifiedProposal prop : sideProposals) {
+            if (prop.getProposalState() == ProposalState.VALID || (prop.getProposalState() == ProposalState.ACCEPTABLE &&  wantedSubStates.contains(prop.getProposalSubState()))) {
+               proposals.add(prop);
+            }
+         }
+      }
+      return proposals;
+   }
 
 	protected ProposalSide convertSide(Rfq.OrderSide side) {
 		return side==Rfq.OrderSide.BUY ? ProposalSide.ASK: ProposalSide.BID;
@@ -227,7 +241,7 @@ public class SortedBook implements Book, Cloneable {
 		List<ClassifiedProposal> sideProposals = getSideProposals(convertSide(side));
 		List<ClassifiedProposal> result = new ArrayList<ClassifiedProposal>();
 		for (ClassifiedProposal prop : sideProposals) {
-			boolean stateToAccept = (prop.getProposalState() == ProposalState.VALID) || ((prop.getProposalState() == ProposalState.REJECTED));
+			boolean stateToAccept = prop.getProposalState() == ProposalState.VALID || prop.getProposalState() == ProposalState.REJECTED || prop.getProposalState() == ProposalState.ACCEPTABLE;
 			boolean validPrice = (prop.getPrice().getAmount().doubleValue() > 0.0);
 			if ( stateToAccept && validPrice ){
 				result.add(prop);

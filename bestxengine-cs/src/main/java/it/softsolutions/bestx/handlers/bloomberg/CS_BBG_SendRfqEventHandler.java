@@ -271,6 +271,7 @@ public class CS_BBG_SendRfqEventHandler extends BaseOperationEventHandler {
             for (Attempt attempt : operation.getAttempts()) {
                 if (attempt.getExecutablePrice(0) != null && attempt.getExecutablePrice(0).getClassifiedProposal() != null &&
                 		attempt.getExecutablePrice(0).getClassifiedProposal().getVenue() != null && 
+                		operation.getLastAttempt().getExecutionProposal() != null &&
                 		operation.getLastAttempt().getExecutionProposal().getVenue() != null &&
                 		attempt.getExecutablePrice(0).getClassifiedProposal().getVenue().getCode().equalsIgnoreCase(operation.getLastAttempt().getExecutionProposal().getVenue().getCode())) {
                     ClassifiedProposal counter = (ClassifiedProposal) attempt.getExecutablePrice(0).getClassifiedProposal();

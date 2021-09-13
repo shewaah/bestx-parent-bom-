@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
+import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
 import it.softsolutions.bestx.connections.CustomerConnection;
 import it.softsolutions.bestx.connections.OperatorConsoleConnection;
 import it.softsolutions.bestx.dao.BestXConfigurationDao;
@@ -91,11 +92,10 @@ import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal;
-import it.softsolutions.bestx.services.BookDepthValidator;
-import it.softsolutions.bestx.services.CSBookDepthController;
 import it.softsolutions.bestx.services.CSConfigurationPropertyLoader;
 import it.softsolutions.bestx.services.CommissionService;
 import it.softsolutions.bestx.services.ExecutionDestinationService;
+import it.softsolutions.bestx.services.MarketOrderFilterChain;
 import it.softsolutions.bestx.services.OrderValidationService;
 import it.softsolutions.bestx.services.PriceServiceProvider;
 import it.softsolutions.bestx.services.customservice.CustomService;
@@ -150,7 +150,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 	private int mtsCreditExecTimeout;
 	private long bondVisionExecTimeout = 120 * 1000;
 	private int sendExecRepTimeout;
-	private String matchingMMcode;
 	private List<String> internalMMcodesList;
 	private CommissionService commissionService;
 	private RegulatedMktIsinsLoader regulatedMktIsinsLoader;
@@ -160,9 +159,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 	private ExecutionDestinationService executionDestinationService;
 	private long waitingCMFTimeout = 90000; // default value is 90 seconds
 	private PriceServiceProvider priceServiceProvider;
-	private boolean rejectWhenBloombergIsBest;
-	private int minimumRequiredBookDepth = 3;
-	private BookDepthValidator bookDepthValidator = new CSBookDepthController(minimumRequiredBookDepth);
 
 	private Map<String, MultipleQuotesHandler> multipleQuotesHandlers = new HashMap<String, MultipleQuotesHandler>();
 	private long grdLiteLoadResponseTimeout;
@@ -190,10 +186,11 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 	private String priceDiscoveryCustomerId;
 	private int priceDecimals;
 	private int pobExMaxSize;
-	private int targetPriceMaxLevel;
 	private ApplicationStatus applicationStatus;
 	
 	private DataCollector dataCollector;
+	private MarketOrderBuilder marketOrderBuilder;
+	private MarketOrderFilterChain marketOrderFilterChain;
 
 	public long getBondVisionExecTimeout() {
 		return bondVisionExecTimeout;
@@ -203,13 +200,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 		this.bondVisionExecTimeout = bondVisionExecTimeout;
 	}
 
-	public int getTargetPriceMaxLevel() {
-		return targetPriceMaxLevel;
-	}
-
-	public void setTargetPriceMaxLevel(int targetPriceMaxLevel) {
-		this.targetPriceMaxLevel = targetPriceMaxLevel;
-	}
 
 	//20180925 - SP - BESTX-352
 	private CurandoTimerRetriever curandoTimerRetriever;
@@ -557,7 +547,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 			break;
 		case Rejected: {
 			if (marketCode == null) {
-				handler = new CSRejectedEventHandler(operation, rejectWhenBloombergIsBest, serialNumberService, this.dataCollector);
+				handler = new CSRejectedEventHandler(operation, serialNumberService, this.dataCollector);
 				break;
 			}
 			else {
@@ -659,13 +649,13 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 		case StartExecution: {
 			switch (marketCode) {
 			case BLOOMBERG:
-				handler = new BBG_StartExecutionEventHandler(operation);
+				handler = new BBG_StartExecutionEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.BLOOMBERG));
 				break;
 			case TW:
-				handler = new TW_StartExecutionEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.TW).getBuySideConnection(), orderCancelDelay);
+				handler = new TW_StartExecutionEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.TW), orderCancelDelay);
 				break;
 			case MARKETAXESS:
-				handler = new MA_StartExecutionEventHandler(operation);
+				handler = new MA_StartExecutionEventHandler(operation, marketConnectionRegistry.getMarketConnection(MarketCode.MARKETAXESS));
 				break;
 			default:
 				throw new BestXException(Messages.getString("StrategyUnexpectedMarketCode.0", marketCode));
@@ -683,7 +673,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 
 			handler = new ManualExecutionWaitingPriceEventHandler(operation, getPriceService(operation.getOrder()), customerFinder, serialNumberService,
 					regulatedMktIsinsLoader, regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout,
-					executionDestinationService, rejectWhenBloombergIsBest, doNotExecuteMEW, bookDepthValidator, operationStateAuditDao, applicationStatus, dataCollector);
+					executionDestinationService, doNotExecuteMEW, operationStateAuditDao, applicationStatus, dataCollector, marketOrderBuilder, marketOrderFilterChain);
 			break;
 		case WaitingPrice:
 			Boolean doNotExecuteWP = CSConfigurationPropertyLoader.getBooleanProperty(CSConfigurationPropertyLoader.LIMITFILE_DONOTEXECUTE, false);
@@ -693,7 +683,7 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 
 			handler = new WaitingPriceEventHandler(operation, getPriceService(operation.getOrder()), customerFinder, serialNumberService, regulatedMktIsinsLoader,
 					regulatedMarketPolicies, waitPriceTimeoutMSec, mifidConfig.getNumRetry(), marketPriceTimeout, executionDestinationService,
-					rejectWhenBloombergIsBest, doNotExecuteWP, bookDepthValidator, internalMMcodesList, operationStateAuditDao, targetPriceMaxLevel, applicationStatus, dataCollector);
+					doNotExecuteWP, internalMMcodesList, operationStateAuditDao, applicationStatus, dataCollector, marketOrderBuilder, marketOrderFilterChain);
 			break;
 		case Error:
 		case Warning:
@@ -853,16 +843,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 	 */
 	public void setMarketMakerFinder(MarketMakerFinder marketMakerFinder) {
 		this.marketMakerFinder = marketMakerFinder;
-	}
-
-	/**
-	 * Set the matching market maker code.
-	 * 
-	 * @param matchingMMcode
-	 *            : the market maker code
-	 */
-	public void setMatchingMMcode(String matchingMMcode) {
-		this.matchingMMcode = matchingMMcode;
 	}
 
 	/**
@@ -1084,44 +1064,6 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 	 */
 	public void setMtsCreditExecTimeout(int mtsCreditExecTimeout) {
 		this.mtsCreditExecTimeout = mtsCreditExecTimeout;
-	}
-
-	/**
-	 * Check if we must reject orders if Bloomberg is Best.
-	 * 
-	 * @return the rejectWhenBloombergIsBest
-	 */
-	public boolean isRejectWhenBloombergIsBest() {
-		return rejectWhenBloombergIsBest;
-	}
-
-	/**
-	 * Set the reject orders when Bloomberg is Best flag.
-	 * 
-	 * @param rejectWhenBloombergIsBest
-	 *            the rejectWhenBloombergIsBest to set
-	 */
-	public void setRejectWhenBloombergIsBest(boolean rejectWhenBloombergIsBest) {
-		this.rejectWhenBloombergIsBest = rejectWhenBloombergIsBest;
-	}
-
-	/**
-	 * Gets the minimum required book depth.
-	 *
-	 * @return the minimum required book depth
-	 */
-	public int getMinimumRequiredBookDepth() {
-		return minimumRequiredBookDepth;
-	}
-
-	/**
-	 * Sets the minimum required book depth.
-	 *
-	 * @param minimumRequiredBookDepth the new minimum required book depth
-	 */
-	public void setMinimumRequiredBookDepth(int minimumRequiredBookDepth) {
-		this.minimumRequiredBookDepth = minimumRequiredBookDepth;
-		((CSBookDepthController) bookDepthValidator).setMinimumRequiredBookDepth(minimumRequiredBookDepth);
 	}
 
 	/**
@@ -1411,14 +1353,30 @@ public class CSStrategy implements Strategy, SystemStateSelector, CSStrategyMBea
 	public void setBloombergExecTimeout(long bloombergExecTimeout) {
 		this.bloombergExecTimeout = bloombergExecTimeout;
 	}
-
    
    public DataCollector getDataCollector() {
       return dataCollector;
    }
-
    
    public void setDataCollector(DataCollector dataCollector) {
       this.dataCollector = dataCollector;
    }
+
+   public MarketOrderBuilder getMarketOrderBuilder() {
+      return marketOrderBuilder;
+   }
+
+   public void setMarketOrderBuilder(MarketOrderBuilder marketOrderBuilder) {
+      this.marketOrderBuilder = marketOrderBuilder;
+   }
+
+	public MarketOrderFilterChain getMarketOrderFilterChain() {
+		return marketOrderFilterChain;
+	}
+	
+	public void setMarketOrderFilterChain(MarketOrderFilterChain marketOrderFilterChain) {
+		this.marketOrderFilterChain = marketOrderFilterChain;
+	}
+   
+   
 }

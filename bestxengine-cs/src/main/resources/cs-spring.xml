@@ -37,6 +37,7 @@
 				<value>BESTX.properties</value>
 				<value>hibernate.properties</value>
 				<value>classpath:BESTX_internal.properties</value>
+				<value>restServiceConnection.properties</value>
 			</list>
 		</property>
 	</bean>
@@ -75,8 +76,10 @@
                 <entry key="it.softsolutions.bestx.cs:name=ApplicationControl" value-ref="applicationController" />
                 <entry key="it.softsolutions.bestx.cs:name=AutomaticCurandoStatus" value-ref="autoCurandoStatusManager" />
                 <entry key="it.softsolutions.bestx.cs:name=Oms1FixCustomerConnection" value-ref="oms1CustomerAdapter" />
-                <entry key="it.softsolutions.bestx.cs:name=BloombergMarketConnection" value-ref="bloombergMarket" />
 				<entry key="it.softsolutions.bestx.cs:name=TradewebMarketConnection" value-ref="tradewebMarket" />
+				<entry key="it.softsolutions.bestx.cs:name=TradewebXpressConnection" value-ref="tradexpressConnector" />
+                <entry key="it.softsolutions.bestx.cs:name=BloombergMarketConnection" value-ref="bloombergMarket" />
+                <entry key="it.softsolutions.bestx.cs:name=RBLD_TSOXConnection" value-ref="tsoxConnector" />
 				<entry key="it.softsolutions.bestx.cs:name=MarketAxessMarketConnection" value-ref="marketAxessMarket" />
 				<entry key="it.softsolutions.bestx.cs:name=MarketAxessConnectionImpl" value-ref="autoExecutionTradeConnector" />
                 <entry key="it.softsolutions.bestx.cs:name=NormalPriceService" value-ref="normalPriceService" />
@@ -102,6 +105,7 @@
                 <entry key="it.softsolutions.bestx.cs:name=BloombergHistoricMarket" value-ref="bloombergHistoricMarket" />
                 <entry key="it.softsolutions.bestx.cs:name=MarketAxessHistoricMarket" value-ref="marketAxessHistoricMarket" />
                 <entry key="it.softsolutions.bestx.cs:name=TradewebHistoricMarket" value-ref="tradewebHistoricMarket" />
+                <entry key="it.softsolutions.bestx.cs:name=CSAlgoRestService" value-ref="algoRestService" />
 			</map>
 		</property>
 		<property name="server" ref="mbeanServer" />
@@ -114,9 +118,11 @@
 						<prop key="it.softsolutions.bestx.cs:name=Oms1FixCustomerConnection">it.softsolutions.bestx.management.FixCustomerAdapterMBean</prop>
 <!-- 						<prop key="it.softsolutions.bestx.cs:name=Oms2FixCustomerConnection">it.softsolutions.bestx.management.FixCustomerAdapterMBean</prop> -->
 						<prop key="it.softsolutions.bestx.cs:name=BloombergMarketConnection">it.softsolutions.bestx.management.MarketMXBean</prop>
-						<prop key="it.softsolutions.bestx.cs:name=TradewebMarketConnection">it.softsolutions.bestx.management.MarketMXBean</prop>
-						<prop key="it.softsolutions.bestx.cs:name=MarketAxessMarketConnection">it.softsolutions.bestx.management.MarketMXBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=MarketAxessConnectionImpl">it.softsolutions.bestx.connections.marketaxess.MarketAxessConnectorMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=TradewebMarketConnection">it.softsolutions.bestx.management.MarketMXBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=TradewebXpressConnection">it.softsolutions.bestx.connections.TradeStacConnectorMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=MarketAxessMarketConnection">it.softsolutions.bestx.management.MarketMXBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=RBLD_TSOXConnection">it.softsolutions.bestx.connections.TradeStacConnectorMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=PriceService">it.softsolutions.bestx.management.PriceServiceMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=OperatorConsoleAdapter">it.softsolutions.bestx.management.OperatorConsoleAdapterMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=OperationRestore">it.softsolutions.bestx.management.SimpleOperationRestorerMBean</prop>
@@ -132,6 +138,7 @@
 						<prop key="it.softsolutions.bestx.cs:name=BloombergHistoricMarket">it.softsolutions.bestx.markets.historic.HistoricMarketMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=MarketAxessHistoricMarket">it.softsolutions.bestx.markets.historic.HistoricMarketMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=TradewebHistoricMarket">it.softsolutions.bestx.markets.historic.HistoricMarketMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=CSAlgoRestService">it.softsolutions.bestx.management.OperatorConsoleAdapterMBean</prop>
 					</props>
 				</property>
 			</bean>
@@ -483,7 +490,12 @@
 		<property name="maxPoolSize" value="8"/>
 		<property name="threadNamePrefix" value="TP-KAFKA"/>
 	</bean>	
-	
+    <bean id="threadPoolALGOREST" class="it.softsolutions.bestx.ThreadPoolExecutor" init-method="initialize">
+        <property name="corePoolSize" value="64"/>
+		<property name="maxPoolSize" value="64"/>
+		<property name="threadNamePrefix" value="TP-ALGOREST"/>
+    </bean>
+    	
     <bean id="oms1CustomerAdapter" class="it.softsolutions.bestx.connections.OMS1CustomerAdapter" init-method="init">
 		<!-- BUSINESS PARAMETERS -->
 		<property name="defaultCustomer">
@@ -617,6 +629,71 @@
 			</list>
 		</constructor-arg>
 	</bean>
+	
+    <bean id="bookDepthValidator" class="it.softsolutions.bestx.services.CSBookDepthController">
+		<constructor-arg>
+			<value>${Execution.minimumRequiredBookDepth}</value>
+		</constructor-arg>
+    </bean>
+
+	<bean id="targetPriceCalculator" class="it.softsolutions.bestx.services.TargetPriceCalculator">
+        <property name="targetPriceMaxLevel" value="${TargetPrice.MaxLevel}" />
+        <property name="acceptableSubstates" value="PRICE_WORST_THAN_LIMIT,OUTSIDE_SPREAD" />
+        <property name="decimalDigitdRounding"><value>5</value></property>
+	</bean>
+
+	<bean id="parentMarketOrderBuilder" abstract="true">
+        <property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes:}" />
+	</bean>
+	
+    <bean id="defaultMarketOrderBuilder" class="it.softsolutions.bestx.services.BestXMarketOrderBuilder" parent="parentMarketOrderBuilder">
+		<property name="targetPriceCalculator" ref="targetPriceCalculator" />
+		<property name="name" value="${MarketOrderBuilderName:Fallback}" />
+	</bean>
+
+    <bean id="algoMarketOrderBuilder" class="it.softsolutions.bestx.services.rest.CSMarketOrderBuilder" parent="parentMarketOrderBuilder">
+        <property name="csAlgoService" ref="algoRestService" />
+        <property name="marketFinder" ref="dbBasedMarketFinder" />
+        <property name="marketMakerFinder" ref="dbBasedMarketMakerFinder" />
+        <property name="executor" ref="threadPoolALGOREST" />
+		<property name="name" value="${CSMarketOrderBuilderName:Get Routing Proposal}" />
+	</bean>
+	
+	<bean id="ustMarketOrderBuilder" class="it.softsolutions.bestx.services.FixedMarketMarketOrderBuilder" parent="parentMarketOrderBuilder">
+		<property name="marketCode" value="TW" />
+        <property name="marketFinder" ref="dbBasedMarketFinder" />
+		<property name="targetPriceCalculator" ref="targetPriceCalculator" />
+		<property name="name" value="${FixedMarketMarketOrderBuilder:Fallback}" />
+	</bean>
+	
+    <bean id="fallbackMarketOrderBuilder" class="it.softsolutions.bestx.services.FallbackMarketOrderBuilder">
+        <property name="defaultMarketOrderBuilder" ref="defaultMarketOrderBuilder" />
+        <property name="csAlgoMarketOrderBuilder" ref="algoMarketOrderBuilder" />
+        <property name="ustMarketOrderBuilder" ref="ustMarketOrderBuilder" />
+		<property name="name" value="${FallbackMarketOrderBuilder:Fallback}" />
+	</bean>
+	
+	<bean id="marketOrderFilterChain" class="it.softsolutions.bestx.services.MarketOrderFilterChain">
+		<property name="filters">
+			<list>
+				<bean class="it.softsolutions.bestx.services.RepeatedMarketOrderFilter" />
+				<bean class="it.softsolutions.bestx.services.AutoExecutionOrderFilter" />
+				<bean class="it.softsolutions.bestx.services.BookDepthOrderFilter">
+					<property name="bookDepthValidator" ref="bookDepthValidator" />
+				</bean>
+				<bean class="it.softsolutions.bestx.services.TargetPriceMarketOrderFilter" />
+				<bean class="it.softsolutions.bestx.services.AutoExecutionStatusOrderFilter">
+					<property name="autoCurandoStatus" ref="autoCurandoStatusManager" />
+				</bean>
+				<bean class="it.softsolutions.bestx.services.ApplicationStatusOrderFilter">
+					<property name="applicationStatus" ref="applicationStatus" />
+					<property name="bookDepthValidator" ref="bookDepthValidator" />
+				</bean>
+
+				<bean class="it.softsolutions.bestx.services.CSUSTTargetPriceOrderFilter" />
+			</list>
+		</property>
+	</bean>
 
 	<!-- STRATEGY -->
 	<bean id="csStrategy" class="it.softsolutions.bestx.CSStrategy">
@@ -638,7 +715,6 @@
 		<property name="bloombergExecTimeout"><value>${Bloomberg.ExecTimeout}</value></property>
         <property name="internalRfqReplyTimeout"><value>${Internal.rfqreply.timeout}</value></property>
         <property name="internalRfqMessagePrefix"><value>${Internal.rfq.message.prefix}</value></property>
-        <property name="targetPriceMaxLevel"><value>${TargetPrice.MaxLevel}</value></property>
 		<!-- TECHNICAL PARAMETERS -->
         <property name="mifidConfig"><ref bean="mifidConfig"></ref></property>
         <property name="priceServiceProvider"><ref bean="priceServiceProvider"></ref></property>
@@ -655,10 +731,6 @@
         <property name="autoCurandoStatus"><ref bean="autoCurandoStatusManager"></ref></property>
         <property name="regulatedMarketPolicies"><ref bean="regulatedMarketPoliciesBean"></ref></property>
         <property name="operationRegistry"><ref bean="defaultOperationRegistry"></ref></property>
-		<!-- Reject orders when Bloomberg is Best : set to false to deactivate -->
-        <property name="rejectWhenBloombergIsBest"><value>${Bloomberg.rejectWhenIsBest}</value></property>
-        <!-- Reject orders when book depth is < (x) : set to 0 to deactivate, default = 3 -->
-        <property name="minimumRequiredBookDepth"><value>${Execution.minimumRequiredBookDepth}</value></property>
 		<!-- in milliseconds -->
         <property name="waitingCMFTimeout"><value>100000</value></property>
         <property name="grdLiteLoadResponseTimeout"><value>${GRDLite.loadResponse.timeout}</value></property>
@@ -684,6 +756,8 @@
         <property name="curandoTimerRetriever"><ref bean="curandoTimerRetriever"></ref></property>
 		<property name="applicationStatus" ref="applicationStatus" />
 		<property name="dataCollector" ref="dataCollector" />
+		<property name="marketOrderBuilder" ref="fallbackMarketOrderBuilder" />
+		<property name="marketOrderFilterChain" ref="marketOrderFilterChain" />
 	</bean>
 	
 	<!-- The application status contains global status used by the application -->
@@ -795,6 +869,7 @@
         <property name="mqPriceDiscoveryConnection"><ref bean="mqPriceDiscoveryOperatorConsoleAdapter"/></property>
         <property name="grdLiteConnection"><ref bean="grdLiteService"/></property>
         <property name="datalakeConnection" ref="dataCollector" />
+        <property name="csAlgoRestServiceConnection" ref="algoRestService" />
 	</bean>
 
 	<!-- OPERATION LIFECYCLE MANAGER -->
@@ -857,8 +932,6 @@
         <property name="bookProposalBuilder"><ref bean="defaultBookProposalBuilder"></ref></property>
         <property name="marketFinder"><ref bean="dbBasedMarketFinder"></ref></property>
         <property name="serialNumberService"><ref bean="serialNumberService"></ref></property>
-		<!-- Reject orders when Bloomberg is Best : set to false to deactivate -->
-        <property name="rejectWhenBloombergIsBest"><value>${Bloomberg.rejectWhenIsBest}</value></property>
         <property name="operationStateAuditDao"><ref bean="sqlOperationStateAuditDao"></ref></property>
 	</bean>
 
@@ -888,8 +961,6 @@
         <property name="bookProposalBuilder"><ref bean="defaultBookProposalBuilder"></ref></property>
         <property name="marketFinder"><ref bean="dbBasedMarketFinder"></ref></property>
         <property name="serialNumberService"><ref bean="serialNumberService"></ref></property>
-		<!-- Reject orders when Bloomberg is Best : set to false to deactivate -->
-        <property name="rejectWhenBloombergIsBest"><value>${Bloomberg.rejectWhenIsBest}</value></property>
         <property name="operationStateAuditDao"><ref bean="sqlOperationStateAuditDao"></ref></property>        
 	</bean>
 
@@ -919,8 +990,6 @@
         <property name="bookProposalBuilder"><ref bean="defaultBookProposalBuilder"></ref></property>
         <property name="marketFinder"><ref bean="dbBasedMarketFinder"></ref></property>
         <property name="serialNumberService"><ref bean="serialNumberService"></ref></property>
-		<!-- Reject orders when Bloomberg is Best : set to false to deactivate -->
-        <property name="rejectWhenBloombergIsBest"><value>${Bloomberg.rejectWhenIsBest}</value></property>
         <property name="operationStateAuditDao"><ref bean="sqlOperationStateAuditDao"></ref></property>
 	</bean>
 
@@ -933,7 +1002,6 @@
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardSpreadProposalClassifier" />
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardYieldProposalClassifier" />
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnitProposalClassifier" />
-                <bean class="it.softsolutions.bestx.services.proposalclassifiers.SubstituteCounterProposalClassifier" />
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnavailableVenueProposalClassifier" />
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroProposalClassifier">
                 	<property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
@@ -942,13 +1010,12 @@
                     <property name="configValue" value="${ProposalClassifiers.discard.limitHours}" />
                     <property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
 				</bean>
-                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardMarketTriedInEarlierAttemptProposalClassifier" />
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardWorstPriceProposalClassifier" />
+                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardMarketTriedInEarlierAttemptProposalClassifier"/>
 			</list>
 		</property>
 		<property name="bookClassifierList">
 			<list>
-                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardDuplicatedMM" />
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTooWideQuoteSpread" />
 			</list>
 		</property>
@@ -957,6 +1024,9 @@
 	<bean id="pDOnlyBookClassifierBean" class="it.softsolutions.bestx.ConfigurableBookClassifier">
 		<property name="proposalClassifierList">
 			<list>
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.SubstituteQuoteTypeProposalClassifier">
+                	<property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
+				</bean>
  				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardSpreadProposalClassifier"></bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardYieldProposalClassifier"></bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnitProposalClassifier"></bean>
@@ -971,12 +1041,10 @@
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.TagInsufficientQtyProposalClassifier">
                 	<property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
 				</bean>
-				<!-- <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardTooWideQuoteSpread"></bean> -->
 			</list>
 		</property>
 		<property name="bookClassifierList">
 			<list>
-                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardDuplicatedMM"></bean>
 			</list>
 		</property>
 	</bean>
@@ -996,7 +1064,7 @@
     		</list>
     	</property>
     	<property name="applicationStatus" ref="applicationStatus" />
-    	<property name="minimumRequiredBookDepth"><value>${Execution.minimumRequiredBookDepth}</value></property>
+    	<property name="mifidConfig" ref="mifidConfig" />
     	<property name="centsLFTolerance" value="${Execution.centsLFTolerance:0}" />
     </bean>
 
@@ -1057,6 +1125,10 @@
 		<property name="tradeStacClientSession">
 			<bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
 		</property>
+		<property name="includeDealersMaxNum"><value>${Bloomberg.Tsox.Order.IncludeDealersMaxNum:0}</value></property>
+		<property name="addIncludeDealers"><value>${Bloomberg.Tsox.Order.AddIncludeDealers:false}</value></property>
+		<property name="blockedDealersMaxNum"><value>${Bloomberg.Tsox.Order.BlockedDealersMaxNum:0}</value></property>
+		<property name="addBlockedDealers"><value>${Bloomberg.Tsox.Order.AddBlockedDealers:false}</value></property>
         <property name="tsoxConnectionListener"><ref bean="bloombergMarket"/></property>
 		<property name="destinationMICCode"><value>${Bloomberg.Tsox.DestinationMICCode}</value></property>
 		<property name="traderCode"><value>${Bloomberg.Tsox.TraderCode}</value></property>
@@ -1118,6 +1190,11 @@
 		<property name="tradeStacClientSession">
 			<bean class="it.softsolutions.tradestac.client.TradeStacClient"></bean>
 		</property>
+		<property name="includeDealersMaxNum"><value>${Tradeweb.Order.IncludeDealersMaxNum:0}</value></property>
+		<property name="addIncludeDealers"><value>${Tradeweb.Order.AddIncludeDealers:false}</value></property>
+		<property name="blockedDealersMaxNum"><value>${Tradeweb.Order.BlockedDealersMaxNum:0}</value></property>
+		<property name="addBlockedDealers"><value>${Tradeweb.Order.AddBlockedDealers:false}</value></property>
+		<property name="handlInstr" value='X' />
 		<property name="traderCode"><value>${Tradeweb.TraderCode}</value></property>
 		<property name="bestxAlgoID"><value>${Tradeweb.ExecutionDecisionMakerID}</value></property>
 		<property name="defaultShortSelling"><value>${Tradeweb.defaultShortSell}</value></property>
@@ -1175,7 +1252,11 @@
 		<property name="tradeStacClientSession">
 			<bean class="it.softsolutions.tradestac2.client.TradeStacClient"/>
 		</property>
-		<property name="includeDealers"><value>${Marketaxess.Order.MinDealers}</value></property>
+		<property name="minIncludeDealers"><value>${Marketaxess.Order.MinDealers:0}</value></property>
+		<property name="includeDealersMaxNum"><value>${MarketAxess.Order.IncludeDealersMaxNum:0}</value></property>
+		<property name="addIncludeDealers"><value>${MarketAxess.Order.AddIncludeDealers:false}</value></property>
+		<property name="blockedDealersMaxNum"><value>${MarketAxess.Order.BlockedDealersMaxNum:0}</value></property>
+		<property name="addBlockedDealers"><value>${MarketAxess.Order.AddBlockedDealers:false}</value></property>
 		<property name="traderPartyID"><value>${Marketaxess.Order.TraderPartyID}</value></property>
 		<property name="investmentDecisionIDSource"><value>${MarketAxess.InvestmentDecisionMakerIDSource}</value></property>
 		<property name="investmentDecisionQualifier"><value>${MarketAxess.InvestmentDecisionQualifier}</value></property>
@@ -1203,8 +1284,8 @@
         <property name="pricesRespIntervalTimeInSecs"><value>${Price.monitor.intervalInSeconds}</value></property>
         <property name="executionsRespIntervalTimeInSecs"><value>${Execution.monitor.intervalInSeconds}</value></property>
         <property name="historicPricesQuery" value="${HistoricMarket.SQLQuery}" />
-        <property name="numDays" value="${HistoricMarket.NumDays:0}" />
-        <property name="numPricePoints" value="${HistoricMarket.NumPricePoints:0}" />
+        <property name="numDays" value="${HistoricMarket.NumDays:1}" />
+        <property name="numPricePoints" value="${HistoricMarket.NumPricePoints:2}" />
     </bean>
     
     <bean id="bloombergHistoricMarket" parent="historicMarket">
@@ -1341,5 +1422,26 @@
         <property name="timeFormatString" value="${Kafka.Timestamp.Format:yyyy-MM-dd'T'HH:mm:ss.SSS'Z'}" />
         <property name="timeZoneString" value="${Kafka.Timestamp.Timezone:UTC}" />
         <property name="sendEmptyBook" value="${Kafka.Book.SendEmptyBook:false}" />
+	</bean>
+	
+	<bean id="algoRestService" class="it.softsolutions.bestx.services.rest.CSAlgoRestService" init-method="init">
+		<property name="serviceName" value="RestServiceConnection" />
+        <property name="endpoint" value="${CSAlgoRest.service.endpoint}" />
+        <property name="servicePath" value="${CSAlgoRest.service.servicePath}" />
+        <property name="healthcheckPath" value="${CSAlgoRest.service.healthcheckPath}" />
+        <property name="connectionTimeout" value="${CSAlgoRest.service.connectionTimeout}" />
+        <property name="responseTimeout" value="${CSAlgoRest.service.responseTimeout}" />
+        <property name="algoServiceName" value="${CSAlgoRest.service.serviceName}" />
+        <property name="useSSL" value="${CSAlgoRest.service.useSSL:N}" />
+        <property name="keyStorePath" value="${CSAlgoRest.service.keyStorePath:#{null}}" />
+        <property name="keyStorePassword" value="${CSAlgoRest.service.keyStorePassword:#{null}}" />
+        <property name="keyStoreType" value="${CSAlgoRest.service.keyStoreType:#{null}}" />
+        <property name="trustStorePath" value="${CSAlgoRest.service.trustStorePath:#{null}}" />
+        <property name="trustStorePassword" value="${CSAlgoRest.service.trustStorePassword:#{null}}" />
+        <property name="trustStoreType" value="${CSAlgoRest.service.trustStoreType:#{null}}" />
+        <property name="certAlias" value="${CSAlgoRest.service.certAlias:#{null}}" />
+        <property name="disableCNCheck" value="${CSAlgoRest.service.disableCNCheck:#{null}}" />
+        <property name="timeFormatString" value="${CSAlgoRest.service.Timestamp.Format:yyyy-MM-dd'T'HH:mm:ss.SSS'Z'}" />
+        <property name="timeZoneString" value="${CSAlgoRest.service.Timestamp.Timezone:UTC}" />
 	</bean>
 </beans>

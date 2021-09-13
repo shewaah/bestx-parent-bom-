@@ -18,6 +18,7 @@ package it.softsolutions.bestx.services.executionstrategy;
 import java.util.List;
 
 import it.softsolutions.bestx.MarketConnectionRegistry;
+import it.softsolutions.bestx.MifidConfig;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.bestexec.BookClassifier;
@@ -38,16 +39,13 @@ import it.softsolutions.bestx.services.price.PriceService.PriceDiscoveryType;
  **/
 
 public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceFactory implements CSExecutionStrategyServiceFactoryMBean {
-//    private static final Logger LOGGER = LoggerFactory.getLogger(CSExecutionStrategyServiceFactory.class);
 
 	private MarketFinder marketFinder;
 	private BookClassifier bookClassifier;
 	private BookSorterImpl bookSorter;
 	private ApplicationStatus applicationStatus;
+	private MifidConfig mifidConfig;
 	private MarketConnectionRegistry marketConnectionRegistry;
-	private int minimumRequiredBookDepth = 3;
-	private int centsLFTolerance = 0;
-
 
 	public BookClassifier getBookClassifier() {
 		return bookClassifier;
@@ -82,8 +80,6 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
 	{
 		this.marketFinder = marketFinder;
 	}
-
-	
     
     public ApplicationStatus getApplicationStatus() {
 		return applicationStatus;
@@ -93,24 +89,6 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
 		this.applicationStatus = applicationStatus;
 	}
 	
-	
-
-	public int getMinimumRequiredBookDepth() {
-		return minimumRequiredBookDepth;
-	}
-
-	public void setMinimumRequiredBookDepth(int minimumRequiredBookDepth) {
-		this.minimumRequiredBookDepth = minimumRequiredBookDepth;
-	}
-
-	public int getCentsLFTolerance() {
-		return centsLFTolerance;
-	}
-
-	public void setCentsLFTolerance(int centsLFTolerance) {
-		this.centsLFTolerance = centsLFTolerance;
-	}
-
 	public CSExecutionStrategyServiceFactory() {
     	setInstance(this);
     }
@@ -121,10 +99,11 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
 
     @Override
     public ExecutionStrategyService getExecutionStrategyService(PriceDiscoveryType priceDiscoveryType, Operation operation,
-            PriceResult priceResult, boolean rejectOrderWhenBloombergIsBest) {
+            PriceResult priceResult) {
       switch (priceDiscoveryType) {
+      case ONLY_PRICEDISCOVERY:
       case LIMIT_FILE_PRICEDISCOVERY: {
-         CSLimitFileExecutionStrategyService execService = new CSLimitFileExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest, this.applicationStatus, this.minimumRequiredBookDepth, this.centsLFTolerance);
+         CSLimitFileExecutionStrategyService execService = new CSLimitFileExecutionStrategyService(operation, priceResult, this.applicationStatus, this.mifidConfig);
          execService.setMarketFinder(marketFinder);
          execService.setBookClassifier(bookClassifier);
          execService.setBookSorter(bookSorter);
@@ -132,18 +111,9 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
          return execService;
       }
       case NORMAL_PRICEDISCOVERY: {
-         CSNormalExecutionStrategyService execService = new CSNormalExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest, this.applicationStatus, this.minimumRequiredBookDepth);
+         CSNormalExecutionStrategyService execService = new CSNormalExecutionStrategyService(operation, priceResult, this.applicationStatus, this.mifidConfig);
          execService.setMarketFinder(marketFinder);
          execService.setBookClassifier(bookClassifier);
-         execService.setBookSorter(bookSorter);
-         execService.setMarketConnectionRegistry(marketConnectionRegistry);
-         return execService;
-      }
-          // AMC 20160801 probably not needed
-      case ONLY_PRICEDISCOVERY: {
-         CSNormalExecutionStrategyService execService = new CSNormalExecutionStrategyService(operation, priceResult, rejectOrderWhenBloombergIsBest, this.applicationStatus, this.minimumRequiredBookDepth);
-         execService.setMarketFinder(marketFinder);
-          execService.setBookClassifier(bookClassifier);
          execService.setBookSorter(bookSorter);
          execService.setMarketConnectionRegistry(marketConnectionRegistry);
          return execService;
@@ -162,5 +132,12 @@ public class CSExecutionStrategyServiceFactory extends ExecutionStrategyServiceF
 		this.allMarketsToTry = allMarketsToTry;
 	}
 
+	public MifidConfig getMifidConfig() {
+		return mifidConfig;
+	}
 
+	public void setMifidConfig(MifidConfig mifidConfig) {
+		this.mifidConfig = mifidConfig;
+	}
+	
 }

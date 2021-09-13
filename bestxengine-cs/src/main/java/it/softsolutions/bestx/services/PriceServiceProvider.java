@@ -21,7 +21,7 @@ import java.util.Map;
 
 /**
  * 
- * Purpose: this class is mainly to maintain the mapping of PriceServices to PriceDiscoveryType in the current instance of BestX!
+ * Purpose: this class is mainly to maintain the mapping of PriceServices to PriceDiscoveryType in the current instance of BestX:FI-A
  * 
  * Project Name : bestxengine-cs First created by: ruggero.rizzo Creation date: 02/ago/2013
  * 

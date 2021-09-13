@@ -17,4 +17,6 @@ public interface ConnectionRegistry {
     Connection getGrdLiteConnection();
     
     Connection getDatalakeConnection();
+    
+    Connection getCsAlgoRestServiceConnection();
 }
