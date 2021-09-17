@@ -28,6 +28,7 @@ import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
+import it.softsolutions.bestx.OrderHelper;
 import it.softsolutions.bestx.RegulatedMktIsinsLoader;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
@@ -517,6 +518,8 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
             	if (freezeOrderAction.getNextPanel() == NextPanel.ORDERS_NO_AUTOEXECUTION) {
             		this.operation.setStateResilient(new CurandoState(freezeOrderAction.getMessage()), ErrorState.class);
             	} else if (freezeOrderAction.getNextPanel() == NextPanel.LIMIT_FILE) {
+    				OrderHelper.setOrderBestPriceDeviationFromLimit(operation);
+    				this.operationStateAuditDao.updateOrderBestAndLimitDelta(operation.getOrder(), operation.getOrder().getBestPriceDeviationFromLimit());
             		this.operation.setStateResilient(new OrderNotExecutableState(freezeOrderAction.getMessage()), ErrorState.class);
             	} else if (freezeOrderAction.getNextPanel() == NextPanel.LIMIT_FILE_NO_PRICE) {
             		this.operation.setStateResilient(new LimitFileNoPriceState(freezeOrderAction.getMessage()), ErrorState.class);

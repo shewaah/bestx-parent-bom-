@@ -31,6 +31,8 @@ public class FixedMarketMarketOrderBuilder extends MarketOrderBuilder {
 		marketOrder.setLimit(limitPrice != null ? limitPrice : operation.getOrder().getLimit());
 		marketOrder.setBuilder(this);
 
+		marketOrder.setLimitMonitorPrice(marketOrder.getLimit());
+		
 		listener.onMarketOrderBuilt(this, marketOrder);
 	}
 

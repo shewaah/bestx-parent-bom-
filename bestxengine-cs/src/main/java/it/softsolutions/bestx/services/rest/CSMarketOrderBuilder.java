@@ -155,14 +155,16 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 				}
 
 				if (errors.isEmpty()) {
-					Money limitPrice = new Money(operation.getOrder().getCurrency(),
+					Money limitPrice = null;
+					if (response.getData().getTargetPrice() != null) {
+						limitPrice = new Money(operation.getOrder().getCurrency(),
 							response.getData().getTargetPrice());
+					}
 					Money limitMonitorPrice = null;
 					if (response.getData().getLimitMonitorPrice() != null) {
 						limitMonitorPrice = new Money(operation.getOrder().getCurrency(),
 							response.getData().getLimitMonitorPrice());
 					}
-
 					marketOrder.setValues(operation.getOrder());
 					marketOrder.setTransactTime(DateService.newUTCDate());
 

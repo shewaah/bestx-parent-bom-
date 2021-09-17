@@ -104,9 +104,6 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 				// time to update the delta between the order limit price and the best proposal
 				// one
 
-				OrderHelper.setOrderBestPriceDeviationFromLimit(operation);
-				OperationStateAuditDAOProvider.getOperationStateAuditDao().updateOrderBestAndLimitDelta(order,
-						order.getBestPriceDeviationFromLimit());
 				onUnexecutionResult(Result.LimitFile, Messages.getString("LimitFile"));
 			}
 

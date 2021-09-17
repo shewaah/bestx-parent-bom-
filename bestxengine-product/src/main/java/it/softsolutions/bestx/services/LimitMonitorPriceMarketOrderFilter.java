@@ -10,33 +10,30 @@ import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyServiceFactory;
 
-public class TargetPriceMarketOrderFilter implements MarketOrderFilter {
+public class LimitMonitorPriceMarketOrderFilter implements MarketOrderFilter {
 
-	private String rejectMessage = "Calculated target price is worse than requested limit price";
+	private String rejectMessage = "Price received from service is worse than requested";
 	
 	@Override
 	public void filterMarketOrder(MarketOrder marketOrder, Operation operation) {
-		
 		
 		if (operation.getOrder().isLimitFile()) { // 59=1 40=2 (Limit File Order)
 			// If target price is worse
 			if (marketOrder == null) {
 				operation.getLastAttempt().setNextAction(new FreezeOrderAction(null, null)); // TODO Check if LF or LFNP
-			} else if (this.isTargetPriceWorseThanOriginalOrderPrice(operation.getOrder().getSide(), operation.getOrder().getLimit().getAmount(), marketOrder.getLimit().getAmount())) {
+			} else if (this.isTargetPriceWorseThanOriginalOrderPrice(operation.getOrder().getSide(), operation.getOrder().getLimit().getAmount(), marketOrder.getLimitMonitorPrice().getAmount())) {
 				int centsLFTolerance = ExecutionStrategyServiceFactory.getInstance().getCentsLFTolerance();
 				
-				BigDecimal targetPrice = marketOrder.getLimit().getAmount();
+				BigDecimal targetPrice = marketOrder.getLimitMonitorPrice().getAmount();
 				BigDecimal limitPrice = operation.getOrder().getLimit().getAmount();
 				BigDecimal differenceAbs = targetPrice.subtract(limitPrice).abs();
 				BigDecimal differenceCents = differenceAbs.multiply(new BigDecimal(100));
-				if (differenceCents.compareTo(new BigDecimal(centsLFTolerance)) <= 0) { // Price is worse but it is inside tolerance
-					marketOrder.setLimit(operation.getOrder().getLimit());
-				} else { // Price is worse and outside tolerance
+				if (differenceCents.compareTo(new BigDecimal(centsLFTolerance)) > 0) { // Price is worse but and outside tolerance
 					operation.getLastAttempt().setNextAction(new FreezeOrderAction(null, null)); // TODO Check if LF or LFNP
 				}
 			}
 		} else if (operation.getOrder().getLimit() != null && operation.getOrder().getLimit().getAmount() != null) { // 59=0 40=2 (ALGO Limit Order)
-			if (marketOrder != null && this.isTargetPriceWorseThanOriginalOrderPrice(operation.getOrder().getSide(), operation.getOrder().getLimit().getAmount(), marketOrder.getLimit().getAmount())) {
+			if (marketOrder != null && this.isTargetPriceWorseThanOriginalOrderPrice(operation.getOrder().getSide(), operation.getOrder().getLimit().getAmount(), marketOrder.getLimitMonitorPrice().getAmount())) {
 				operation.getLastAttempt().setNextAction(new RejectOrderAction(this.rejectMessage));
 			}
 		}
