@@ -45,7 +45,8 @@ public class BestXMarketOrderBuilder extends MarketOrderBuilder {
 	public BestXMarketOrderBuilder() {
 	   super();
 	   this.type = BuilderType.DEFAULT;
-	}
+	   }
+
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(BestXMarketOrderBuilder.class);
 
@@ -73,7 +74,7 @@ public class BestXMarketOrderBuilder extends MarketOrderBuilder {
 			marketOrder.setLimit(limitPrice != null ? limitPrice : marketOrderProposal.getPrice());
 			String cleanMarketName = marketOrder.getMarket().getName().indexOf("_HIST") >= 0
 					? marketOrder.getMarket().getName().substring(0, marketOrder.getMarket().getName().indexOf("_HIST"))
-					: marketOrder.getMarket().getName(); // FIXME Probably use effective market? And fix the column in the GUI dashboard too
+					: marketOrder.getMarket().getName(); // TODO Probably use effective market?
 			
 			if (limitPrice != null) {
 				 if(limitPrice.getStringCurrency() != null) {
