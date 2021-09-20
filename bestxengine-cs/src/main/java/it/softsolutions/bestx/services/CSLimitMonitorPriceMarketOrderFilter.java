@@ -12,7 +12,7 @@ public class CSLimitMonitorPriceMarketOrderFilter extends LimitMonitorPriceMarke
 
 	@Override
 	public void filterMarketOrder(MarketOrder marketOrder, Operation operation) {
-		if (marketOrder.getBuilder() instanceof CSMarketOrderBuilder) {
+		if (marketOrder != null && marketOrder.getBuilder() instanceof CSMarketOrderBuilder) {
 			if (operation.getOrder().isLimitFile()) { // 59=1 40=2 (Limit File Order)
 				if (marketOrder.getLimitMonitorPrice() == null) {
 					operation.getLastAttempt().setNextAction(new FreezeOrderAction(NextPanel.LIMIT_FILE_NO_PRICE, Messages.getString("LimitFile.NoPrices")));
@@ -37,7 +37,7 @@ public class CSLimitMonitorPriceMarketOrderFilter extends LimitMonitorPriceMarke
 			}
 		}
 		super.filterMarketOrder(marketOrder, operation);
-		if (marketOrder.getBuilder() instanceof CSMarketOrderBuilder && operation.getLastAttempt().getNextAction() instanceof FreezeOrderAction) {
+		if (marketOrder != null && marketOrder.getBuilder() instanceof CSMarketOrderBuilder && operation.getLastAttempt().getNextAction() instanceof FreezeOrderAction) {
 			operation.getLastAttempt().setNextAction(new FreezeOrderAction(NextPanel.LIMIT_FILE, Messages.getString("LimitFile")));
 		}
 	}

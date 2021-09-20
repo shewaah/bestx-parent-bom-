@@ -13,7 +13,7 @@ public class CSALGORESTValidationMarketOrderFilter implements MarketOrderFilter 
 
 	@Override
 	public void filterMarketOrder(MarketOrder marketOrder, Operation operation) {
-		if (marketOrder.getBuilder() instanceof CSMarketOrderBuilder) {
+		if (marketOrder != null && marketOrder.getBuilder() instanceof CSMarketOrderBuilder) {
 			if (operation.getOrder().isLimitFile()) {
 				if (marketOrder.getLimitMonitorPrice() == null || marketOrder.getLimitMonitorPrice().getAmount() == null) {
 					operation.getLastAttempt().setNextAction(new FreezeOrderAction(NextPanel.LIMIT_FILE_NO_PRICE, Messages.getString("LimitFile.NoPrices"), true));

@@ -11,7 +11,7 @@ public class OrderLimitPriceMarketOrderFilter implements MarketOrderFilter {
 
 	@Override
 	public void filterMarketOrder(MarketOrder marketOrder, Operation operation) {
-		if (operation.getOrder().getLimit() != null && operation.getOrder().getLimit().getAmount() != null) { // If the original order has a limit
+		if (operation.getOrder().getLimit() != null && operation.getOrder().getLimit().getAmount() != null && marketOrder != null) { // If the original order has a limit
 			if (marketOrder.getLimit() == null || marketOrder.getLimit().getAmount() == null) {
 				marketOrder.setLimit(operation.getOrder().getLimit());
 			} else {

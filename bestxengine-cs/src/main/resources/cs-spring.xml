@@ -677,7 +677,6 @@
 		<property name="filters">
 			<list>
 				<bean class="it.softsolutions.bestx.services.RepeatedMarketOrderFilter" />
-				<bean class="it.softsolutions.bestx.services.CSALGORESTValidationMarketOrderFilter" />
 				<bean class="it.softsolutions.bestx.services.AutoExecutionOrderFilter" />
 				<bean class="it.softsolutions.bestx.services.BookDepthOrderFilter">
 					<property name="bookDepthValidator" ref="bookDepthValidator" />
