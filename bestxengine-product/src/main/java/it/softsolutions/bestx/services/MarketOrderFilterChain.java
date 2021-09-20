@@ -23,6 +23,8 @@ public class MarketOrderFilterChain implements MarketOrderFilter {
 	@Override
 	public void filterMarketOrder(MarketOrder marketOrder, Operation operation) {
 		if (marketOrder != null && marketOrder.getMarket() != null) {
+			// for debugging pourposes use the GoToErrorStateAction instead of the default ExecutionInMarketAction
+//			operation.getLastAttempt().setNextAction(new GoToErrorStateAction("No Execution Action has been chosen"));
 			operation.getLastAttempt().setNextAction(new ExecutionInMarketAction());
 		}
 		for (MarketOrderFilter filter : filters) {

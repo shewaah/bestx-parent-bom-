@@ -38,6 +38,7 @@ import it.softsolutions.bestx.exceptions.CustomerRevokeReceivedException;
 import it.softsolutions.bestx.exceptions.MarketNotAvailableException;
 import it.softsolutions.bestx.executionflow.FreezeOrderAction;
 import it.softsolutions.bestx.executionflow.FreezeOrderAction.NextPanel;
+import it.softsolutions.bestx.executionflow.GoToErrorStateAction;
 import it.softsolutions.bestx.executionflow.RejectOrderAction;
 import it.softsolutions.bestx.finders.CustomerFinder;
 import it.softsolutions.bestx.model.Attempt;
@@ -502,10 +503,14 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 
 		ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, this.priceResultReceived);
 		
+		if (currentAttempt.getNextAction() instanceof GoToErrorStateAction) {
+			String errorMessage = ((GoToErrorStateAction) currentAttempt.getNextAction()).getMessage();
+			operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
+		} else 
 		if (currentAttempt.getNextAction() instanceof RejectOrderAction) {
 			try {
 				String rejectMessage = builder.getName() + ": " + ((RejectOrderAction) currentAttempt.getNextAction()).getRejectReason();
-	            ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
+				ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
 				operation.setStateResilient(new SendAutoNotExecutionReportState(rejectMessage), ErrorState.class);
 			} catch (BestXException e) {
 				LOGGER.error("Order {}, error while starting automatic not execution using {}", operation.getOrder().getFixOrderId(), builder.getName(), e);
@@ -513,17 +518,20 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 				operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
 			}
 		} else if (currentAttempt.getNextAction() instanceof FreezeOrderAction) {
-            try {
-            	FreezeOrderAction freezeOrderAction = (FreezeOrderAction) currentAttempt.getNextAction();
-            	if (freezeOrderAction.getNextPanel() == NextPanel.ORDERS_NO_AUTOEXECUTION) {
-            		this.operation.setStateResilient(new CurandoState(freezeOrderAction.getMessage()), ErrorState.class);
-            	} else if (freezeOrderAction.getNextPanel() == NextPanel.LIMIT_FILE) {
-    				OrderHelper.setOrderBestPriceDeviationFromLimit(operation);
+			try {
+				// First of all, reset the first attempt in the cycle
+				operation.setFirstAttemptInCurrentCycle(operation.getAttemptNo());
+				FreezeOrderAction freezeOrderAction = (FreezeOrderAction) currentAttempt.getNextAction();
+				String freezeMessage =  builder.getName() + ": " + freezeOrderAction.getMessage();
+				if (freezeOrderAction.getNextPanel() == NextPanel.ORDERS_NO_AUTOEXECUTION) {
+					this.operation.setStateResilient(new CurandoState(freezeMessage), ErrorState.class);
+				} else if (freezeOrderAction.getNextPanel() == NextPanel.LIMIT_FILE) {
+	   				OrderHelper.setOrderBestPriceDeviationFromLimit(operation);
     				this.operationStateAuditDao.updateOrderBestAndLimitDelta(operation.getOrder(), operation.getOrder().getBestPriceDeviationFromLimit());
-            		this.operation.setStateResilient(new OrderNotExecutableState(freezeOrderAction.getMessage()), ErrorState.class);
-            	} else if (freezeOrderAction.getNextPanel() == NextPanel.LIMIT_FILE_NO_PRICE) {
-            		this.operation.setStateResilient(new LimitFileNoPriceState(freezeOrderAction.getMessage()), ErrorState.class);
-            	} else {
+					this.operation.setStateResilient(new OrderNotExecutableState(freezeMessage), ErrorState.class);
+				} else if (freezeOrderAction.getNextPanel() == NextPanel.LIMIT_FILE_NO_PRICE) {
+					this.operation.setStateResilient(new LimitFileNoPriceState(freezeMessage), ErrorState.class);
+				} else {
             		csExecutionStrategyService.manageAutomaticUnexecution(customerOrder, customerOrder.getCustomer());
             	}
             } catch (BestXException e) {

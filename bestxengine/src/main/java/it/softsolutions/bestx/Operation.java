@@ -126,7 +126,7 @@ public final class Operation implements OperationEventListener {
 	 * @return the internal attempt
 	 */
 	public InternalAttempt getInternalAttempt() {
-		InternalAttempt a = getLastAttempt().getInternalAttempt();
+		InternalAttempt a = getLastAttempt() == null ? null : getLastAttempt().getInternalAttempt();
 		if(a != null && a.isActive())
 			return a;
 		return null;
@@ -629,7 +629,7 @@ public final class Operation implements OperationEventListener {
 	 */
 	public Attempt getLastAttempt() {
 		Attempt res = null;
-		if (attempts.size() > 0) {
+		if (!attempts.isEmpty()) {
 			res = attempts.get(attempts.size() - 1);
 		}
 		return res;

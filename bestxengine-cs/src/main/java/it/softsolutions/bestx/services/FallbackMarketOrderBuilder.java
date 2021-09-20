@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilderListener;
+import it.softsolutions.bestx.bestexec.MarketOrderBuilder.BuilderType;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.services.instrument.BondTypesService;
@@ -60,7 +61,7 @@ public class FallbackMarketOrderBuilder extends MarketOrderBuilder {
 	
 	public FallbackMarketOrderBuilder() {
       super();
-//		super("Fallback");
+      this.type = BuilderType.DEFAULT;
 	}
 	private class FallbackMarketOrderBuilderListener implements MarketOrderBuilderListener {
 		private Operation operation;
@@ -71,7 +72,8 @@ public class FallbackMarketOrderBuilder extends MarketOrderBuilder {
 
 		@Override
 		public void onMarketOrderBuilt(MarketOrderBuilder source, MarketOrder marketOrder) {
-			this.operation.onMarketOrderBuilt(FallbackMarketOrderBuilder.this, marketOrder);
+//			this.operation.onMarketOrderBuilt(FallbackMarketOrderBuilder.this, marketOrder);
+			this.operation.onMarketOrderBuilt(source, marketOrder);
 		}
 
 		@Override

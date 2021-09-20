@@ -276,15 +276,17 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
       
 		//ESCB Stability Flag
 		newOrderSingle.setField(new MKTXESCBStblty(MKTXESCBStblty.INVESTMENT_OPERATIONS));
-				
-		if(this.minIncludeDealers == 1 || this.minIncludeDealers == 2) {
-	      newOrderSingle.setField(new IncludeDealers(this.minIncludeDealers));
-	
-	   }
+		
 		// BESTX-892 management of include/exclude dealers. Using configurable attributes
 		// add dealers in the include list
 		if(isAddIncludeDealers())
 			addIncludeDealers(marketOrder, newOrderSingle);
+
+		// issue with tag IncludeDealers sent with include dealer list empty
+		if(!(marketOrder.getDealers().isEmpty()|| !isAddIncludeDealers())
+				&& this.minIncludeDealers == 1 || this.minIncludeDealers == 2) {
+		      newOrderSingle.setField(new IncludeDealers(this.minIncludeDealers));
+		}
 
 		// add dealers that must be excluded
 		if(isAddBlockedDealers())

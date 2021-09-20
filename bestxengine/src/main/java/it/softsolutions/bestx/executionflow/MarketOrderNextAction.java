@@ -2,7 +2,7 @@ package it.softsolutions.bestx.executionflow;
 
 public abstract class MarketOrderNextAction {
 
-	public static enum Action {EXECUTE, REJECT, FREEZE};
+	public enum Action {EXECUTE, REJECT, FREEZE, GOTOERROR};
 	
 	private Action action;
 	private boolean finalDecision;

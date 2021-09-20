@@ -12,7 +12,7 @@ public class FixedMarketMarketOrderBuilder extends MarketOrderBuilder {
 	
 	public FixedMarketMarketOrderBuilder() {
       super();
-//		super("Default");
+      this.type = BuilderType.STANDARD;
 	}
 
 	private MarketFinder marketFinder;
