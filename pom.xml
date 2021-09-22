@@ -20,7 +20,7 @@
         <bestx-marketaxess-fi-buyside-fix-messages.version>2.0.4</bestx-marketaxess-fi-buyside-fix-messages.version>
 
         <!--  gateways dependency -->
-        <tradestac-client.version>2.1.12-SNAPSHOT</tradestac-client.version>
+        <tradestac-client.version>2.1.13-SNAPSHOT</tradestac-client.version>
         <tradestac2-client.version>1.2.14</tradestac2-client.version>
         <quickfixjrootobjects.version>1.1.4</quickfixjrootobjects.version>
         <tradestac-tw-adapter.version>2.2.0-Neutronstar210721CompPrice-SNAPSHOT</tradestac-tw-adapter.version>
