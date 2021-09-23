@@ -138,7 +138,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	}
 
 	@Override
-	public abstract void manageAutomaticUnexecution(Order order, Customer customer) throws BestXException;
+	public abstract void manageAutomaticUnexecution(Order order, Customer customer, String message) throws BestXException;
 
 	/**
 	 * The starting of an order execution has been centralized in this method.
@@ -240,7 +240,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		if(BondTypesService.isUST(operation.getOrder().getInstrument()) 
 						&& currentAttempt.getMarketOrder().getMarket().getMarketCode() == MarketCode.TW) { // have got a rejection on the single attempt on TW
 			Order order= operation.getOrder();
-			manageAutomaticUnexecution(order, order.getCustomer());
+			manageAutomaticUnexecution(order, order.getCustomer(), "Fallback: ");
 			return;
 		}
 		

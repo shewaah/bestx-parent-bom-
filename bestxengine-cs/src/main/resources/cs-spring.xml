@@ -74,6 +74,7 @@
 		<property name="beans">
 			<map>
                 <entry key="it.softsolutions.bestx.cs:name=ApplicationControl" value-ref="applicationController" />
+                <entry key="it.softsolutions.bestx.cs:name=MifidConfig" value-ref="mifidConfig" />
                 <entry key="it.softsolutions.bestx.cs:name=AutomaticCurandoStatus" value-ref="autoCurandoStatusManager" />
                 <entry key="it.softsolutions.bestx.cs:name=Oms1FixCustomerConnection" value-ref="oms1CustomerAdapter" />
 				<entry key="it.softsolutions.bestx.cs:name=TradewebMarketConnection" value-ref="tradewebMarket" />
@@ -86,7 +87,7 @@
                 <entry key="it.softsolutions.bestx.cs:name=LimitFilePriceService" value-ref="limitFilePriceService" />
                 <entry key="it.softsolutions.bestx.cs:name=PDOnlyPriceService" value-ref="pDOnlyPriceService" />
                 <entry key="it.softsolutions.bestx.cs:name=IB4JOperatorConsoleAdapter" value-ref="ib4jOperatorConsoleAdapter" />
-                <entry key="it.softsolutions.bestx.cs:name=MQPriceDiscoveryOperatorConsoleAdapter" value-ref="mqPriceDiscoveryOperatorConsoleAdapter" />
+                <entry key="it.softsolutions.bestx.cs:name=MQPriceDiscoveryOperatorConsoleAdapter" value-ref="ib4jOperatorConsoleAdapter" />
                 <entry key="it.softsolutions.bestx.cs:name=GRDLiteService" value-ref="grdLiteService" />
                 <entry key="it.softsolutions.bestx.cs:name=OperationRestore" value-ref="operationRestore" />
                 <entry key="it.softsolutions.bestx.cs:name=DealerRankingService" value-ref="rankingLoaderManager" />
@@ -114,6 +115,7 @@
 				<property name="interfaceMappings">
 					<props>
 						<prop key="it.softsolutions.bestx.cs:name=ApplicationControl">it.softsolutions.bestx.management.EngineControllerMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=MifidConfig">it.softsolutions.bestx.MifidConfigMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=AutomaticCurandoStatus">it.softsolutions.bestx.management.AutoCurandoStatusMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=Oms1FixCustomerConnection">it.softsolutions.bestx.management.FixCustomerAdapterMBean</prop>
 <!-- 						<prop key="it.softsolutions.bestx.cs:name=Oms2FixCustomerConnection">it.softsolutions.bestx.management.FixCustomerAdapterMBean</prop> -->
@@ -747,7 +749,7 @@
         <property name="tsoxTechnicalRejectReasons"><value>${Bloomberg.Tsox.technical_reject_reasons}</value></property>
         <property name="orderCancelDelay"><value>${orderCancel.timeout}</value></property>
         <property name="bestXConfigurationDao"><ref bean="sqlBestXConfigurationDao"></ref></property>
-        <property name="priceDiscoveryConnection"><ref bean="mqPriceDiscoveryOperatorConsoleAdapter"></ref></property>
+        <property name="priceDiscoveryConnection"><ref bean="ib4jOperatorConsoleAdapter"></ref></property>
         <property name="priceDiscoveryCustomerId"><value>${PriceDiscovery.Customer}</value></property>
         <property name="bookDepth"><value>${PriceDiscovery.BookDepth}</value></property>
         <property name="orderBookDepth"><value>${PriceDiscovery.OrderBookDepth}</value></property>
@@ -867,7 +869,7 @@
 	<!-- REGISTRY FOR CONNECTORS -->
 	<bean id="connectionRegistry" class="it.softsolutions.bestx.connections.CSConnectionRegistry">
         <property name="customerConnection"><ref bean="oms1CustomerAdapter"/></property>
-        <property name="mqPriceDiscoveryConnection"><ref bean="mqPriceDiscoveryOperatorConsoleAdapter"/></property>
+        <property name="mqPriceDiscoveryConnection"><ref bean="ib4jOperatorConsoleAdapter"/></property>
         <property name="grdLiteConnection"><ref bean="grdLiteService"/></property>
         <property name="datalakeConnection" ref="dataCollector" />
         <property name="csAlgoRestServiceConnection" ref="algoRestService" />
@@ -1332,9 +1334,9 @@
 		</property>
         <property name="customService"><ref bean="grdLiteService"></ref></property>
 	</bean>
-	
+<!-- 	
     <bean id="mqPriceDiscoveryOperatorConsoleAdapter" class="it.softsolutions.bestx.connections.MQPriceDiscoveryOperatorConsoleAdapter" init-method="init">
-		<!-- TECHNICAL PARAMETERS -->
+		--><!-- TECHNICAL PARAMETERS --><!-- 
         <property name="operationRegistry"><ref bean="defaultOperationRegistry"></ref></property>
 		<property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"></ref></property>
 		<property name="sqlInstrumentDao"><ref bean="sqlInstrumentDao"></ref></property>
@@ -1342,7 +1344,7 @@
         <property name="executor"><ref bean="threadPoolMQPriceDiscoveryAdapter"></ref></property>
         <property name="customService"><ref bean="grdLiteService"></ref></property>
 	</bean>
-
+ -->
     <bean id="ordersEndOfDayService" class="it.softsolutions.bestx.services.CSOrdersEndOfDayService" init-method="init">
         <property name="executor"><ref bean="threadPoolEOD"></ref></property>
         <property name="operationStateAuditDao"><ref bean="sqlOperationStateAuditDao"></ref></property>

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
+import it.softsolutions.bestx.bestexec.MarketOrderBuilder.BuilderType;
 import it.softsolutions.jsscommon.Money;
 
 /**
@@ -227,7 +228,7 @@ public class MarketOrder extends Order {
 	}
 	
 	public MarketOrderBuilder.BuilderType getBuilderType() {
-		return this.builder.getType();
+		return this.builder == null ? MarketOrderBuilder.BuilderType.NONE : this.builder.getType();
 	}
     
 }

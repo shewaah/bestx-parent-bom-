@@ -46,6 +46,7 @@ import it.softsolutions.bestx.exceptions.SaveBookException;
 import it.softsolutions.bestx.finders.CustomerFinder;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.handlers.LimitFileHelper;
+import it.softsolutions.bestx.handlers.WaitingPriceEventHandler;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.CSPOBexExecutionReport;
 import it.softsolutions.bestx.model.Customer;
@@ -59,6 +60,7 @@ import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.ServiceStatus;
 import it.softsolutions.bestx.services.DateService;
+import it.softsolutions.bestx.services.FallbackMarketOrderBuilder;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.ManualManageState;
 import it.softsolutions.bestx.states.RejectedState;
@@ -913,6 +915,8 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
     private String getMarketOrderBuilderName(Attempt lastAttempt) {
     	if(lastAttempt != null && lastAttempt.getMarketOrder() != null && lastAttempt.getMarketOrder().getBuilder() != null)
     		return lastAttempt.getMarketOrder().getBuilder().getName();
+    	if(lastAttempt != null && lastAttempt.getMarketOrder() == null)
+    		return WaitingPriceEventHandler.defaultStrategyName;
     	return null;
     }
 

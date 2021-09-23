@@ -104,6 +104,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 	
 	private PriceResult priceResultReceived;
 	
+	public static String defaultStrategyName="Fallback: ";
 	/**
 	 * Constructor.
 	 *
@@ -213,7 +214,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			try {
 				ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation,
 						null);
-				csExecutionStrategyService.manageAutomaticUnexecution(order, customer);
+				csExecutionStrategyService.manageAutomaticUnexecution(order, customer, defaultStrategyName);
 			}
 			catch (BestXException e) {
 				LOGGER.error("Order {}, error while managing no market available situation {}", order.getFixOrderId(), e.getMessage(), e);
@@ -532,7 +533,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 				} else if (freezeOrderAction.getNextPanel() == NextPanel.LIMIT_FILE_NO_PRICE) {
 					this.operation.setStateResilient(new LimitFileNoPriceState(freezeMessage), ErrorState.class);
 				} else {
-            		csExecutionStrategyService.manageAutomaticUnexecution(customerOrder, customerOrder.getCustomer());
+            		csExecutionStrategyService.manageAutomaticUnexecution(customerOrder, customerOrder.getCustomer(), builder.getName()!= null ? builder.getName() + ": ": defaultStrategyName);
             	}
             } catch (BestXException e) {
                LOGGER.error("Order {}, error while managing {} price result state {}", customerOrder.getFixOrderId(), this.priceResultReceived.getState().name(), e.getMessage(), e);

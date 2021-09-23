@@ -50,9 +50,10 @@ public interface ExecutionStrategyService
     * 
     * @param order : the order to examine
     * @param customer : the customer who sent the order
+    * @param message : an optional message to be shown in the order history audit
     * @throws BestXException : if something wrong happens
     */
-   void manageAutomaticUnexecution(Order order, Customer customer) throws BestXException;
+   void manageAutomaticUnexecution(Order order, Customer customer, String message) throws BestXException;
    /**
     * The starting of an order execution has been centralized in this method.
     * 

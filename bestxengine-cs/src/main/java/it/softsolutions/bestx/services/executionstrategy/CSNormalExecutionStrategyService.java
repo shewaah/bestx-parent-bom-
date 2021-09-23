@@ -48,7 +48,7 @@ public class CSNormalExecutionStrategyService extends CSExecutionStrategyService
      * Validates the options available when the order cannot be further executed.
      */
     @Override
-    public void manageAutomaticUnexecution(Order order, Customer customer) throws BestXException {
+    public void manageAutomaticUnexecution(Order order, Customer customer, String message) throws BestXException {
         if (order == null) {
             throw new IllegalArgumentException("order is null");
         }
@@ -59,21 +59,21 @@ public class CSNormalExecutionStrategyService extends CSExecutionStrategyService
 
         if (!operation.isNotAutoExecute() && customer.isAutoUnexecEnabled()) {
             LOGGER.info("Order {}, the customer requested the automatic not execution.");
-            onUnexecutionResult(ExecutionStrategyService.Result.CustomerAutoNotExecution, Messages.getString("WaitingPrices.0"));
+            onUnexecutionResult(ExecutionStrategyService.Result.CustomerAutoNotExecution,  message + Messages.getString("WaitingPrices.0"));
             return;
         }
 
         if(BondTypesService.isUST(operation.getOrder().getInstrument()) 
         		&& operation.getLastAttempt().getMarketOrder() != null
 				&& operation.getLastAttempt().getMarketOrder().getMarket().getMarketCode() == MarketCode.TW) { // have got a rejection on the single attempt on TW
-        	onUnexecutionResult(Result.USSingleAttemptNotExecuted, Messages.getString("UnexecutionReason.0"));
+        	onUnexecutionResult(Result.USSingleAttemptNotExecuted, message + Messages.getString("UnexecutionReason.0"));
         	return;
         }
         CustomerAttributes customerAttr = (CustomerAttributes) customer.getCustomerAttributes();
 
         if (customerAttr == null) {
             LOGGER.error("Error while loading customer attributes, none found!");
-            onUnexecutionResult(ExecutionStrategyService.Result.Failure, Messages.getString("WaitingPrices.1", customer.getName()));
+            onUnexecutionResult(ExecutionStrategyService.Result.Failure, message + Messages.getString("WaitingPrices.1", customer.getName()));
             return;
         }
         
@@ -81,7 +81,7 @@ public class CSNormalExecutionStrategyService extends CSExecutionStrategyService
             if (PriceController.INSTANCE.isMaxDeviationEnabled(customer) && PriceController.INSTANCE.isDeviationFromLimitOverTheMax(priceResult.getSortedBook(), order)) {
                 LOGGER.info("Order {}, maximum deviation limit not respected, going into automatic not execution.", order.getFixOrderId());
                 onUnexecutionResult(ExecutionStrategyService.Result.MaxDeviationLimitViolated,
-                                Messages.getString("LimitPriceTooFarFromBest.0", customer.getName(), customerAttr.getLimitPriceOffMarket()));
+                		 message + Messages.getString("LimitPriceTooFarFromBest.0", customer.getName(), customerAttr.getLimitPriceOffMarket()));
                 return;
             }
         } else {
@@ -90,6 +90,6 @@ public class CSNormalExecutionStrategyService extends CSExecutionStrategyService
 
         LOGGER.info("Order {}, normal order flow.", order.getFixOrderId());
         // Success, null parameter because there is no need to choose a market to execute on
-    	onUnexecutionResult(ExecutionStrategyService.Result.Success, Messages.getString("WaitingPrices.0"));
+    	onUnexecutionResult(ExecutionStrategyService.Result.Success,  message + Messages.getString("WaitingPrices.0"));
     }
 }

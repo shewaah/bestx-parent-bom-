@@ -24,14 +24,13 @@ import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.MifidConfig;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
-import it.softsolutions.bestx.OrderHelper;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
+import it.softsolutions.bestx.handlers.WaitingPriceEventHandler;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal.ProposalSubState;
 import it.softsolutions.bestx.model.SortedBook;
-import it.softsolutions.bestx.services.OperationStateAuditDAOProvider;
 import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.bestx.services.price.PriceResult;
 
@@ -53,7 +52,7 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 	}
 
 	@Override
-	public void manageAutomaticUnexecution(Order order, Customer customer) throws BestXException {
+	public void manageAutomaticUnexecution(Order order, Customer customer, String message) throws BestXException {
 		if (order == null) {
 			throw new IllegalArgumentException("order is null");
 		}
@@ -80,7 +79,7 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 				// to OMS the order.
 				onUnexecutionResult(Result.Success, Messages.getString("WaitingPrices.0"));
 			} else {
-				onUnexecutionResult(Result.LimitFileNoPrice, Messages.getString("LimitFile.NoPrices"));
+				onUnexecutionResult(Result.LimitFileNoPrice, WaitingPriceEventHandler.defaultStrategyName + Messages.getString("LimitFile.NoPrices"));
 			}
 		} else {
 			// if the sorted book contains at least one proposal in substate NONE, it means
@@ -99,12 +98,12 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 
 			if (emptyBook) {
 				this.operation.getLastAttempt().setSortedBook(sortedBook);
-				onUnexecutionResult(Result.LimitFileNoPrice, Messages.getString("LimitFile.NoPrices"));
+				onUnexecutionResult(Result.LimitFileNoPrice, message + Messages.getString("LimitFile.NoPrices"));
 			} else {
 				// time to update the delta between the order limit price and the best proposal
 				// one
 
-				onUnexecutionResult(Result.LimitFile, Messages.getString("LimitFile"));
+				onUnexecutionResult(Result.LimitFile, message + Messages.getString("LimitFile"));
 			}
 
 		}
