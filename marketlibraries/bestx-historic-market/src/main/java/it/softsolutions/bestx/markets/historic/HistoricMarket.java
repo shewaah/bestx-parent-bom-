@@ -32,6 +32,7 @@ import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.Instrument.QuotingStatus;
 import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
+import it.softsolutions.bestx.model.MarketMaker;
 import it.softsolutions.bestx.model.MarketMarketMaker;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal;
@@ -40,6 +41,7 @@ import it.softsolutions.bestx.model.Proposal.ProposalState;
 import it.softsolutions.bestx.model.Proposal.ProposalType;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.Venue;
+import it.softsolutions.bestx.model.Venue.VenueType;
 import it.softsolutions.jsscommon.Money;
 import quickfix.field.PriceType;
 
@@ -191,18 +193,29 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
         	Market historicMarket = this.marketFinder.getMarketByCode(this.marketCode, null);
         	Market originalMarket = historicMarket.getOriginalMarket();
         	MarketCode originalMarketCode = originalMarket.getMarketCode();
+        	Venue marketVenue = null;
         	
             MarketMarketMaker marketMarketMaker = this.marketMakerFinder.getSmartMarketMarketMakerByCode(originalMarketCode, marketMarketMakerCode);
             if (marketMarketMaker == null) {
-            	return null;
+            	marketMarketMaker = this.createTransientMarketMarketMaker(marketMarketMakerCode, originalMarket);
+            } else {
+	            Venue venue = this.venueFinder.getMarketMakerVenue(marketMarketMaker.getMarketMaker());
+	            if (venue == null) {
+	                return null;
+	            }
+	            if (venue.getMarket() == null) {
+	            	return null;
+	            }
+	            marketVenue = new Venue(venue);
+	            marketVenue.setMarket(originalMarket);
             }
-
-            Venue venue = this.venueFinder.getMarketMakerVenue(marketMarketMaker.getMarketMaker());
-            if (venue == null) {
-                return null;
-            }
-            if (venue.getMarket() == null) {
-            	return null;
+            
+            if (marketVenue == null) {
+            	marketVenue = new Venue();
+            	marketVenue.setMarketMaker(marketMarketMaker.getMarketMaker());
+            	marketVenue.setCode(marketMarketMaker.getMarketMaker().getCode());
+            	marketVenue.setMarket(originalMarket);
+            	marketVenue.setVenueType(VenueType.MARKET_MAKER);
             }
 
             String proposalSideStr = rs.getString("Side");
@@ -240,8 +253,6 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
             ProposalType proposalType = ProposalType.TRADEABLE;
 
 
-            Venue marketVenue = new Venue(venue);
-            marketVenue.setMarket(originalMarket);
 
             classifiedProposal = new ClassifiedProposal();
             classifiedProposal.setMarket(historicMarket);
@@ -267,6 +278,19 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
         }
 
 	}
+	
+	private MarketMarketMaker createTransientMarketMarketMaker(String dealerCode, Market market) {
+		MarketMarketMaker mmm = new MarketMarketMaker();
+		MarketMaker mm = new MarketMaker();
+		mmm.setMarketSpecificCode(dealerCode);
+		mmm.setMarket(market);
+		mm.setName("UNKNOWN");
+		mm.setCode("UNKNOWN");
+		mm.setRank(99999);
+		mmm.setMarketMaker(mm);
+		return mmm;
+	}
+	
 	
 	@Override
 	public Market getQuotingMarket(Instrument instrument) throws BestXException {

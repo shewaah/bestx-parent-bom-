@@ -22,6 +22,7 @@ import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.Proposal;
+import it.softsolutions.bestx.model.Proposal.ProposalType;
 import it.softsolutions.bestx.model.Venue;
 
 import java.math.BigDecimal;
@@ -40,6 +41,9 @@ public class DiscardUnavailableVenueProposalClassifier implements ProposalClassi
 
 	@Override
 	public ClassifiedProposal getClassifiedProposal(ClassifiedProposal proposal, Order order, List<Attempt> previousAttempts, Set<Venue> venues, ClassifiedBook book) {
+		if (proposal.getType() == ProposalType.TRADEABLE) {
+			return proposal;
+		}
 		if(proposal.getVenue() != null) {
 			boolean enabled = (proposal.getVenue().getMarketMaker() != null ? proposal.getVenue().getMarketMaker().isEnabled() : true);
 
