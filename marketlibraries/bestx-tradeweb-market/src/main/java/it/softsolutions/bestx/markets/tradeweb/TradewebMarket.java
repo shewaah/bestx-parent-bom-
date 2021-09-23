@@ -1151,4 +1151,8 @@ public class TradewebMarket extends MarketCommon
    public void setMiFIDRestricted(Boolean miFIDRestricted) {
       this.miFIDRestricted = miFIDRestricted;
    }
+   
+   public Market getMarket() {
+      return market;
+   }
 }

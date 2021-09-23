@@ -13,12 +13,21 @@
  */
 package it.softsolutions.bestx.markets.bloomberg;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.softsolutions.bestx.BestXException;
+import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationIdType;
+import it.softsolutions.bestx.model.Attempt;
+import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
+import it.softsolutions.bestx.model.MarketExecutionReport;
+import it.softsolutions.bestx.states.ErrorState;
+import it.softsolutions.bestx.states.WarningState;
 
 /**
  * 
@@ -46,13 +55,30 @@ public class OnOrderRejectRunnable implements Runnable {
     public void run() {
         try {
             final Operation operation = market.getOperationRegistry().getExistingOperationById(OperationIdType.TSOX_CLORD_ID, quoteReqId);
+            Attempt currentAttempt = operation.getLastAttempt();
+            if (currentAttempt == null) {
+                LOGGER.error("No current Attempt found");
+                operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("TWMarketAttemptNotFoundError.0")), ErrorState.class);
+                return;
+            }
+            List<MarketExecutionReport> marketExecutionReports = currentAttempt.getMarketExecutionReports();
+            if (marketExecutionReports == null) {
+                marketExecutionReports = new ArrayList<MarketExecutionReport>();
+                currentAttempt.setMarketExecutionReports(marketExecutionReports);
+            }
 
-            LOGGER.info("[MktMsg] OrderID {}, QuoteRequestReject received from {} , QuoteReqID {}, text: [{}]", operation.getOrder().getFixOrderId(), quoteReqId);
+            LOGGER.info("[MktMsg] OrderID {}, QuoteRequestReject received from {} , QuoteReqID {}, text: [{}]", 
+                  operation.getOrder().getFixOrderId(), market.getMarketCode(), quoteReqId, reason);
             
             // operation.getOrder().getFixOrderId() value is equal to quoteReqId
             // registered by OnTradeEndedRunnable
             // LOGGER.debug("Rejecting order {}, registering statistics.", quoteReqId);
             market.getMarketStatistics().orderResponseReceived(quoteReqId, 0.0);
+            
+            MarketExecutionReport marketExecutionReport = new MarketExecutionReport();
+            marketExecutionReport.setState(ExecutionReportState.REJECTED);
+            marketExecutionReport.setMarket(market.getMarket());
+            marketExecutionReports.add(marketExecutionReport);
 
             operation.onMarketOrderReject(market, operation.getOrder(), reason, quoteReqId);
         } catch (BestXException e) {

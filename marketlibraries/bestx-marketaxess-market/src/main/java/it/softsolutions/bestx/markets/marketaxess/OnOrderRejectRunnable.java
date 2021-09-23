@@ -15,12 +15,21 @@
  
 package it.softsolutions.bestx.markets.marketaxess;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.softsolutions.bestx.BestXException;
+import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationIdType;
+import it.softsolutions.bestx.model.Attempt;
+import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
+import it.softsolutions.bestx.model.MarketExecutionReport;
+import it.softsolutions.bestx.states.ErrorState;
+import it.softsolutions.bestx.states.WarningState;
 
 /**
  *
@@ -49,10 +58,27 @@ public class OnOrderRejectRunnable implements Runnable {
 	public void run() {
         try {
             final Operation operation = market.getOperationRegistry().getExistingOperationById(OperationIdType.MARKETAXESS_CLORD_ID, clOrdId);
+            Attempt currentAttempt = operation.getLastAttempt();
+            if (currentAttempt == null) {
+               LOGGER.error("No current Attempt found");
+               operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("TWMarketAttemptNotFoundError.0")), ErrorState.class);
+               return;
+           }
+           List<MarketExecutionReport> marketExecutionReports = currentAttempt.getMarketExecutionReports();
+           if (marketExecutionReports == null) {
+               marketExecutionReports = new ArrayList<MarketExecutionReport>();
+               currentAttempt.setMarketExecutionReports(marketExecutionReports);
+           }
 
-            LOGGER.info("[MktMsg] OrderID {}, QuoteRequestReject received from {} , QuoteReqID {}, text: [{}]", operation.getOrder().getFixOrderId(), clOrdId);
+           LOGGER.info("[MktMsg] OrderID {}, QuoteRequestReject received from {} , QuoteReqID {}, text: [{}]", 
+                 operation.getOrder().getFixOrderId(), market.getMarketCode(), clOrdId, reason);
 
             market.getMarketStatistics().orderResponseReceived(clOrdId, 0.0);
+
+            MarketExecutionReport marketExecutionReport = new MarketExecutionReport();
+            marketExecutionReport.setState(ExecutionReportState.REJECTED);
+            marketExecutionReport.setMarket(market.getMarket());
+            marketExecutionReports.add(marketExecutionReport);
 
             operation.onMarketOrderReject(market, operation.getOrder(), reason, clOrdId);
         } catch (BestXException e) {

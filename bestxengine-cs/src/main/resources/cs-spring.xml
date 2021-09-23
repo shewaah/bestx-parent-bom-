@@ -1013,6 +1013,7 @@
 				</bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardWorstPriceProposalClassifier" />
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardMarketTriedInEarlierAttemptProposalClassifier"/>
+                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardMarketNotExecutingProposalClassifier"/>
 			</list>
 		</property>
 		<property name="bookClassifierList">

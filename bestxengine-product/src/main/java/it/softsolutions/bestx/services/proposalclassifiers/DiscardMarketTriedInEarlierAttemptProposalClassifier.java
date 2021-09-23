@@ -61,6 +61,7 @@ public class DiscardMarketTriedInEarlierAttemptProposalClassifier implements Pro
 						proposal.setReason(Messages.getString("DiscardMarketTriedInEarlierAttemptProposalClassifier.0"));
 					}
 					// AMC 202109014 removed because no execution reports means no execution attempt
+					//Replaced by the New Proposal classifier to discard prices when a market cannot execute because of a technical reason
 //					else {
 //						// there are no market execution reports at all, no execution attempt
 //						LOGGER.debug("Order {}, no execution reports, check the if the market allows to reuse prices.", order.getFixOrderId());
