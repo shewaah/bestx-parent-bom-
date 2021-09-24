@@ -159,7 +159,7 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 			
 			this.namedParameterJdbcTemplate.query(this.historicPricesQuery, namedParameters, (ResultSet rs) -> {
 				try {
-				   ClassifiedProposal prop = this.buildProposalFromResult(instrument, rs);
+				   ClassifiedProposal prop = this.buildProposalFromResult(order, instrument, rs);
 				   if (prop != null) {
 				      allProposals.add(prop);
 				   }
@@ -182,7 +182,7 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 		
 	}
 
-	private ClassifiedProposal buildProposalFromResult(Instrument instrument, ResultSet rs) {
+	private ClassifiedProposal buildProposalFromResult(Order order, Instrument instrument, ResultSet rs) {
 
         ClassifiedProposal classifiedProposal = null;
 
@@ -197,6 +197,7 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
         	
             MarketMarketMaker marketMarketMaker = this.marketMakerFinder.getSmartMarketMarketMakerByCode(originalMarketCode, marketMarketMakerCode);
             if (marketMarketMaker == null) {
+            	LOGGER.info("Order={}. Executable price found in market {} for unknown dealer {}", order.getFixOrderId(), originalMarket.getName(), marketMarketMakerCode);
             	marketMarketMaker = this.createTransientMarketMarketMaker(marketMarketMakerCode, originalMarket);
             } else {
 	            Venue venue = this.venueFinder.getMarketMakerVenue(marketMarketMaker.getMarketMaker());
