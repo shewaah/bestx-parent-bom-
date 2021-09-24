@@ -42,7 +42,7 @@ import it.softsolutions.bestx.model.MarketMarketMakerSpec;
  **/
 public abstract class MarketOrderBuilder {
 	public enum BuilderType {
-		DEFAULT, CUSTOM, STANDARD
+		DEFAULT, CUSTOM, STANDARD, NONE
 	}
 	
 	protected BuilderType type;
