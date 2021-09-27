@@ -193,9 +193,13 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 					marketOrder.setLimitMonitorPrice(limitMonitorPrice);
 			        marketOrder.setBuilder(this);
 
-					LOGGER.info("Order={}, Selecting for execution market market makers: {} and price {}. Excluding dealers {}",
-							operation.getOrder().getFixOrderId(), MarketOrder.beautifyListOfDealers(marketOrder.getDealers()),
+					LOGGER.info("Order={}, Selecting for execution market: {}, received target price {}, received limit monitor price {} and original order price {}. Including dealers {}. Excluding dealers {}",
+							operation.getOrder().getFixOrderId(),
+							marketOrder.getMarket().getEffectiveMarket().getName(),
 							limitPrice == null ? "null" : limitPrice.getAmount(),
+							limitMonitorPrice == null ? "null" : limitMonitorPrice.getAmount(),
+							operation.getOrder().getLimit() == null ? "null" : operation.getOrder().getLimit().getAmount(),
+							MarketOrder.beautifyListOfDealers(marketOrder.getDealers()),
 							MarketOrder.beautifyListOfDealers(marketOrder.getExcludeDealers()));
 					listener.onMarketOrderBuilt(this, marketOrder);
 				} else {
