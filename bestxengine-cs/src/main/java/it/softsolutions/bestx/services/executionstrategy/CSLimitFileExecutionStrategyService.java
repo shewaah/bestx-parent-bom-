@@ -91,6 +91,7 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 			// is null
 			List<ProposalSubState> wantedSubStates = new ArrayList<ProposalSubState>(1);
 			wantedSubStates.add(ProposalSubState.NONE);
+         wantedSubStates.add(ProposalSubState.MARKET_TRIED);
 			wantedSubStates.add(ProposalSubState.PRICE_WORST_THAN_LIMIT);
 			SortedBook sortedBook = priceResult.getSortedBook();
 			boolean emptyBook = sortedBook == null
