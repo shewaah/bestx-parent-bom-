@@ -6,7 +6,6 @@ import java.util.List;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
 import it.softsolutions.bestx.bestexec.MarketOrderFilter;
-import it.softsolutions.bestx.executionflow.MarketOrderNextAction;
 import it.softsolutions.bestx.executionflow.RejectOrderAction;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.MarketOrder;
@@ -21,8 +20,8 @@ public class RepeatedMarketOrderFilter implements MarketOrderFilter {
 		if(currentAttempt.getMarketOrder() != null && currentAttempt.getMarketOrder().getBuilderType() != MarketOrderBuilder.BuilderType.CUSTOM)
 			return;
 		if (order != null) {
+		   //SP-20210928: getAttemptsInCurrentCycle discard the current attemp, no needed to discard it from the previousAttempts array
 			List<Attempt> previousAttempts = new ArrayList<>(operation.getAttemptsInCurrentCycle());
-			previousAttempts.remove(previousAttempts.size() - 1); // We do not need to take into account the last attempt
 			
 			for (Attempt attempt : previousAttempts) {
 				if (attempt.getMarketOrder() != null) {
