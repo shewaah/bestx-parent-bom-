@@ -283,8 +283,8 @@ public class MarketAxessAutoExecutionConnector extends Tradestac2MarketAxessConn
 			addIncludeDealers(marketOrder, newOrderSingle);
 
 		// issue with tag IncludeDealers sent with include dealer list empty
-		if(!(marketOrder.getDealers().isEmpty()|| !isAddIncludeDealers())
-				&& this.minIncludeDealers == 1 || this.minIncludeDealers == 2) {
+		if ((this.minIncludeDealers == 1 || this.minIncludeDealers == 2) && 
+		      isAddIncludeDealers() && !marketOrder.getDealers().isEmpty()) {
 		      newOrderSingle.setField(new IncludeDealers(this.minIncludeDealers));
 		}
 
