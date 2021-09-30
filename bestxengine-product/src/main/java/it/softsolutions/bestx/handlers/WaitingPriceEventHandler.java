@@ -506,7 +506,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		
 		if (currentAttempt.getNextAction() instanceof GoToErrorStateAction) {
 			String errorMessage = ((GoToErrorStateAction) currentAttempt.getNextAction()).getMessage();
-			operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
+			operation.setStateResilient(new WarningState(operation.getState(), null, builder.getName() + ": " + errorMessage), ErrorState.class);
 		} else 
 		if (currentAttempt.getNextAction() instanceof RejectOrderAction) {
 			try {
@@ -516,7 +516,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			} catch (BestXException e) {
 				LOGGER.error("Order {}, error while starting automatic not execution using {}", operation.getOrder().getFixOrderId(), builder.getName(), e);
 				String errorMessage = e.getMessage();
-				operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
+				operation.setStateResilient(new WarningState(operation.getState(), null, builder.getName() + ": " + errorMessage), ErrorState.class);
 			}
 		} else if (currentAttempt.getNextAction() instanceof FreezeOrderAction) {
 			try {
@@ -538,7 +538,7 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
             } catch (BestXException e) {
                LOGGER.error("Order {}, error while managing {} price result state {}", customerOrder.getFixOrderId(), this.priceResultReceived.getState().name(), e.getMessage(), e);
                operation.removeLastAttempt();
-               operation.setStateResilient(new WarningState(operation.getState(), e, Messages.getString("PriceService.16")), ErrorState.class);
+               operation.setStateResilient(new WarningState(operation.getState(), e, builder.getName() + ": " + Messages.getString("PriceService.16")), ErrorState.class);
             }
 		} else {
 			csExecutionStrategyService.startExecution(operation, currentAttempt, serialNumberService);
@@ -551,12 +551,12 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			LOGGER.error("Exception received while calling GetRoutingProposal", ex);
 			ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
 			// TODO Internationalize message
-			operation.setStateResilient(new SendAutoNotExecutionReportState("Exception during the creation of market order: " + ex.getMessage()), ErrorState.class);
+			operation.setStateResilient(new SendAutoNotExecutionReportState(source.getName() + ": Exception during the creation of market order: " + ex.getMessage()), ErrorState.class);
 		}
 		catch (BestXException e) {
 			LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
 			String errorMessage = e.getMessage();
-			operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
+			operation.setStateResilient(new WarningState(operation.getState(), null, source.getName() + ":" + errorMessage), ErrorState.class);
 		}
 		return;
 	}
@@ -567,12 +567,12 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 			LOGGER.error("Errors received while calling GetRoutingProposal: {}", errors);
 			ExecutionReportHelper.prepareForAutoNotExecution(operation, serialNumberService, ExecutionReportState.REJECTED);
 			String errorsString = errors.stream().collect(Collectors.joining(", "));
-			operation.setStateResilient(new SendAutoNotExecutionReportState(errorsString), ErrorState.class);
+			operation.setStateResilient(new SendAutoNotExecutionReportState(source.getName() + ":" + errorsString), ErrorState.class);
 		}
 		catch (BestXException e) {
 			LOGGER.error("Order {}, error while starting automatic not execution.", operation.getOrder().getFixOrderId(), e);
 			String errorMessage = e.getMessage();
-			operation.setStateResilient(new WarningState(operation.getState(), null, errorMessage), ErrorState.class);
+			operation.setStateResilient(new WarningState(operation.getState(), null, source.getName() + ":" + errorMessage), ErrorState.class);
 		}
 		return;
 	}	

@@ -65,7 +65,7 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 				&& operation.getLastAttempt().getMarketOrder() != null
 				&& operation.getLastAttempt().getMarketOrder().getMarket().getMarketCode() == MarketCode.TW) {
 			// have got a rejection on the single attempt on TW
-			onUnexecutionResult(Result.USSingleAttemptNotExecuted, Messages.getString("UnexecutionReason.0"));
+			onUnexecutionResult(Result.USSingleAttemptNotExecuted, message + Messages.getString("UnexecutionReason.0"));
 			return;
 		}
 		// when there are no markets available, the execution service is called with a
@@ -77,9 +77,9 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 				// that failed.
 				// The customer asked to not retry anymore in such a situation and reject back
 				// to OMS the order.
-				onUnexecutionResult(Result.Success, Messages.getString("WaitingPrices.0"));
+				onUnexecutionResult(Result.Success, message + Messages.getString("WaitingPrices.0"));
 			} else {
-				onUnexecutionResult(Result.LimitFileNoPrice, WaitingPriceEventHandler.defaultStrategyName + Messages.getString("LimitFile.NoPrices"));
+				onUnexecutionResult(Result.LimitFileNoPrice, message + WaitingPriceEventHandler.defaultStrategyName + Messages.getString("LimitFile.NoPrices"));
 			}
 		} else {
 			// if the sorted book contains at least one proposal in substate NONE, it means
