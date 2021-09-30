@@ -678,8 +678,13 @@ public class SqlOperationStateAuditDao implements OperationStateAuditDao {
             //prepare conditional params
             Double prezzoMedio = null;
             Long marketId = null;
-            if (attempt != null && attempt.getMarketOrder() != null && attempt.getMarketOrder().getMarket() != null)
-               marketId = attempt.getMarketOrder().getMarket().getMarketId();
+            if (attempt != null && attempt.getMarketOrder() != null && attempt.getMarketOrder().getMarket() != null) {
+               if (attempt.getMarketOrder().getMarket().isHistoric()) {
+                  marketId = attempt.getMarketOrder().getMarket().getOriginalMarket().getMarketId();
+               } else {
+                  marketId = attempt.getMarketOrder().getMarket().getMarketId();
+               }
+            }
             String trader = null;
             if (attempt != null && attempt.getExecutionProposal() != null && attempt.getExecutionProposal().getVenue() != null && attempt.getExecutionProposal().getVenue().getMarketMaker() != null)
                trader = attempt.getExecutionProposal().getVenue().getMarketMaker().getCode();
@@ -779,14 +784,22 @@ public class SqlOperationStateAuditDao implements OperationStateAuditDao {
             // " MarketId," + // 2
             if (executionReport != null) {
                if (executionReport.getMarket() != null) {
-                  stmt.setLong(2, executionReport.getMarket().getMarketId());
+                  if (executionReport.getMarket().isHistoric()) {
+                     stmt.setLong(2, executionReport.getMarket().getOriginalMarket().getMarketId());
+                  } else {
+                     stmt.setLong(2, executionReport.getMarket().getMarketId());
+                  }
                }
                else {
                   stmt.setNull(2, java.sql.Types.INTEGER);
                }
             }
             else if (attempt.getExecutionProposal() != null && attempt.getExecutionProposal().getMarket() != null) {
-               stmt.setLong(2, attempt.getExecutionProposal().getMarket().getMarketId());
+               if (attempt.getExecutionProposal().getMarket().isHistoric()) {
+                  stmt.setLong(2, attempt.getExecutionProposal().getMarket().getOriginalMarket().getMarketId());
+               } else {
+                  stmt.setLong(2, attempt.getExecutionProposal().getMarket().getMarketId());
+               }
             }
             else {
                stmt.setNull(2, java.sql.Types.INTEGER);
