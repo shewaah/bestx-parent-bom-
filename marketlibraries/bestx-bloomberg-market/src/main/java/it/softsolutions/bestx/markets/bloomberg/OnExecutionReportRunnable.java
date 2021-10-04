@@ -56,11 +56,15 @@ import it.softsolutions.tradestac.fix50.component.TSParties;
 import quickfix.DoubleField;
 import quickfix.FieldNotFound;
 import quickfix.Group;
+import quickfix.IntField;
 import quickfix.MessageComponent;
 import quickfix.StringField;
 import quickfix.field.CompDealerID;
+import quickfix.field.CompDealerParQuote;
 import quickfix.field.CompDealerQuote;
 import quickfix.field.CompDealerQuoteOrdQty;
+import quickfix.field.CompDealerQuotePriceType;
+import quickfix.field.CompDealerQuoteStatus;
 
 /**
  * 
@@ -136,8 +140,12 @@ public class OnExecutionReportRunnable implements Runnable {
    
    //FIXME verify the values reported here are compliant
    private static String calculateStatus(ExecutablePrice price, OrdStatus ordStatus, String dealerCode, BigDecimal execPrice) {
+      String tmpDealerCode = dealerCode;
+      if(tmpDealerCode == null) {
+         tmpDealerCode = "";
+      }
       if (ordStatus == OrdStatus.Filled || ordStatus == OrdStatus.PartiallyFilled) { // dealer code is there and execPrice is there
-         if (execPrice.compareTo(price.getPrice().getAmount()) == 0 && dealerCode.compareTo(price.getOriginatorID()) == 0)
+         if (execPrice.compareTo(price.getPrice().getAmount()) == 0 && tmpDealerCode.compareTo(price.getOriginatorID()) == 0)
             return "Accepted";
          if (execPrice.compareTo(price.getPrice().getAmount()) == 0)
             return "Tied for Best";
@@ -255,9 +263,15 @@ public class OnExecutionReportRunnable implements Runnable {
             executedPrice.setOriginatorID(dealerCode);
             try {
                //					executedPrice.setMarketMarketMaker(marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), dealerCode));
-               executedPrice.setMarketMarketMaker(marketMakerFinder.getMarketMarketMakerByTSOXCode(dealerCode));
+               if(dealerCode != null) {
+                  executedPrice.setMarketMarketMaker(marketMakerFinder.getMarketMarketMakerByTSOXCode(dealerCode));
+               }
+               else {
+                  executedPrice.setMarketMarketMaker(null);
+               }
             }
-            catch (BestXException e1) {
+            catch (Exception e1) {
+               LOGGER.error("Exception: Impossible to set MarketMaker", e1);
                executedPrice.setMarketMarketMaker(null);
             }
             executedPrice.setPrice(new Money(operation.getOrder().getCurrency(), marketExecutionReport.getLastPx()));
@@ -278,11 +292,13 @@ public class OnExecutionReportRunnable implements Runnable {
                   List<Group> groups = ((TSCompDealersGrpComponent) comp).getGroups(compDealerGrp.getField());
 
                   for (int i = 0; i < groups.size(); i++) {
+                     Group compDealerElem = groups.get(i); 
                      ExecutablePrice price = new ExecutablePrice();
                      price.setMarket(this.executionMarket);
                      MarketMarketMaker tempMM = null;
-                     if (groups.get(i).isSetField(CompDealerID.FIELD)) {
-                        String quotingDealer = groups.get(i).getField(new StringField(CompDealerID.FIELD)).getValue();
+                     String quotingDealer = "";
+                     if (compDealerElem.isSetField(CompDealerID.FIELD)) {
+                        quotingDealer = compDealerElem.getField(new StringField(CompDealerID.FIELD)).getValue();
 
                         //								tempMM = marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), quotingDealer);
                         tempMM = marketMakerFinder.getMarketMarketMakerByTSOXCode(quotingDealer);
@@ -295,17 +311,13 @@ public class OnExecutionReportRunnable implements Runnable {
                            price.setMarketMarketMaker(tempMM);
                         }
                      }
-                     if (groups.get(i).isSetField(CompDealerQuote.FIELD)) {
-                        Double compDealerQuote = groups.get(i).getField(new DoubleField(CompDealerQuote.FIELD)).getValue();
-                        price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerQuote)));
-                     }
-                     else {
-                        price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
-                     }
+                     
+                     calculetPobexPrice(price, compDealerElem, quotingDealer, operation.getOrder().getFixOrderId());
+                     
                      price.setPriceType(Proposal.PriceType.PRICE);
                      //BESTX-725 manage qty coming from pobex market informations
-                     if (groups.get(i).isSetField(CompDealerQuoteOrdQty.FIELD)) {
-                        Double compDealerQty = groups.get(i).getField(new DoubleField(CompDealerQuoteOrdQty.FIELD)).getValue();
+                     if (compDealerElem.isSetField(CompDealerQuoteOrdQty.FIELD)) {
+                        Double compDealerQty = compDealerElem.getField(new DoubleField(CompDealerQuoteOrdQty.FIELD)).getValue();
                         price.setQty(new BigDecimal(Double.toString(compDealerQty)));
                      }
                      else {
@@ -316,7 +328,16 @@ public class OnExecutionReportRunnable implements Runnable {
                      price.setType(ProposalType.COUNTER);
                      price.setSide(operation.getOrder().getSide() == OrderSide.BUY ? ProposalSide.ASK : ProposalSide.BID);
                      price.setQuoteReqId(attempt.getMarketOrder().getFixOrderId());
-                     price.setAuditQuoteState(calculateStatus(price, ordStatus, dealerCode, lastPrice));
+                     
+                     //BESTX-873 CompDealerQuoteStatus=22825
+                     if(compDealerElem.isSetField(CompDealerQuoteStatus.FIELD)) {
+                        CompDealerQuoteStatus compDealerQuoteStatus = new CompDealerQuoteStatus(compDealerElem.getInt(CompDealerQuoteStatus.FIELD));
+                        price.setAuditQuoteState(calculateStatus(compDealerQuoteStatus, price, operation.getOrder().getFixOrderId(), quotingDealer));
+                     }
+                     else {// Old code before BESTX-873
+                        LOGGER.warn("For fixOrderId {} and dealrCode {}, the Composite Dealer Quote Status is not present: use the old way to calculate the status)", operation.getOrder().getFixOrderId(), dealerCode);
+                        price.setAuditQuoteState(calculateStatus(price, ordStatus, dealerCode, lastPrice));
+                     }
                      if (tempMM == null) {
                         LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", operation.getOrder().getFixOrderId(), operation.getAttemptNo(),
                               price.getOriginatorID(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
@@ -349,7 +370,102 @@ public class OnExecutionReportRunnable implements Runnable {
 
       operation.onMarketExecutionReport(market, order, marketExecutionReport);
    }
+
+   /**
+    * @param price
+    * @param compDealerElem
+    * @param quotingDealer
+    * @throws FieldNotFound
+    */
+   private void calculetPobexPrice(ExecutablePrice price, Group compDealerElem, String quotingDealer, String fixOrderId) throws FieldNotFound {
+      //BESTX-873 CompDealerQuotePriceType=10012
+      if(compDealerElem.isSetField(CompDealerQuotePriceType.FIELD)) {
+         int iCompDealerQuotePriceType = compDealerElem.getField(new IntField(CompDealerQuotePriceType.FIELD)).getValue();
+         
+         if(iCompDealerQuotePriceType == 1) { //1(PERCENT_OF_PAR)
+            if (compDealerElem.isSetField(CompDealerQuote.FIELD)) {
+               Double compDealerQuote = compDealerElem.getField(new DoubleField(CompDealerQuote.FIELD)).getValue();
+               price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerQuote)));
+            }
+            else {
+               LOGGER.warn("Quoting Price type for fix order Id {} and {} Quoting dealer is {} (NoPrice). CompDealerQuote(10011) field is not present! Set Price to 0.0", fixOrderId, quotingDealer, iCompDealerQuotePriceType);
+               price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
+            }
+         }
+         else if(iCompDealerQuotePriceType == 6 || iCompDealerQuotePriceType == 9) { //6(YIELD_SPREAD_TO_BENCHMARK) 9 (YIELD)
+            LOGGER.info("Quoting Price type for fix order Id {} and {} Quoting dealer is {} (NoPrice). Take the CompDealerParQuote(10015) field", fixOrderId, quotingDealer, iCompDealerQuotePriceType);
+            if (compDealerElem.isSetField(CompDealerParQuote.FIELD)) {
+               Double compDealerParQuote = compDealerElem.getField(new DoubleField(CompDealerParQuote.FIELD)).getValue();
+               price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerParQuote)));
+            }
+            else {
+               LOGGER.warn("Quoting Price type for fix order Id {} and {} Quoting dealer is {} (NoPrice). CompDealerParQuote(10015) field is not present! Set Price to 0.0", fixOrderId, quotingDealer, iCompDealerQuotePriceType);
+               price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
+            }
+         }
+         else {
+            LOGGER.warn("Quoting Price type for fix order Id {} and {} Quoting dealer is {} (NoPrice and NoYield). CompDealerParQuote(10015) field is not present! Use the CompDealerQuote field", fixOrderId, quotingDealer, iCompDealerQuotePriceType);
+            if (compDealerElem.isSetField(CompDealerQuote.FIELD)) {
+               Double compDealerQuote = compDealerElem.getField(new DoubleField(CompDealerQuote.FIELD)).getValue();
+               price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerQuote)));
+            }
+            else {
+               price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
+            }
+         }
+      } //BESTX-873 CompDealerQuotePriceType=10012
+      else { // Old code before BESTX-873 
+         LOGGER.warn("For fixOrderID {} and {} DealerCode it is not present the CompDealerQuotePriceType(10012) fix field: use CompDealerQuote fix field", fixOrderId, quotingDealer);
+         if (compDealerElem.isSetField(CompDealerQuote.FIELD)) {
+            Double compDealerQuote = compDealerElem.getField(new DoubleField(CompDealerQuote.FIELD)).getValue();
+            price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerQuote)));
+         }
+         else {
+            LOGGER.warn("For fixOrderID {} and {} DealerCode it is not present the CompDealerQuote(10011) fix field: use default price value 0.0", fixOrderId, quotingDealer);
+            price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
+         }
+      }
+   }
    
+   /**
+    * Mapping defined on BESTX-873
+    * @param compDealerQuoteStatus
+    * @param price 
+    * @return
+    */
+   private String calculateStatus(CompDealerQuoteStatus compDealerQuoteStatus, ExecutablePrice price, String fixOrderId, String dealerCode) {
+      String sStatus = "";
+      switch(compDealerQuoteStatus.getValue()) {
+         case CompDealerQuoteStatus.COVER: //COVER=4
+            sStatus = "Covered";
+            break;
+         case CompDealerQuoteStatus.DONE_AWAY:  //DONE_AWAY=5
+            sStatus = "Done Away";
+            break;
+         case CompDealerQuoteStatus.PASS: // PASS=6
+            sStatus = "Passed";
+            break;
+         case CompDealerQuoteStatus.END_TRADE: // END_TRADE=7
+            sStatus = "Missed";
+            break;
+         case CompDealerQuoteStatus.TIMED_OUT: // TIMED_OUT=8
+            sStatus = "Timed Out";
+            break;
+         case CompDealerQuoteStatus.TIED: // TIED=9
+            sStatus = "Tied for Best";
+            break;
+         default:
+            LOGGER.warn("For fixOrderId {} and dealerCode {}, the Composite Dealer Quote Status is outoff range ({})", fixOrderId, dealerCode, compDealerQuoteStatus.getValue());
+            if(price.getPrice().getAmount().compareTo(new BigDecimal("0.0"))== 0) {
+               sStatus = "Missed";
+            }
+            else {
+               sStatus = "Passed";
+            }
+      }
+      return sStatus;
+   }
+
    private void processPobex() {
 	      LOGGER.info("On Execution Status Runnable {}, {}", pobexExecutionReport.getClOrdID(), pobexExecutionReport.getExecType() );
 	      Order order = this.operation.getLastAttempt().getMarketOrder();
@@ -381,11 +497,13 @@ public class OnExecutionReportRunnable implements Runnable {
 	                  List<Group> groups = ((TSCompDealersGrpComponent) comp).getGroups(compDealerGrp.getField());
 
 	                  for (int i = 0; i < groups.size(); i++) {
+	                     Group compDealerElem = groups.get(i);
 	                     ExecutablePrice price = new ExecutablePrice();
 	                     price.setMarket(this.executionMarket);
 	                     MarketMarketMaker tempMM = null;
-	                     if (groups.get(i).isSetField(CompDealerID.FIELD)) {
-	                        String quotingDealer = groups.get(i).getField(new StringField(CompDealerID.FIELD)).getValue();
+	                     String quotingDealer = "";
+	                     if (compDealerElem.isSetField(CompDealerID.FIELD)) {
+	                        quotingDealer = compDealerElem.getField(new StringField(CompDealerID.FIELD)).getValue();
 
 	                        //tempMM = marketMakerFinder.getMarketMarketMakerByTSOXCode(quotingDealer);
 	                        tempMM = marketMakerFinder.getSmartMarketMarketMakerByCode(MarketCode.BLOOMBERG, quotingDealer);
@@ -399,14 +517,19 @@ public class OnExecutionReportRunnable implements Runnable {
 	                           price.setMarketMarketMaker(tempMM);
 	                        }
 	                     }
-	                     if (groups.get(i).isSetField(CompDealerQuote.FIELD)) {
-	                        Double compDealerQuote = groups.get(i).getField(new DoubleField(CompDealerQuote.FIELD)).getValue();
-	                        price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerQuote)));
-	                     }
-	                     else price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
+
+	                     
+//	                     
+//	                     if (groups.get(i).isSetField(CompDealerQuote.FIELD)) {
+//	                        Double compDealerQuote = groups.get(i).getField(new DoubleField(CompDealerQuote.FIELD)).getValue();
+//	                        price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerQuote)));
+//	                     }
+//	                     else price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
+	                     calculetPobexPrice(price, compDealerElem, quotingDealer, operation.getOrder().getFixOrderId());
+	                     
 	                     price.setPriceType(Proposal.PriceType.PRICE);
 	                     //BESTX-725 manage qty coming from pobex market informations
-	                     if (groups.get(i).isSetField(CompDealerQuoteOrdQty.FIELD)) {
+	                     if (compDealerElem.isSetField(CompDealerQuoteOrdQty.FIELD)) {
 	                        Double compDealerQty = groups.get(i).getField(new DoubleField(CompDealerQuoteOrdQty.FIELD)).getValue();
 	                        price.setQty(new BigDecimal(Double.toString(compDealerQty)));
 	                     }
@@ -419,22 +542,28 @@ public class OnExecutionReportRunnable implements Runnable {
 	                     price.setSide(operation.getOrder().getSide() == OrderSide.BUY ? ProposalSide.ASK : ProposalSide.BID);
 	                     price.setQuoteReqId(attempt.getMarketOrder().getFixOrderId());
 	                     
-	                     //Calculate status from 22606 tag can contains: Expired, Canceled, Passed, Rejected, or Other
-	                     if (pobexExecutionReport.getCustomFieldString(22606) == null) {
-	                        LOGGER.error("Execution report status message without tag 22606. Check Bloomberg channel configuration. Message: {}", pobexExecutionReport.toString());
-                           price.setAuditQuoteState("Expired");
-	                     } else if ("PASSED".equalsIgnoreCase(pobexExecutionReport.getCustomFieldString(22606).toString())) {
-	                        price.setAuditQuoteState("Passed");
-	                     } else if ("EXPIRED".equalsIgnoreCase((pobexExecutionReport.getCustomFieldString(22606).toString()))) {
-	                        price.setAuditQuoteState("Expired");
-	                     } else if ("Canceled".equalsIgnoreCase((pobexExecutionReport.getCustomFieldString(22606).toString()))) {
-	                        price.setAuditQuoteState("Cancelled");
-	                     } else if ("Rejected".equalsIgnoreCase((pobexExecutionReport.getCustomFieldString(22606).toString()))) {
-	                        price.setAuditQuoteState("Missed");
-	                     } else {
-	                        price.setAuditQuoteState("Expired");
+	                     //BESTX-873 CompDealerQuoteStatus=22825
+	                     if(compDealerElem.isSetField(CompDealerQuoteStatus.FIELD)) {
+	                        CompDealerQuoteStatus compDealerQuoteStatus = new CompDealerQuoteStatus(compDealerElem.getInt(CompDealerQuoteStatus.FIELD));
+	                        price.setAuditQuoteState(calculateStatus(compDealerQuoteStatus, price, operation.getOrder().getFixOrderId(), quotingDealer));
 	                     }
-	                     
+	                     else {// Old code before BESTX-873
+   	                     //Calculate status from 22606 tag can contains: Expired, Canceled, Passed, Rejected, or Other
+   	                     if (pobexExecutionReport.getCustomFieldString(22606) == null) {
+   	                        LOGGER.error("Execution report status message without tag 22606. Check Bloomberg channel configuration. Message: {}", pobexExecutionReport.toString());
+                              price.setAuditQuoteState("Expired");
+   	                     } else if ("PASSED".equalsIgnoreCase(pobexExecutionReport.getCustomFieldString(22606).toString())) {
+   	                        price.setAuditQuoteState("Passed");
+   	                     } else if ("EXPIRED".equalsIgnoreCase((pobexExecutionReport.getCustomFieldString(22606).toString()))) {
+   	                        price.setAuditQuoteState("Expired");
+   	                     } else if ("Canceled".equalsIgnoreCase((pobexExecutionReport.getCustomFieldString(22606).toString()))) {
+   	                        price.setAuditQuoteState("Cancelled");
+   	                     } else if ("Rejected".equalsIgnoreCase((pobexExecutionReport.getCustomFieldString(22606).toString()))) {
+   	                        price.setAuditQuoteState("Missed");
+   	                     } else {
+   	                        price.setAuditQuoteState("Expired");
+   	                     }
+	                     }	                     
 	                     if (tempMM == null) {
 	                        LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", operation.getOrder().getFixOrderId(), operation.getAttemptNo(),
 	                              price.getOriginatorID(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
