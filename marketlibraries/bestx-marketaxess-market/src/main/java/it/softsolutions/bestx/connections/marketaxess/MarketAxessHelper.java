@@ -542,8 +542,8 @@ public class MarketAxessHelper extends MarketPriceDiscoveryHelper {
 			}
 			try {
 				BigDecimal px = new BigDecimal(Double.toString(tsExecutionReport.getDouble(AvgPx.FIELD)));
-				if (px.scale() > 10)
-				px = px.setScale(10, RoundingMode.HALF_UP);
+				if (px.scale() > 10) 
+					px = px.setScale(10, RoundingMode.HALF_UP);
 				executionReport.setAveragePrice(px);
 			} catch (@SuppressWarnings("unused") FieldNotFound e) {
 			}
