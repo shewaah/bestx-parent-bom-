@@ -72,7 +72,6 @@ public class FallbackMarketOrderBuilder extends MarketOrderBuilder {
 
 		@Override
 		public void onMarketOrderBuilt(MarketOrderBuilder source, MarketOrder marketOrder) {
-//			this.operation.onMarketOrderBuilt(FallbackMarketOrderBuilder.this, marketOrder);
 			this.operation.onMarketOrderBuilt(source, marketOrder);
 		}
 
@@ -89,12 +88,12 @@ public class FallbackMarketOrderBuilder extends MarketOrderBuilder {
 		@Override
 		public void onMarketOrderException(MarketOrderBuilder source, Exception ex) {
 			LOGGER.info("MarketOrderBuilder: exception {} for order {}", ex.toString(), operation.getOrder().getFixOrderId());
-			this.operation.onMarketOrderException(FallbackMarketOrderBuilder.this, ex);
+			this.operation.onMarketOrderException(source, ex);
 		}
 
 		@Override
 		public void onMarketOrderErrors(MarketOrderBuilder source, List<String> errors) {
-			this.operation.onMarketOrderErrors(FallbackMarketOrderBuilder.this, errors);
+			this.operation.onMarketOrderErrors(source, errors);
 		}
 
 	}

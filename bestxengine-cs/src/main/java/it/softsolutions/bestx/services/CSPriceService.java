@@ -371,7 +371,7 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 							Customer customer = operation.getOrder().getCustomer();
 							try {
 								ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, null);
-								csExecutionStrategyService.manageAutomaticUnexecution(plainRequest.order, customer, WaitingPriceEventHandler.defaultStrategyName);
+								csExecutionStrategyService.manageAutomaticUnexecution(plainRequest.order, customer, "");
 							} catch (BestXException be) {
 								LOGGER.error("Order {}, error while managing no market available situation {}", plainRequest.order.getFixOrderId(), e.getMessage(), e);
 								operation.removeLastAttempt();
