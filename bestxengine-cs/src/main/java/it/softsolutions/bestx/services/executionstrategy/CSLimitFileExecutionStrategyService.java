@@ -25,6 +25,7 @@ import it.softsolutions.bestx.MifidConfig;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
+import it.softsolutions.bestx.handlers.WaitingPriceEventHandler;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Order;
@@ -78,7 +79,7 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 				// to OMS the order.
 				onUnexecutionResult(Result.Success, message + Messages.getString("WaitingPrices.0"));
 			} else {
-				onUnexecutionResult(Result.LimitFileNoPrice, message + Messages.getString("LimitFile.NoPrices"));
+				onUnexecutionResult(Result.LimitFileNoPrice, message + WaitingPriceEventHandler.defaultStrategyName + Messages.getString("LimitFile.NoPrices"));
 			}
 		} else {
 			// if the sorted book contains at least one proposal in substate NONE, it means
