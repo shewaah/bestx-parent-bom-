@@ -22,8 +22,6 @@ import org.slf4j.LoggerFactory;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilderListener;
-import it.softsolutions.bestx.bestexec.MarketOrderBuilder.BuilderType;
-import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.bestx.services.rest.CSMarketOrderBuilder;
@@ -89,12 +87,12 @@ public class FallbackMarketOrderBuilder extends MarketOrderBuilder {
 		@Override
 		public void onMarketOrderException(MarketOrderBuilder source, Exception ex) {
 			LOGGER.info("MarketOrderBuilder: exception {} for order {}", ex.toString(), operation.getOrder().getFixOrderId());
-			this.operation.onMarketOrderException(FallbackMarketOrderBuilder.this, ex);
+			this.operation.onMarketOrderException(source, ex);
 		}
 
 		@Override
 		public void onMarketOrderErrors(MarketOrderBuilder source, List<String> errors) {
-			this.operation.onMarketOrderErrors(FallbackMarketOrderBuilder.this, errors);
+			this.operation.onMarketOrderErrors(source, errors);
 		}
 
 	}
