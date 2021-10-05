@@ -21,10 +21,10 @@
 
         <!--  gateways dependency -->
         <tradestac-client.version>2.1.13-SNAPSHOT</tradestac-client.version>
-        <tradestac2-client.version>1.2.14</tradestac2-client.version>
+        <tradestac2-client.version>1.2.16-SNAPSHOT</tradestac2-client.version>
         <quickfixjrootobjects.version>1.1.4</quickfixjrootobjects.version>
         <tradestac-tw-adapter.version>2.2.0-Neutronstar210721CompPrice-SNAPSHOT</tradestac-tw-adapter.version>
-        <tradestac-bloomberg-adapter.version>1.2.4</tradestac-bloomberg-adapter.version>
+        <tradestac-bloomberg-adapter.version>1.2.7-SNAPSHOT</tradestac-bloomberg-adapter.version>
 
         <!-- third party -->
         <quickfix.version>1.6.4</quickfix.version>

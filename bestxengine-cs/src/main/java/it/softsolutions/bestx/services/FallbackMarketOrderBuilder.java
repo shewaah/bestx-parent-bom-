@@ -22,8 +22,6 @@ import org.slf4j.LoggerFactory;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilderListener;
-import it.softsolutions.bestx.bestexec.MarketOrderBuilder.BuilderType;
-import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.bestx.services.rest.CSMarketOrderBuilder;
