@@ -438,6 +438,11 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
             proposal.setProposalState(ProposalState.NEW);
             proposal.setProposalSubState(ProposalSubState.NONE);
             return true;
+         case "Done-Amended":
+            proposal.setAuditQuoteState("Done-Amended");
+            proposal.setProposalState(ProposalState.NEW);
+            proposal.setProposalSubState(ProposalSubState.NONE);
+            return true;
          case "Order Accepted": // suspecting this is for dealer only
          case "Resp Req": //suspecting this is for dealer only
             proposal.setAuditQuoteState("Done");
@@ -449,6 +454,7 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
             proposal.setProposalState(ProposalState.NEW);
             proposal.setProposalSubState(ProposalSubState.NONE);
             return true;
+         case "Tied For Cover":
          case "Tied for Cover":
          case "Tied-For-Cover":
             proposal.setAuditQuoteState("Tied-For-Cover");
