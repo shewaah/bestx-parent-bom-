@@ -749,7 +749,7 @@
         <property name="tsoxTechnicalRejectReasons"><value>${Bloomberg.Tsox.technical_reject_reasons}</value></property>
         <property name="orderCancelDelay"><value>${orderCancel.timeout}</value></property>
         <property name="bestXConfigurationDao"><ref bean="sqlBestXConfigurationDao"></ref></property>
-        <property name="priceDiscoveryConnection"><ref bean="ib4jOperatorConsoleAdapter"></ref></property>
+        <property name="priceDiscoveryConnection"><ref bean="mqPriceDiscoveryOperatorConsoleAdapter"></ref></property>
         <property name="priceDiscoveryCustomerId"><value>${PriceDiscovery.Customer}</value></property>
         <property name="bookDepth"><value>${PriceDiscovery.BookDepth}</value></property>
         <property name="orderBookDepth"><value>${PriceDiscovery.OrderBookDepth}</value></property>
@@ -869,7 +869,7 @@
 	<!-- REGISTRY FOR CONNECTORS -->
 	<bean id="connectionRegistry" class="it.softsolutions.bestx.connections.CSConnectionRegistry">
         <property name="customerConnection"><ref bean="oms1CustomerAdapter"/></property>
-        <property name="mqPriceDiscoveryConnection"><ref bean="ib4jOperatorConsoleAdapter"/></property>
+        <property name="mqPriceDiscoveryConnection"><ref bean="mqPriceDiscoveryOperatorConsoleAdapter"/></property>
         <property name="grdLiteConnection"><ref bean="grdLiteService"/></property>
         <property name="datalakeConnection" ref="dataCollector" />
         <property name="csAlgoRestServiceConnection" ref="algoRestService" />
