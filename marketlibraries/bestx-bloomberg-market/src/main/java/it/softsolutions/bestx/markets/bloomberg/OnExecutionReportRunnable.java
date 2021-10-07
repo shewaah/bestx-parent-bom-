@@ -505,8 +505,7 @@ public class OnExecutionReportRunnable implements Runnable {
 	                     if (compDealerElem.isSetField(CompDealerID.FIELD)) {
 	                        quotingDealer = compDealerElem.getField(new StringField(CompDealerID.FIELD)).getValue();
 
-	                        //tempMM = marketMakerFinder.getMarketMarketMakerByTSOXCode(quotingDealer);
-	                        tempMM = marketMakerFinder.getSmartMarketMarketMakerByCode(MarketCode.BLOOMBERG, quotingDealer);
+	                        tempMM = marketMakerFinder.getMarketMarketMakerByTSOXCode(quotingDealer);
 
 	                        if (tempMM == null) {
 	                           LOGGER.info("IMPORTANT! Bloomberg returned dealer {} not configured in BestX:FI-A. Please configure it", quotingDealer);
