@@ -984,7 +984,8 @@ public class TradewebMarket extends MarketCommon
    private boolean addPobexInformation(Attempt attempt, TSExecutionReport tsExecutionReport, final Operation operation) throws BestXException {
       boolean added = false;
       TSCompDealersGrpComponent pobexGrp = getCompDealersGrpComponent(tsExecutionReport);
-      
+      String clOrdId = tsExecutionReport.getClOrdID();
+      String ordId =tsExecutionReport.getOrderID();
 	   if (pobexGrp != null) {
 		   try {
 			   quickfix.field.NoCompDealers compDealerGrp = ((TSCompDealersGrpComponent) pobexGrp).get(new quickfix.field.NoCompDealers());
@@ -996,12 +997,14 @@ public class TradewebMarket extends MarketCommon
 				   ExecutablePrice price = new ExecutablePrice();
 				   price.setMarket(this.market);
 				   MarketMarketMaker tempMM = null;
+				   boolean isValidPrice = true;
+				   String quotingDealer = "";
 				   if (groups.get(i).isSetField(CompDealerID.FIELD)) {
-					   String quotingDealer = groups.get(i).getField(new StringField(CompDealerID.FIELD)).getValue();
+					   quotingDealer = groups.get(i).getField(new StringField(CompDealerID.FIELD)).getValue();
 
 					   tempMM = marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), quotingDealer);
 					   if(tempMM == null) {
-						   LOGGER.info("IMPORTANT! Tradeweb returned dealer {} not configured in BestX:FI-A. Please configure it", quotingDealer);
+						   LOGGER.info("IMPORTANT! Tradeweb returned dealer {} not configured in BestX:FI-A. Please configure it! ClOrdId={}, OrdId={}, CompDlrId={}", quotingDealer, clOrdId, ordId, quotingDealer);
 						   price.setOriginatorID(quotingDealer);
 					   } else {
 						   price.setMarketMarketMaker(tempMM);
@@ -1013,12 +1016,14 @@ public class TradewebMarket extends MarketCommon
 					   Double compDealerQuote = groups.get(i).getField(new DoubleField(CompDealerParQuote.FIELD)).getValue();
 					   price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerQuote)));
 				   } else {
-					   LOGGER.info("CompDealerParQuote not set for percentage price use CompDealerQuote");
+					   LOGGER.info("ClOrdId={}, OrdId={}, CompDlrId={} : CompDealerParQuote not set for percentage price, use CompDealerQuote!", clOrdId, ordId, quotingDealer);
 					   if (groups.get(i).isSetField(CompDealerQuote.FIELD)) {
 						   Double compDealerQuote = groups.get(i).getField(new DoubleField(CompDealerQuote.FIELD)).getValue();
 						   price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerQuote)));
 					   } else {
+	                  LOGGER.info("ClOrdId={}, OrdId={}, CompDlrId={}: CompDealerParQuote and CompDealerQuote not set! Default value price is 0.0!", clOrdId, ordId, quotingDealer);
 						   price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
+						   isValidPrice = false;
 					   }
 				   }
 
@@ -1029,10 +1034,10 @@ public class TradewebMarket extends MarketCommon
 				   price.setQuoteReqId(attempt.getMarketOrder().getFixOrderId());
 				   attempt.addExecutablePrice(price, i + 1);
 				   if(tempMM == null) {
-					   LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", 
+					   LOGGER.info("ClOrdId={}, OrdId={}, CompDlrId={}: Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", clOrdId, ordId, quotingDealer, 
 							   operation.getOrder().getFixOrderId(), operation.getAttemptNo(), price.getOriginatorID(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
 				   } else {
-					   LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", 
+					   LOGGER.info("ClOrdId={}, OrdId={}, CompDlrId={}: Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", clOrdId, ordId, quotingDealer, 
 							   operation.getOrder().getFixOrderId(), operation.getAttemptNo(), price.getMarketMarketMaker().getMarketMaker().getName(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
 				   }
                int status = -1;
@@ -1064,9 +1069,24 @@ public class TradewebMarket extends MarketCommon
                   break;
                default:
                   if(status == -1) {
-                     price.setAuditQuoteState("Covered");
+                     // No status in the execution report
+                     if(isValidPrice) {
+                        if(OrdStatus.Canceled.equals(tsExecutionReport.getOrdStatus())){
+                           price.setAuditQuoteState("Passed");
+                           LOGGER.info("ClOrdId={}, OrdId={}, CompDlrId={}: No CompDealerStatus and valid price! Default value status is Passed in canceled executionReport!", clOrdId, ordId, quotingDealer);
+                        }
+                        else {
+                           price.setAuditQuoteState("Covered");
+                           LOGGER.info("ClOrdId={}, OrdId={}, CompDlrId={}: No CompDealerStatus and valid price! Default value status is Covered in fill executionReport!", clOrdId, ordId, quotingDealer);
+                        }
+                     }
+                     else {
+                        price.setAuditQuoteState("Passed");
+                        LOGGER.info("ClOrdId={}, OrdId={}, CompDlrId={}: No CompDealerStatus and invalid price! Default value status is Passed!", clOrdId, ordId, quotingDealer);
+                     }
                   }
                   else {
+                     LOGGER.info("ClOrdId={}, OrdId={}, CompDlrId={}: CompDealerStatus out of renge ({})! Default value status is Passed!", clOrdId, ordId, quotingDealer, status);
                      price.setAuditQuoteState("Passed");
                   }
                   break;
