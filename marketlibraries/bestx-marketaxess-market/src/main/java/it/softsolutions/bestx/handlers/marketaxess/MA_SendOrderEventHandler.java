@@ -422,7 +422,7 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
     * @return true iff the competitiveStatus is one of the recognised strings
     */
    private boolean convertState(ExecutablePrice proposal, CompetitiveStatus competitiveStatus) {
-      if (competitiveStatus.getValue().startsWith("Done-")) {
+      if (competitiveStatus.getValue().startsWith("Done-") && !"Done-Amended".equals(competitiveStatus.getValue())) {
          proposal.setAuditQuoteState("Done");
       } else {
          proposal.setAuditQuoteState(competitiveStatus.getValue());
