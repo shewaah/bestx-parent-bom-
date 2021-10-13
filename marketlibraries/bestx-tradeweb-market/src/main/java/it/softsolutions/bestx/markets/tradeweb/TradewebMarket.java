@@ -1003,9 +1003,9 @@ public class TradewebMarket extends MarketCommon
 					   quotingDealer = groups.get(i).getField(new StringField(CompDealerID.FIELD)).getValue();
 
 					   tempMM = marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), quotingDealer);
+                  price.setOriginatorID(quotingDealer);
 					   if(tempMM == null) {
 						   LOGGER.info("IMPORTANT! Tradeweb returned dealer {} not configured in BestX:FI-A. Please configure it! ClOrdId={}, OrdId={}, CompDlrId={}", quotingDealer, clOrdId, ordId, quotingDealer);
-						   price.setOriginatorID(quotingDealer);
 					   } else {
 						   price.setMarketMarketMaker(tempMM);
 					   }
