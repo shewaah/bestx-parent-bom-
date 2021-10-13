@@ -64,6 +64,7 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 	
 	@Override
 	public void cleanBook() {
+		// this JMX method does not have an implementation specific to historic markets
 	}
 
 	@Override
@@ -119,10 +120,12 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 		return false;
 	}
 
+	@Override
     public boolean isPriceConnectionEnabled() {
         return this.referenceMarketConnection.isPriceConnectionEnabled();
     }
 
+    @Override
     public boolean isBuySideConnectionEnabled() {
         return this.referenceMarketConnection.isBuySideConnectionEnabled();
     }
@@ -130,6 +133,7 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 	
 	@Override
 	public void ensurePriceAvailable() throws MarketNotAvailableException {
+		// prices are availble by definition, so no need to throw any exception
 	}
 
 	@Override
@@ -137,12 +141,15 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 			throws BestXException {
 		LOGGER.debug("orderID = {}, venues = {}, maxLatency = {}", (order != null ? order.getFixOrderId() : order), venues, maxLatency);
 
-		Instrument instrument = order.getInstrument();
+		Instrument instrument = (order!= null) ? order.getInstrument() : null;
 		String isin = instrument.getIsin();
 		Market market = this.marketFinder.getMarketByCode(this.marketCode, null);
 
-		LOGGER.debug("Requesting price to {} for ISIN: {}",this.getMarketCode(),  isin);
-		try {
+		// BESTX-910 TC time (a)
+		LOGGER.debug("Requesting prices to {} for ISIN: {}",this.getMarketCode(),  isin);
+		try {	
+			final List<ClassifiedProposal> allProposals = Collections.synchronizedList(new ArrayList<>());
+			
 			Map<String, Object> namedParameters = new HashMap<>();
 			namedParameters.put("paramIsin", isin);
 			namedParameters.put("paramSide", (order.getSide().equals(OrderSide.BUY) ? ProposalSide.ASK.getFixCode() : ProposalSide.BID.getFixCode()));
@@ -154,9 +161,7 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 				marketId = marketFinder.getMarketByCode(Market.MarketCode.TSOX, null).getMarketId(); 
 			}
 			namedParameters.put("paramMarketId", marketId);
-			
-			final List<ClassifiedProposal> allProposals = Collections.synchronizedList(new ArrayList<>());
-			
+			LOGGER.debug("[DBPERF] Start query to {} for ISIN: {}", this.getMarketCode(), isin);
 			this.namedParameterJdbcTemplate.query(this.historicPricesQuery, namedParameters, (ResultSet rs) -> {
 				try {
 				   ClassifiedProposal prop = this.buildProposalFromResult(order, instrument, rs);
@@ -167,6 +172,8 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 					LOGGER.error("Error while trying to create proposal", e);
 				}
 			});
+			// BESTX-910 TC time (b)
+			LOGGER.debug("[DBPERF] Stop query to {} for ISIN: {}", this.getMarketCode(), isin);
 			
 			BaseBook book = new BaseBook();
 			book.setInstrument(instrument);
@@ -174,6 +181,8 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
                 book.addProposal(bestProposal);
             }
             
+    		// BESTX-910 TC time (c)
+			LOGGER.debug("Proposals put in the book: calling listener. Market {} ISIN: {}", this.getMarketCode(), isin);
             listener.onMarketBookComplete(marketCode, book);
 			
 		} catch (ConcurrentModificationException cme) {
@@ -248,12 +257,11 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
             case PriceType.PER_UNIT:
             	priceType = Proposal.PriceType.UNIT;
             	break;
+            default:
+            	priceType = Proposal.PriceType.PRICE;
             }
-            
-            
+                        
             ProposalType proposalType = ProposalType.TRADEABLE;
-
-
 
             classifiedProposal = new ClassifiedProposal();
             classifiedProposal.setMarket(historicMarket);
@@ -386,7 +394,4 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 	public void setReferenceMarketConnection(MarketConnection referenceMarketConnection) {
 		this.referenceMarketConnection = referenceMarketConnection;
 	}
-
-	
-	
 }
