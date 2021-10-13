@@ -141,7 +141,7 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
 			throws BestXException {
 		LOGGER.debug("orderID = {}, venues = {}, maxLatency = {}", (order != null ? order.getFixOrderId() : order), venues, maxLatency);
 
-		Instrument instrument = (order!= null) ? order.getInstrument() : null;
+		Instrument instrument = order.getInstrument();
 		String isin = instrument.getIsin();
 		Market market = this.marketFinder.getMarketByCode(this.marketCode, null);
 
