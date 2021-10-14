@@ -928,8 +928,10 @@ public class TradewebMarket extends MarketCommon
 				   ExecutablePrice priceExec = new ExecutablePrice();
 				   priceExec.setMarket(this.market);
 				   priceExec.setAuditQuoteState("Done");
+               priceExec.setOriginatorID(executionBroker);
 				   if(mmm == null) {
-					   priceExec.setOriginatorID(executionBroker);
+                  LOGGER.info("IMPORTANT! Tradeweb returned dealer {} not configured in BestX:FI-A. Please configure it! ClOrdId={}, OrdId={}, CompDlrId={}", executionBroker, cleanClOrdId, orderId);
+
 				   } else {
 					   priceExec.setMarketMarketMaker(mmm);
 				   }
