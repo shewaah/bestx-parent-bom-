@@ -5,8 +5,9 @@ import java.math.BigDecimal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
-import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
+import it.softsolutions.bestx.bestexec.MarketOrderBuilder.BuilderType;
 import it.softsolutions.bestx.bestexec.MarketOrderFilter;
 import it.softsolutions.bestx.executionflow.FreezeOrderAction;
 import it.softsolutions.bestx.executionflow.RejectOrderAction;
@@ -16,7 +17,6 @@ import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyServic
 
 public class LimitMonitorPriceMarketOrderFilter implements MarketOrderFilter {
 	private static final Logger LOGGER = LoggerFactory.getLogger(LimitMonitorPriceMarketOrderFilter.class);
-	private String rejectMessage = "Price received from service is worse than requested";
 	
 	@Override
 	public void filterMarketOrder(MarketOrder marketOrder, Operation operation) {
@@ -38,7 +38,14 @@ public class LimitMonitorPriceMarketOrderFilter implements MarketOrderFilter {
 			}
 		} else if (operation.getOrder().getLimit() != null && operation.getOrder().getLimit().getAmount() != null) { // 59=0 40=2 (ALGO Limit Order)
 			if (marketOrder != null && this.isTargetPriceWorseThanOriginalOrderPrice(operation.getOrder().getSide(), operation.getOrder().getLimit().getAmount(), marketOrder.getLimitMonitorPrice().getAmount())) {
-				operation.getLastAttempt().setNextAction(new RejectOrderAction(this.rejectMessage));
+			   if (marketOrder.getBuilder().getType() == BuilderType.CUSTOM) {
+	            operation.getLastAttempt().setNextAction(new RejectOrderAction(Messages.getString("LimitMonitorPriceMarketOrderFilter.rejectMessage.rest", 
+                     (marketOrder.getLimit() != null ? marketOrder.getLimit().getAmount() : "NA"),
+	                  (marketOrder.getLimitMonitorPrice() != null ? marketOrder.getLimitMonitorPrice().getAmount() : "NA"),
+	                  operation.getOrder().getLimit().getAmount())));
+			   } else {
+   			   operation.getLastAttempt().setNextAction(new RejectOrderAction(Messages.getString("LimitMonitorPriceMarketOrderFilter.rejectMessage.fallback")));
+			   }
 			}
 		}
 		// 59=0 40=1 (ALGO Market Order, it is OK as it is)

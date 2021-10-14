@@ -25,6 +25,7 @@ import it.softsolutions.bestx.MifidConfig;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
+import it.softsolutions.bestx.bestexec.MarketOrderBuilder.BuilderType;
 import it.softsolutions.bestx.handlers.WaitingPriceEventHandler;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.Market.MarketCode;
@@ -104,7 +105,16 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 				// time to update the delta between the order limit price and the best proposal
 				// one
 
-				onUnexecutionResult(Result.LimitFile, message + Messages.getString("LimitFile"));
+		      if (operation.getLastAttempt().getMarketOrder() != null && 
+			         operation.getLastAttempt().getMarketOrder().getBuilderType() == BuilderType.CUSTOM) {
+	            onUnexecutionResult(Result.LimitFile, message + Messages.getString("LimitFile.Rest", 
+                     (operation.getLastAttempt().getMarketOrder().getLimit() != null ? operation.getLastAttempt().getMarketOrder().getLimit().getAmount() : "NA"),
+	                  (operation.getLastAttempt().getMarketOrder().getLimitMonitorPrice() != null ? operation.getLastAttempt().getMarketOrder().getLimitMonitorPrice().getAmount() : "NA"),
+	                  operation.getOrder().getLimit().getAmount(),
+                     ExecutionStrategyServiceFactory.getInstance().getCentsLFTolerance()));
+			   } else {
+               onUnexecutionResult(Result.LimitFile, message + Messages.getString("LimitFile"));
+			   }
 			}
 
 		}
