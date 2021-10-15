@@ -41,6 +41,16 @@ import it.softsolutions.bestx.model.MarketMarketMakerSpec;
  * 
  **/
 public abstract class MarketOrderBuilder {
+	public enum BuilderType {
+		DEFAULT, CUSTOM, STANDARD, NONE
+	}
+	
+	protected BuilderType type;
+	
+	public BuilderType getType() {
+		return this.type;
+	}
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(MarketOrderBuilder.class);
 	
    public MarketOrderBuilder() {

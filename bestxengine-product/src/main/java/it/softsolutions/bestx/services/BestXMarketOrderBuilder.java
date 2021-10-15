@@ -44,8 +44,8 @@ public class BestXMarketOrderBuilder extends MarketOrderBuilder {
 	
 	public BestXMarketOrderBuilder() {
 	   super();
-	   //super("Default");
-	}
+	   this.type = BuilderType.DEFAULT;
+	   }
 
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(BestXMarketOrderBuilder.class);
@@ -72,12 +72,13 @@ public class BestXMarketOrderBuilder extends MarketOrderBuilder {
 			marketOrder.setMarket(marketOrderProposal.getMarket());
 			Money limitPrice = this.targetPriceCalculator.calculateTargetPrice(operation);
 			marketOrder.setLimit(limitPrice != null ? limitPrice : marketOrderProposal.getPrice());
-			String cleanMarketName = marketOrder.getMarket().getName().indexOf("_HIST") >= 0
-					? marketOrder.getMarket().getName().substring(0, marketOrder.getMarket().getName().indexOf("_HIST"))
-					: marketOrder.getMarket().getName(); // TODO Probably use effective market?
+			marketOrder.setLimitMonitorPrice(marketOrder.getLimit());
 			
-			LOGGER.info("Order={}, Selecting for execution market: {}, and price {}", operation.getOrder().getFixOrderId(),
-					cleanMarketName, marketOrder.getLimit() == null ? "null" :  marketOrder.getLimit().getAmount());
+			LOGGER.info("Order={}, Selecting for execution market: {}, calculated target price {} and original order price {}",
+					operation.getOrder().getFixOrderId(),
+					marketOrder.getMarket().getEffectiveMarket().getName(),
+					marketOrder.getLimit() == null ? "null" :  marketOrder.getLimit().getAmount(),
+					operation.getOrder().getLimit() == null ? "null" : operation.getOrder().getLimit().getAmount());
 			marketOrder.setBuilder(this);
 		}
 		

@@ -27,9 +27,9 @@ import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.MifidConfig;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationIdType;
+import it.softsolutions.bestx.OrderHelper;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
 import it.softsolutions.bestx.bestexec.BookClassifier;
-import it.softsolutions.bestx.connections.MarketConnection;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.handlers.ExecutionReportHelper;
 import it.softsolutions.bestx.model.Attempt;
@@ -51,11 +51,8 @@ import it.softsolutions.bestx.states.OrderNotExecutableState;
 import it.softsolutions.bestx.states.SendAutoNotExecutionReportState;
 import it.softsolutions.bestx.states.WaitingPriceState;
 import it.softsolutions.bestx.states.WarningState;
-import it.softsolutions.bestx.states.bloomberg.BBG_RejectedState;
 import it.softsolutions.bestx.states.bloomberg.BBG_StartExecutionState;
-import it.softsolutions.bestx.states.marketaxess.MA_RejectedState;
 import it.softsolutions.bestx.states.marketaxess.MA_StartExecutionState;
-import it.softsolutions.bestx.states.tradeweb.TW_RejectedState;
 import it.softsolutions.bestx.states.tradeweb.TW_StartExecutionState;
 
 /**  
@@ -138,7 +135,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	}
 
 	@Override
-	public abstract void manageAutomaticUnexecution(Order order, Customer customer) throws BestXException;
+	public abstract void manageAutomaticUnexecution(Order order, Customer customer, String message) throws BestXException;
 
 	/**
 	 * The starting of an order execution has been centralized in this method.
@@ -240,7 +237,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 		if(BondTypesService.isUST(operation.getOrder().getInstrument()) 
 						&& currentAttempt.getMarketOrder().getMarket().getMarketCode() == MarketCode.TW) { // have got a rejection on the single attempt on TW
 			Order order= operation.getOrder();
-			manageAutomaticUnexecution(order, order.getCustomer());
+			manageAutomaticUnexecution(order, order.getCustomer(), "Fallback: ");
 			return;
 		}
 		
@@ -336,6 +333,7 @@ public abstract class CSExecutionStrategyService implements ExecutionStrategySer
 	    case LimitFile:
 	        //Update the BestAndLimitDelta field on the TabHistoryOrdini table
 	        Order order = this.operation.getOrder();
+           OrderHelper.setOrderBestPriceDeviationFromLimit(operation);
 	        OperationStateAuditDAOProvider.getOperationStateAuditDao().updateOrderBestAndLimitDelta(order, order.getBestPriceDeviationFromLimit());
 //	    	if(operation.isNotAutoExecute())
 //	    		this.operation.setStateResilient(new CurandoState(Messages.getString("LimitFile.doNotExecute")), ErrorState.class);

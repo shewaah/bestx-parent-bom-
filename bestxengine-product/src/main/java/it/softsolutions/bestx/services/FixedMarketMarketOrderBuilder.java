@@ -12,7 +12,7 @@ public class FixedMarketMarketOrderBuilder extends MarketOrderBuilder {
 	
 	public FixedMarketMarketOrderBuilder() {
       super();
-//		super("Default");
+      this.type = BuilderType.STANDARD;
 	}
 
 	private MarketFinder marketFinder;
@@ -31,6 +31,8 @@ public class FixedMarketMarketOrderBuilder extends MarketOrderBuilder {
 		marketOrder.setLimit(limitPrice != null ? limitPrice : operation.getOrder().getLimit());
 		marketOrder.setBuilder(this);
 
+		marketOrder.setLimitMonitorPrice(marketOrder.getLimit());
+		
 		listener.onMarketOrderBuilt(this, marketOrder);
 	}
 

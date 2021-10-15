@@ -24,14 +24,14 @@ import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.MifidConfig;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
-import it.softsolutions.bestx.OrderHelper;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
+import it.softsolutions.bestx.bestexec.MarketOrderBuilder.BuilderType;
+import it.softsolutions.bestx.handlers.WaitingPriceEventHandler;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal.ProposalSubState;
 import it.softsolutions.bestx.model.SortedBook;
-import it.softsolutions.bestx.services.OperationStateAuditDAOProvider;
 import it.softsolutions.bestx.services.instrument.BondTypesService;
 import it.softsolutions.bestx.services.price.PriceResult;
 
@@ -53,7 +53,7 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 	}
 
 	@Override
-	public void manageAutomaticUnexecution(Order order, Customer customer) throws BestXException {
+	public void manageAutomaticUnexecution(Order order, Customer customer, String message) throws BestXException {
 		if (order == null) {
 			throw new IllegalArgumentException("order is null");
 		}
@@ -66,7 +66,7 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 				&& operation.getLastAttempt().getMarketOrder() != null
 				&& operation.getLastAttempt().getMarketOrder().getMarket().getMarketCode() == MarketCode.TW) {
 			// have got a rejection on the single attempt on TW
-			onUnexecutionResult(Result.USSingleAttemptNotExecuted, Messages.getString("UnexecutionReason.0"));
+			onUnexecutionResult(Result.USSingleAttemptNotExecuted, message + Messages.getString("UnexecutionReason.0"));
 			return;
 		}
 		// when there are no markets available, the execution service is called with a
@@ -78,9 +78,9 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 				// that failed.
 				// The customer asked to not retry anymore in such a situation and reject back
 				// to OMS the order.
-				onUnexecutionResult(Result.Success, Messages.getString("WaitingPrices.0"));
+				onUnexecutionResult(Result.Success, message + Messages.getString("WaitingPrices.0"));
 			} else {
-				onUnexecutionResult(Result.LimitFileNoPrice, Messages.getString("LimitFile.NoPrices"));
+				onUnexecutionResult(Result.LimitFileNoPrice, message + WaitingPriceEventHandler.defaultStrategyName + Messages.getString("LimitFile.NoPrices"));
 			}
 		} else {
 			// if the sorted book contains at least one proposal in substate NONE, it means
@@ -92,6 +92,7 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 			// is null
 			List<ProposalSubState> wantedSubStates = new ArrayList<ProposalSubState>(1);
 			wantedSubStates.add(ProposalSubState.NONE);
+         wantedSubStates.add(ProposalSubState.MARKET_TRIED);
 			wantedSubStates.add(ProposalSubState.PRICE_WORST_THAN_LIMIT);
 			SortedBook sortedBook = priceResult.getSortedBook();
 			boolean emptyBook = sortedBook == null
@@ -99,15 +100,21 @@ public class CSLimitFileExecutionStrategyService extends CSExecutionStrategyServ
 
 			if (emptyBook) {
 				this.operation.getLastAttempt().setSortedBook(sortedBook);
-				onUnexecutionResult(Result.LimitFileNoPrice, Messages.getString("LimitFile.NoPrices"));
+				onUnexecutionResult(Result.LimitFileNoPrice, message + Messages.getString("LimitFile.NoPrices"));
 			} else {
 				// time to update the delta between the order limit price and the best proposal
 				// one
 
-				OrderHelper.setOrderBestPriceDeviationFromLimit(operation);
-				OperationStateAuditDAOProvider.getOperationStateAuditDao().updateOrderBestAndLimitDelta(order,
-						order.getBestPriceDeviationFromLimit());
-				onUnexecutionResult(Result.LimitFile, Messages.getString("LimitFile"));
+		      if (operation.getLastAttempt().getMarketOrder() != null && 
+			         operation.getLastAttempt().getMarketOrder().getBuilderType() == BuilderType.CUSTOM) {
+	            onUnexecutionResult(Result.LimitFile, message + Messages.getString("LimitFile.Rest", 
+                     (operation.getLastAttempt().getMarketOrder().getLimit() != null ? operation.getLastAttempt().getMarketOrder().getLimit().getAmount() : "NA"),
+	                  (operation.getLastAttempt().getMarketOrder().getLimitMonitorPrice() != null ? operation.getLastAttempt().getMarketOrder().getLimitMonitorPrice().getAmount() : "NA"),
+	                  operation.getOrder().getLimit().getAmount(),
+                     ExecutionStrategyServiceFactory.getInstance().getCentsLFTolerance()));
+			   } else {
+               onUnexecutionResult(Result.LimitFile, message + Messages.getString("LimitFile"));
+			   }
 			}
 
 		}

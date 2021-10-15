@@ -648,7 +648,7 @@
         <property name="tsoxTechnicalRejectReasons"><value>${Bloomberg.Tsox.technical_reject_reasons}</value></property>
         <property name="orderCancelDelay"><value>${orderCancel.timeout}</value></property>
         <property name="bestXConfigurationDao"><ref bean="sqlBestXConfigurationDao"></ref></property>
-        <property name="priceDiscoveryConnection"><ref bean="mqPriceDiscoveryOperatorConsoleAdapter"></ref></property>
+        <property name="priceDiscoveryConnection"><ref bean="ib4jOperatorConsoleAdapter"></ref></property>
         <property name="priceDiscoveryCustomerId"><value>${PriceDiscovery.Customer}</value></property>
         <property name="bookDepth"><value>${PriceDiscovery.BookDepth}</value></property>
         <property name="orderBookDepth"><value>${PriceDiscovery.OrderBookDepth}</value></property>
@@ -775,7 +775,7 @@
 	<!-- REGISTRY FOR CONNECTORS -->
 	<bean id="connectionRegistry" class="it.softsolutions.bestx.connections.CSConnectionRegistry">
         <property name="customerConnection"><ref bean="oms1CustomerAdapter"/></property>
-        <property name="mqPriceDiscoveryConnection"><ref bean="mqPriceDiscoveryOperatorConsoleAdapter"/></property>
+        <property name="mqPriceDiscoveryConnection"><ref bean="ib4jOperatorConsoleAdapter"/></property>
         <property name="grdLiteConnection"><ref bean="grdLiteService"/></property>
 	</bean>
 
@@ -1281,6 +1281,7 @@
 	<bean id="hibernateUserModelDao" class="it.softsolutions.bestx.dao.hibernate.HibernateUserModelDao">
         <property name="sessionFactory"><ref bean="sessionFactory"></ref></property>
 	</bean>
+    <!--
 
     <bean id="mqPriceDiscoveryOperatorConsoleAdapter" class="it.softsolutions.bestx.connections.MQPriceDiscoveryOperatorConsoleAdapter" init-method="init">
         <property name="operationRegistry"><ref bean="defaultOperationRegistry"></ref></property>
@@ -1290,7 +1291,7 @@
         <property name="executor"><ref bean="threadPoolMQPriceDiscoveryAdapter"></ref></property>
         <property name="customService"><ref bean="grdLiteService"></ref></property>
 	</bean>
-
+-->
     <bean id="ordersEndOfDayService" class="it.softsolutions.bestx.services.CSOrdersEndOfDayService" init-method="init">
         <property name="executor"><ref bean="threadPoolOMS1"></ref></property>
         <property name="operationStateAuditDao"><ref bean="sqlOperationStateAuditDao"></ref></property>

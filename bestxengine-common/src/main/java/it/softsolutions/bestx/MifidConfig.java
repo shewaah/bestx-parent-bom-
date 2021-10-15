@@ -31,8 +31,20 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 * Creation date: 22/ago/2012 
 * 
 **/
-public class MifidConfig {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MifidConfig.class);
+public class MifidConfig implements MifidConfigMBean {
+    public void setNumRetry(int numRetry) {
+		this.numRetry = numRetry;
+	}
+
+	public void setQtyLimit(BigDecimal qtyLimit) {
+		this.qtyLimit = qtyLimit;
+	}
+
+	public void setQtyInternal(BigDecimal qtyInternal) {
+		this.qtyInternal = qtyInternal;
+	}
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(MifidConfig.class);
 
     private static final String sqlSelect = "SELECT * from MifidConfig";
 
@@ -73,14 +85,16 @@ public class MifidConfig {
     /**
      * @return the numRetry
      */
-    public int getNumRetry() {
+    @Override
+	public int getNumRetry() {
         return numRetry;
     }
 
     /**
      * @return the qtyLimit
      */
-    public BigDecimal getQtyLimit() {
+    @Override
+	public BigDecimal getQtyLimit() {
         return qtyLimit;
     }
 
@@ -108,7 +122,8 @@ public class MifidConfig {
     /**
      * @return the qtyInternal
      */
-    public BigDecimal getQtyInternal() {
+    @Override
+	public BigDecimal getQtyInternal() {
         return qtyInternal;
     }
 }

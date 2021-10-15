@@ -68,6 +68,7 @@ import it.softsolutions.bestx.exceptions.ObjectNotInitializedException;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.finders.MarketMakerFinder;
 import it.softsolutions.bestx.finders.VenueFinder;
+import it.softsolutions.bestx.handlers.WaitingPriceEventHandler;
 import it.softsolutions.bestx.jmx.JMXNotifier;
 import it.softsolutions.bestx.management.PriceServiceMBean;
 import it.softsolutions.bestx.model.Attempt;
@@ -370,7 +371,7 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 							Customer customer = operation.getOrder().getCustomer();
 							try {
 								ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, null);
-								csExecutionStrategyService.manageAutomaticUnexecution(plainRequest.order, customer);
+								csExecutionStrategyService.manageAutomaticUnexecution(plainRequest.order, customer, "");
 							} catch (BestXException be) {
 								LOGGER.error("Order {}, error while managing no market available situation {}", plainRequest.order.getFixOrderId(), e.getMessage(), e);
 								operation.removeLastAttempt();

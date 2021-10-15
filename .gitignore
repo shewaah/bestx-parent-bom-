@@ -3,6 +3,8 @@
 **/.project
 **/.classpath
 **/.springBeans
+*.log
+*.gz
 /log/
 /bestxengine-cs/log/
 /bestx-sod-loader/log/

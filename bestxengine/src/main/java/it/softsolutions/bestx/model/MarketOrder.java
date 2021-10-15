@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
+import it.softsolutions.bestx.bestexec.MarketOrderBuilder.BuilderType;
 import it.softsolutions.jsscommon.Money;
 
 /**
@@ -174,8 +175,10 @@ public class MarketOrder extends Order {
         builder.append(this.marketMarketMaker);
         builder.append(", marketSessionId=");
         builder.append(this.marketSessionId);
+        builder.append(", limitPrice=");
+        builder.append(this.limit == null ? null : this.limit.getAmount());
         builder.append(", limitMonitorPrice=");
-        builder.append(this.limitMonitorPrice);
+        builder.append(this.limitMonitorPrice == null ? null : this.limitMonitorPrice.getAmount());
         builder.append("TransactTime=");
         builder.append(this.getTransactTime());
         builder.append(", isInternal=");
@@ -223,6 +226,9 @@ public class MarketOrder extends Order {
 	public void setBuilder(MarketOrderBuilder builder) {
 		this.builder = builder;
 	}
-
+	
+	public MarketOrderBuilder.BuilderType getBuilderType() {
+		return this.builder == null ? MarketOrderBuilder.BuilderType.NONE : this.builder.getType();
+	}
     
 }

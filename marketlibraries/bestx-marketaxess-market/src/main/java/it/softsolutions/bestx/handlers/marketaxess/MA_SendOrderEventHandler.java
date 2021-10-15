@@ -422,9 +422,12 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
     * @return true iff the competitiveStatus is one of the recognised strings
     */
    private boolean convertState(ExecutablePrice proposal, CompetitiveStatus competitiveStatus) {
-      if (competitiveStatus.getValue().startsWith("Done-"))
+      if (competitiveStatus.getValue().startsWith("Done-") && !"Done-Amended".equals(competitiveStatus.getValue())) {
          proposal.setAuditQuoteState("Done");
-      else proposal.setAuditQuoteState(competitiveStatus.getValue());
+      } else {
+         proposal.setAuditQuoteState(competitiveStatus.getValue());
+      }
+      
       switch (proposal.getAuditQuoteState()) {
          case "Done":
          case "Covered":
@@ -435,37 +438,49 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
             proposal.setProposalState(ProposalState.NEW);
             proposal.setProposalSubState(ProposalSubState.NONE);
             return true;
+         case "Done-Amended":
+            proposal.setAuditQuoteState("Done-Amended");
+            proposal.setProposalState(ProposalState.NEW);
+            proposal.setProposalSubState(ProposalSubState.NONE);
+            return true;
          case "Order Accepted": // suspecting this is for dealer only
          case "Resp Req": //suspecting this is for dealer only
             proposal.setAuditQuoteState("Done");
             proposal.setProposalState(ProposalState.NEW);
             proposal.setProposalSubState(ProposalSubState.NONE);
             return true;
+         case "Tied-for-Best":
+            proposal.setAuditQuoteState("Tied for Best");
+            proposal.setProposalState(ProposalState.NEW);
+            proposal.setProposalSubState(ProposalSubState.NONE);
+            return true;
+         case "Tied For Cover":
          case "Tied for Cover":
+         case "Tied-For-Cover":
             proposal.setAuditQuoteState("Tied-For-Cover");
             proposal.setProposalState(ProposalState.NEW);
             proposal.setProposalSubState(ProposalSubState.NONE);
             return true;
          case "EXP-DNQ":
          case "DNT":
-            proposal.setAuditQuoteState("EXP-DNQ");
             proposal.setProposalState(ProposalState.REJECTED);
             proposal.setProposalSubState(ProposalSubState.NOT_TRADING);
             return true;
-         case "Client CXL":
          case "Timed Out":
          case "Timed Out (R)":
             proposal.setAuditQuoteState("Timed Out");
             proposal.setProposalState(ProposalState.REJECTED);
             proposal.setProposalSubState(ProposalSubState.NOT_TRADING);
             return true;
+         case "Client CXL":
          case "Passed":
-            // do not change audit status, since it is acceptable value
+            proposal.setAuditQuoteState("Passed");
             proposal.setProposalState(ProposalState.REJECTED);
             proposal.setProposalSubState(ProposalSubState.REJECTED_BY_DEALER);
             return true;
          case "Withdrawn":
          case "Cancelled":
+         case "Dlr CXL":
             proposal.setAuditQuoteState("Cancelled");
             proposal.setProposalState(ProposalState.REJECTED);
             proposal.setProposalSubState(ProposalSubState.REJECTED_BY_DEALER);
@@ -473,7 +488,6 @@ public class MA_SendOrderEventHandler extends BaseOperationEventHandler {
          case "Cxl-Amended":
          case "You CXL":
          default:
-            proposal.setAuditQuoteState("Cancelled");
             proposal.setProposalState(ProposalState.DROPPED);
             proposal.setProposalSubState(ProposalSubState.NOT_TRADING);
             return false;

@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import it.softsolutions.bestx.Operation;
+import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
 import it.softsolutions.bestx.bestexec.MarketOrderFilter;
-import it.softsolutions.bestx.executionflow.MarketOrderNextAction;
 import it.softsolutions.bestx.executionflow.RejectOrderAction;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.MarketOrder;
@@ -16,9 +16,12 @@ public class RepeatedMarketOrderFilter implements MarketOrderFilter {
 
 	@Override
 	public void filterMarketOrder(MarketOrder order, Operation operation) {
+		Attempt currentAttempt = operation.getLastAttempt();
+		if(currentAttempt.getMarketOrder() != null && currentAttempt.getMarketOrder().getBuilderType() != MarketOrderBuilder.BuilderType.CUSTOM)
+			return;
 		if (order != null) {
-			List<Attempt> previousAttempts = new ArrayList<>(operation.getAttempts());
-			previousAttempts.remove(previousAttempts.size() - 1); // We do not need to take into account the last attempt
+		   //SP-20210928: getAttemptsInCurrentCycle discard the current attemp, no needed to discard it from the previousAttempts array
+			List<Attempt> previousAttempts = new ArrayList<>(operation.getAttemptsInCurrentCycle());
 			
 			for (Attempt attempt : previousAttempts) {
 				if (attempt.getMarketOrder() != null) {
@@ -27,13 +30,11 @@ public class RepeatedMarketOrderFilter implements MarketOrderFilter {
 					if (marketOrderToCheck.getLimit().equals(order.getLimit()) &&
 							marketOrderToCheck.getMarket().equals(order.getMarket()) &&
 							marketOrderToCheck.getDealers().equals(order.getDealers())) {
-						MarketOrderNextAction nextAction = new RejectOrderAction(this.rejectMessage);
-						operation.getLastAttempt().setNextAction(nextAction);
+						operation.getLastAttempt().setNextAction(new RejectOrderAction(this.rejectMessage));
 					}
 					
 				}
 			}
 		}
 	}
-
 }

@@ -955,6 +955,10 @@ public class BloombergMarket extends MarketCommon implements TradeStacPreTradeCo
 	public int getActiveTimersNum() {
 		return 0;
 	}
+	
+   public Market getMarket() {
+      return market;
+   }
 
 	@Override
 	public void timerExpired(String jobName, String groupName) {

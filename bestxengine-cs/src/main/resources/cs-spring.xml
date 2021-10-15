@@ -74,6 +74,7 @@
 		<property name="beans">
 			<map>
                 <entry key="it.softsolutions.bestx.cs:name=ApplicationControl" value-ref="applicationController" />
+                <entry key="it.softsolutions.bestx.cs:name=MifidConfig" value-ref="mifidConfig" />
                 <entry key="it.softsolutions.bestx.cs:name=AutomaticCurandoStatus" value-ref="autoCurandoStatusManager" />
                 <entry key="it.softsolutions.bestx.cs:name=Oms1FixCustomerConnection" value-ref="oms1CustomerAdapter" />
 				<entry key="it.softsolutions.bestx.cs:name=TradewebMarketConnection" value-ref="tradewebMarket" />
@@ -114,6 +115,7 @@
 				<property name="interfaceMappings">
 					<props>
 						<prop key="it.softsolutions.bestx.cs:name=ApplicationControl">it.softsolutions.bestx.management.EngineControllerMBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=MifidConfig">it.softsolutions.bestx.MifidConfigMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=AutomaticCurandoStatus">it.softsolutions.bestx.management.AutoCurandoStatusMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=Oms1FixCustomerConnection">it.softsolutions.bestx.management.FixCustomerAdapterMBean</prop>
 <!-- 						<prop key="it.softsolutions.bestx.cs:name=Oms2FixCustomerConnection">it.softsolutions.bestx.management.FixCustomerAdapterMBean</prop> -->
@@ -681,7 +683,8 @@
 				<bean class="it.softsolutions.bestx.services.BookDepthOrderFilter">
 					<property name="bookDepthValidator" ref="bookDepthValidator" />
 				</bean>
-				<bean class="it.softsolutions.bestx.services.TargetPriceMarketOrderFilter" />
+				<bean class="it.softsolutions.bestx.services.CSLimitMonitorPriceMarketOrderFilter" />
+				<bean class="it.softsolutions.bestx.services.OrderLimitPriceMarketOrderFilter" />
 				<bean class="it.softsolutions.bestx.services.AutoExecutionStatusOrderFilter">
 					<property name="autoCurandoStatus" ref="autoCurandoStatusManager" />
 				</bean>
@@ -1005,6 +1008,7 @@
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnavailableVenueProposalClassifier" />
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroProposalClassifier">
                 	<property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
+       				<property name="acceptableStatesList" value="${DiscardZeroProposalClassifier.acceptableStatesList:Passed,Timed Out,DNT,Rejected}" />
                 </bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardOldProposalClassifier">
                     <property name="configValue" value="${ProposalClassifiers.discard.limitHours}" />
@@ -1012,6 +1016,7 @@
 				</bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardWorstPriceProposalClassifier" />
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardMarketTriedInEarlierAttemptProposalClassifier"/>
+                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardMarketNotExecutingProposalClassifier"/>
 			</list>
 		</property>
 		<property name="bookClassifierList">
@@ -1033,6 +1038,7 @@
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnavailableVenueProposalClassifier"></bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroProposalClassifier">
                 	<property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
+       				<property name="acceptableStatesList" value="${DiscardZeroProposalClassifier.acceptableStatesList:Passed,Timed Out,DNT,Rejected}" />
                 </bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardOldProposalClassifier">
                     <property name="configValue"><value>${ProposalClassifiers.discard.limitHours}</value></property>
@@ -1330,9 +1336,9 @@
 		</property>
         <property name="customService"><ref bean="grdLiteService"></ref></property>
 	</bean>
-	
+
     <bean id="mqPriceDiscoveryOperatorConsoleAdapter" class="it.softsolutions.bestx.connections.MQPriceDiscoveryOperatorConsoleAdapter" init-method="init">
-		<!-- TECHNICAL PARAMETERS -->
+		<!-- TECHNICAL PARAMETERS --> 
         <property name="operationRegistry"><ref bean="defaultOperationRegistry"></ref></property>
 		<property name="instrumentFinder"><ref bean="dbBasedInstrumentFinder"></ref></property>
 		<property name="sqlInstrumentDao"><ref bean="sqlInstrumentDao"></ref></property>

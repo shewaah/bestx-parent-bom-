@@ -452,44 +452,27 @@ public class MarketAxessHelper extends MarketPriceDiscoveryHelper {
 							}
 							String temp = dealer.getString(CompetitiveStatus.FIELD);
 							newDealer.set(new CompetitiveStatus(temp));
-							if (temp.equalsIgnoreCase("Passed") || temp.equalsIgnoreCase("Timed Out")) { // if
-																											// dealer
-																											// has
-																											// not
-																											// priced
-																											// something
-								newDealer.set(new DealerQuotePriceType(Integer.toString(PriceType.PERCENTAGE)));
-								newDealer.set(new DealerQuotePrice(0.0));
-								newDealer.set(new DealerQuoteOrdQty(0.0));
-								newDealer.set(new QuoteRank(dealer.getString(QuoteRank.FIELD)));
-								executionReport.addDealer(newDealer);
-								noPrices = false; // tells that there are prices
-													// - no EXP-DNQ... prices
-													// required
-							} else if ((temp.equalsIgnoreCase("EXP-DNQ") || temp.equalsIgnoreCase("Cancelled"))
-									&& noPrices) { // include only if there are
-													// no other prices
-								newDealer.set(new DealerQuotePriceType(Integer.toString(PriceType.PERCENTAGE)));
-								newDealer.set(new DealerQuotePrice(0.0));
-								newDealer.set(new DealerQuoteOrdQty(0.0));
-								newDealer.set(new QuoteRank(dealer.getString(QuoteRank.FIELD)));
-								executionReport.addDealer(newDealer);
+							
+                     if (temp.endsWith("Amended"))
+                        LOGGER.warn(
+                              "IMPORTANT! Received dealer quote with state {}. Please be sure this has been agreed with the dealer {}",
+                              temp, dealer.getString(DealerID.FIELD));
+							
+							if (dealer.isSetField(DealerQuotePriceType.FIELD)) {
+                        newDealer.set(new DealerQuotePriceType(dealer.getString(DealerQuotePriceType.FIELD)));
+                        newDealer.set(new DealerQuotePrice(dealer.getDouble(DealerQuotePrice.FIELD)));
+                        newDealer.set(new DealerQuoteOrdQty(dealer.getDouble(DealerQuoteOrdQty.FIELD)));
+                        if (!"1".equalsIgnoreCase(dealer.getString(DealerQuotePriceType.FIELD)) && dealer.isSetField(ReferencePrice.FIELD)) {
+                           newDealer.set(new ReferencePrice(dealer.getDouble(ReferencePrice.FIELD)));
+                        }
+                        newDealer.set(new QuoteRank(dealer.getString(QuoteRank.FIELD)));
 							} else {
-								if (temp.endsWith("Amended"))
-									LOGGER.warn(
-											"IMPORTANT! Received dealer quote with state {}. Please be sure this has been agreed with the dealer {}",
-											temp, dealer.getString(DealerID.FIELD));
-								newDealer.set(new DealerQuotePriceType(dealer.getString(DealerQuotePriceType.FIELD)));
-								newDealer.set(new DealerQuotePrice(dealer.getDouble(DealerQuotePrice.FIELD)));
-								newDealer.set(new DealerQuoteOrdQty(dealer.getDouble(DealerQuoteOrdQty.FIELD)));
-								if (!"1".equalsIgnoreCase(dealer.getString(DealerQuotePriceType.FIELD)))
-									newDealer.set(new ReferencePrice(dealer.getDouble(ReferencePrice.FIELD)));
-								newDealer.set(new QuoteRank(dealer.getString(QuoteRank.FIELD)));
-								executionReport.addDealer(newDealer);
-								noPrices = false; // tells that there are prices
-													// - no EXP-DNQ... prices
-													// required
+	                     newDealer.set(new DealerQuotePriceType(Integer.toString(PriceType.PERCENTAGE)));
+                        newDealer.set(new DealerQuotePrice(0.0));
+                        newDealer.set(new DealerQuoteOrdQty(0.0));
+                        newDealer.set(new QuoteRank(dealer.getString(QuoteRank.FIELD)));
 							}
+                     executionReport.addDealer(newDealer);
 						}
 					}
 				} catch (@SuppressWarnings("unused") FieldNotFound e) {
@@ -542,8 +525,8 @@ public class MarketAxessHelper extends MarketPriceDiscoveryHelper {
 			}
 			try {
 				BigDecimal px = new BigDecimal(Double.toString(tsExecutionReport.getDouble(AvgPx.FIELD)));
-				if (px.scale() > 10)
-				px = px.setScale(10, RoundingMode.HALF_UP);
+				if (px.scale() > 10) 
+					px = px.setScale(10, RoundingMode.HALF_UP);
 				executionReport.setAveragePrice(px);
 			} catch (@SuppressWarnings("unused") FieldNotFound e) {
 			}

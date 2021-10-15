@@ -190,18 +190,20 @@ public class CSBaseOperationEventHandler extends BaseOperationEventHandler {
 //				marketExecutionReport.setLastPx(executionReport.getPrice().getAmount());
 				executionReport.setSequenceId(Long.toString(executionReportId));
 				// if marketExecutionReport has a broker inside use it, else use the one in lastAttempt execution proposal
-		        if(marketExecutionReport.getMarketMaker() != null) {
-		        	executionReport.setExecBroker(marketExecutionReport.getMarketMaker().getCode());
-		        	executionReport.setCounterPart(marketExecutionReport.getMarketMaker().getCode());
-		        } else if(currentAttempt.getExecutionProposal() != null && currentAttempt.getExecutionProposal().getMarketMarketMaker() != null) {
-					marketExecutionReport.setExecBroker(operation.getLastAttempt().getExecutionProposal().getMarketMarketMaker().getMarketMaker().getCode());              
-					executionReport.setExecBroker(marketExecutionReport.getExecBroker());
-					executionReport.setCounterPart(marketExecutionReport.getExecBroker());
-		        } else {
-		        	LOGGER.error("Error while trying to generate Execution Report ID: unable to determine the execution broker");
-					operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("BaseMarketSendOrderError.0")), ErrorState.class);
-					return;
-		        }
+				if(marketExecutionReport.getOrdStatus() == OrdStatus.Filled.getFIXValue()) {
+					if(marketExecutionReport.getMarketMaker() != null) {
+			        	executionReport.setExecBroker(marketExecutionReport.getMarketMaker().getCode()); 
+			        	executionReport.setCounterPart(marketExecutionReport.getMarketMaker().getCode());
+			        } else if(currentAttempt.getExecutionProposal() != null && currentAttempt.getExecutionProposal().getMarketMarketMaker() != null) {
+						marketExecutionReport.setExecBroker(operation.getLastAttempt().getExecutionProposal().getMarketMarketMaker().getMarketMaker().getCode());              
+						executionReport.setExecBroker(marketExecutionReport.getExecBroker());
+						executionReport.setCounterPart(marketExecutionReport.getExecBroker());
+			        } else {
+			        	LOGGER.error("Error while trying to generate Execution Report ID: unable to determine the execution broker");
+						operation.setStateResilient(new WarningState(operation.getState(), null, Messages.getString("BaseMarketSendOrderError.0")), ErrorState.class);
+						return;
+			        }
+				}
 				executionReport.setMarketOrderID(marketExecutionReport.getMarketOrderID());
 	
 				if(marketExecutionReport.getOrdStatus() == OrdStatus.Filled.getFIXValue()) {

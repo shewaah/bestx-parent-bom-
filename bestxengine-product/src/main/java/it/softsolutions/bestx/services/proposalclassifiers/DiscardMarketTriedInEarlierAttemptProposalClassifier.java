@@ -54,18 +54,23 @@ public class DiscardMarketTriedInEarlierAttemptProposalClassifier implements Pro
 					List<MarketExecutionReport> execReports = a.getMarketExecutionReports();
 					// The earlier attempt has a market execution report stating that a technical or business failure prevented
 					// fill
-					if (execReports != null && execReports.size() != 0) {
+					if (execReports != null && !execReports.isEmpty()) {
 						LOGGER.debug("Order {}, check the execution reports", order.getFixOrderId());
 						proposal.setProposalState(Proposal.ProposalState.ACCEPTABLE);
+						proposal.setProposalSubState(Proposal.ProposalSubState.MARKET_TRIED);
 						proposal.setReason(Messages.getString("DiscardMarketTriedInEarlierAttemptProposalClassifier.0"));
-					} else {
-						// there are no market execution reports at all
-						LOGGER.debug("Order {}, no execution reports, check the if the market allows to reuse prices.", order.getFixOrderId());
-						if (proposal.getMarket() != null && a.getMarketOrder().getMarket().getEffectiveMarket().equals(proposal.getMarket().getEffectiveMarket()) && !proposal.getMarket().getEffectiveMarket().isReusePrices()) {
-							proposal.setProposalState(Proposal.ProposalState.ACCEPTABLE);
-							proposal.setReason(Messages.getString("DiscardMarketTriedInEarlierAttemptProposalClassifier.0"));
-						}
 					}
+					// AMC 202109014 removed because no execution reports means no execution attempt
+					//Replaced by the New Proposal classifier to discard prices when a market cannot execute because of a technical reason
+//					else {
+//						// there are no market execution reports at all, no execution attempt
+//						LOGGER.debug("Order {}, no execution reports, check the if the market allows to reuse prices.", order.getFixOrderId());
+//						if (proposal.getMarket() != null && a.getMarketOrder().getMarket().getEffectiveMarket().equals(proposal.getMarket().getEffectiveMarket()) && !proposal.getMarket().getEffectiveMarket().isReusePrices()) {
+//							proposal.setProposalState(Proposal.ProposalState.ACCEPTABLE);
+//							proposal.setProposalSubState(Proposal.ProposalSubState.MARKET_TRIED);
+//							proposal.setReason(Messages.getString("DiscardMarketTriedInEarlierAttemptProposalClassifier.0"));
+//						}
+//					}
 				}
 			}
 		}

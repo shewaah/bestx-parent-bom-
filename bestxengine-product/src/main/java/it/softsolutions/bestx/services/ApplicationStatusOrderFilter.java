@@ -7,11 +7,12 @@ import java.util.List;
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.appstatus.ApplicationStatus;
+import it.softsolutions.bestx.bestexec.MarketOrderBuilder.BuilderType;
 import it.softsolutions.bestx.bestexec.MarketOrderFilter;
 import it.softsolutions.bestx.executionflow.ExecutionInMarketAction;
 import it.softsolutions.bestx.executionflow.FreezeOrderAction;
-import it.softsolutions.bestx.executionflow.RejectOrderAction;
 import it.softsolutions.bestx.executionflow.FreezeOrderAction.NextPanel;
+import it.softsolutions.bestx.executionflow.RejectOrderAction;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Proposal.ProposalSubState;
@@ -42,7 +43,15 @@ public class ApplicationStatusOrderFilter implements MarketOrderFilter {
 						BigDecimal differenceAbs = targetPrice.subtract(limitPrice).abs();
 						BigDecimal differenceCents = differenceAbs.multiply(new BigDecimal(100));
 						if (differenceCents.compareTo(new BigDecimal(centsLFTolerance)) > 0) { // Price is NOT inside tolerance
-							operation.getLastAttempt().setNextAction(new FreezeOrderAction(NextPanel.LIMIT_FILE, Messages.getString("LimitFile"), true));
+						   if (marketOrder.getBuilderType() == BuilderType.CUSTOM) {
+	                     operation.getLastAttempt().setNextAction(new FreezeOrderAction(NextPanel.LIMIT_FILE, Messages.getString("LimitFile.Rest", 
+	                           (operation.getLastAttempt().getMarketOrder().getLimit() != null ? operation.getLastAttempt().getMarketOrder().getLimit().getAmount() : "NA"),
+                              (operation.getLastAttempt().getMarketOrder().getLimitMonitorPrice() != null ? operation.getLastAttempt().getMarketOrder().getLimitMonitorPrice().getAmount() : "NA"),
+                              operation.getOrder().getLimit().getAmount(),
+                              ExecutionStrategyServiceFactory.getInstance().getCentsLFTolerance()), true));
+			            } else {
+	                     operation.getLastAttempt().setNextAction(new FreezeOrderAction(NextPanel.LIMIT_FILE, Messages.getString("LimitFile"), true));
+			            }
 						} else {
 							operation.getLastAttempt().setNextAction(new RejectOrderAction(Messages.getString("Monitor.RejectMessage", worsePriceBook.get(0).getMarket().getMicCode()), true));
 						}

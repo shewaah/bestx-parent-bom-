@@ -40,6 +40,9 @@ import it.softsolutions.bestx.model.Venue;
  **/
 public class DiscardZeroProposalClassifier extends BaseMarketMakerClassifier implements ProposalClassifier {
 
+   private String acceptableStatesList;
+   
+   
    @Override
    public ClassifiedProposal getClassifiedProposal(ClassifiedProposal proposal, Order order, List<Attempt> previousAttempts, Set<Venue> venues, ClassifiedBook book) {
       if (!isCompositePriceMarketMaker(proposal) && proposal.getQty().compareTo(BigDecimal.ZERO) < 0) {
@@ -49,13 +52,23 @@ public class DiscardZeroProposalClassifier extends BaseMarketMakerClassifier imp
       }
       else if (!isCompositePriceMarketMaker(proposal)
             && (proposal.getQty().compareTo(BigDecimal.ZERO) == 0 || (proposal.getMarket().getMarketCode() == MarketCode.BLOOMBERG && proposal.getQty().compareTo(BigDecimal.ONE) <= 0))) {
-               proposal.setProposalState(Proposal.ProposalState.REJECTED);
+               
+               if (proposal.getMarket() != null && proposal.getMarket().isHistoric() && acceptableStatesList.indexOf(proposal.getAuditQuoteState()) >= 0) {
+                  proposal.setProposalState(Proposal.ProposalState.ACCEPTABLE);
+               } else {
+                  proposal.setProposalState(Proposal.ProposalState.REJECTED);
+               }
                proposal.setProposalSubState(ProposalSubState.ZERO_QUANTITY);
                proposal.setReason(Messages.getString("DiscardZeroProposalClassifier.1"));
             }
       else if (proposal.getPrice().getAmount().compareTo(BigDecimal.ZERO) == 0
             || (proposal.getMarket().getMarketCode() == MarketCode.BLOOMBERG && proposal.getPrice().getAmount().compareTo(BigDecimal.ONE) <= 0)) {
-               proposal.setProposalState(Proposal.ProposalState.REJECTED);
+        
+               if (proposal.getMarket() != null && proposal.getMarket().isHistoric() && acceptableStatesList.indexOf(proposal.getAuditQuoteState()) >= 0) {
+                  proposal.setProposalState(Proposal.ProposalState.ACCEPTABLE);
+               } else {
+                  proposal.setProposalState(Proposal.ProposalState.REJECTED);
+               }
                proposal.setProposalSubState(ProposalSubState.PRICE_NOT_VALID);
                proposal.setReason(Messages.getString("DiscardZeroProposalClassifier.0"));
             }
@@ -71,4 +84,12 @@ public class DiscardZeroProposalClassifier extends BaseMarketMakerClassifier imp
 	public ClassifiedProposal getClassifiedProposal(ClassifiedProposal proposal, Order order, List<Attempt> previousAttempts, Set<Venue> venues) {
 		throw new UnsupportedOperationException();
 	}
+
+   public String getAcceptableStatesList() {
+      return acceptableStatesList;
+   }
+   
+   public void setAcceptableStatesList(String acceptableStatesList) {
+      this.acceptableStatesList = acceptableStatesList;
+   }
 }

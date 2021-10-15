@@ -54,7 +54,7 @@ public class Proposal implements Cloneable, Comparable<Proposal> {
      * The Enum ProposalState.
      */
     public static enum ProposalState {
-        NEW, VALID, EXPIRED, REJECTED, DROPPED, ACCEPTABLE  // order is important: Enum.compareTo returns state with higher priority as higher    
+        NEW, VALID, EXPIRED, ACCEPTABLE, REJECTED, DROPPED  // order is important: Enum.compareTo returns state with higher priority as higher    
    }
 
     /**
@@ -73,14 +73,16 @@ public class Proposal implements Cloneable, Comparable<Proposal> {
         TOO_OLD, 
         NOT_TRADING, 
         PRICE_WORST_THAN_LIMIT,
-        OUTSIDE_SPREAD
+        OUTSIDE_SPREAD,
+        MARKET_TRIED
     }
     
     /**
      * The Enum ProposalType.
      */
     public static enum ProposalType { 
-        CLOSED, SET_TO_ZERO, INDICATIVE, SPREAD_ON_BEST, IOI, AXE, RESTRICTED_TRADEABLE, TRADEABLE, COUNTER, COMPOSITE;
+    	 // Counter and tradeable shall remain as last in the enumerated
+        CLOSED, SET_TO_ZERO, INDICATIVE, SPREAD_ON_BEST, COMPOSITE, IOI, AXE, RESTRICTED_TRADEABLE, TRADEABLE, COUNTER;
     }
     
     public static enum PriceType {

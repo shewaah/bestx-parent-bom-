@@ -312,9 +312,18 @@ public class CSPOBexExecutionReport extends ExecutionReport {
 			return "Passed";
 		case "Cancelled":
 		case "Client CXL":
+		case "You CXL":
 			return "Cancelled";
-		default:
-			return "Expired";
+      case "Rejected":
+         return "Rejected";
+      case "Expired":
+         return "Expired";
+      case "Done Away": 
+         return "Done Away";
+      case "DNT":
+         return "DNT";
+      default:
+         return "Error";
 		}
 	}
 

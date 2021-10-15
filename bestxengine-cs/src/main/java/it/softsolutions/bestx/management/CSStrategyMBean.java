@@ -32,4 +32,7 @@ public interface CSStrategyMBean {
    void setLimitFileBestOutsideLimitThresholdPDIntervalInSeconds(long limitFileBestOutsideLimitThresholdPDIntervalInSeconds);
    long getLimitFileBestWithinLimitThresholdPDIntervalInSeconds();
    long getLimitFileBestOutsideLimitThresholdPDIntervalInSeconds();
+   int getPobExMaxSize();
+   void setPobExMaxSize(int pobExMaxSize);
+   
 }

@@ -69,7 +69,7 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 	
 	public CSMarketOrderBuilder() {
       super();
-//		super("Rest Service");
+      this.type = BuilderType.CUSTOM;
 	}
 
 	private ConsolidatedBookElement buildConsolidatedBookElement(BidAsk bidAsk, ClassifiedProposal proposal) {
@@ -155,14 +155,16 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 				}
 
 				if (errors.isEmpty()) {
-					Money limitPrice = new Money(operation.getOrder().getCurrency(),
+					Money limitPrice = null;
+					if (response.getData().getTargetPrice() != null) {
+						limitPrice = new Money(operation.getOrder().getCurrency(),
 							response.getData().getTargetPrice());
+					}
 					Money limitMonitorPrice = null;
 					if (response.getData().getLimitMonitorPrice() != null) {
 						limitMonitorPrice = new Money(operation.getOrder().getCurrency(),
 							response.getData().getLimitMonitorPrice());
 					}
-
 					marketOrder.setValues(operation.getOrder());
 					marketOrder.setTransactTime(DateService.newUTCDate());
 
@@ -191,9 +193,13 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 					marketOrder.setLimitMonitorPrice(limitMonitorPrice);
 			        marketOrder.setBuilder(this);
 
-					LOGGER.info("Order={}, Selecting for execution market market makers: {} and price {}. Excluding dealers {}",
-							operation.getOrder().getFixOrderId(), MarketOrder.beautifyListOfDealers(marketOrder.getDealers()),
+					LOGGER.info("Order={}, Selecting for execution market: {}, received target price {}, received limit monitor price {} and original order price {}. Including dealers {}. Excluding dealers {}",
+							operation.getOrder().getFixOrderId(),
+							marketOrder.getMarket().getEffectiveMarket().getName(),
 							limitPrice == null ? "null" : limitPrice.getAmount(),
+							limitMonitorPrice == null ? "null" : limitMonitorPrice.getAmount(),
+							operation.getOrder().getLimit() == null ? "null" : operation.getOrder().getLimit().getAmount(),
+							MarketOrder.beautifyListOfDealers(marketOrder.getDealers()),
 							MarketOrder.beautifyListOfDealers(marketOrder.getExcludeDealers()));
 					listener.onMarketOrderBuilt(this, marketOrder);
 				} else {

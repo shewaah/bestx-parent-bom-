@@ -46,6 +46,7 @@ import it.softsolutions.bestx.exceptions.SaveBookException;
 import it.softsolutions.bestx.finders.CustomerFinder;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.handlers.LimitFileHelper;
+import it.softsolutions.bestx.handlers.WaitingPriceEventHandler;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.CSPOBexExecutionReport;
 import it.softsolutions.bestx.model.Customer;
@@ -59,6 +60,7 @@ import it.softsolutions.bestx.model.MarketOrder;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.ServiceStatus;
 import it.softsolutions.bestx.services.DateService;
+import it.softsolutions.bestx.services.FallbackMarketOrderBuilder;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.ManualManageState;
 import it.softsolutions.bestx.states.RejectedState;
@@ -278,7 +280,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         //remove the prefix, here it is not needed
         String cleanComment = LimitFileHelper.getInstance().removePrefix(comment);
         if (comment != null) {
-            LOGGER.info("[INT-TRACE] operationID={}, audit comment: {}", operation.getId(), cleanComment);
+            LOGGER.info("[INT-TRACE] orderId={}, operationID={}, audit comment: {}", operation.getOrder().getFixOrderId(), operation.getId(), cleanComment);
         }
         
         //NO MORE if the order is a limit file we must update the already existing comment (there could have been one when we received the order from OTEX)
@@ -703,6 +705,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
         // In queste chiamate potrebbe non esserci sempre tutta la catena (potremmo avere NullPointerException)
         String proposalMarketMaker = getProposalMarketMakerCode(operation.getLastAttempt());
         String orderMarketMaker = getMarketOrderMarketMakerCode(operation.getLastAttempt());
+        String builderName = getMarketOrderBuilderName(operation.getLastAttempt());
         String includeDealers = getMarketOrderIncludeDealers(operation.getLastAttempt());
         String excludeDealers = getMarketOrderExcludeDealers(operation.getLastAttempt());
         String orderPrice = getMarketOrderPrice(operation.getLastAttempt());
@@ -858,7 +861,7 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
             case BLOOMBERG:
             case TW:
             case MARKETAXESS: {
-                Object[] params = { includeDealers, excludeDealers, orderPrice, orderSize};
+                Object[] params = { builderName, includeDealers, excludeDealers, orderPrice, orderSize};
                 comment = getComment(marketCode, type, comment, params);
             }
             break;
@@ -909,6 +912,14 @@ public class CSOperationStateAudit implements OperationStateListener, MarketExec
     	return null;
     }
     
+    private String getMarketOrderBuilderName(Attempt lastAttempt) {
+    	if(lastAttempt != null && lastAttempt.getMarketOrder() != null && lastAttempt.getMarketOrder().getBuilder() != null)
+    		return lastAttempt.getMarketOrder().getBuilder().getName();
+    	if(lastAttempt != null && lastAttempt.getMarketOrder() == null)
+    		return WaitingPriceEventHandler.defaultStrategyName;
+    	return null;
+    }
+
     private String getMarketOrderIncludeDealers(Attempt lastAttempt) {
     	if(lastAttempt != null && lastAttempt.getMarketOrder() != null && lastAttempt.getMarketOrder().getDealers() != null)
     		return MarketOrder.beautifyListOfDealers(lastAttempt.getMarketOrder().getDealers());
