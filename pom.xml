@@ -110,7 +110,6 @@
                 <version>${tradestac-tw-adapter.version}</version>
             </dependency>
 
-
             <!-- softsolutions common libs-->
             <dependency>
                 <groupId>it.softsolutions.commons</groupId>
