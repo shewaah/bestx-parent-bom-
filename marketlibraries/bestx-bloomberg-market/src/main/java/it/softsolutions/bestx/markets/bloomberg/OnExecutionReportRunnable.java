@@ -252,39 +252,45 @@ public class OnExecutionReportRunnable implements Runnable {
          marketExecutionReport.setFactor(factor); // For inflation linked products only
       }
 
+      
+      List<ExecutablePrice> prices = new ArrayList<ExecutablePrice>();
+      // add to prices the executed quote
+      
+	  if (quickfix.field.ExecType.TRADE == tsExecutionReport.getExecType().getFIXValue()) {
+	      ExecutablePrice executedPrice = new ExecutablePrice();
+	      executedPrice.setMarket(this.executionMarket);
+	      executedPrice.setOriginatorID(dealerCode);
+	      try {
+	         //					executedPrice.setMarketMarketMaker(marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), dealerCode));
+	         if(dealerCode != null) {
+	            executedPrice.setMarketMarketMaker(marketMakerFinder.getMarketMarketMakerByTSOXCode(dealerCode));
+	         }
+	         else {
+	            executedPrice.setMarketMarketMaker(null);
+	         }
+	      }
+	      catch (Exception e1) {
+	         LOGGER.error("Exception: Impossible to set MarketMaker", e1);
+	         executedPrice.setMarketMarketMaker(null);
+	      }
+	      executedPrice.setPrice(new Money(operation.getOrder().getCurrency(), marketExecutionReport.getLastPx()));
+	      executedPrice.setPriceType(Proposal.PriceType.PRICE);
+	      executedPrice.setQty(operation.getOrder().getQty());
+	      // calculate status
+	      executedPrice.setTimestamp(tsExecutionReport.getTransactTime());
+	      executedPrice.setType(ProposalType.COUNTER);
+	      executedPrice.setSide(operation.getOrder().getSide() == OrderSide.BUY ? ProposalSide.ASK : ProposalSide.BID);
+	      executedPrice.setQuoteReqId(attempt.getMarketOrder().getFixOrderId());
+	      executedPrice.setAuditQuoteState("Accepted");
+	
+	      prices.add(0, executedPrice);
+
+	   }
+      
       // get competing dealer quotes feedback. Does not contain the executed proposal, so we shall add it
       List<MessageComponent> customComp = tsExecutionReport.getCustomComponents();
       if (customComp != null) {
          for (MessageComponent comp : customComp) {
-            List<ExecutablePrice> prices = new ArrayList<ExecutablePrice>();
-            // add to prices the executed quote
-            ExecutablePrice executedPrice = new ExecutablePrice();
-            executedPrice.setMarket(this.executionMarket);
-            executedPrice.setOriginatorID(dealerCode);
-            try {
-               //					executedPrice.setMarketMarketMaker(marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), dealerCode));
-               if(dealerCode != null) {
-                  executedPrice.setMarketMarketMaker(marketMakerFinder.getMarketMarketMakerByTSOXCode(dealerCode));
-               }
-               else {
-                  executedPrice.setMarketMarketMaker(null);
-               }
-            }
-            catch (Exception e1) {
-               LOGGER.error("Exception: Impossible to set MarketMaker", e1);
-               executedPrice.setMarketMarketMaker(null);
-            }
-            executedPrice.setPrice(new Money(operation.getOrder().getCurrency(), marketExecutionReport.getLastPx()));
-            executedPrice.setPriceType(Proposal.PriceType.PRICE);
-            executedPrice.setQty(operation.getOrder().getQty());
-            // calculate status
-            executedPrice.setTimestamp(tsExecutionReport.getTransactTime());
-            executedPrice.setType(ProposalType.COUNTER);
-            executedPrice.setSide(operation.getOrder().getSide() == OrderSide.BUY ? ProposalSide.ASK : ProposalSide.BID);
-            executedPrice.setQuoteReqId(attempt.getMarketOrder().getFixOrderId());
-            executedPrice.setAuditQuoteState("Accepted");
-
-            prices.add(0, executedPrice);
 
             if (comp instanceof TSCompDealersGrpComponent) {
                try {
@@ -353,21 +359,25 @@ public class OnExecutionReportRunnable implements Runnable {
                   LOGGER.warn("[MktMsg] Field not found in component dealers", e);
                }
             }
-            // sort the executable prices
-            Comparator<ExecutablePrice> comparator;
-            comparator = operation.getOrder().getSide() == OrderSide.BUY ? new ExecutablePriceAskComparator() : new ExecutablePriceBidComparator();
-            Collections.sort(prices, comparator);
-            // give them their rank
-            for (int i = 0; i < prices.size(); i++)
-               prices.get(i).setRank(i + 1);
-            // add the sorted, ranked executable prices list to the attempt
-            attempt.setExecutablePrices(prices);
+            
          }
       }
       else {
          LOGGER.info("[MktMsg] No custom component found in execution report {}", tsExecutionReport.getClOrdID());
       }
 
+      if (!prices.isEmpty()) {
+          // sort the executable prices
+          Comparator<ExecutablePrice> comparator;
+          comparator = operation.getOrder().getSide() == OrderSide.BUY ? new ExecutablePriceAskComparator() : new ExecutablePriceBidComparator();
+          Collections.sort(prices, comparator);
+          // give them their rank
+          for (int i = 0; i < prices.size(); i++)
+             prices.get(i).setRank(i + 1);
+          // add the sorted, ranked executable prices list to the attempt
+          attempt.setExecutablePrices(prices);
+      }
+      
       operation.onMarketExecutionReport(market, order, marketExecutionReport);
    }
 
