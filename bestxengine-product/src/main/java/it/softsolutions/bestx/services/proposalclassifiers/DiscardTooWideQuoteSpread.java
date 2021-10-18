@@ -97,7 +97,7 @@ public class DiscardTooWideQuoteSpread implements ProposalClassifier {
 		}
 		// check end
 
-		if ( (proposal.getProposalState() == ProposalState.DROPPED) || (proposal.getProposalState() == ProposalState.REJECTED) ) {
+		if ( (proposal.getProposalState() == ProposalState.DROPPED) || (proposal.getProposalState() == ProposalState.REJECTED) || (proposal.getProposalState() == ProposalState.ACCEPTABLE)) {
 			LOGGER.debug("DiscardTooWideQuoteSpread stop (proposal already " + proposal.getProposalState() + ")");
 			return proposal;
 		}
