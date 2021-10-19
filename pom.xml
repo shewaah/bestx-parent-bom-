@@ -5,7 +5,7 @@
     <groupId>it.softsolutions.bestx</groupId>
     <artifactId>bestxengine-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.7.2</version>
+    <version>4.7.3-SNAPSHOT</version>
 
     <name>BestX:FI-A Engine Develop</name>
     <description>Comprising all the modules in bestengine installation for CS</description>
@@ -571,7 +571,7 @@
     <scm>
         <connection>scm:git:ssh://git@git.softsolutions.io/bestx/bestx-parent-bom.git</connection>
         <developerConnection>scm:git:ssh://git@git.softsolutions.io/bestx/bestx-parent-bom.git</developerConnection>
-      <tag>bestxengine-parent-4.7.2</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <distributionManagement>
