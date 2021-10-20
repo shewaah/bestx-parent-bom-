@@ -79,6 +79,7 @@ import it.softsolutions.bestx.model.MarketMaker;
 import it.softsolutions.bestx.model.MarketMarketMaker;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
+import it.softsolutions.bestx.model.SortedBook;
 import it.softsolutions.bestx.model.Venue;
 import it.softsolutions.bestx.services.logutils.ApplicationMonitor;
 import it.softsolutions.bestx.services.logutils.ApplicationStatisticsHelper;
@@ -338,7 +339,8 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 					} catch (MarketNotAvailableException e) {
 						PriceResultBean priceResult = new PriceResultBean();
 						priceResult.setReason("No markets available to perform a price discovery");
-						priceResult.setSortedBook(null);
+						priceResult.setSortedBook(new SortedBook());
+						priceResult.getSortedBook().setInstrument(plainRequest.order.getInstrument());
 						priceResult.setState(PriceResultState.UNAVAILABLE);
 						operation.onPricesResult(ps, priceResult);
 					} catch(CustomerRevokeReceivedException e1){
