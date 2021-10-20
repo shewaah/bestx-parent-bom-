@@ -118,25 +118,12 @@ public class PriceDiscoveryEventHandler extends BaseOperationEventHandler implem
 	}
 	
 	@Override
-	public void onUnexecutionDefault(String executionMarket) {
-		if (executionMarket==null) {
+	public void onPricesResult(PriceService source, PriceResult priceResult) {
+		if (priceResult.getState() == PriceResult.PriceResultState.UNAVAILABLE) {
 			PriceDiscoveryHelper.publishEmptyBook(operation, operatorConsoleConnection);
 		} else {
-			LOGGER.info("PriceDiscoveryEventHandler: received onSuccess with execution market = {}", executionMarket);
+			PriceDiscoveryHelper.publishPriceDiscovery(operation, priceResult, operatorConsoleConnection, bookDepth, priceDecimals, false);
 		}
 	}
-
-	
-
-	@Override
-	public void onPricesResult(PriceService source, PriceResult priceResult) {
-		PriceDiscoveryHelper.publishPriceDiscovery(operation, priceResult, operatorConsoleConnection, bookDepth, priceDecimals, false);
-	}
-
-	
-
-	
-
-	
 	
 }

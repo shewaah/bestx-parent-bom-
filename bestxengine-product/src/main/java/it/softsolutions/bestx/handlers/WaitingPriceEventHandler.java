@@ -319,7 +319,8 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		LOGGER.debug("Order {}, No customer revoke received.", operation.getOrder().getFixOrderId());
 
 		if (priceResult.getState() == PriceResult.PriceResultState.COMPLETE
-	         || priceResult.getState() == PriceResult.PriceResultState.ERROR) {
+	         || priceResult.getState() == PriceResult.PriceResultState.EMPTY
+	         || priceResult.getState() == PriceResult.PriceResultState.UNAVAILABLE) {
 			// Fill Attempt
 			currentAttempt.setExecutionProposal(currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide()));
 			try {

@@ -68,11 +68,9 @@ import it.softsolutions.bestx.exceptions.ObjectNotInitializedException;
 import it.softsolutions.bestx.finders.MarketFinder;
 import it.softsolutions.bestx.finders.MarketMakerFinder;
 import it.softsolutions.bestx.finders.VenueFinder;
-import it.softsolutions.bestx.handlers.WaitingPriceEventHandler;
 import it.softsolutions.bestx.jmx.JMXNotifier;
 import it.softsolutions.bestx.management.PriceServiceMBean;
 import it.softsolutions.bestx.model.Attempt;
-import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.Instrument;
 import it.softsolutions.bestx.model.Instrument.QuotingStatus;
 import it.softsolutions.bestx.model.Market;
@@ -82,8 +80,6 @@ import it.softsolutions.bestx.model.MarketMarketMaker;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.Venue;
-import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyService;
-import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyServiceFactory;
 import it.softsolutions.bestx.services.logutils.ApplicationMonitor;
 import it.softsolutions.bestx.services.logutils.ApplicationStatisticsHelper;
 import it.softsolutions.bestx.services.price.PriceResult;
@@ -95,11 +91,6 @@ import it.softsolutions.bestx.services.serial.SerialNumberService;
 import it.softsolutions.bestx.services.timer.quartz.JobExecutionDispatcher;
 import it.softsolutions.bestx.services.timer.quartz.SimpleTimerManager;
 import it.softsolutions.bestx.services.timer.quartz.TimerEventListener;
-import it.softsolutions.bestx.states.CurandoRetryState;
-import it.softsolutions.bestx.states.ErrorState;
-import it.softsolutions.bestx.states.ManualExecutionWaitingPriceState;
-import it.softsolutions.bestx.states.ManualManageState;
-import it.softsolutions.bestx.states.WarningState;
 import it.softsolutions.jsscommon.Money;
 
 public class CSPriceService extends JMXNotifier implements PriceService, PriceServiceMBean, TimerEventListener {
@@ -345,41 +336,11 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 					try {
 						internalRequestPrices(plainRequest.requestor, plainRequest.order, plainRequest.previousAttempts, plainRequest.venues, plainRequest.maxLatency, plainRequest.position, plainRequest.markets, plainRequest.excOnRevoke);
 					} catch (MarketNotAvailableException e) {
-						/*
-						 * This exception is thrown if : - there are no price connections enabled - there are some price connections not enabled and in
-						 * the other markets the isin is not quoted
-						 */
-						LOGGER.info("Order {}, an error occurred while calling PriceService: {}", plainRequest.order.getFixOrderId(), e.getMessage(), e);
-						Boolean notExecuteLimitFile = CSConfigurationPropertyLoader.getBooleanProperty(CSConfigurationPropertyLoader.LIMITFILE_DONOTEXECUTE, false);
-
-						if (notExecuteLimitFile && !operation.isVolatile()) {
-							operation.setNotAutoExecute(false);						}
-						// [DR20140122] Tentativo di risolvere i problemi con gli attempt nei casi di LimitFile che vanno da CurandoRetry in LimitFileNoPrice
-						if (operation.getAttemptNo() > 1 && !operation.getOrder().isLimitFile()) {
-							operation.removeLastAttempt();
-						}
-						LOGGER.debug("Order {}, isLimitFile {}", operation.getOrder().getFixOrderId(), operation.getOrder().isLimitFile());
-						// [RR20140805] CRSBXTEM-111: LF Never executing. Only add an attempt to display correctly order coming from CurandoRetry and going into LimitFileNoPrice
-						if (operation.getState() instanceof CurandoRetryState && operation.getOrder().isLimitFile()) {
-							LOGGER.debug("Order {}, add attempt to a limitfile order.", operation.getOrder().getFixOrderId());
-							operation.addAttempt();
-						}
-
-						if (operation.getState() instanceof ManualExecutionWaitingPriceState) {
-							operation.setStateResilient(new ManualManageState(false), ErrorState.class);
-						} else {
-							Customer customer = operation.getOrder().getCustomer();
-							try {
-								ExecutionStrategyService csExecutionStrategyService = ExecutionStrategyServiceFactory.getInstance().getExecutionStrategyService(operation.getOrder().getPriceDiscoveryType(), operation, null);
-								csExecutionStrategyService.manageAutomaticUnexecution(plainRequest.order, customer, "");
-							} catch (BestXException be) {
-								LOGGER.error("Order {}, error while managing no market available situation {}", plainRequest.order.getFixOrderId(), e.getMessage(), e);
-								operation.removeLastAttempt();
-								operation.setStateResilient(new WarningState(operation.getState(), e, Messages.getString("PriceService.15")), ErrorState.class);
-							} catch (Exception ex) {
-								LOGGER.error("{}", ex.getMessage(), ex);
-							}
-						}
+						PriceResultBean priceResult = new PriceResultBean();
+						priceResult.setReason("No markets available to perform a price discovery");
+						priceResult.setSortedBook(null);
+						priceResult.setState(PriceResultState.UNAVAILABLE);
+						operation.onPricesResult(ps, priceResult);
 					} catch(CustomerRevokeReceivedException e1){
 						// AMC BESTX-313 20170719
 						PriceResultBean priceResult = new PriceResultBean();
