@@ -154,6 +154,10 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 					}
 				}
 
+				if (errors.isEmpty() && response.getData().getTargetVenue() == null) {
+					errors.add("Inconsistent information received from service");
+				}
+				
 				if (errors.isEmpty()) {
 					Money limitPrice = null;
 					if (response.getData().getTargetPrice() != null) {
