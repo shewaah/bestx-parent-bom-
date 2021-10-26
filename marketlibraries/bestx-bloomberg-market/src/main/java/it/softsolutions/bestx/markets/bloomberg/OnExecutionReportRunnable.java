@@ -261,9 +261,8 @@ public class OnExecutionReportRunnable implements Runnable {
 	      executedPrice.setMarket(this.executionMarket);
 	      executedPrice.setOriginatorID(dealerCode);
 	      try {
-	         //					executedPrice.setMarketMarketMaker(marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), dealerCode));
 	         if(dealerCode != null) {
-	            executedPrice.setMarketMarketMaker(marketMakerFinder.getMarketMarketMakerByTSOXCode(dealerCode));
+	            executedPrice.setMarketMarketMaker(marketMakerFinder.getSmartMarketMarketMakerByCode(MarketCode.TSOX, dealerCode));
 	         }
 	         else {
 	            executedPrice.setMarketMarketMaker(null);
@@ -306,8 +305,7 @@ public class OnExecutionReportRunnable implements Runnable {
                      if (compDealerElem.isSetField(CompDealerID.FIELD)) {
                         quotingDealer = compDealerElem.getField(new StringField(CompDealerID.FIELD)).getValue();
 
-                        //								tempMM = marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), quotingDealer);
-                        tempMM = marketMakerFinder.getMarketMarketMakerByTSOXCode(quotingDealer);
+                        tempMM = marketMakerFinder.getSmartMarketMarketMakerByCode(MarketCode.TSOX, quotingDealer);
                         if (tempMM == null) {
                            LOGGER.info("IMPORTANT! Bloomberg returned dealer {} not configured in BestX:FI-A. Please configure it", quotingDealer);
                            price.setOriginatorID(quotingDealer);
@@ -515,7 +513,7 @@ public class OnExecutionReportRunnable implements Runnable {
 	                     if (compDealerElem.isSetField(CompDealerID.FIELD)) {
 	                        quotingDealer = compDealerElem.getField(new StringField(CompDealerID.FIELD)).getValue();
 
-	                        tempMM = marketMakerFinder.getMarketMarketMakerByTSOXCode(quotingDealer);
+	                        tempMM = marketMakerFinder.getSmartMarketMarketMakerByCode(MarketCode.TSOX, quotingDealer);
 
 	                        if (tempMM == null) {
 	                           LOGGER.info("IMPORTANT! Bloomberg returned dealer {} not configured in BestX:FI-A. Please configure it", quotingDealer);
@@ -526,8 +524,6 @@ public class OnExecutionReportRunnable implements Runnable {
 	                           price.setMarketMarketMaker(tempMM);
 	                        }
 	                     }
-
-	                     
 //	                     
 //	                     if (groups.get(i).isSetField(CompDealerQuote.FIELD)) {
 //	                        Double compDealerQuote = groups.get(i).getField(new DoubleField(CompDealerQuote.FIELD)).getValue();
