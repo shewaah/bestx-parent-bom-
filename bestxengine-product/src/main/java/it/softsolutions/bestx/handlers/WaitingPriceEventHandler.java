@@ -528,8 +528,8 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 				if (freezeOrderAction.getNextPanel() == NextPanel.ORDERS_NO_AUTOEXECUTION) {
 					this.operation.setStateResilient(new CurandoState(freezeMessage), ErrorState.class);
 				} else if (freezeOrderAction.getNextPanel() == NextPanel.LIMIT_FILE) {
-	   				OrderHelper.setOrderBestPriceDeviationFromLimit(operation);
-    				this.operationStateAuditDao.updateOrderBestAndLimitDelta(operation.getOrder(), operation.getOrder().getBestPriceDeviationFromLimit());
+   				OrderHelper.setOrderBestPriceDeviationFromLimit(operation);
+   				this.operationStateAuditDao.updateOrderBestAndLimitDelta(operation.getOrder(), operation.getOrder().getBestPriceDeviationFromLimit());
 					this.operation.setStateResilient(new OrderNotExecutableState(freezeMessage), ErrorState.class);
 				} else if (freezeOrderAction.getNextPanel() == NextPanel.LIMIT_FILE_NO_PRICE) {
 					this.operation.setStateResilient(new LimitFileNoPriceState(freezeMessage), ErrorState.class);
