@@ -678,7 +678,6 @@
 	<bean id="marketOrderFilterChain" class="it.softsolutions.bestx.services.MarketOrderFilterChain">
 		<property name="filters">
 			<list>
-				<bean class="it.softsolutions.bestx.services.RepeatedMarketOrderFilter" />
 				<bean class="it.softsolutions.bestx.services.AutoExecutionOrderFilter" />
 				<bean class="it.softsolutions.bestx.services.BookDepthOrderFilter">
 					<property name="bookDepthValidator" ref="bookDepthValidator" />
@@ -688,6 +687,7 @@
 				<bean class="it.softsolutions.bestx.services.AutoExecutionStatusOrderFilter">
 					<property name="autoCurandoStatus" ref="autoCurandoStatusManager" />
 				</bean>
+				<bean class="it.softsolutions.bestx.services.RepeatedMarketOrderFilter" />
 				<bean class="it.softsolutions.bestx.services.ApplicationStatusOrderFilter">
 					<property name="applicationStatus" ref="applicationStatus" />
 					<property name="bookDepthValidator" ref="bookDepthValidator" />
