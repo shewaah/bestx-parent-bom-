@@ -20,11 +20,11 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.softsolutions.bestx.bestexec.MarketOrderBuilder.BuilderType;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.Customer;
 import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.SortedBook;
-import it.softsolutions.bestx.services.BestXMarketOrderBuilder;
 import it.softsolutions.bestx.services.PriceController;
 
 /**  
@@ -42,8 +42,7 @@ public class OrderHelper {
 
    public static void setOrderBestPriceDeviationFromLimit(Operation operation) {
       if (operation != null && operation.getLastAttempt() != null 
-    		  && operation.getLastAttempt().getSortedBook() != null
-    		  && operation.getLastAttempt().getExecutionProposal() == null) {
+    		  && operation.getLastAttempt().getSortedBook() != null) {
          Order order = operation.getOrder();
          if (order.getLimit() != null) {
             Customer customer = order.getCustomer();
@@ -56,8 +55,10 @@ public class OrderHelper {
             	if (operation.getLastAttempt().getMarketOrder() != null && operation.getLastAttempt().getMarketOrder().getLimitMonitorPrice() != null) {
             		order.setBestPriceDeviationFromLimit(
             				Math.abs(operation.getLastAttempt().getMarketOrder().getLimitMonitorPrice().getAmount().doubleValue() - order.getLimit().getAmount().doubleValue()));
-            	} else if (operation.getLastAttempt().getMarketOrder() != null && operation.getLastAttempt().getMarketOrder().getBuilder() != null &&
-            			operation.getLastAttempt().getMarketOrder().getBuilder() instanceof BestXMarketOrderBuilder) {
+            	} else if (operation.getLastAttempt().getMarketOrder() != null && 
+            	      operation.getLastAttempt().getMarketOrder().getBuilder() != null &&
+            			operation.getLastAttempt().getMarketOrder().getBuilder().getType() != BuilderType.CUSTOM && 
+            			operation.getLastAttempt().getExecutionProposal() == null) {
             		order.setBestPriceDeviationFromLimit(
             		   PriceController.INSTANCE.getBestProposalDelta(
             				   limitPrice.doubleValue() > 0.0 ? limitPrice : BigDecimal.ZERO, bookProposals, customer));

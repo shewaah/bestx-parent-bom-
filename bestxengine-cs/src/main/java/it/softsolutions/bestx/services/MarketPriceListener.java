@@ -138,7 +138,7 @@ public class MarketPriceListener implements MarketPriceConnectionListener {
    @Override
    public synchronized void onMarketBookNotAvailable(MarketPriceConnection source, String reason) {
       LOGGER.debug("{} Market Book Unavailable: {} ({})", logIdentifier, source.getClass().getName(), reason);
-      this.consolidatedBookState = PriceResultState.ERROR;
+      this.consolidatedBookState = PriceResultState.EMPTY;
       this.reasonBuffer.append(this.reasonBuffer.length() > 0 ? ", " + reason : reason);
       this.priceResult.addError(source.getMarketCode() + " book not available");
       this.bookArrived(source, null);
@@ -248,7 +248,7 @@ public class MarketPriceListener implements MarketPriceConnectionListener {
                }
                if (!atLeastOnePriceAvailable) {
                   LOGGER.info("No valid price for side: {}", order.getSide().name());
-                  consolidatedBookState = PriceResultState.ERROR;
+                  consolidatedBookState = PriceResultState.EMPTY;
                }
 
                /*

@@ -319,7 +319,8 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 		LOGGER.debug("Order {}, No customer revoke received.", operation.getOrder().getFixOrderId());
 
 		if (priceResult.getState() == PriceResult.PriceResultState.COMPLETE
-	         || priceResult.getState() == PriceResult.PriceResultState.ERROR) {
+	         || priceResult.getState() == PriceResult.PriceResultState.EMPTY
+	         || priceResult.getState() == PriceResult.PriceResultState.UNAVAILABLE) {
 			// Fill Attempt
 			currentAttempt.setExecutionProposal(currentAttempt.getSortedBook().getBestProposalBySide(operation.getOrder().getSide()));
 			try {
@@ -527,8 +528,8 @@ public class WaitingPriceEventHandler extends BaseOperationEventHandler implemen
 				if (freezeOrderAction.getNextPanel() == NextPanel.ORDERS_NO_AUTOEXECUTION) {
 					this.operation.setStateResilient(new CurandoState(freezeMessage), ErrorState.class);
 				} else if (freezeOrderAction.getNextPanel() == NextPanel.LIMIT_FILE) {
-	   				OrderHelper.setOrderBestPriceDeviationFromLimit(operation);
-    				this.operationStateAuditDao.updateOrderBestAndLimitDelta(operation.getOrder(), operation.getOrder().getBestPriceDeviationFromLimit());
+   				OrderHelper.setOrderBestPriceDeviationFromLimit(operation);
+   				this.operationStateAuditDao.updateOrderBestAndLimitDelta(operation.getOrder(), operation.getOrder().getBestPriceDeviationFromLimit());
 					this.operation.setStateResilient(new OrderNotExecutableState(freezeMessage), ErrorState.class);
 				} else if (freezeOrderAction.getNextPanel() == NextPanel.LIMIT_FILE_NO_PRICE) {
 					this.operation.setStateResilient(new LimitFileNoPriceState(freezeMessage), ErrorState.class);

@@ -133,9 +133,9 @@
 						<prop key="it.softsolutions.bestx.cs:name=OrdersEndOfDayService">it.softsolutions.bestx.services.CSOrdersEndOfDayServiceMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=BusinessValuesMonitor">it.softsolutions.bestx.management.BusinessValuesMonitorMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=CSStrategy">it.softsolutions.bestx.management.CSStrategyMBean</prop>
-						<prop key="it.softsolutions.bestx.cs:name=PooledDataSource">org.apache.commons.dbcp2.BasicDataSourceMXBean </prop>
-						<prop key="it.softsolutions.bestx.cs:name=jdbcPooledDataSource">org.apache.commons.dbcp2.BasicDataSourceMXBean </prop>
-						<prop key="it.softsolutions.bestx.cs:name=NonCommittedPooledDataSource">org.apache.commons.dbcp2.BasicDataSourceMXBean </prop>
+						<prop key="it.softsolutions.bestx.cs:name=PooledDataSource">org.apache.commons.dbcp2.BasicDataSourceMXBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=jdbcPooledDataSource">org.apache.commons.dbcp2.BasicDataSourceMXBean</prop>
+						<prop key="it.softsolutions.bestx.cs:name=NonCommittedPooledDataSource">org.apache.commons.dbcp2.BasicDataSourceMXBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=ExecutionStrategyServiceFactory">it.softsolutions.bestx.services.executionstrategy.CSExecutionStrategyServiceFactoryMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=BloombergHistoricMarket">it.softsolutions.bestx.markets.historic.HistoricMarketMBean</prop>
 						<prop key="it.softsolutions.bestx.cs:name=MarketAxessHistoricMarket">it.softsolutions.bestx.markets.historic.HistoricMarketMBean</prop>
@@ -678,7 +678,6 @@
 	<bean id="marketOrderFilterChain" class="it.softsolutions.bestx.services.MarketOrderFilterChain">
 		<property name="filters">
 			<list>
-				<bean class="it.softsolutions.bestx.services.RepeatedMarketOrderFilter" />
 				<bean class="it.softsolutions.bestx.services.AutoExecutionOrderFilter" />
 				<bean class="it.softsolutions.bestx.services.BookDepthOrderFilter">
 					<property name="bookDepthValidator" ref="bookDepthValidator" />
@@ -688,6 +687,7 @@
 				<bean class="it.softsolutions.bestx.services.AutoExecutionStatusOrderFilter">
 					<property name="autoCurandoStatus" ref="autoCurandoStatusManager" />
 				</bean>
+				<bean class="it.softsolutions.bestx.services.RepeatedMarketOrderFilter" />
 				<bean class="it.softsolutions.bestx.services.ApplicationStatusOrderFilter">
 					<property name="applicationStatus" ref="applicationStatus" />
 					<property name="bookDepthValidator" ref="bookDepthValidator" />

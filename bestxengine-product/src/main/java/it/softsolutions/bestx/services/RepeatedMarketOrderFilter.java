@@ -3,6 +3,9 @@ package it.softsolutions.bestx.services;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
 import it.softsolutions.bestx.bestexec.MarketOrderFilter;
@@ -12,6 +15,8 @@ import it.softsolutions.bestx.model.MarketOrder;
 
 public class RepeatedMarketOrderFilter implements MarketOrderFilter {
 	
+   private static final Logger LOGGER = LoggerFactory.getLogger(RepeatedMarketOrderFilter.class);
+   
 	private String rejectMessage = "Market order already tried in a previous attempt";
 
 	@Override
@@ -26,6 +31,11 @@ public class RepeatedMarketOrderFilter implements MarketOrderFilter {
 			for (Attempt attempt : previousAttempts) {
 				if (attempt.getMarketOrder() != null) {
 					MarketOrder marketOrderToCheck = attempt.getMarketOrder();
+					
+					LOGGER.info("Compare Market Orders. Limit: {}:{} - Market: {}:{} - Dealers: {}:{}",
+					      marketOrderToCheck.getLimit().getAmount(), order.getLimit().getAmount(),
+					      marketOrderToCheck.getMarket().getMarketCode(), order.getMarket().getMarketCode(),
+					      marketOrderToCheck.getDealers(), order.getDealers());
 					
 					if (marketOrderToCheck.getLimit().equals(order.getLimit()) &&
 							marketOrderToCheck.getMarket().equals(order.getMarket()) &&

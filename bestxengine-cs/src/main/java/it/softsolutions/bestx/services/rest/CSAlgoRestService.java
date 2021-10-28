@@ -452,9 +452,7 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
 	  
 	  JSONObject jsonData = jsonResponse.getJSONObject(CSALGOREST_JSON_KEY_DATA);
 
-	  if (jsonData.isNull(CSALGOREST_JSON_KEY_TARGET_VENUE)) {
-		  throw new RuntimeException("Inconsistent information received from service");
-	  } else {
+	  if (!jsonData.isNull(CSALGOREST_JSON_KEY_TARGET_VENUE)) {
 		  String venueString = jsonData.getString(CSALGOREST_JSON_KEY_TARGET_VENUE);
 		  if (Venue.BLOOMBERG.toString().equals(venueString)) {
 			  response.getData().setTargetVenue(Venue.BLOOMBERG);
@@ -476,7 +474,6 @@ public class CSAlgoRestService extends BaseOperatorConsoleAdapter {
       } else {
     	  LOGGER.error("Field limitMonitorPrice not found in JSON reply: {}", jsonResponse);
       }
-      response.getData().setTargetVenue(Venue.valueOf(jsonData.getString(CSALGOREST_JSON_KEY_TARGET_VENUE)));
       
       JSONArray jsonIncludeDealers = jsonData.optJSONArray(CSALGOREST_JSON_KEY_INCLUDE_DEALERS);      
       if (jsonIncludeDealers != null) {

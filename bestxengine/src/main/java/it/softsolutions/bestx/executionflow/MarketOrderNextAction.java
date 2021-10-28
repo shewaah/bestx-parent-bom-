@@ -23,5 +23,9 @@ public abstract class MarketOrderNextAction {
 	public boolean isFinalDecision() {
 		return finalDecision;
 	}
-
+	
+	@Override
+	public String toString() {
+	   return "" + this.action;
+	}
 }
