@@ -26,6 +26,10 @@
 		<dependency>
 			<groupId>commons-configuration</groupId>
 			<artifactId>commons-configuration</artifactId>
+			<exclusions><exclusion>
+         		 <groupId>org.apache.logging.log4j</groupId>
+          		 <artifactId>log4j</artifactId>
+            </exclusion></exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.jasypt</groupId>

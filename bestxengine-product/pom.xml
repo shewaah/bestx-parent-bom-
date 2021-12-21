@@ -30,10 +30,18 @@
         <dependency>
             <groupId>it.softsolutions.tradestac</groupId>
             <artifactId>tradestac2-client</artifactId>
+              <exclusions><exclusion>
+			     <groupId>ch.qos.logback</groupId>
+			     <artifactId>logback-parent</artifactId>
+              </exclusion></exclusions>
         </dependency>
         <dependency>
             <groupId>it.softsolutions.marketlibraries</groupId>
             <artifactId>quickfixjrootobjects</artifactId>
+               <exclusions><exclusion>
+			     <groupId>ch.qos.logback</groupId>
+			     <artifactId>logback-parent</artifactId>
+              </exclusion></exclusions>
         </dependency>
         <dependency>
             <groupId>it.softsolutions.commons</groupId>
