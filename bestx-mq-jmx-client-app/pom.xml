@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>it.softsolutions.bestx</groupId>
 		<artifactId>bestxengine-parent</artifactId>
-		<version>4.7.4-SNAPSHOT</version>
+		<version>4.7.4</version>
 	</parent>
 
   <artifactId>bestx-mq-jmx-client-app</artifactId>
