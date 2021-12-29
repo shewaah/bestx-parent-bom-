@@ -892,30 +892,34 @@ public class TradewebMarket extends MarketCommon
    
    			   if (notes != null && notes.indexOf("[") >= 0 && notes.indexOf("]") >= 0) {
    				   String prices[] = notes.substring(notes.indexOf("[") + 1, notes.indexOf("]")).split(";");
+   				   int rank = 0;
    				   for (int i = 0; i < prices.length; i++) {
    					   String data[] = prices[i].split(":");
-   					   ExecutablePrice price = new ExecutablePrice();
-   					   price.setMarket(this.market);
-   					   price.setAuditQuoteState("Rejected");
-   					   price.setOriginatorID(data[0].trim());
-   					   price.setPrice(new Money(operation.getOrder().getCurrency(), new BigDecimal(data[1].trim())));
-   					   price.setQty(operation.getOrder().getQty());
-   					   price.setTimestamp(tsExecutionReport.getTransactTime());
-   					   price.setSide(operation.getOrder().getSide() == OrderSide.BUY ? ProposalSide.ASK : ProposalSide.BID);
-   					   MarketMarketMaker tempMM = marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), data[0]);
-   					   if(tempMM == null) {
-   						   LOGGER.info("IMPORTANT! Tradeweb returned dealer {} not configured in BestX:FI-A. Please configure it", data[0]);
-   						   price.setOriginatorID(data[0]);
-   					   } else {
-   						   price.setMarketMarketMaker(tempMM);
-   					   }   
-   					   attempt.addExecutablePrice(price, i);
-   					   if(mmm == null) {
-   						   LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", 
-   								   operation.getOrder().getFixOrderId(), operation.getAttemptNo(), price.getOriginatorID(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
-   					   } else {
-   						   LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", 
-   								   operation.getOrder().getFixOrderId(), operation.getAttemptNo(), price.getMarketMarketMaker().getMarketMaker().getName(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
+   					   
+   					   if (data.length > 1) {
+      					   ExecutablePrice price = new ExecutablePrice();
+      					   price.setMarket(this.market);
+      					   price.setAuditQuoteState("Rejected");
+      					   price.setOriginatorID(data[0].trim());
+      					   price.setPrice(new Money(operation.getOrder().getCurrency(), new BigDecimal(data[1].trim())));
+      					   price.setQty(operation.getOrder().getQty());
+      					   price.setTimestamp(tsExecutionReport.getTransactTime());
+      					   price.setSide(operation.getOrder().getSide() == OrderSide.BUY ? ProposalSide.ASK : ProposalSide.BID);
+      					   MarketMarketMaker tempMM = marketMakerFinder.getMarketMarketMakerByCode(market.getMarketCode(), data[0]);
+      					   if(tempMM == null) {
+      						   LOGGER.info("IMPORTANT! Tradeweb returned dealer {} not configured in BestX:FI-A. Please configure it", data[0]);
+      						   price.setOriginatorID(data[0]);
+      					   } else {
+      						   price.setMarketMarketMaker(tempMM);
+      					   }   
+      					   attempt.addExecutablePrice(price, rank++);
+      					   if(mmm == null) {
+      						   LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", 
+      								   operation.getOrder().getFixOrderId(), operation.getAttemptNo(), price.getOriginatorID(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
+      					   } else {
+      						   LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", 
+      								   operation.getOrder().getFixOrderId(), operation.getAttemptNo(), price.getMarketMarketMaker().getMarketMaker().getName(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
+      					   }
    					   }
    				   }
    				   textTruncated = notes.substring(0, notes.indexOf("["));

@@ -282,6 +282,12 @@ public class OperationPersistenceManager implements OperationStateListener, Init
             dateFrom.set(Calendar.HOUR_OF_DAY, 0);
             dateFrom.set(Calendar.MINUTE, 0);
             dateFrom.set(Calendar.SECOND, 0);
+            
+            //FIXME: REMOVE!!!!!!!
+            dateFrom.set(Calendar.DAY_OF_MONTH, 19);
+            dateFrom.set(Calendar.MONTH, 10);
+            //FIXME: REMOVE!!!!!!!
+            
 
             Calendar dateTo = Calendar.getInstance();
             dateTo.set(Calendar.HOUR_OF_DAY, 23);
