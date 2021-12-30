@@ -920,6 +920,8 @@ public class TradewebMarket extends MarketCommon
       						   LOGGER.info("Added Executable price for order {}, attempt {}, marketmaker {}, price {}, status {}", 
       								   operation.getOrder().getFixOrderId(), operation.getAttemptNo(), price.getMarketMarketMaker().getMarketMaker().getName(), price.getPrice().getAmount().toString(), price.getAuditQuoteState());
       					   }
+   					   } else {
+   					      LOGGER.info("Ignoring value {}", data != null ? data[0] : "");
    					   }
    				   }
    				   textTruncated = notes.substring(0, notes.indexOf("["));
