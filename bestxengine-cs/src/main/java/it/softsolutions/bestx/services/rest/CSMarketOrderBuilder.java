@@ -46,6 +46,7 @@ import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest.Market
 import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest.PriceQuality;
 import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest.Side;
 import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalResponse;
+import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalResponseData.Venue;
 import it.softsolutions.jsscommon.Money;
 
 /**
@@ -155,7 +156,8 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 				}
 
 				if (errors.isEmpty() && response.getData().getTargetVenue() == null) {
-					errors.add("Inconsistent information received from service");
+				   //2022-02-02 BESTX-995 Force Bloomberg to put the order in LF 
+				   response.getData().setTargetVenue(Venue.BLOOMBERG);
 				}
 				
 				if (errors.isEmpty()) {
