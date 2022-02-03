@@ -1006,6 +1006,10 @@
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardYieldProposalClassifier" />
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnitProposalClassifier" />
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnavailableVenueProposalClassifier" />
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroProposalClassifier">
+                	<property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
+       				<property name="acceptableStatesList" value="${DiscardZeroProposalClassifier.acceptableStatesList:Passed,Timed Out,DNT,Rejected}" />
+                </bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardOldProposalClassifier">
                     <property name="configValue" value="${ProposalClassifiers.discard.limitHours}" />
                     <property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
