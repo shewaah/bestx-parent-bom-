@@ -55,12 +55,14 @@ public class DiscardZeroProposalClassifier extends BaseMarketMakerClassifier imp
          
                if (proposal.getMarket() != null && proposal.getMarket().isHistoric() && acceptableStatesList.indexOf(proposal.getAuditQuoteState()) >= 0) {
                   proposal.setProposalState(Proposal.ProposalState.ACCEPTABLE);
-               } else {
-                  proposal.setProposalState(Proposal.ProposalState.REJECTED);
-               }
-               if (proposal.getPrice().getAmount().compareTo(BigDecimal.ZERO) == 0) {
                   proposal.setProposalSubState(ProposalSubState.ZERO_QUANTITY);
                   proposal.setReason(Messages.getString("DiscardZeroProposalClassifier.1"));
+               } else {
+                  if (proposal.getPrice().getAmount().compareTo(BigDecimal.ZERO) == 0) {
+                     proposal.setProposalState(Proposal.ProposalState.REJECTED);
+                     proposal.setProposalSubState(ProposalSubState.ZERO_QUANTITY);
+                     proposal.setReason(Messages.getString("DiscardZeroProposalClassifier.1"));
+                  }
                }
             }
       else if (proposal.getPrice().getAmount().compareTo(BigDecimal.ZERO) == 0
