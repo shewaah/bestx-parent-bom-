@@ -46,7 +46,6 @@ import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest.Market
 import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest.PriceQuality;
 import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalRequest.Side;
 import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalResponse;
-import it.softsolutions.bestx.services.rest.dto.GetRoutingProposalResponseData.Venue;
 import it.softsolutions.jsscommon.Money;
 
 /**
@@ -155,9 +154,11 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 					}
 				}
 
+				
 				if (errors.isEmpty() && response.getData().getTargetVenue() == null) {
-				   //2022-02-02 BESTX-995 Force Bloomberg to put the order in LF 
-				   response.getData().setTargetVenue(Venue.BLOOMBERG);
+				   if (!(operation.getOrder().isLimitFile() && response.getData().getTargetPrice() == null && response.getData().getLimitMonitorPrice() == null)) {
+				      errors.add("Inconsistent information received from service");
+				   }
 				}
 				
 				if (errors.isEmpty()) {
@@ -174,26 +175,27 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 					marketOrder.setValues(operation.getOrder());
 					marketOrder.setTransactTime(DateService.newUTCDate());
 
-					market = marketFinder.getMarketByCode(Market.MarketCode.valueOf(response.getData().getTargetVenue().toString()), null);
-					marketOrder.setMarket(market);
-
-					// Manage include dealers and exclude dealers
-					List<String> includeDealersResp = response.getData().getIncludeDealers();
-					List<String> excludeDealersResp = response.getData().getExcludeDealers();					// - Note may be due especially for TSOX dealer codes
-					List<MarketMarketMakerSpec> includeDealersSpecs = new ArrayList<>();
-					List<MarketMarketMakerSpec> excludeDealersSpecs = new ArrayList<>();
-					
-					includeDealersResp.forEach(dealerCode -> includeDealersSpecs.add(createNewMarketMarketMakerSpec(dealerCode, market)));
-					excludeDealersResp.forEach(dealerCode -> excludeDealersSpecs.add(createNewMarketMarketMakerSpec(dealerCode, market)));
-					// AMC 20210831 removed all logic after asked by client
-
-					//remove dealer codes relative to composite prices
-					this.removeCompositePricesFromList(excludeDealersSpecs, market.getMarketCode());
-					marketOrder.setExcludeDealers(excludeDealersSpecs);			
-					//remove dealer codes relative to composite prices
-					this.removeCompositePricesFromList(includeDealersSpecs, market.getMarketCode());
-					marketOrder.setDealers(includeDealersSpecs);
-
+					if (response.getData().getTargetVenue() != null) {
+   					market = marketFinder.getMarketByCode(Market.MarketCode.valueOf(response.getData().getTargetVenue().toString()), null);
+   					marketOrder.setMarket(market);
+   
+   					// Manage include dealers and exclude dealers
+   					List<String> includeDealersResp = response.getData().getIncludeDealers();
+   					List<String> excludeDealersResp = response.getData().getExcludeDealers();					// - Note may be due especially for TSOX dealer codes
+   					List<MarketMarketMakerSpec> includeDealersSpecs = new ArrayList<>();
+   					List<MarketMarketMakerSpec> excludeDealersSpecs = new ArrayList<>();
+   					
+   					includeDealersResp.forEach(dealerCode -> includeDealersSpecs.add(createNewMarketMarketMakerSpec(dealerCode, market)));
+   					excludeDealersResp.forEach(dealerCode -> excludeDealersSpecs.add(createNewMarketMarketMakerSpec(dealerCode, market)));
+   					// AMC 20210831 removed all logic after asked by client
+   
+   					//remove dealer codes relative to composite prices
+   					this.removeCompositePricesFromList(excludeDealersSpecs, market.getMarketCode());
+   					marketOrder.setExcludeDealers(excludeDealersSpecs);			
+   					//remove dealer codes relative to composite prices
+   					this.removeCompositePricesFromList(includeDealersSpecs, market.getMarketCode());
+   					marketOrder.setDealers(includeDealersSpecs);
+					}
 					
 					marketOrder.setLimit(limitPrice);
 					marketOrder.setLimitMonitorPrice(limitMonitorPrice);
@@ -201,7 +203,7 @@ public class CSMarketOrderBuilder extends MarketOrderBuilder {
 
 					LOGGER.info("Order={}, Selecting for execution market: {}, received target price {}, received limit monitor price {} and original order price {}. Including dealers {}. Excluding dealers {}",
 							operation.getOrder().getFixOrderId(),
-							marketOrder.getMarket().getEffectiveMarket().getName(),
+							(marketOrder.getMarket() != null ? marketOrder.getMarket().getEffectiveMarket().getName() : "N.D."),
 							limitPrice == null ? "null" : limitPrice.getAmount(),
 							limitMonitorPrice == null ? "null" : limitMonitorPrice.getAmount(),
 							operation.getOrder().getLimit() == null ? "null" : operation.getOrder().getLimit().getAmount(),
