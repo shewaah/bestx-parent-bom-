@@ -11,6 +11,7 @@ import it.softsolutions.bestx.bestexec.MarketOrderBuilder;
 import it.softsolutions.bestx.bestexec.MarketOrderFilter;
 import it.softsolutions.bestx.executionflow.RejectOrderAction;
 import it.softsolutions.bestx.model.Attempt;
+import it.softsolutions.bestx.model.Attempt.AttemptState;
 import it.softsolutions.bestx.model.MarketOrder;
 
 public class RepeatedMarketOrderFilter implements MarketOrderFilter {
@@ -29,7 +30,9 @@ public class RepeatedMarketOrderFilter implements MarketOrderFilter {
 			List<Attempt> previousAttempts = new ArrayList<>(operation.getAttemptsInCurrentCycle());
 			
 			for (Attempt attempt : previousAttempts) {
-				if (attempt.getMarketOrder() != null) {
+			   //SP-20220202 - BESTX-995 do not reject if the attempt not try to be executed
+				if (attempt.getMarketOrder() != null && (attempt.getAttemptState() == AttemptState.REJECTED || 
+				      attempt.getMarketExecutionReports() != null && !attempt.getMarketExecutionReports().isEmpty())) {
 					MarketOrder marketOrderToCheck = attempt.getMarketOrder();
 					
 					LOGGER.info("Compare Market Orders. Limit: {}:{} - Market: {}:{} - Dealers: {}:{}",
