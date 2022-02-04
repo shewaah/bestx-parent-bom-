@@ -56,7 +56,7 @@ public class DiscardZeroPriceProposalClassifier implements ProposalClassifier {
             proposal.setProposalState(Proposal.ProposalState.REJECTED);
          }
          proposal.setProposalSubState(ProposalSubState.PRICE_NOT_VALID);
-         proposal.setReason(Messages.getString("DiscardZeroProposalClassifier.0"));
+         proposal.setReason(Messages.getString("DiscardZeroProposalClassifier.1"));
       }
       return proposal;
    }
