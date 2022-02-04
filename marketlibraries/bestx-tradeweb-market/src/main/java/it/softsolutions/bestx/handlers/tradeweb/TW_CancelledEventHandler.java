@@ -21,11 +21,11 @@ import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.handlers.BaseOperationEventHandler;
 import it.softsolutions.bestx.handlers.ExecutionReportHelper;
+import it.softsolutions.bestx.model.Attempt.AttemptState;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.services.serial.SerialNumberService;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.RejectedState;
-import it.softsolutions.bestx.states.SendNotExecutionReportState;
 import it.softsolutions.bestx.states.WarningState;
 
 /**
@@ -58,7 +58,10 @@ public class TW_CancelledEventHandler extends BaseOperationEventHandler {
 		try {
 			String rejReason = operation.getExecutionReports().get(operation.getExecutionReports().size()-1).getText();
 			ExecutionReportHelper.prepareForAutoNotExecution(operation,serialNumberService, ExecutionReportState.CANCELLED);
-			// AMC 20190325 if has been cancelled, go to cancelled status
+			
+         operation.getLastAttempt().setAttemptState(AttemptState.REJECTED);
+
+			   // AMC 20190325 if has been cancelled, go to cancelled status
 		      if (!checkCustomerRevoke(operation.getOrder())) {
 		    	  operation.setStateResilient(new RejectedState(rejReason), ErrorState.class);
 		      }
