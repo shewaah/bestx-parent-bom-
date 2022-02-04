@@ -60,7 +60,7 @@ public class MA_CancelledEventHandler extends BaseOperationEventHandler {
 	         if(size > 0) {
 	            rejReason = operation.getLastAttempt().getMarketExecutionReports().get(size -1).getText();
 	         }
-           	operation.getLastAttempt().setAttemptState(AttemptState.EXPIRED);
+           	operation.getLastAttempt().setAttemptState(AttemptState.REJECTED);
            	operation.setStateResilient(new RejectedState(rejReason), ErrorState.class);
 	      }
 //			ExecutionReportHelper.prepareForAutoNotExecution(operation,serialNumberService, ExecutionReportState.CANCELLED);

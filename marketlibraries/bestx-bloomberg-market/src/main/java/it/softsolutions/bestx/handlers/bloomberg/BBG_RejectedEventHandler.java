@@ -3,6 +3,11 @@
  */
 package it.softsolutions.bestx.handlers.bloomberg;
 
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Messages;
 import it.softsolutions.bestx.Operation;
@@ -11,21 +16,16 @@ import it.softsolutions.bestx.handlers.BaseOperationEventHandler;
 import it.softsolutions.bestx.handlers.BookHelper;
 import it.softsolutions.bestx.handlers.ExecutionReportHelper;
 import it.softsolutions.bestx.model.Attempt;
+import it.softsolutions.bestx.model.Attempt.AttemptState;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.model.Order;
-import it.softsolutions.bestx.model.Attempt.AttemptState;
 import it.softsolutions.bestx.services.serial.SerialNumberService;
 import it.softsolutions.bestx.states.ErrorState;
 import it.softsolutions.bestx.states.RejectedState;
 import it.softsolutions.bestx.states.SendAutoNotExecutionReportState;
 import it.softsolutions.bestx.states.WarningState;
 import it.softsolutions.bestx.states.bloomberg.BBG_RejectedState;
-
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Stefano
@@ -46,11 +46,10 @@ public class BBG_RejectedEventHandler extends BaseOperationEventHandler {
 
     @Override
     public void onNewState(OperationState currentState) {
-
-        
         boolean mustSendAutoNotExecution = false;
         Order order = operation.getOrder();
         Attempt lastAttempt = operation.getLastAttempt();
+        
         String rejectReason = ""; 
         if (lastAttempt != null) {
             // set in transition from BBG_SendRfq to BBG_Rejected

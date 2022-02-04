@@ -20,7 +20,6 @@ import it.softsolutions.bestx.BestXException;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.OperationState;
 import it.softsolutions.bestx.datacollector.DataCollector;
-import it.softsolutions.bestx.model.Attempt.AttemptState;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyService;
 import it.softsolutions.bestx.services.executionstrategy.ExecutionStrategyServiceFactory;
 import it.softsolutions.bestx.services.price.PriceResult;
@@ -60,8 +59,6 @@ private static final long serialVersionUID = -828153138571045312L;
 
     @Override
     public void onNewState(OperationState currentState) {
-       operation.getLastAttempt().setAttemptState(AttemptState.REJECTED);
-       
     	if (this.dataCollector != null) {
     		this.dataCollector.sendPobex(operation);
     	}
