@@ -1006,8 +1006,10 @@
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardYieldProposalClassifier" />
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnitProposalClassifier" />
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnavailableVenueProposalClassifier" />
-				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroProposalClassifier">
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroQuantityProposalClassifier">
                 	<property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
+                </bean>
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroPriceProposalClassifier">
        				<property name="acceptableStatesList" value="${DiscardZeroProposalClassifier.acceptableStatesList:Passed,Timed Out,DNT,Rejected}" />
                 </bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardOldProposalClassifier">
@@ -1036,8 +1038,10 @@
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardYieldProposalClassifier"></bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnitProposalClassifier"></bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnavailableVenueProposalClassifier"></bean>
-                <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroProposalClassifier">
-                	<property name="marketMakerCompositeCodes"><value>${MarketMakers.compositeCodes}</value></property>
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroQuantityProposalClassifier">
+                	<property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
+                </bean>
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroPriceProposalClassifier">
        				<property name="acceptableStatesList" value="${DiscardZeroProposalClassifier.acceptableStatesList:Passed,Timed Out,DNT,Rejected}" />
                 </bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardOldProposalClassifier">

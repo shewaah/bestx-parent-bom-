@@ -33,49 +33,25 @@ import it.softsolutions.bestx.model.Venue;
 
 /**
  * 
- * Purpose: this class is mainly for ...
+ * Purpose: this class is mainly for set as ACCEPTABLE proposal with zero quantity if MM is not in the composite list
  * 
  * Project Name : bestxengine-product First created by: Creation date: 19-ott-2012
  * 
  **/
-public class DiscardZeroProposalClassifier extends BaseMarketMakerClassifier implements ProposalClassifier {
+public class DiscardZeroQuantityProposalClassifier extends BaseMarketMakerClassifier implements ProposalClassifier {
 
-   private String acceptableStatesList;
-   
-   
    @Override
    public ClassifiedProposal getClassifiedProposal(ClassifiedProposal proposal, Order order, List<Attempt> previousAttempts, Set<Venue> venues, ClassifiedBook book) {
-      if (!isCompositePriceMarketMaker(proposal) && proposal.getQty().compareTo(BigDecimal.ZERO) < 0) {
-         proposal.setProposalState(Proposal.ProposalState.DROPPED);
-         proposal.setReason(Messages.getString("DiscardZeroProposalClassifier.1"));
+      if (proposal.getQty().compareTo(BigDecimal.ZERO) < 0) {
          proposal.setQty(BigDecimal.ZERO);
       }
-      else if (!isCompositePriceMarketMaker(proposal)
+      
+      if (!isCompositePriceMarketMaker(proposal)
             && (proposal.getQty().compareTo(BigDecimal.ZERO) == 0 || (proposal.getMarket().getMarketCode() == MarketCode.BLOOMBERG && proposal.getQty().compareTo(BigDecimal.ONE) <= 0))) {
-         
-               if (proposal.getMarket() != null && proposal.getMarket().isHistoric() && acceptableStatesList.indexOf(proposal.getAuditQuoteState()) >= 0) {
-                  proposal.setProposalState(Proposal.ProposalState.ACCEPTABLE);
-                  proposal.setProposalSubState(ProposalSubState.ZERO_QUANTITY);
-                  proposal.setReason(Messages.getString("DiscardZeroProposalClassifier.1"));
-               } else {
-                  if (proposal.getPrice().getAmount().compareTo(BigDecimal.ZERO) == 0) {
-                     proposal.setProposalState(Proposal.ProposalState.REJECTED);
-                     proposal.setProposalSubState(ProposalSubState.ZERO_QUANTITY);
-                     proposal.setReason(Messages.getString("DiscardZeroProposalClassifier.1"));
-                  }
-               }
-            }
-      else if (proposal.getPrice().getAmount().compareTo(BigDecimal.ZERO) == 0
-            || (proposal.getMarket().getMarketCode() == MarketCode.BLOOMBERG && proposal.getPrice().getAmount().compareTo(BigDecimal.ONE) <= 0)) {
-        
-               if (proposal.getMarket() != null && proposal.getMarket().isHistoric() && acceptableStatesList.indexOf(proposal.getAuditQuoteState()) >= 0) {
-                  proposal.setProposalState(Proposal.ProposalState.ACCEPTABLE);
-               } else {
-                  proposal.setProposalState(Proposal.ProposalState.REJECTED);
-               }
-               proposal.setProposalSubState(ProposalSubState.PRICE_NOT_VALID);
-               proposal.setReason(Messages.getString("DiscardZeroProposalClassifier.0"));
-            }
+               proposal.setProposalState(Proposal.ProposalState.ACCEPTABLE);
+               proposal.setProposalSubState(ProposalSubState.ZERO_QUANTITY);
+               proposal.setReason(Messages.getString("DiscardZeroProposalClassifier.1"));
+      }
       return proposal;
    }
 
@@ -88,12 +64,4 @@ public class DiscardZeroProposalClassifier extends BaseMarketMakerClassifier imp
 	public ClassifiedProposal getClassifiedProposal(ClassifiedProposal proposal, Order order, List<Attempt> previousAttempts, Set<Venue> venues) {
 		throw new UnsupportedOperationException();
 	}
-
-   public String getAcceptableStatesList() {
-      return acceptableStatesList;
-   }
-   
-   public void setAcceptableStatesList(String acceptableStatesList) {
-      this.acceptableStatesList = acceptableStatesList;
-   }
 }
