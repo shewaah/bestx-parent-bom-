@@ -755,7 +755,7 @@
         <property name="orderBookDepth"><value>${PriceDiscovery.OrderBookDepth}</value></property>
         <property name="priceDiscoveryTimeout"><value>${PriceDiscovery.Timeout}</value></property>
         <property name="priceDecimals"><value>${PriceDiscovery.PriceDecimals}</value></property>
-        <property name="pobExMaxSize"><value>${Marketaxess.MaxPOBEXEntries}</value></property>
+        <property name="pobExMaxSize"><value>${ExecutionReport.MaxPOBEXEntries}</value></property>
         <property name="curandoTimerRetriever"><ref bean="curandoTimerRetriever"></ref></property>
 		<property name="applicationStatus" ref="applicationStatus" />
 		<property name="dataCollector" ref="dataCollector" />
