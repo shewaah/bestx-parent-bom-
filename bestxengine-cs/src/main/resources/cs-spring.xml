@@ -419,7 +419,7 @@
 	</bean>
 
     <bean id="commissionService" class="it.softsolutions.bestx.services.commissionservice.DbBasedCommissionService" lazy-init="false" init-method="init">
-		<property name="baseCurrencyString" value="EUR" />
+		<property name="baseCurrencyString" value="${MainCurrency}" />
         <property name="exchangeRateFinder"><ref bean="dbBasedExchangeRateFinder"/></property>
         <property name="commissionFinder"><ref bean="dbCommissionFinder"/></property>
         <property name="instrumentZeroCommission"><ref bean="sqlInstrumentZeroCommissionDao"/></property>
@@ -427,7 +427,7 @@
 
     <bean id="defaultCustomerFilterFactory" class="it.softsolutions.bestx.services.ordervalidation.CustomerFilterFactoryImpl" lazy-init="false" init-method="init">
         <property name="exchangeRateDao"><ref bean="hibernateExchangeRateDao"></ref></property>
-        <property name="mainCurrency"><value>"EUR"</value></property>
+        <property name="mainCurrency"><value>"${MainCurrency}"</value></property>
         <property name="retailMaxSize"><value>${Retail.max.size}</value></property>
         <property name="commissionService"><ref bean="commissionService"/></property>
         <property name="internalAuthThreshold"><value>${Internal_authorization.size}</value></property>
@@ -588,11 +588,13 @@
     <bean id="customerAdapterHelper" class="it.softsolutions.bestx.connections.CustomerAdapterHelper" init-method="init">
 		<property name="adaptersMap">
 			<map>
-				<entry key="${Client.FIX.Session}" value-ref="oms1CustomerAdapter" />
-				<entry key="FIX.4.2:SOFT1->OMS1" value-ref="oms1CustomerAdapter" />
+				<entry key="${Client1.FIX.Session}" value-ref="oms1CustomerAdapter" />
+				<entry key="${Client2.FIX.Session}" value-ref="oms1CustomerAdapter" />
 <!-- 				<entry key="FIX.4.1:SOFT2->OMS2" value-ref="oms2CustomerAdapter" /> -->
-				<entry key="FIX.4.2:SOFT1->CSZURTest" value-ref="oms1CustomerAdapter" />
-				<entry key="FIX.4.2:SOFT1->CSZURProd" value-ref="oms1CustomerAdapter" />
+				<entry key="${Client3.FIX.Session}" value-ref="oms1CustomerAdapter" />
+				<entry key="${Client4.FIX.Session}" value-ref="oms1CustomerAdapter" />
+				<entry key="${Client5.FIX.Session}" value-ref="oms1CustomerAdapter" />
+				<entry key="${Client6.FIX.Session}" value-ref="oms1CustomerAdapter" />
 			</map>
 		</property>
 	</bean>
@@ -805,7 +807,7 @@
                 </bean> --> <!-- commented out as agreed with Deepthi on Gen 30th 2014 -->
                 <bean class="it.softsolutions.bestx.services.ordervalidation.ExchangeRateControl">
                     <property name="finder"><ref bean="dbBasedExchangeRateFinder"/></property>
-	                <property name="mainCurrency"><value>"EUR"</value></property>
+	                <property name="mainCurrency"><value>"${MainCurrency}"</value></property>
 				</bean>
                 <bean class="it.softsolutions.bestx.services.ordervalidation.FormalTimeInForceValidator"/>
 			</list>
@@ -886,6 +888,7 @@
         <property name="operationFactory"><ref bean="defaultOperationFactory"></ref></property>
         <property name="keepTerminalOperation"><value>true</value></property>
         <property name="jdbcTemplate"><ref bean="jdbcTemplate"/></property>
+        <property name="operationRestore"><ref bean="operationRestore"/></property>
 	</bean>
 
 	<bean id="operationStateAudit" class="it.softsolutions.bestx.audit.CSOperationStateAudit">
@@ -1010,7 +1013,7 @@
                 	<property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
                 </bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroPriceProposalClassifier">
-       				<property name="acceptableStatesList" value="${DiscardZeroProposalClassifier.acceptableStatesList:Passed,Timed Out,DNT,Rejected}" />
+       				<property name="unacceptableStatesList" value="${DiscardZeroPriceProposalClassifier.UnacceptableStatesList:}" />
                 </bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardOldProposalClassifier">
                     <property name="configValue" value="${ProposalClassifiers.discard.limitHours}" />
@@ -1042,7 +1045,7 @@
                 	<property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
                 </bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroPriceProposalClassifier">
-       				<property name="acceptableStatesList" value="${DiscardZeroProposalClassifier.acceptableStatesList:Passed,Timed Out,DNT,Rejected}" />
+       				<property name="unacceptableStatesList" value="${DiscardZeroPriceProposalClassifier.UnacceptableStatesList:}" />
                 </bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardOldProposalClassifier">
                     <property name="configValue"><value>${ProposalClassifiers.discard.limitHours}</value></property>
