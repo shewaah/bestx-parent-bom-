@@ -99,21 +99,27 @@ public class SimpleOperationRestorer implements SimpleOperationRestorerMBean {
    }
 
 	@Override
-	public String killAndRestoreOperation(String orderId) {
-		// [BESTX-545] AA 21-11-2019 adding this method in order to kill (from memory but not from db) an existing operation and restore it from the last good image 
-		// in the db and put it after in warning state, so the operator can manage it from the web interface
-		try {
-			if (operationRegistry.killOperation(orderId)) {
-				Operation operation = operationRegistry.loadOperationById(orderId);								
-				if (operation != null) {
-					operation.setStateResilient(new WarningState(operation.getState(),null, Messages.getString("RetrievedWarningState")), ErrorState.class);
-				}
-			}
-		} catch (OperationNotExistingException e) {
-			return "ERROR " + e.getMessage();
-		} catch (BestXException e) {
-			return "ERROR " + e.getMessage();
-		}
-		return null;
-	}
+   public String killAndRestoreOperation(String orderId) {
+      // [BESTX-545] AA 21-11-2019 adding this method in order to kill (from memory but not from db) an existing operation and restore it from the last good image 
+      // in the db and put it after in warning state, so the operator can manage it from the web interface
+	   return killAndRestoreOperation(orderId, Messages.getString("RetrievedWarningState"));
+   }
+
+	public String killAndRestoreOperation(String orderId, String message) {
+      // [BESTX-545] AA 21-11-2019 adding this method in order to kill (from memory but not from db) an existing operation and restore it from the last good image 
+      // in the db and put it after in warning state, so the operator can manage it from the web interface
+      try {
+         if (operationRegistry.killOperation(orderId)) {
+            Operation operation = operationRegistry.loadOperationById(orderId);                       
+            if (operation != null) {
+               operation.setStateResilient(new WarningState(operation.getState(),null, message), ErrorState.class);
+            }
+         }
+      } catch (OperationNotExistingException e) {
+         return "ERROR " + e.getMessage();
+      } catch (BestXException e) {
+         return "ERROR " + e.getMessage();
+      }
+      return null;
+   }
 }

@@ -41,6 +41,7 @@ import it.softsolutions.bestx.exceptions.SaveBookException;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.SortedBook;
 import it.softsolutions.bestx.services.DateService;
+import it.softsolutions.bestx.states.ErrorState;
 
 /**
  *
@@ -55,14 +56,15 @@ public class OperationPersistenceManager implements OperationStateListener, Init
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OperationPersistenceManager.class);
     
-    private final String logString = "Retrieved {} operations";
+    private static final String LOGSTRING = "Retrieved {} operations";
 
     private boolean keepTerminalOperation;
     private SessionFactory sessionFactory;
     private OperationFactory operationFactory;
+    private SimpleOperationRestorer operationRestore;
     private JdbcTemplate jdbcTemplate;
 
-    private static final String operationExistenceSql = "SELECT count(*)" +
+    private static final String OPERATION_EXISTENCE_SQL = "SELECT count(*)" +
                     " FROM OPERATION op" +
                     " join OperationBinding bind on op.OperationId=bind.OperationId" +
                     " join OperationState st on op.OperationStateId=st.OperationStateId" +
@@ -71,7 +73,7 @@ public class OperationPersistenceManager implements OperationStateListener, Init
                     " and   st.EnteredTime >= ?" +
                     " and   st.EnteredTime <= ?";
 
-    private static final String operationCountSql = "SELECT count(*)" +
+    private static final String OPERATION_COUNT_SQL = "SELECT count(*)" +
                     " FROM OPERATION op" +
                     " join OperationState st on op.OperationStateId=st.OperationStateId" +
                     " where st.EnteredTime >= ?" +
@@ -79,13 +81,13 @@ public class OperationPersistenceManager implements OperationStateListener, Init
                     " and   st.IsTerminal = 0";
     
     @SuppressWarnings("unused")
-	private static final String operationTotalCountSql = "SELECT count(*)" +
+	private static final String OPERATION_TOTAL_COUNT_SQL = "SELECT count(*)" +
             " FROM OPERATION op" +
             " join OperationState st on op.OperationStateId=st.OperationStateId" +
             " where st.EnteredTime >= ?" +
             " and   st.EnteredTime <= ?";
 
-    private static final String opIdFromBindingSql = "SELECT OperationId" +
+    private static final String OPID_FROM_BINDING_SQL = "SELECT OperationId" +
                     " FROM OperationBinding" +
                     " where ExternalIdType = ?" +
                     " and   ExternalId = ?";
@@ -98,13 +100,13 @@ public class OperationPersistenceManager implements OperationStateListener, Init
           + "AND OS.EnteredTime BETWEEN :from AND :to "
           + "AND OS.StateClassName = :scn";*/
     
-    private static final String opsForStateSql = "FROM Operation WHERE "
+    private static final String OPS_FOR_STATE_SQL = "FROM Operation WHERE "
          + "currentState.stateClassName IN ( :scn ) AND "
          + "currentState.enteredTime > :from "
          + "AND currentState.enteredTime < :to";
     
-    private static Date operationExistenceStartDate;
-    private static Date operationExistenceEndDate;
+    private Date operationExistenceStartDate;
+    private Date operationExistenceEndDate;
 
     private Timer saveOperationTimer;
     private Timer onOperationStateChangedTimer;
@@ -157,7 +159,6 @@ public class OperationPersistenceManager implements OperationStateListener, Init
     }
 
     private final Map<String, Date> startSaveTimeInMillis = new ConcurrentHashMap<String, Date>();
-    private long lastSaveTime = 0L;
 
     @Override
     public void onOperationStateChanged(Operation operation, OperationState oldState, OperationState newState) throws SaveBookException, BestXException {
@@ -194,15 +195,24 @@ public class OperationPersistenceManager implements OperationStateListener, Init
 			}
 			session.saveOrUpdate(operation);
 			tx.commit();
+		} catch (org.hibernate.StaleStateException hibex) {
+		   if (tx != null) {
+		      tx.rollback();
+		   }
+		   
+		   if (operation.getState() instanceof ErrorState) {
+		      operation.getState().setComment(Messages.getString("Warning.RestoredAfterKill", operation.getState().getClass().getSimpleName()));
+		   }
+		   operationRestore.killAndRestoreOperation(operation.getOrder().getFixOrderId(), Messages.getString("Warning.RestoredAfterKill", operation.getState().getClass().getSimpleName()));
+		   LOGGER.warn("Order {}. Operation restored after Hibernate StaleStateException", operation.getOrder().getFixOrderId());
 		} catch (RuntimeException e) {
-            LOGGER.error("An error occurred while saving operation state (operationID={}): {}", operation.getId(), e.getMessage(), e);
+//            LOGGER.error("An error occurred while saving operation state (operationID={}): {}", operation.getId(), e.getMessage(), e);
             if (tx != null) {
                 tx.rollback();
             }
 
             // [DR20120629] Qui si deve propagare un'Exception in quanto occorre notificare un problema di salvataggio dei dati su DB.
             throw new BestXException(e.getMessage(), e); 
-
 
         } finally {
         	context.close();
@@ -256,6 +266,13 @@ public class OperationPersistenceManager implements OperationStateListener, Init
             tx = session.beginTransaction();
             session.saveOrUpdate(operation);
             tx.commit();
+            
+        } catch (org.hibernate.StaleStateException hibex) {
+           if (tx != null) {
+              tx.rollback();
+           }
+           operationRestore.killAndRestoreOperation(operation.getOrder().getFixOrderId(), Messages.getString("Warning.RestoredAfterKill", operation.getState().getClass().getName()));
+           LOGGER.warn("Order {}. Operation restored after Hibernate StaleStateException", operation.getOrder().getFixOrderId());
         } catch (RuntimeException e) {
             LOGGER.error("An error occurred while saving operation bindings for operationID={} to database: {}", operation.getId(), e.getMessage(), e);
             if (tx != null) {
@@ -282,12 +299,6 @@ public class OperationPersistenceManager implements OperationStateListener, Init
             dateFrom.set(Calendar.HOUR_OF_DAY, 0);
             dateFrom.set(Calendar.MINUTE, 0);
             dateFrom.set(Calendar.SECOND, 0);
-            
-            //FIXME: REMOVE!!!!!!!
-            dateFrom.set(Calendar.DAY_OF_MONTH, 19);
-            dateFrom.set(Calendar.MONTH, 10);
-            //FIXME: REMOVE!!!!!!!
-            
 
             Calendar dateTo = Calendar.getInstance();
             dateTo.set(Calendar.HOUR_OF_DAY, 23);
@@ -339,7 +350,7 @@ public class OperationPersistenceManager implements OperationStateListener, Init
                 session.close();
             }
         }
-        LOGGER.info(logString, (operations != null ? operations.size() : 0));
+        LOGGER.info(LOGSTRING, (operations != null ? operations.size() : 0));
         return operations;
     }
 
@@ -390,9 +401,9 @@ public class OperationPersistenceManager implements OperationStateListener, Init
 
     public boolean operationExistsById(OperationIdType idType, String id) {
         int countRows = 0;
-        LOGGER.debug("id {}, idType {}, startDate {}, endDate {}, query {}", id, idType, operationExistenceStartDate, operationExistenceEndDate, operationExistenceSql);
+        LOGGER.debug("id {}, idType {}, startDate {}, endDate {}, query {}", id, idType, operationExistenceStartDate, operationExistenceEndDate, OPERATION_EXISTENCE_SQL);
         try {
-            countRows = jdbcTemplate.queryForObject(operationExistenceSql, Integer.class, id, idType.toString(), operationExistenceStartDate, operationExistenceEndDate);
+            countRows = jdbcTemplate.queryForObject(OPERATION_EXISTENCE_SQL, Integer.class, id, idType.toString(), operationExistenceStartDate, operationExistenceEndDate);
         } catch (Exception e) {
             LOGGER.error("Error during check of existence of order: {}, assuming it is new", e.getMessage(), e);
             return false;
@@ -409,7 +420,7 @@ public class OperationPersistenceManager implements OperationStateListener, Init
     public int getNumberOfDailyOperations() {
         int countRows = 0;
         try {
-           countRows = jdbcTemplate.queryForObject(operationCountSql, Integer.class, operationExistenceStartDate, operationExistenceEndDate);
+           countRows = jdbcTemplate.queryForObject(OPERATION_COUNT_SQL, Integer.class, operationExistenceStartDate, operationExistenceEndDate);
         } catch (Exception e) {
             LOGGER.error("Error during count of daily orders: {}, assuming it is new", e.getMessage(), e);
             return 0;
@@ -422,7 +433,7 @@ public class OperationPersistenceManager implements OperationStateListener, Init
     public int getTotalNumberOfDailyOperations() {
         int countRows = 0;
         try {
-           countRows = jdbcTemplate.queryForObject(operationCountSql, Integer.class, operationExistenceStartDate, operationExistenceEndDate);
+           countRows = jdbcTemplate.queryForObject(OPERATION_COUNT_SQL, Integer.class, operationExistenceStartDate, operationExistenceEndDate);
         } catch (Exception e) {
             LOGGER.error("Error during count of daily orders: {}, assuming it is new", e.getMessage(), e);
             return 0;
@@ -458,7 +469,7 @@ public class OperationPersistenceManager implements OperationStateListener, Init
     public Long getOperationIdFromBinding(OperationIdType externalIdType, String externalId) {
         long operationId = 0;
         try {
-            operationId = (long) jdbcTemplate.queryForObject(opIdFromBindingSql, Integer.class, externalIdType.toString(), externalId);
+            operationId = (long) jdbcTemplate.queryForObject(OPID_FROM_BINDING_SQL, Integer.class, externalIdType.toString(), externalId);
         } catch (EmptyResultDataAccessException e) {
             LOGGER.info("No binding found for {}-{}", externalIdType, externalId);
         } catch (Exception e) {
@@ -501,7 +512,7 @@ public class OperationPersistenceManager implements OperationStateListener, Init
            dateTo.set(Calendar.SECOND, 59);
            dateTo.set(Calendar.MILLISECOND, 999);
 
-           Query query = session.createQuery(opsForStateSql);
+           Query query = session.createQuery(OPS_FOR_STATE_SQL);
            query.setTimestamp("from", new Timestamp(dateFrom.getTimeInMillis()));
            query.setTimestamp("to", new Timestamp(dateTo.getTimeInMillis()));
            query.setParameterList("scn", operationStateCanonicalNames);
@@ -519,7 +530,7 @@ public class OperationPersistenceManager implements OperationStateListener, Init
                session.close();
            }
        }
-       LOGGER.info(logString, (operations != null ? operations.size() : 0));
+       LOGGER.info(LOGSTRING, (operations != null ? operations.size() : 0));
        return operations;
     }
 
@@ -549,7 +560,7 @@ public class OperationPersistenceManager implements OperationStateListener, Init
 						// TODO
 					}
 	            	
-	    	        LOGGER.info(logString, (operations != null ? operations.size() : 0));
+	    	        LOGGER.info(LOGSTRING, (operations != null ? operations.size() : 0));
 
 	            } else {
 	                LOGGER.warn("No operations retrieved");
@@ -566,4 +577,8 @@ public class OperationPersistenceManager implements OperationStateListener, Init
 	        return operation;		
 	}
 
+   
+   public void setOperationRestore(SimpleOperationRestorer operationRestore) {
+      this.operationRestore = operationRestore;
+   }
 }
