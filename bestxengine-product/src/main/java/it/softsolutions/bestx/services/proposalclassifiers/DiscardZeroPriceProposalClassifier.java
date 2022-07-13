@@ -42,14 +42,14 @@ import it.softsolutions.bestx.model.Venue;
 **/
 public class DiscardZeroPriceProposalClassifier implements ProposalClassifier {
 
-   private String acceptableStatesList;
+   private String unacceptableStatesList;
 
    @Override
    public ClassifiedProposal getClassifiedProposal(ClassifiedProposal proposal, Order order, List<Attempt> previousAttempts, Set<Venue> venues, ClassifiedBook book) {
       if (proposal.getPrice().getAmount().compareTo(BigDecimal.ZERO) == 0
             || (proposal.getMarket().getMarketCode() == MarketCode.BLOOMBERG && proposal.getPrice().getAmount().compareTo(BigDecimal.ONE) <= 0)) {
 
-         if (proposal.getMarket() != null && proposal.getMarket().isHistoric() && acceptableStatesList.indexOf(proposal.getAuditQuoteState()) >= 0) {
+         if (proposal.getMarket() != null && proposal.getMarket().isHistoric() && unacceptableStatesList.indexOf(proposal.getAuditQuoteState()) < 0) {
             proposal.setProposalState(Proposal.ProposalState.ACCEPTABLE);
          }
          else {
@@ -71,11 +71,11 @@ public class DiscardZeroPriceProposalClassifier implements ProposalClassifier {
       throw new UnsupportedOperationException();
    }
 
-   public String getAcceptableStatesList() {
-      return acceptableStatesList;
+   public String getUnacceptableStatesList() {
+      return unacceptableStatesList;
    }
    
-   public void setAcceptableStatesList(String acceptableStatesList) {
-      this.acceptableStatesList = acceptableStatesList;
+   public void setUnacceptableStatesList(String unacceptableStatesList) {
+      this.unacceptableStatesList = unacceptableStatesList;
    }
 }
