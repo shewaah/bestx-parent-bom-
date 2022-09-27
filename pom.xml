@@ -6,7 +6,6 @@
     <artifactId>bestxengine-parent</artifactId>
     <packaging>pom</packaging>
     <version>4.7.6.1-Patch-G2-SNAPSHOT</version>
-
     <name>BestX:FI-A Engine Develop</name>
     <description>Comprising all the modules in bestengine installation for CS</description>
 
