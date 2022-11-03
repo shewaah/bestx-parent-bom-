@@ -3,7 +3,7 @@
     <parent>
         <artifactId>marketlibraries</artifactId>
         <groupId>it.softsolutions.bestx</groupId>
-        <version>4.7.6.2-Patch-G2-SNAPSHOT</version>
+        <version>5.0.0-NEUTRONSTAR-221103-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

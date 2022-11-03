@@ -4,7 +4,7 @@
 	   <parent>
 	       <groupId>it.softsolutions.bestx</groupId>
 	       <artifactId>bestxengine-parent</artifactId>
-	       <version>4.7.6.2-Patch-G2-SNAPSHOT</version>
+	       <version>5.0.0-NEUTRONSTAR-221103-SNAPSHOT</version>
 	   </parent>
 
 		<artifactId>bestx-mq-service</artifactId>
