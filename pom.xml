@@ -43,7 +43,7 @@
         <module>bestxengine-common</module>
         <module>bestx-protocol-api</module>
         <module>bestxengine-product</module>
-        <module>bestx-fix-client</module>
+        <!-- module>bestx-fix-client</module -->
         <module>marketlibraries</module>
         <module>bestxengine-cs</module>
         <module>bestx-mq-service</module>
