@@ -94,12 +94,6 @@
 		</dependency>
 		<dependency>
 			<groupId>it.softsolutions.bestx</groupId>
-			<artifactId>bestx-fix-client</artifactId>
-			<version>${project.parent.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>it.softsolutions.bestx</groupId>
 			<artifactId>bestx-mq-service</artifactId>
 			<version>${project.parent.version}</version>
 			<exclusions>
