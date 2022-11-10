@@ -662,7 +662,7 @@ public class CSPriceService extends JMXNotifier implements PriceService, PriceSe
 			LOGGER.warn("Problem when searching for market", e);
 		}
 		for (Venue venue : venues) {
-			if (venue.isMarket()) {
+			if (venue.isIsMarket()) {
 				MarketCode venueMktCode = venue.getMarket().getMarketCode();
 				if (marketCode.equals(venueMktCode)) {
 					LOGGER.debug("Order {}, market {} found among the policy venues.", fixOrderId, marketCode);

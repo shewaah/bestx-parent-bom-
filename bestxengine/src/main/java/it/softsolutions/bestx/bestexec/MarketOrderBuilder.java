@@ -127,8 +127,8 @@ public abstract class MarketOrderBuilder {
 
 	public void setMarketMakerCompositeCodesSet(String marketMakersCompositeCodes) {
 		this.marketMakerCompositeCodesSet = new HashSet<>();
-		if (StringUtils.isNotBlank(this.marketMakerCompositeCodes)) {
-			this.marketMakerCompositeCodesSet.addAll(Arrays.asList(this.marketMakerCompositeCodes.split(",")));
+		if (StringUtils.isNotBlank(marketMakersCompositeCodes)) {
+			this.marketMakerCompositeCodesSet.addAll(Arrays.asList(marketMakersCompositeCodes.split(",")));
 		}
 	}
 

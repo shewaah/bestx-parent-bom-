@@ -13,6 +13,13 @@
  */
 package it.softsolutions.bestx;
 
+import static com.codahale.metrics.MetricRegistry.name;
+
+import java.io.Serializable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
@@ -21,13 +28,6 @@ import net.sf.ehcache.CacheException;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.constructs.EhcacheDecoratorAdapter;
-
-import java.io.Serializable;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static com.codahale.metrics.MetricRegistry.name;
 
 /**
  *
@@ -105,7 +105,7 @@ public class InstrumentedEhcache extends EhcacheDecoratorAdapter {
                               new Gauge<Long>() {
                                   @Override
                                   public Long getValue() {
-                                      return cache.getStatistics().getCacheHits();
+                                      return cache.getStatistics().cacheHitCount();
                                   }
                               });
 
@@ -113,7 +113,7 @@ public class InstrumentedEhcache extends EhcacheDecoratorAdapter {
                               new Gauge<Long>() {
                                   @Override
                                   public Long getValue() {
-                                      return cache.getStatistics().getCacheMisses();
+                                      return cache.getStatistics().cacheMissCount();
                                   }
                               });
 
@@ -121,7 +121,7 @@ public class InstrumentedEhcache extends EhcacheDecoratorAdapter {
                               new Gauge<Long>() {
                                   @Override
                                   public Long getValue() {
-                                      return cache.getStatistics().getMemoryStoreObjectCount();
+                                      return cache.getStatistics().cachePutCount();
                                   }
                               });
 
@@ -129,7 +129,7 @@ public class InstrumentedEhcache extends EhcacheDecoratorAdapter {
                               new Gauge<Float>() {
                                   @Override
                                   public Float getValue() {
-                                      return Float.valueOf("" + cache.getStatistics().getAverageGetTime());
+                                      return Float.valueOf("" + cache.getStatistics().cacheHitRatio());
                                   }
                               });
 
@@ -145,7 +145,7 @@ public class InstrumentedEhcache extends EhcacheDecoratorAdapter {
                               new Gauge<Long>() {
                                   @Override
                                   public Long getValue() {
-                                      return cache.getStatistics().getEvictionCount();
+                                      return cache.getStatistics().cacheEvictedCount();
                                   }
                               });
 

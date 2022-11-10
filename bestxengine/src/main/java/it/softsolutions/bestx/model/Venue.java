@@ -113,7 +113,7 @@ public class Venue {
         return code;
     }
 
-    public boolean isMarket() {
+    public boolean isIsMarket() {
         return isMarket;
     }
 }

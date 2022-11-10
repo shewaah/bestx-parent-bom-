@@ -156,7 +156,7 @@ public class BookClassifiersTestHelper {
         // get venue by venueCode, and set it
         Venue venue = venues_.get(venueCode);
         Market mkt = null;
-        if (venue.isMarket()) {
+        if (venue.isIsMarket()) {
             mkt = venue.getMarket();
         }
         else {
@@ -274,7 +274,7 @@ public class BookClassifiersTestHelper {
             propSubMktCode = null;
             propMmmCode = "";
 
-            boolean isMarket = clProp.getVenue() != null && clProp.getVenue().isMarket();
+            boolean isMarket = clProp.getVenue() != null && clProp.getVenue().isIsMarket();
             if (isMarket) {
                 /*
                  *  proposal ---> venue (MOTXMOT) ---> mkt (MOT/XMOT)

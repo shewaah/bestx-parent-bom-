@@ -20,7 +20,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.hibernate.HibernateException;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.hibernate.usertype.CompositeUserType;
@@ -52,16 +52,6 @@ public class MoneyUserType implements CompositeUserType {
     }
 
     @Override
-    public Object assemble(Serializable cached, SessionImplementor session, Object owner) throws HibernateException {
-        return deepCopy(cached);
-    }
-
-    @Override
-    public Serializable disassemble(Object value, SessionImplementor session) throws HibernateException {
-        return (Serializable) deepCopy(value);
-    }
-
-    @Override
     public String[] getPropertyNames() {
         return propertyNames;
     }
@@ -88,33 +78,6 @@ public class MoneyUserType implements CompositeUserType {
         }
     }
 
-    @Override
-    public Object nullSafeGet(ResultSet rs, String[] names, SessionImplementor session, Object owner) throws HibernateException, SQLException {
-        if (!rs.wasNull()) {
-            String currency = (String) StandardBasicTypes.STRING.nullSafeGet(rs, names[0], session);
-            BigDecimal amount = (BigDecimal) StandardBasicTypes.BIG_DECIMAL.nullSafeGet(rs, names[1], session);
-            if (amount == null) {
-                return null;
-            }
-            return new Money(currency, amount);
-        } else {
-            return null;
-        }
-    }
-
-    @Override
-    public void nullSafeSet(PreparedStatement st, Object value, int index, SessionImplementor session) throws HibernateException, SQLException {
-        Money money = (Money) value;
-        String currency = money == null ? null : money.getStringCurrency();
-        BigDecimal amount = money == null ? null : money.getAmount();
-        StandardBasicTypes.STRING.nullSafeSet(st, currency, index, session);
-        StandardBasicTypes.BIG_DECIMAL.nullSafeSet(st, amount, index + 1, session);
-    }
-
-    @Override
-    public Object replace(Object original, Object target, SessionImplementor session, Object owner) throws HibernateException {
-        return deepCopy(original);
-    }
 
     @Override
     public void setPropertyValue(Object component, int property, Object value) throws HibernateException {
@@ -143,4 +106,43 @@ public class MoneyUserType implements CompositeUserType {
     public Class<Money> returnedClass() {
         return Money.class;
     }
+
+   @Override
+   public Object nullSafeGet(ResultSet rs, String[] names, SharedSessionContractImplementor session, Object owner) throws HibernateException, SQLException {
+      if (!rs.wasNull()) {
+         String currency = (String) StandardBasicTypes.STRING.nullSafeGet(rs, names[0], session);
+         BigDecimal amount = (BigDecimal) StandardBasicTypes.BIG_DECIMAL.nullSafeGet(rs, names[1], session);
+         if (amount == null) {
+             return null;
+         }
+         return new Money(currency, amount);
+     } else {
+         return null;
+     }
+   }
+
+   @Override
+   public void nullSafeSet(PreparedStatement st, Object value, int index, SharedSessionContractImplementor session) throws HibernateException, SQLException {
+      Money money = (Money) value;
+      String currency = money == null ? null : money.getStringCurrency();
+      BigDecimal amount = money == null ? null : money.getAmount();
+      StandardBasicTypes.STRING.nullSafeSet(st, currency, index, session);
+      StandardBasicTypes.BIG_DECIMAL.nullSafeSet(st, amount, index + 1, session);
+   }
+
+   @Override
+   public Serializable disassemble(Object value, SharedSessionContractImplementor session) throws HibernateException {
+      return (Serializable) deepCopy(value);
+   }
+   
+   @Override
+   public Object assemble(Serializable cached, SharedSessionContractImplementor session, Object owner) throws HibernateException {
+      return deepCopy(cached);
+   }
+
+   @Override
+   public Object replace(Object original, Object target, SharedSessionContractImplementor session, Object owner) throws HibernateException {
+      // TODO Auto-generated method stub
+      return null;
+   }
 }
