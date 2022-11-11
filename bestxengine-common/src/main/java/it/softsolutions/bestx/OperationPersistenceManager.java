@@ -400,7 +400,7 @@ public class OperationPersistenceManager implements OperationStateListener, Init
     }
 
     public boolean operationExistsById(OperationIdType idType, String id) {
-        int countRows = 0;
+        Integer countRows = null;
         LOGGER.debug("id {}, idType {}, startDate {}, endDate {}, query {}", id, idType, operationExistenceStartDate, operationExistenceEndDate, OPERATION_EXISTENCE_SQL);
         try {
            if(jdbcTemplate!= null)
@@ -409,20 +409,17 @@ public class OperationPersistenceManager implements OperationStateListener, Init
             LOGGER.error("Error during check of existence of order: {}, assuming it is new", e.getMessage(), e);
             return false;
         }
-        if (countRows >= 1) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return countRows != null && countRows.intValue()>=1;
     }
 
 
     public int getNumberOfDailyOperations() {
-        int countRows = 0;
+        Integer countRows = 0;
         try {
            if(jdbcTemplate!= null)
              countRows = jdbcTemplate.queryForObject(OPERATION_COUNT_SQL, Integer.class, operationExistenceStartDate, operationExistenceEndDate);
+           if(countRows == null)
+              countRows = 0;
         } catch (Exception e) {
             LOGGER.error("Error during count of daily orders: {}, assuming it is new", e.getMessage(), e);
             return 0;
@@ -433,16 +430,15 @@ public class OperationPersistenceManager implements OperationStateListener, Init
     
     // [BXMNT-321] Come richiesto da AMC utilizziamo la stessa query del getNumberOfDailyOperations ma includendo gli ordini in stato terminale
     public int getTotalNumberOfDailyOperations() {
-        int countRows = 0;
+        Integer countRows = null;
         try {
-           if(jdbcTemplate!= null)
               countRows = jdbcTemplate.queryForObject(OPERATION_COUNT_SQL, Integer.class, operationExistenceStartDate, operationExistenceEndDate);
         } catch (Exception e) {
             LOGGER.error("Error during count of daily orders: {}, assuming it is new", e.getMessage(), e);
             return 0;
         }
 
-        return countRows;
+        return countRows != null ? countRows.intValue(): 0;
     }
 
     private void checkPreRequisites() throws ObjectNotInitializedException {
@@ -470,17 +466,16 @@ public class OperationPersistenceManager implements OperationStateListener, Init
     }
 
     public Long getOperationIdFromBinding(OperationIdType externalIdType, String externalId) {
-        long operationId = 0;
+        Integer operationId = null;
         try {
-           if(jdbcTemplate!= null)
-             operationId = (long) jdbcTemplate.queryForObject(OPID_FROM_BINDING_SQL, Integer.class, externalIdType.toString(), externalId);
+            operationId = jdbcTemplate.queryForObject(OPID_FROM_BINDING_SQL, Integer.class, externalIdType.toString(), externalId);
         } catch (EmptyResultDataAccessException e) {
             LOGGER.info("No binding found for {}-{}", externalIdType, externalId);
         } catch (Exception e) {
             LOGGER.error("Error during decoding of binding {}-{} : {}", externalIdType, externalId, e.getMessage(), e);
         }
         
-        return operationId;
+        return operationId == null? 0L : operationId.longValue();
     }
     
     /**
