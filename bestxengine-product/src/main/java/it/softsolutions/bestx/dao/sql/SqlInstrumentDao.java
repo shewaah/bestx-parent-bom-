@@ -89,7 +89,7 @@ public class SqlInstrumentDao implements InstrumentDao {
 		// TODO Monitoring-BX check 
 		Long count = jdbcTemplate.queryForObject(SELECT_INSTRUMENT_BY_ISIN, Long.class);
 
-		return count == null?0: count;
+		return count == null? 0 : count;
 	}
 
 	
