@@ -194,7 +194,7 @@ public class OrderCounter {
 			}
 			Integer numOrders = jdbcTemplate.queryForObject(orderCountSql, Integer.class);
 
-			return numOrders;
+			return numOrders == null? 0: numOrders;
 		} catch (Exception e) {
 			logger.error("Error while fetching limit file orders, cannot build the page elencoOrdini.jsp .", e);
 			return -1;
