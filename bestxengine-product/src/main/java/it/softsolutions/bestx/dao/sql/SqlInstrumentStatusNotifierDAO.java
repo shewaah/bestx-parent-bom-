@@ -88,10 +88,12 @@ public class SqlInstrumentStatusNotifierDAO implements InstrumentStatusNotifierD
 			
 			SerialClob clob = (SerialClob) rowSet.getObject("DescrizioneEvento");
 			String statusDesc = "";
-			try {
-				statusDesc = clob.getSubString(1,  (int) clob.length());
-			} catch (SerialException e) {
-			    LOGGER.error("{}", e.getMessage(), e);
+			if(clob != null) {
+   			try {
+   				statusDesc = clob.getSubString(1,  (int) clob.length());
+   			} catch (SerialException e) {
+   			    LOGGER.error("{}", e.getMessage(), e);
+   			}
 			}
 			statusDesc += addToComment + currentTime + ".";
 			

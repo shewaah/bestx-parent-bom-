@@ -58,7 +58,7 @@ public class SqlSerialNumberDao implements SerialNumberDao {
     public long getNextNumber(String identifier, Date date) {
         checkPreRequisites();
         Long res = jdbcTemplate.queryForObject(SQL, Long.class, new Object [] {identifier, date});
-        return res;
+        return res == null? 0: res;
     }
 
     @Override

@@ -94,7 +94,7 @@ public class SqlCustomerManagerDAO implements CustomerManagerDAO {
             }
         });
 
-        return pfCustomer;
+        return pfCustomer == null ? false : pfCustomer;
     }
 
     /**
@@ -117,7 +117,8 @@ public class SqlCustomerManagerDAO implements CustomerManagerDAO {
             return false;
         }
 
-        Boolean notAllowedTicker = (Boolean) this.jdbcTemplate.query(selectAllowedTickersForCustomer, new PreparedStatementSetter() {
+        boolean notAllowedTicker = false;
+        Boolean notAllowedTickerB = (Boolean) this.jdbcTemplate.query(selectAllowedTickersForCustomer, new PreparedStatementSetter() {
             public void setValues(PreparedStatement stmt) throws SQLException {
                 // 1st param : Customer code
                 stmt.setString(1, customer.getFixId());
@@ -143,6 +144,10 @@ public class SqlCustomerManagerDAO implements CustomerManagerDAO {
 
         });
 
+        if(notAllowedTickerB == null)
+           notAllowedTicker = false;
+        else notAllowedTicker = notAllowedTickerB;
         return notAllowedTicker;
+
     }
 }

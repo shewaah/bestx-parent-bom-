@@ -286,9 +286,9 @@ public class SqlRankingLoaderDao implements RankingLoaderDao
         });
         if (updateLiveRanking) {
 
-            int countRows = jdbcTemplate.queryForObject(existence, Integer.class, new Object[] {date});
+            Integer countRows = (Integer) jdbcTemplate.queryForObject(existence, Integer.class, new Object[] {date});
             LOGGER.info("Found " + countRows + " executions for date " + date);
-            if (countRows == 0) {
+            if (countRows == null || countRows == 0) {
                 throw new Exception("There aren't executed orders for the date " + date);
             } else {
                 try {

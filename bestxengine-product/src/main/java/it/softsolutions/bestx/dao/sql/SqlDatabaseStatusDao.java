@@ -45,7 +45,7 @@ public class SqlDatabaseStatusDao implements DatabaseStatusDao {
 		String sql = "select count(*) from " + tableName;
 		Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
 
-	    return count.intValue();
+	    return count == null? 0:count.intValue();
     }
    
 	@Override
@@ -76,12 +76,15 @@ public class SqlDatabaseStatusDao implements DatabaseStatusDao {
     public String getDatabaseStatus() {
 		String res = "N/A";
 		try {
-			Connection connection = jdbcTemplate.getDataSource().getConnection();
+			Connection connection = null;
+			connection = jdbcTemplate.getDataSource().getConnection();
 	        res = "connected = " + !connection.isClosed() + " > " + connection.toString();
         } catch (SQLException e) {
         	LOGGER.error("{}", e.getMessage(), e);
         }
-		
+		catch (NullPointerException e1) {
+         LOGGER.error("{}", e1.getMessage(), e1);
+        }
 	    return res;
     }
 }
