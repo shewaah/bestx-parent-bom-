@@ -5,7 +5,7 @@
     <groupId>it.softsolutions.bestx</groupId>
     <artifactId>bestxengine-parent</artifactId>
     <packaging>pom</packaging>
-    <version>5.0.0-SNAPSHOT</version>
+    <version>5.0.0-PIONEERS-230201-SNAPSHOT</version>
     <name>BestX:FI-A Engine Develop</name>
     <description>Comprising all the modules in bestengine installation for CS</description>
 
