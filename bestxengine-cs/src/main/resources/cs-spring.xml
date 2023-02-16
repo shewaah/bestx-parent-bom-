@@ -1005,9 +1005,9 @@
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.SubstituteQuoteTypeProposalClassifier">
                 	<property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
 				</bean>
-				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardSpreadProposalClassifier" />
-				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardYieldProposalClassifier" />
-				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnitProposalClassifier" />
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardNotAllowedPriceTypeProposalClassifier">
+                	<property name="allowedPriceTypes" value="${DiscardNotAllowedPriceTypeProposalClassifier.PriceTypes.allowed}" />
+                </bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnavailableVenueProposalClassifier" />
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroQuantityProposalClassifier">
                 	<property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
@@ -1037,9 +1037,9 @@
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.SubstituteQuoteTypeProposalClassifier">
                 	<property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
 				</bean>
- 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardSpreadProposalClassifier"></bean>
-				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardYieldProposalClassifier"></bean>
-				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnitProposalClassifier"></bean>
+				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardNotAllowedPriceTypeProposalClassifier">
+                	<property name="allowedPriceTypes" value="${DiscardNotAllowedPriceTypeProposalClassifier.PriceTypes.allowed}" />
+                </bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnavailableVenueProposalClassifier"></bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroQuantityProposalClassifier">
                 	<property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
