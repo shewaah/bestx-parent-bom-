@@ -43,7 +43,6 @@ import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.Venue;
 import it.softsolutions.bestx.model.Venue.VenueType;
 import it.softsolutions.jsscommon.Money;
-import quickfix.field.PriceType;
 
 public class HistoricMarket extends MarketCommon implements MarketPriceConnection, HistoricMarketMBean {
 
@@ -243,24 +242,6 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
             BigDecimal qty = Optional.ofNullable(rs.getBigDecimal("Qty")).orElse(BigDecimal.ZERO);
             BigDecimal amount = Optional.ofNullable(rs.getBigDecimal("Price")).orElse(BigDecimal.ZERO);
             
-            Proposal.PriceType priceType = null;
-            switch (rs.getInt("PriceType")) {
-            case PriceType.PERCENTAGE:
-            	priceType = Proposal.PriceType.PRICE;
-            	break;
-            case PriceType.YIELD:
-            	priceType = Proposal.PriceType.YIELD;
-            	break;
-            case PriceType.SPREAD:
-            	priceType = Proposal.PriceType.SPREAD;
-            	break;
-            case PriceType.PER_UNIT:
-            	priceType = Proposal.PriceType.UNIT;
-            	break;
-            default:
-            	priceType = Proposal.PriceType.PRICE;
-            }
-                        
             ProposalType proposalType = ProposalType.TRADEABLE;
 
             classifiedProposal = new ClassifiedProposal();
@@ -277,7 +258,7 @@ public class HistoricMarket extends MarketCommon implements MarketPriceConnectio
             classifiedProposal.setTimestamp(timestamp);
             Money price = new Money(instrument.getCurrency(), amount);
             classifiedProposal.setPrice(price);
-            classifiedProposal.setPriceType(priceType);
+            classifiedProposal.setPriceType(Proposal.PriceType.createPriceType(rs.getInt("PriceType")));
             classifiedProposal.setAuditQuoteState(rs.getString("AuditQuoteState"));
             
             return classifiedProposal;

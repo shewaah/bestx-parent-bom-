@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.model.Attempt.AttemptState;
 import it.softsolutions.bestx.model.Market.MarketCode;
+import it.softsolutions.bestx.model.Proposal.PriceType;
 import it.softsolutions.bestx.services.DateService;
 
 public class CSPOBexExecutionReport extends ExecutionReport {
@@ -220,7 +221,7 @@ public class CSPOBexExecutionReport extends ExecutionReport {
 			}
 			for(; index < size; index++) {  //BESTX-314 from 0 to i-1 to catch also executed price
 				ExecutablePrice quote = currentAttempt.getExecutablePrice(index);
-				if(quote != null) {
+				if(quote != null && quote.getPriceType() == PriceType.PRICE) {
 					CSDealerGroup dealerGroup = new CSDealerGroup(); 
 					if(quote.getMarketMarketMaker() != null && quote.getMarketMarketMaker().getMarketMaker() != null) {
 						dealerGroup.setDealerID(quote.getMarketMarketMaker().getMarketMaker().getCode());
@@ -257,7 +258,7 @@ public class CSPOBexExecutionReport extends ExecutionReport {
 				dealerGroup.setDealerID(marketExecutionReport.getExecBroker());  //BESTX-424
 
 			if(dealerGroup.getDealerID() != null) {
-				if (counteroffer != null && counteroffer.getMarketMarketMaker() != null && counteroffer.getPrice() != null) {  // got a counteroffer
+				if (counteroffer != null && counteroffer.getMarketMarketMaker() != null && counteroffer.getPrice() != null && counteroffer.getPriceType() == PriceType.PRICE) {  // got a counteroffer
 					dealerGroup.setDealerQuotePrice(counteroffer.getPrice().getAmount());
 					dealerGroup.setDealerQuoteOrdQty(counteroffer.getQty());
 					dealerGroup.setDealerQuoteTime(counteroffer.getTimestamp());  // counteroffer time is in local time

@@ -207,7 +207,7 @@ public class OnExecutionReportRunnable implements Runnable {
       }
       else if ((execType == ExecType.Trade) && (ordStatus == OrdStatus.Filled)) {
          executionReportState = ExecutionReportState.FILLED;
-         if (this.lastPrice.equals(new BigDecimal("0"))) {
+         if (this.lastPrice.compareTo(BigDecimal.ZERO) <= 0) {
             operation.onApplicationError(operation.getState(), null, Messages.getString("NoExecutionPriceError.0"));
             return;
          }
@@ -318,7 +318,6 @@ public class OnExecutionReportRunnable implements Runnable {
                      
                      calculetPobexPrice(price, compDealerElem, quotingDealer, operation.getOrder().getFixOrderId());
                      
-                     price.setPriceType(Proposal.PriceType.PRICE);
                      //BESTX-725 manage qty coming from pobex market informations
                      if (compDealerElem.isSetField(CompDealerQuoteOrdQty.FIELD)) {
                         Double compDealerQty = compDealerElem.getField(new DoubleField(CompDealerQuoteOrdQty.FIELD)).getValue();
@@ -386,52 +385,20 @@ public class OnExecutionReportRunnable implements Runnable {
     * @throws FieldNotFound
     */
    private void calculetPobexPrice(ExecutablePrice price, Group compDealerElem, String quotingDealer, String fixOrderId) throws FieldNotFound {
-      //BESTX-873 CompDealerQuotePriceType=10012
-      if(compDealerElem.isSetField(CompDealerQuotePriceType.FIELD)) {
-         int iCompDealerQuotePriceType = compDealerElem.getField(new IntField(CompDealerQuotePriceType.FIELD)).getValue();
+      if (compDealerElem.isSetField(CompDealerParQuote.FIELD) && compDealerElem.getField(new DoubleField(CompDealerParQuote.FIELD)).getValue() > 0) {
+         Double compDealerParQuote = compDealerElem.getField(new DoubleField(CompDealerParQuote.FIELD)).getValue();
+         price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerParQuote)));
+         price.setPriceType(Proposal.PriceType.PRICE);
+      } else {
+         int iCompDealerQuotePriceType = -1;
+         if(compDealerElem.isSetField(CompDealerQuotePriceType.FIELD)) {
+            iCompDealerQuotePriceType = compDealerElem.getField(new IntField(CompDealerQuotePriceType.FIELD)).getValue();
+         }
          
-         if(iCompDealerQuotePriceType == 1) { //1(PERCENT_OF_PAR)
-            if (compDealerElem.isSetField(CompDealerQuote.FIELD)) {
-               Double compDealerQuote = compDealerElem.getField(new DoubleField(CompDealerQuote.FIELD)).getValue();
-               price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerQuote)));
-            }
-            else {
-               LOGGER.warn("Quoting Price type for fix order Id {} and {} Quoting dealer is {} (NoPrice). CompDealerQuote(10011) field is not present! Set Price to 0.0", fixOrderId, quotingDealer, iCompDealerQuotePriceType);
-               price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
-            }
-         }
-         else if(iCompDealerQuotePriceType == 6 || iCompDealerQuotePriceType == 9) { //6(YIELD_SPREAD_TO_BENCHMARK) 9 (YIELD)
-            LOGGER.info("Quoting Price type for fix order Id {} and {} Quoting dealer is {} (NoPrice). Take the CompDealerParQuote(10015) field", fixOrderId, quotingDealer, iCompDealerQuotePriceType);
-            if (compDealerElem.isSetField(CompDealerParQuote.FIELD)) {
-               Double compDealerParQuote = compDealerElem.getField(new DoubleField(CompDealerParQuote.FIELD)).getValue();
-               price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerParQuote)));
-            }
-            else {
-               LOGGER.warn("Quoting Price type for fix order Id {} and {} Quoting dealer is {} (NoPrice). CompDealerParQuote(10015) field is not present! Set Price to 0.0", fixOrderId, quotingDealer, iCompDealerQuotePriceType);
-               price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
-            }
-         }
-         else {
-            LOGGER.warn("Quoting Price type for fix order Id {} and {} Quoting dealer is {} (NoPrice and NoYield). CompDealerParQuote(10015) field is not present! Use the CompDealerQuote field", fixOrderId, quotingDealer, iCompDealerQuotePriceType);
-            if (compDealerElem.isSetField(CompDealerQuote.FIELD)) {
-               Double compDealerQuote = compDealerElem.getField(new DoubleField(CompDealerQuote.FIELD)).getValue();
-               price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerQuote)));
-            }
-            else {
-               price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
-            }
-         }
-      } //BESTX-873 CompDealerQuotePriceType=10012
-      else { // Old code before BESTX-873 
-         LOGGER.warn("For fixOrderID {} and {} DealerCode it is not present the CompDealerQuotePriceType(10012) fix field: use CompDealerQuote fix field", fixOrderId, quotingDealer);
-         if (compDealerElem.isSetField(CompDealerQuote.FIELD)) {
-            Double compDealerQuote = compDealerElem.getField(new DoubleField(CompDealerQuote.FIELD)).getValue();
-            price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerQuote)));
-         }
-         else {
-            LOGGER.warn("For fixOrderID {} and {} DealerCode it is not present the CompDealerQuote(10011) fix field: use default price value 0.0", fixOrderId, quotingDealer);
-            price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
-         }
+         Double compDealerQuote = compDealerElem.getField(new DoubleField(CompDealerQuote.FIELD)).getValue();
+         price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerQuote)));
+         
+         price.setPriceType(Proposal.PriceType.createPriceType(iCompDealerQuotePriceType));
       }
    }
    
@@ -532,7 +499,6 @@ public class OnExecutionReportRunnable implements Runnable {
 //	                     else price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
 	                     calculetPobexPrice(price, compDealerElem, quotingDealer, operation.getOrder().getFixOrderId());
 	                     
-	                     price.setPriceType(Proposal.PriceType.PRICE);
 	                     //BESTX-725 manage qty coming from pobex market informations
 	                     if (compDealerElem.isSetField(CompDealerQuoteOrdQty.FIELD)) {
 	                        Double compDealerQty = groups.get(i).getField(new DoubleField(CompDealerQuoteOrdQty.FIELD)).getValue();
