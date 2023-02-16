@@ -39,9 +39,7 @@ import it.softsolutions.bestx.connections.BaseOperatorConsoleAdapter;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ClassifiedProposal;
 import it.softsolutions.bestx.model.ExecutablePrice;
-import it.softsolutions.bestx.model.Market.MarketCode;
 import it.softsolutions.bestx.model.Proposal;
-import it.softsolutions.bestx.model.Proposal.PriceType;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.model.SortedBook;
 import it.softsolutions.bestx.services.DateService;
@@ -96,21 +94,6 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 	private boolean sendEmptyBook = true;
 	
 	private PBEStringEncryptor encryptor;
-
-	private int convertPriceTypeToInt(PriceType priceType) {
-		switch (priceType) {
-		case PRICE:
-			return 1;
-		case SPREAD:
-			return 6;
-		case YIELD:
-			return 9;
-		case UNIT:
-			return 2;
-		default:
-			return 0;
-		}
-	}
 
 	public void init() throws BestXException {
 		this.df = new SimpleDateFormat(this.timeFormatString);
@@ -270,8 +253,8 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 					boolean isComposite = this.compositeMarketMakers.contains(marketMakerCode);
 
 					if (goodProp.getPriceType() != null) {
-						proposal.element("PriceType", this.convertPriceTypeToInt(goodProp.getPriceType()));
-						rawProposal.element("PriceType", this.convertPriceTypeToInt(goodProp.getPriceType()));
+						proposal.element("PriceType", goodProp.getPriceType().getFixCode());
+						rawProposal.element("PriceType", goodProp.getPriceType().getFixCode());
 					} else {
 						LOGGER.warn("PriceType is NULL for proposal {}. Setting to default: 1", goodProp);
 						proposal.element("PriceType", 1);
@@ -385,7 +368,7 @@ public class DataCollectorKafkaImpl extends BaseOperatorConsoleAdapter implement
 	
 						if (ep.getPriceType() != null) {
 							LOGGER.trace("Setting price type in ExecutablePrice for order {}", operation.getOrder().getFixOrderId());
-							proposal.element("PriceType", this.convertPriceTypeToInt(ep.getPriceType()));
+							proposal.element("PriceType", ep.getPriceType().getFixCode());
 						}
 						if (ep.getMarketMarketMaker() != null && ep.getMarketMarketMaker().getMarketMaker() != null) {
 							LOGGER.trace("Setting known market maker in ExecutablePrice for order {}", operation.getOrder().getFixOrderId());

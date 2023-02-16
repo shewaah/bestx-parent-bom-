@@ -535,6 +535,10 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 							stmt.setInt(25, PriceType.PER_UNIT);
 							LOGGER.trace("param25 PriceType PER_UNIT(2)");
 							break;
+                  case DISCOUNT_MARGIN:
+                     stmt.setInt(25, 100);
+                     LOGGER.trace("param16 PriceType DISCOUNT_MARGIN(100)");
+                     break;
 						default:
 							stmt.setNull(25, java.sql.Types.INTEGER);
 							LOGGER.trace("param25 PriceType null");						
@@ -734,6 +738,10 @@ public class SqlCSOperationStateAuditDao implements OperationStateAuditDao {
 							stmt.setInt(16, PriceType.PER_UNIT);
 							LOGGER.trace("param16 PriceType PER_UNIT(2)");
 							break;
+                  case DISCOUNT_MARGIN:
+                     stmt.setInt(16, 100);
+                     LOGGER.trace("param16 PriceType DISCOUNT_MARGIN(100)");
+                     break;
 						default:
 							stmt.setNull(16, java.sql.Types.INTEGER);
 							LOGGER.trace("param16 PriceType null");						

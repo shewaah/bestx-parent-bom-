@@ -15,6 +15,7 @@
 package it.softsolutions.bestx.model;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Date;
 
 import it.softsolutions.jsscommon.Money;
@@ -31,7 +32,7 @@ public class Proposal implements Cloneable, Comparable<Proposal> {
     /**
      * The Enum ProposalSide.
      */
-    public static enum ProposalSide {
+    public enum ProposalSide {
         BID("0"), ASK("1"), ;
 
         /**
@@ -53,7 +54,7 @@ public class Proposal implements Cloneable, Comparable<Proposal> {
     /**
      * The Enum ProposalState.
      */
-    public static enum ProposalState {
+    public enum ProposalState {
         NEW, VALID, EXPIRED, ACCEPTABLE, REJECTED, DROPPED  // order is important: Enum.compareTo returns state with higher priority as higher    
    }
 
@@ -63,7 +64,7 @@ public class Proposal implements Cloneable, Comparable<Proposal> {
      * @author ruggero.rizzo
      *
      */
-    public static enum ProposalSubState {
+    public enum ProposalSubState {
         NONE, 
         PRICE_NOT_VALID, 
         QUANTITY_NOT_VALID, 
@@ -80,13 +81,25 @@ public class Proposal implements Cloneable, Comparable<Proposal> {
     /**
      * The Enum ProposalType.
      */
-    public static enum ProposalType { 
+    public enum ProposalType { 
     	 // Counter and tradeable shall remain as last in the enumerated
         CLOSED, SET_TO_ZERO, INDICATIVE, SPREAD_ON_BEST, COMPOSITE, IOI, AXE, RESTRICTED_TRADEABLE, TRADEABLE, COUNTER;
     }
     
-    public static enum PriceType {
-        PRICE, YIELD, SPREAD, UNIT
+    public enum PriceType {
+        PRICE(1), YIELD(9), SPREAD(6), UNIT(2), DISCOUNT_MARGIN(100), UNKNOWN(0);
+        
+        private final int mFIXValue;
+       
+        public int getFixCode() {
+           return mFIXValue;
+       }
+       private PriceType(int fixValue) {
+           mFIXValue = fixValue;
+       }
+       public static PriceType createPriceType(int fixValue) {
+          return Arrays.stream(PriceType.values()).filter(a -> a.getFixCode() == fixValue).findFirst().orElse(PriceType.UNKNOWN);
+       }
     }
     @SuppressWarnings("unused")
     private Long id;
