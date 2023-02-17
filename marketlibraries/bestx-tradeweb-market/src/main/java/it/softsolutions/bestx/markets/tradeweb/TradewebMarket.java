@@ -103,6 +103,7 @@ import quickfix.StringField;
 import quickfix.field.CompDealerID;
 import quickfix.field.CompDealerParQuote;
 import quickfix.field.CompDealerQuote;
+import quickfix.field.CompDealerQuotePriceType;
 import quickfix.field.CompDealerStatus;
 import tw.quickfix.field.MiFIDMIC;
 /**
@@ -902,6 +903,7 @@ public class TradewebMarket extends MarketCommon
       					   price.setAuditQuoteState("Rejected");
       					   price.setOriginatorID(data[0].trim());
       					   price.setPrice(new Money(operation.getOrder().getCurrency(), new BigDecimal(data[1].trim())));
+      					   price.setPriceType(Proposal.PriceType.PRICE);
       					   price.setQty(operation.getOrder().getQty());
       					   price.setTimestamp(tsExecutionReport.getTransactTime());
       					   price.setSide(operation.getOrder().getSide() == OrderSide.BUY ? ProposalSide.ASK : ProposalSide.BID);
@@ -942,6 +944,9 @@ public class TradewebMarket extends MarketCommon
 					   priceExec.setMarketMarketMaker(mmm);
 				   }
 				   priceExec.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(lastPrice.doubleValue())));
+				   if (tsExecutionReport.getPriceType() != null) {
+					   priceExec.setPriceType(Proposal.PriceType.createPriceType(tsExecutionReport.getPriceType().getFIXValue()));
+				   }
 				   priceExec.setQty(operation.getOrder().getQty());
 				   priceExec.setTimestamp(tsExecutionReport.getTransactTime());
 				   priceExec.setType(ProposalType.COUNTER);
@@ -1023,13 +1028,17 @@ public class TradewebMarket extends MarketCommon
 				   if (groups.get(i).isSetField(CompDealerParQuote.FIELD)) {
 					   Double compDealerQuote = groups.get(i).getField(new DoubleField(CompDealerParQuote.FIELD)).getValue();
 					   price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerQuote)));
+					   price.setPriceType(Proposal.PriceType.PRICE);
 				   } else {
 					   LOGGER.info("ClOrdId={}, OrdId={}, CompDlrId={} : CompDealerParQuote not set for percentage price, use CompDealerQuote!", clOrdId, ordId, quotingDealer);
 					   if (groups.get(i).isSetField(CompDealerQuote.FIELD)) {
 						   Double compDealerQuote = groups.get(i).getField(new DoubleField(CompDealerQuote.FIELD)).getValue();
 						   price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerQuote)));
+						   if (groups.get(i).isSetField(CompDealerQuotePriceType.FIELD)) {
+							   price.setPriceType(Proposal.PriceType.createPriceType(groups.get(i).getField(new IntField(CompDealerQuotePriceType.FIELD)).getValue()));
+						   }
 					   } else {
-	                  LOGGER.info("ClOrdId={}, OrdId={}, CompDlrId={}: CompDealerParQuote and CompDealerQuote not set! Default value price is 0.0!", clOrdId, ordId, quotingDealer);
+						   LOGGER.info("ClOrdId={}, OrdId={}, CompDlrId={}: CompDealerParQuote and CompDealerQuote not set! Default value price is 0.0!", clOrdId, ordId, quotingDealer);
 						   price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
 						   isValidPrice = false;
 					   }
