@@ -15,8 +15,6 @@ package it.softsolutions.bestx.markets.bloomberg;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -29,8 +27,6 @@ import it.softsolutions.bestx.Operation;
 import it.softsolutions.bestx.finders.MarketMakerFinder;
 import it.softsolutions.bestx.model.Attempt;
 import it.softsolutions.bestx.model.ExecutablePrice;
-import it.softsolutions.bestx.model.ExecutablePriceAskComparator;
-import it.softsolutions.bestx.model.ExecutablePriceBidComparator;
 import it.softsolutions.bestx.model.ExecutionReport.ExecutionReportState;
 import it.softsolutions.bestx.model.Market;
 import it.softsolutions.bestx.model.Market.MarketCode;
@@ -40,7 +36,6 @@ import it.softsolutions.bestx.model.Order;
 import it.softsolutions.bestx.model.Proposal;
 import it.softsolutions.bestx.model.Proposal.ProposalSide;
 import it.softsolutions.bestx.model.Proposal.ProposalType;
-import it.softsolutions.bestx.model.Rfq;
 import it.softsolutions.bestx.model.Rfq.OrderSide;
 import it.softsolutions.bestx.states.bloomberg.BBG_SendRfqState;
 import it.softsolutions.jsscommon.Money;
@@ -179,7 +174,7 @@ public class OnExecutionReportRunnable implements Runnable {
       }
 
       Order order = this.operation.getLastAttempt().getMarketOrder();
-      Rfq rfq = this.operation.getRfq();
+      // Rfq rfq = this.operation.getRfq();
       Attempt attempt = operation.getLastAttempt();
       if (order == null) {
          operation.onApplicationError(operation.getState(), new NullPointerException(), "Operation " + operation.getId() + " has no order!");
@@ -365,14 +360,16 @@ public class OnExecutionReportRunnable implements Runnable {
 
       if (!prices.isEmpty()) {
           // sort the executable prices
-          Comparator<ExecutablePrice> comparator;
-          comparator = operation.getOrder().getSide() == OrderSide.BUY ? new ExecutablePriceAskComparator() : new ExecutablePriceBidComparator();
-          Collections.sort(prices, comparator);
+          // Comparator<ExecutablePrice> comparator;
+          // comparator = operation.getOrder().getSide() == OrderSide.BUY ? new ExecutablePriceAskComparator() : new ExecutablePriceBidComparator();
+          // Collections.sort(prices, comparator);
           // give them their rank
-          for (int i = 0; i < prices.size(); i++)
-             prices.get(i).setRank(i + 1);
+          for (int i = 0; i < prices.size(); i++) {
+        	  attempt.addExecutablePrice(prices.get(i), i + 1);
+             // prices.get(i).setRank(i + 1);
+          }
           // add the sorted, ranked executable prices list to the attempt
-          attempt.setExecutablePrices(prices);
+          // attempt.setExecutablePrices(prices);
       }
       
       operation.onMarketExecutionReport(market, order, marketExecutionReport);
@@ -390,15 +387,15 @@ public class OnExecutionReportRunnable implements Runnable {
          price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerParQuote)));
          price.setPriceType(Proposal.PriceType.PRICE);
       } else {
-         int iCompDealerQuotePriceType = -1;
-         if(compDealerElem.isSetField(CompDealerQuotePriceType.FIELD)) {
-            iCompDealerQuotePriceType = compDealerElem.getField(new IntField(CompDealerQuotePriceType.FIELD)).getValue();
+         if (compDealerElem.isSetField(CompDealerQuotePriceType.FIELD) && compDealerElem.isSetField(CompDealerQuote.FIELD)) {
+            int iCompDealerQuotePriceType = compDealerElem.getField(new IntField(CompDealerQuotePriceType.FIELD)).getValue();
+            Double compDealerQuote = compDealerElem.getField(new DoubleField(CompDealerQuote.FIELD)).getValue();
+            price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerQuote)));
+            price.setPriceType(Proposal.PriceType.createPriceType(iCompDealerQuotePriceType));
+         } else {
+             price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
+             price.setPriceType(Proposal.PriceType.PRICE);
          }
-         
-         Double compDealerQuote = compDealerElem.getField(new DoubleField(CompDealerQuote.FIELD)).getValue();
-         price.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(compDealerQuote)));
-         
-         price.setPriceType(Proposal.PriceType.createPriceType(iCompDealerQuotePriceType));
       }
    }
    
@@ -551,14 +548,16 @@ public class OnExecutionReportRunnable implements Runnable {
 	               }
 	            }
 	            // sort the executable prices
-	            Comparator<ExecutablePrice> comparator;
-	            comparator = operation.getOrder().getSide() == OrderSide.BUY ? new ExecutablePriceAskComparator() : new ExecutablePriceBidComparator();
-	            Collections.sort(prices, comparator);
+//	            Comparator<ExecutablePrice> comparator;
+//	            comparator = operation.getOrder().getSide() == OrderSide.BUY ? new ExecutablePriceAskComparator() : new ExecutablePriceBidComparator();
+//	            Collections.sort(prices, comparator);
 	            // give them their rank
-	            for (int i = 0; i < prices.size(); i++)
-	               prices.get(i).setRank(i + 1);
+	            for (int i = 0; i < prices.size(); i++) {
+	            	attempt.addExecutablePrice(prices.get(i), i + 1);
+	               //prices.get(i).setRank(i + 1);
+	            }
 	            // add the sorted, ranked executable prices list to the attempt
-	            attempt.setExecutablePrices(prices);
+//	            attempt.setExecutablePrices(prices);
 	         }
 	      }
 	      else {
