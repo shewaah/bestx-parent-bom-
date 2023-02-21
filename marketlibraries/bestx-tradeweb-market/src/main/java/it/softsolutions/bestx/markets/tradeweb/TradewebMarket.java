@@ -1040,6 +1040,7 @@ public class TradewebMarket extends MarketCommon
 					   } else {
 						   LOGGER.info("ClOrdId={}, OrdId={}, CompDlrId={}: CompDealerParQuote and CompDealerQuote not set! Default value price is 0.0!", clOrdId, ordId, quotingDealer);
 						   price.setPrice(new Money(operation.getOrder().getCurrency(), "0.0"));
+						   price.setPriceType(Proposal.PriceType.PRICE);
 						   isValidPrice = false;
 					   }
 				   }
