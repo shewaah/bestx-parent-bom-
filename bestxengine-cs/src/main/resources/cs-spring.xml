@@ -1006,7 +1006,7 @@
                 	<property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
 				</bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardNotAllowedPriceTypeProposalClassifier">
-                	<property name="allowedPriceTypes" value="${DiscardNotAllowedPriceTypeProposalClassifier.PriceTypes.allowed}" />
+                	<property name="allowedPriceTypes" value="${DiscardNotAllowedPriceTypeProposalClassifier.PriceTypes.allowed:PRICE}" />
                 </bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnavailableVenueProposalClassifier" />
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroQuantityProposalClassifier">
@@ -1038,7 +1038,7 @@
                 	<property name="marketMakerCompositeCodes" value="${MarketMakers.compositeCodes}" />
 				</bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardNotAllowedPriceTypeProposalClassifier">
-                	<property name="allowedPriceTypes" value="${DiscardNotAllowedPriceTypeProposalClassifier.PriceTypes.allowed}" />
+                	<property name="allowedPriceTypes" value="${DiscardNotAllowedPriceTypeProposalClassifier.PriceTypes.allowed:PRICE}" />
                 </bean>
                 <bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardUnavailableVenueProposalClassifier"></bean>
 				<bean class="it.softsolutions.bestx.services.proposalclassifiers.DiscardZeroQuantityProposalClassifier">
