@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -207,44 +209,44 @@ public class CSPOBexExecutionReport extends ExecutionReport {
 			this.setMultiDealerID(marketOrder.getMarket().getMicCode());
 		}
 
-		if(marketExecutionReport != null && (marketExecutionReport.getMarket().getMarketCode() == MarketCode.MARKETAXESS
+		if (marketExecutionReport != null && (marketExecutionReport.getMarket().getMarketCode() == MarketCode.MARKETAXESS
 									|| marketExecutionReport.getMarket().getMarketCode() == MarketCode.TW
 									|| marketExecutionReport.getMarket().getMarketCode() == MarketCode.BLOOMBERG
 									)) {
-			// manage MarketAxess more rich execution report
-			// get all quotes from attempt
-			int size = Math.min(pobExMaxSize, currentAttempt.getExecutablePrices().size());
-			int index = 0;
-			if(currentAttempt.getExecutablePrice(0) == null) {
-			   index =1;
-			   size++;
-			}
-			for(; index < size; index++) {  //BESTX-314 from 0 to i-1 to catch also executed price
-				ExecutablePrice quote = currentAttempt.getExecutablePrice(index);
-				if(quote != null && quote.getPriceType() == PriceType.PRICE) {
-					CSDealerGroup dealerGroup = new CSDealerGroup(); 
-					if(quote.getMarketMarketMaker() != null && quote.getMarketMarketMaker().getMarketMaker() != null) {
-						dealerGroup.setDealerID(quote.getMarketMarketMaker().getMarketMaker().getCode());
-					}
-					else if (quote.getOriginatorID() != null) {
-						dealerGroup.setDealerID(quote.getOriginatorID());
-					} else {
-						LOGGER.warn("Market maker not defined");
-						continue;
-					}
+		
+			List<ExecutablePrice> filteredList = currentAttempt.getExecutablePrices().stream()
+					.filter(Objects::nonNull)
+					.filter(ep -> ep.getPriceType() == PriceType.PRICE)
+					.collect(Collectors.toList());
+			
+			int pobexSize = 0;
+			for (ExecutablePrice quote : filteredList) {  //BESTX-314 from 0 to i-1 to catch also executed price
+				CSDealerGroup dealerGroup = new CSDealerGroup(); 
+				if (quote.getMarketMarketMaker() != null && quote.getMarketMarketMaker().getMarketMaker() != null) {
+					dealerGroup.setDealerID(quote.getMarketMarketMaker().getMarketMaker().getCode());
+				} else if (quote.getOriginatorID() != null) {
+					dealerGroup.setDealerID(quote.getOriginatorID());
+				} else {
+					LOGGER.warn("Market maker not defined");
+					continue;
+				}
 
-					if(quote.getPrice() != null){
-						dealerGroup.setDealerQuotePrice(quote.getPrice().getAmount());
-						dealerGroup.setDealerQuoteOrdQty(quote.getQty());
-						dealerGroup.setDealerQuoteTime(quote.getTimestamp());
-					} else {
-						dealerGroup.setDealerQuotePrice(new BigDecimal("0"));
-						dealerGroup.setDealerQuoteOrdQty(new BigDecimal("0"));
-						dealerGroup.setDealerQuoteTime(this.getExecAttmptTime());
-					}
-					dealerGroup.setDealerQuoteStatus(convertProposalState(quote, marketExecutionReport));
-					dealerGroup.setDealerQuoteStatusString(convertAuditState(quote.getAuditQuoteState()));
-					this.addCSDealerGroup(dealerGroup);				
+				if (quote.getPrice() != null){
+					dealerGroup.setDealerQuotePrice(quote.getPrice().getAmount());
+					dealerGroup.setDealerQuoteOrdQty(quote.getQty());
+					dealerGroup.setDealerQuoteTime(quote.getTimestamp());
+				} else {
+					dealerGroup.setDealerQuotePrice(new BigDecimal("0"));
+					dealerGroup.setDealerQuoteOrdQty(new BigDecimal("0"));
+					dealerGroup.setDealerQuoteTime(this.getExecAttmptTime());
+				}
+				dealerGroup.setDealerQuoteStatus(convertProposalState(quote, marketExecutionReport));
+				dealerGroup.setDealerQuoteStatusString(convertAuditState(quote.getAuditQuoteState()));
+				this.addCSDealerGroup(dealerGroup);		
+				
+				pobexSize++;
+				if (pobexSize >= pobExMaxSize) {
+					break;
 				}
 			}
 		} else {
