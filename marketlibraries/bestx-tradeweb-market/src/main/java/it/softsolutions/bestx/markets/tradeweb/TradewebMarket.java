@@ -944,9 +944,7 @@ public class TradewebMarket extends MarketCommon
 					   priceExec.setMarketMarketMaker(mmm);
 				   }
 				   priceExec.setPrice(new Money(operation.getOrder().getCurrency(), Double.toString(lastPrice.doubleValue())));
-				   if (tsExecutionReport.getPriceType() != null) {
-					   priceExec.setPriceType(Proposal.PriceType.createPriceType(tsExecutionReport.getPriceType().getFIXValue()));
-				   }
+				   priceExec.setPriceType(Proposal.PriceType.PRICE);
 				   priceExec.setQty(operation.getOrder().getQty());
 				   priceExec.setTimestamp(tsExecutionReport.getTransactTime());
 				   priceExec.setType(ProposalType.COUNTER);
